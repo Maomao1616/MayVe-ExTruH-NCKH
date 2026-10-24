@@ -8,18 +8,18 @@
 :root {
     color-scheme: dark;
 
-    --bg-main: #0f0f0f;
-    --bg-panel: #111111;
-    --bg-elevated: #1c2330;
+    --bg-main: #0e0d0d;
+    --bg-panel: #1d1c1c;
+    --bg-elevated: #0000003f;
 
-    --text-main: #00ffff;
-    --text-muted: #464c58;
+    --text-main: #a0fffa;
+    --text-muted: #ffbd96; 
 
-    --accent: #0d2929;
-    --accent-hover: #f80000;
+    --accent: #968a7b;
+    --accent-hover: #d1bbbb;
 
-    --border: #293244;
-    --success: #00ffa2;
+    --border: #3d3d3c;
+    --success: #3afa00;
     --warning: #ff7b00;
     --danger: #f80000;
 
