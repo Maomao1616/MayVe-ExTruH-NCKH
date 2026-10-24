@@ -8,25 +8,47 @@
 :root {
     color-scheme: dark;
 
-    --bg-main: #0e0d0d;
-    --bg-panel: #1d1c1c;
-    --bg-elevated: #0000003f;
+    --bg-main: #0f0f0f;
+    --bg-panel: #111111;
+    --bg-elevated: #1c2330;
 
-    --text-main: #a0fffa;
-    --text-muted: #ffbd96; 
+    --text-main: #00ffff;
+    --text-muted: #464c58;
 
-    --accent: #968a7b;
-    --accent-hover: #d1bbbb;
+    --accent: #0d2929;
+    --accent-hover: #f80000;
+    --accent-text: #00ffff;      /* mau CHU va bieu tuong nhan manh (accent o tren qua toi de doc) */
 
-    --border: #3d3d3c;
-    --success: #3afa00;
+    --border: #293244;
+    --success: #00ffa2;
     --warning: #ff7b00;
     --danger: #f80000;
 
     --radius-panel: 12px;
     --radius-button: 8px;
 
-    --page-width: 1600px;
+}
+
+/* 1B. BANG CHINH BO CUC - CHI CAN DOI SO O DAY, LUU FILE LA THAY DOI NGAY
+   (don vi px; khong can hieu code. Tren man hinh nho cac gia tri tu giam, xem muc 17) */
+:root {
+    /* --- Chung --- */
+    --page-width: 1600px;        /* chieu rong toi da cua trang */
+    --font-size-base: 14px;      /* co chu chinh */
+    --layout-gap: 20px;          /* khoang cach giua cac khoi */
+    --panel-padding: 18px;       /* le ben trong moi khoi */
+    --control-height: 38px;      /* chieu cao nut va o nhap */
+
+    /* --- Tab Dieu khien --- */
+    --sidebar-width: 360px;      /* chieu rong cot trai (vi tri, jog, tep) */
+    --canvas-height: 520px;      /* chieu cao khung ve 2D (khoa cung) */
+    --canvas-aspect: 285 / 310;  /* ti le vung lam viec X / Y (khop muc Cai dat) */
+    --terminal-height: 180px;    /* chieu cao o log cua terminal */
+    --progress-max-width: 480px; /* chieu rong toi da cua tien trinh canh tieu de */
+
+    /* --- Nut --- */
+    --jog-button-size: 54px;     /* kich thuoc nut jog X/Y */
+    --icon-button-size: 32px;    /* kich thuoc nut Zero / Home tung truc */
 }
 
 /* 2. RESET */
@@ -44,7 +66,7 @@ body {
     background: var(--bg-main);
     color: var(--text-main);
     font-family: "Segoe UI", Arial, sans-serif;
-    font-size: 14px;
+    font-size: var(--font-size-base);
     line-height: 1.5;
 }
 
@@ -113,7 +135,7 @@ p {
     width: min(100%, var(--page-width));
     min-height: 100vh;
     margin: 0 auto;
-    padding: 20px 24px 120px;
+    padding: 20px 24px 40px;
 }
 
 .app-header {
@@ -221,19 +243,28 @@ p {
     font-size: 20px;
 }
 
-/* 5. THANH DIEU HUONG */
-.main-nav {
+/* 5. THANH TREN CUNG: TAB (TRAI) + NUT AN TOAN (PHAI) */
+.top-bar {
     position: sticky;
     top: 0;
     z-index: 20;
     display: flex;
-    gap: 6px;
-    margin: 18px 0 28px;
-    padding: 8px;
-    overflow-x: auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 24px;
+    margin: 18px 0 24px;
+    padding: 8px 12px 8px 8px;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
     background: var(--bg-main);
+}
+
+.main-nav {
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+    overflow-x: auto;
 }
 
 .nav-tab {
@@ -241,8 +272,8 @@ p {
     align-items: center;
     justify-content: center;
     gap: 9px;
-    min-width: 130px;
-    padding: 12px 18px;
+    min-width: 120px;
+    padding: 11px 16px;
     border: 1px solid transparent;
     border-radius: var(--radius-button);
     color: var(--text-muted);
@@ -266,6 +297,8 @@ body:has(.tab-panel:target) .nav-tab {
     color: var(--text-muted);
 }
 
+/* Chua chon tab nao (khong co #) thi tab Dieu khien sang */
+body:not(:has(.tab-panel:target)) a[href="#panel-control"],
 body:has(#panel-control:target) a[href="#panel-control"],
 body:has(#panel-drawing:target) a[href="#panel-drawing"],
 body:has(#panel-jobs:target) a[href="#panel-jobs"],
@@ -285,7 +318,7 @@ body:has(#panel-settings:target) a[href="#panel-settings"] {
 
 .eyebrow {
     margin-bottom: 8px;
-    color: var(--accent);
+    color: var(--accent-text);
     font-size: 11px;
     font-weight: 800;
     letter-spacing: 0.14em;
@@ -313,7 +346,7 @@ body:has(#panel-settings:target) a[href="#panel-settings"] {
 /* 7. PANEL VA CAC THANH PHAN CHUNG */
 .panel {
     min-width: 0;
-    padding: 18px;
+    padding: var(--panel-padding);
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
     background: var(--bg-panel);
@@ -365,7 +398,7 @@ input:not([type="checkbox"]):not([type="range"]):not([type="file"]),
 select,
 textarea {
     width: 100%;
-    min-height: 40px;
+    min-height: var(--control-height);
     padding: 9px 11px;
     border: 1px solid var(--border);
     border-radius: var(--radius-button);
@@ -379,8 +412,8 @@ input[type="range"] {
 }
 
 button:not(.nav-tab) {
-    min-height: 38px;
-    padding: 8px 13px;
+    min-height: var(--control-height);
+    padding: ;
     border: 1px solid var(--border);
     border-radius: var(--radius-button);
     background: var(--bg-elevated);
@@ -411,7 +444,7 @@ button:not(.nav-tab):hover:not(:disabled) {
 .text-button {
     border: 0 !important;
     background: transparent !important;
-    color: var(--accent) !important;
+    color: var(--accent-text) !important;
 }
 
 fieldset {
@@ -434,9 +467,9 @@ label select {
 /* 8. TAB DIEU KHIEN */
 .control-layout {
     display: grid;
-    grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.65fr);
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
     align-items: start;
-    gap: 20px;
+    gap: var(--layout-gap);
 }
 
 .control-sidebar,
@@ -445,39 +478,124 @@ label select {
 .drawing-workspace {
     display: grid;
     min-width: 0;
-    gap: 20px;
+    gap: var(--layout-gap);
 }
 
+/* Tieu de tab Dieu khien: tieu de | tien trinh thu gon | che do */
+.control-heading {
+    justify-content: flex-start;
+    gap: 24px;
+}
+
+.heading-title {
+    flex: 0 0 auto;
+}
+
+.heading-progress {
+    display: grid;
+    flex: 1 1 260px;
+    max-width: var(--progress-max-width);
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-panel);
+    font-size: 12px;
+}
+
+.heading-progress-top,
+.heading-progress-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--text-muted);
+}
+
+.heading-progress-top strong {
+    color: var(--text-main);
+}
+
+.control-heading .machine-mode {
+    margin-left: auto;
+}
+
+.notice {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-bottom: var(--layout-gap);
+    padding: 12px 16px;
+    border: 1px solid var(--warning);
+    border-left-width: 4px;
+    border-radius: var(--radius-button);
+    background: var(--bg-panel);
+}
+
+.notice strong {
+    color: var(--warning);
+}
+
+.notice span {
+    color: var(--text-muted);
+}
+
+.panel-heading-compact {
+    margin-bottom: 12px;
+}
+
+/* --- Vi tri (kieu AxioCNC): Trục | Zero | Workspace | Machine | Home --- */
 .coordinate-table {
     display: grid;
-    gap: 2px;
+    gap: 0;
 }
 
 .coordinate-header,
 .coordinate-row {
     display: grid;
-    grid-template-columns: 0.6fr 1fr 1fr;
+    grid-template-columns:
+        24px var(--icon-button-size) minmax(0, 1.25fr) minmax(0, 1fr) var(--icon-button-size);
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .coordinate-header {
-    padding: 8px 0;
+    padding: 2px 0 6px;
     color: var(--text-muted);
     font-size: 11px;
+    text-align: center;
 }
 
 .coordinate-row {
-    padding: 12px 0;
+    padding: 4px 0;
     border-top: 1px solid var(--border);
 }
 
-.coordinate-row output {
+.coord-workspace,
+.coord-machine {
+    display: block;
+    padding: 6px 9px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
     font-variant-numeric: tabular-nums;
     font-weight: 700;
+    text-align: right;
+    text-overflow: ellipsis;
+}
+
+.coord-workspace {
+    font-size: 15px;
+}
+
+.coord-machine {
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
 .axis-label {
+    text-align: center;
     font-weight: 800;
 }
 
@@ -490,7 +608,31 @@ label select {
 }
 
 .axis-z {
-    color: var(--accent);
+    color: var(--accent-text);
+}
+
+.axis-note {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-align: center;
+}
+
+.coordinate-row .icon-action {
+    display: grid;
+    width: var(--icon-button-size);
+    height: var(--icon-button-size);
+    min-height: 0;
+    padding: 0;
+    place-items: center;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.coordinate-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .coordinate-footer,
@@ -499,64 +641,190 @@ label select {
     flex-wrap: wrap;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 14px;
-    padding-top: 14px;
+    margin-top: 10px;
+    padding-top: 10px;
     border-top: 1px solid var(--border);
     color: var(--text-muted);
+    font-size: 12px;
 }
 
 .coordinate-footer strong {
     color: var(--text-main);
 }
 
+/* --- Jog: XY ben trai, but len/xuong ben phai --- */
 .jog-settings {
     display: grid;
-    grid-template-columns: 1fr 120px;
-    align-items: center;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
+    margin-bottom: 14px;
+}
+
+.jog-layout {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 18px;
 }
 
 .jog-pad {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
-    max-width: 300px;
-    margin: 22px auto;
+    grid-template-columns: repeat(3, var(--jog-button-size));
+    grid-auto-rows: var(--jog-button-size);
+    gap: 6px;
 }
 
 .jog-button,
 .jog-center {
     display: grid;
-    min-height: 68px !important;
+    width: 100%;
+    height: 100%;
+    min-height: 0 !important;
+    padding: 0 !important;
     place-content: center;
-    gap: 2px;
-    font-size: 23px;
+    gap: 0;
+    font-size: 20px;
     font-weight: 700;
+    line-height: 1.1;
 }
 
 .jog-button small {
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .jog-center {
     background: var(--bg-main) !important;
-    color: var(--accent) !important;
+    color: var(--accent-text) !important;
+    font-size: 13px;
 }
 
-.jog-z-controls {
+.jog-pen {
+    display: grid;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    width: calc(var(--jog-button-size) + 14px);
+}
+
+.jog-pen button {
+    display: grid;
+    min-height: 0;
+    padding: 0;
+    place-content: center;
+    font-size: 20px;
+    line-height: 1.1;
+}
+
+.jog-pen small {
+    color: var(--text-muted);
+    font-size: 10px;
+}
+
+/* --- Tep G-code --- */
+.file-section + .file-section,
+.file-section + .detail-list,
+.gcode-panel .checkbox-inline {
+    margin-top: 14px;
+}
+
+.file-section h3 {
+    margin: 0 0 8px;
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.file-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.file-section-head h3 {
+    margin: 0;
+}
+
+.file-section-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.file-section-tools select {
+    width: auto;
+    min-height: 30px;
+    padding: 3px 8px;
+}
+
+.storage-line {
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.storage-bar {
+    height: 6px;
+}
+
+.file-list {
+    max-height: 160px;
+    margin: 10px 0 0;
+    padding: 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
+    list-style: none;
+}
+
+.file-list li {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.file-list li:last-child {
+    border-bottom: 0;
+}
+
+.file-list-empty {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.upload-zone-compact {
+    gap: 4px;
+    padding: 14px 12px;
+    font-size: 12px;
+}
+
+.upload-zone-compact .upload-icon {
+    font-size: 22px;
+}
+
+.checkbox-inline {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding-top: 14px;
-    border-top: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 13px;
 }
 
-.jog-z-controls span {
-    margin-right: auto;
-    color: var(--text-muted);
+.checkbox-inline input {
+    width: auto;
+    min-height: 0;
 }
 
+.gcode-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* --- Danh sach thong tin --- */
 .detail-list {
     display: grid;
     gap: 0;
@@ -576,6 +844,11 @@ label select {
     border-bottom: 0;
 }
 
+.detail-list-compact > div {
+    padding: 8px 0;
+    font-size: 13px;
+}
+
 .detail-list dt {
     color: var(--text-muted);
 }
@@ -586,11 +859,57 @@ label select {
     overflow-wrap: anywhere;
 }
 
+/* --- Macro nhanh --- */
+.quick-macro-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--control-height);
+}
+
+.text-link {
+    color: var(--text-main);
+    font-size: 12px;
+    text-decoration: underline;
+}
+
+/* Trạng thái bộ điều khiển đặt phía trên khung nhìn 2D */
+.control-workspace > .controller-panel {
+    width: 100%;
+}
+
+.control-workspace > .controller-panel .detail-list-compact {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    column-gap: 20px;
+}
+
+.control-workspace > .controller-panel .detail-list-compact > div {
+    min-width: 0;
+    padding: 9px 0;
+}
+
+.control-workspace > .controller-panel .detail-list dt {
+    font-size: 12px;
+}
+
+.control-workspace > .controller-panel .detail-list dd {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
 /* 9. KHUNG XEM TRUOC 2D */
+.preview-actions {
+    display: flex;
+    gap: 8px;
+}
+
 .preview-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px 20px;
+    align-items: center;
+    gap: 10px 20px;
     margin-bottom: 14px;
 }
 
@@ -602,6 +921,14 @@ label select {
     font-size: 12px;
 }
 
+.preview-toggle {
+    font-size: 12px;
+}
+
+.preview-toggle:first-of-type {
+    margin-left: auto;
+}
+
 .legend-machine {
     background: var(--border);
 }
@@ -610,14 +937,20 @@ label select {
     background: var(--accent);
 }
 
+.legend-travel {
+    background: var(--text-muted);
+}
+
 .legend-position {
     background: var(--success);
 }
 
+/* Khung ve co kich thuoc co dinh: sua --canvas-height o dau file */
 .preview-canvas-container {
     position: relative;
     display: grid;
-    min-height: 320px;
+    width: 100%;
+    height: var(--canvas-height);
     overflow: hidden;
     place-items: center;
     border: 1px solid var(--border);
@@ -629,7 +962,35 @@ label select {
     background-size: 24px 24px;
 }
 
+/* Khung vung lam viec: ti le theo --canvas-aspect (JS se ve thay sau) */
+.work-area-frame {
+    position: relative;
+    height: calc(100% - 28px);
+    aspect-ratio: var(--canvas-aspect);
+    border: 1px dashed var(--text-muted);
+    background: rgb(255 255 255 / 3%);
+}
+
+.work-area-origin,
+.work-area-size {
+    position: absolute;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.work-area-origin {
+    top: 6px;
+    left: 8px;
+}
+
+.work-area-size {
+    right: 8px;
+    bottom: 6px;
+}
+
 #preview-canvas {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
@@ -648,7 +1009,8 @@ label select {
     position: absolute;
     inset: 0;
     align-content: center;
-    background: rgb(11 14 20 / 72%);
+    background: transparent;
+    pointer-events: none;
 }
 
 .preview-empty p,
@@ -659,7 +1021,7 @@ label select {
 }
 
 .empty-icon {
-    color: var(--accent);
+    color: var(--accent-text);
     font-size: 32px;
 }
 
@@ -684,10 +1046,6 @@ label select {
     height: 100%;
     border-radius: inherit;
     background: var(--accent);
-}
-
-.progress-details {
-    font-size: 12px;
 }
 
 /* 10. TERMINAL */
@@ -718,7 +1076,7 @@ label select {
 }
 
 .terminal-toggle {
-    color: var(--accent);
+    color: var(--accent-text);
     font-size: 22px;
 }
 
@@ -735,7 +1093,7 @@ label select {
 }
 
 .terminal-output {
-    min-height: 180px;
+    min-height: var(--terminal-height);
     max-height: 320px;
     overflow: auto;
     padding: 14px;
@@ -813,7 +1171,7 @@ label select {
     display: grid;
     grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.5fr);
     align-items: start;
-    gap: 20px;
+    gap: var(--layout-gap);
     margin-top: 20px;
 }
 
@@ -834,7 +1192,7 @@ label select {
 }
 
 .upload-icon {
-    color: var(--accent);
+    color: var(--accent-text);
     font-size: 30px;
 }
 
@@ -911,7 +1269,7 @@ label select {
 .job-summary-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 16px;
+    gap: var(--layout-gap);
     margin-bottom: 20px;
 }
 
@@ -960,7 +1318,7 @@ label select {
 .job-secondary-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: var(--layout-gap);
     margin-top: 20px;
 }
 
@@ -969,7 +1327,7 @@ label select {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     align-items: start;
-    gap: 20px;
+    gap: var(--layout-gap);
 }
 
 .setting-row {
@@ -1032,21 +1390,13 @@ label select {
     font-size: 12px;
 }
 
-/* 14. THANH DIEU KHIEN NHANH */
-.machine-toolbar {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 30;
+/* 14. THANH AN TOAN (nam canh tab, tren cung) */
+.top-actions {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto auto;
     align-items: center;
-    gap: 12px 24px;
-    padding: 12px 24px;
-    border-top: 1px solid var(--border);
-    background: var(--bg-panel);
-    box-shadow: 0 -8px 28px rgb(0 0 0 / 20%);
+    justify-content: end;
+    gap: 4px 18px;
 }
 
 .toolbar-machine-info {
@@ -1073,9 +1423,72 @@ label select {
 .toolbar-safety-note {
     grid-column: 1 / -1;
     margin: 0;
-    font-size: 11px;
+    font-size: 10px;
+    text-align: right;
 }
 
+/* Bo sung cho cac khoi moi o tab Tao ban ve / Cong viec */
+.form-grid-spaced {
+    margin-bottom: 14px;
+}
+
+.drawing-warnings {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warning);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
+    font-size: 12px;
+}
+
+.drawing-warnings ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+}
+
+.drawing-confirm {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.drawing-confirm .drawing-preview-actions {
+    margin-top: 0;
+}
+
+.panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.log-panel {
+    margin-top: var(--layout-gap);
+}
+
+.log-tools {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.log-tools select {
+    width: auto;
+}
+
+.log-output {
+    min-height: 200px;
+}
+
+
+/* Khoang cach giua cac o trong khoi tuy chon (Tien xu ly, Vector hoa) */
+fieldset > * + * {
+    margin-top: 12px;
+}
 /* 15. CAC TIEN ICH */
 .visually-hidden {
     position: absolute;
@@ -1109,8 +1522,12 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
     display: none;
 }
 
-/* 17. RESPONSIVE */
+/* 17. RESPONSIVE (man hinh nho thi cac bien ben duoi se thay bien o dau file) */
 @media (max-width: 1100px) {
+    :root {
+        --canvas-height: 440px;
+    }
+
     .header-status {
         justify-content: flex-start;
     }
@@ -1125,19 +1542,19 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
         align-items: start;
     }
 
-    .preview-canvas-container {
-        min-height: 360px;
-    }
-
-    .machine-toolbar {
-        padding-right: 16px;
-        padding-left: 16px;
+    .control-heading {
+        flex-wrap: wrap;
     }
 }
 
 @media (max-width: 760px) {
+    :root {
+        --canvas-height: 360px;
+        --panel-padding: 14px;
+    }
+
     .app-shell {
-        padding: 14px 12px 210px;
+        padding: 14px 12px 40px;
     }
 
     .app-header {
@@ -1157,7 +1574,10 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
         margin-left: auto;
     }
 
-    .main-nav {
+    .top-bar {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
         margin: 14px 0 22px;
     }
 
@@ -1166,9 +1586,38 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
         padding: 10px 13px;
     }
 
+    .top-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .toolbar-actions {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    .toolbar-actions button {
+        padding: 7px 4px;
+        font-size: 11px;
+    }
+
+    .toolbar-safety-note {
+        text-align: left;
+    }
+
     .page-heading {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .heading-progress {
+        flex: none;
+        width: 100%;
+        max-width: none;
+    }
+
+    .control-heading .machine-mode {
+        margin-left: 0;
     }
 
     .control-sidebar,
@@ -1191,40 +1640,15 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
         min-height: 180px;
     }
 
-    .machine-toolbar {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 10px 12px;
-    }
-
-    .toolbar-actions {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 6px;
-    }
-
-    .toolbar-actions button {
-        padding: 7px 4px;
-        font-size: 11px;
-    }
-
-    .toolbar-safety-note {
-        font-size: 10px;
-    }
-
     .detail-list > div {
         gap: 10px;
-    }
-
-    .coordinate-header,
-    .coordinate-row {
-        grid-template-columns: 0.45fr 1fr 1fr;
     }
 }
 
 @media (max-width: 420px) {
-    .panel {
-        padding: 13px;
+    :root {
+        --panel-padding: 13px;
+        --canvas-height: 300px;
     }
 
     .form-grid {
@@ -1235,11 +1659,26 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
         grid-template-columns: 1fr;
     }
 
-    .preview-canvas-container {
-        min-height: 260px;
+    .toolbar-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* Responsive: trạng thái bộ điều khiển */
+@media (max-width: 900px) {
+    .control-workspace > .controller-panel .detail-list-compact {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 16px;
+    }
+}
+
+@media (max-width: 520px) {
+    .control-workspace > .controller-panel .detail-list-compact {
+        grid-template-columns: minmax(0, 1fr);
     }
 
-    .toolbar-actions {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+    .heading-progress {
+        flex-basis: 100%;
     }
 }
