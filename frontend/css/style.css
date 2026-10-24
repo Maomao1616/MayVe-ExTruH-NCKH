@@ -211,12 +211,15 @@ p {
 .icon-button {
     width: 40px;
     height: 40px;
-    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border-radius: var(--radius-button);
     background: var(--bg-panel);
     color: var(--text-main);
-    font-size: 24px;
+    box-sizing: border-box;
 }
+
 
 /* 4. THONG BAO */
 .system-alert {
@@ -413,7 +416,7 @@ input[type="range"] {
 
 button:not(.nav-tab) {
     min-height: var(--control-height);
-    padding: ;
+    padding: 8px 16px;
     border: 1px solid var(--border);
     border-radius: var(--radius-button);
     background: var(--bg-elevated);
@@ -1079,6 +1082,24 @@ label select {
     color: var(--accent-text);
     font-size: 22px;
 }
+/* Terminal: animation cho mũi tên thu gọn */
+.terminal-toggle {
+    display: inline-block;
+    transition: transform 0.25s ease;
+    transform: rotate(0deg);
+}
+
+/* Khi Terminal mở */
+#terminal-panel[open] .terminal-toggle {
+    transform: rotate(180deg);
+}
+
+/* Tôn trọng thiết lập giảm chuyển động của hệ điều hành */
+@media (prefers-reduced-motion: reduce) {
+    .terminal-toggle {
+        transition: none;
+    }
+}
 
 .terminal-content {
     margin-top: 20px;
@@ -1680,5 +1701,89 @@ body:has(.tab-panel:target) #panel-control:not(:target) {
 
     .heading-progress {
         flex-basis: 100%;
+    }
+}
+
+
+/* 18. CAC KHOI THU GON DOC LAP - TAB TAO BAN VE (HTML details, khong can JS) */
+.drawing-section {
+    padding: 0;
+    overflow: hidden;
+}
+
+.drawing-section-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px 14px;
+    flex-wrap: wrap;
+    min-height: 54px;
+    padding: 14px 18px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.drawing-section-summary::-webkit-details-marker {
+    display: none;
+}
+
+.drawing-section-summary::marker {
+    content: "";
+}
+
+.drawing-section-title {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.drawing-section-description {
+    flex: 1 1 180px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.drawing-section-badge {
+    margin-left: auto;
+}
+
+.drawing-section-chevron {
+    flex: 0 0 auto;
+    margin-left: auto;
+    color: var(--accent-text);
+    font-size: 18px;
+    transition: transform 0.18s ease;
+}
+
+.drawing-section[open] > .drawing-section-summary .drawing-section-chevron {
+    transform: rotate(180deg);
+}
+
+.drawing-section-body {
+    padding: 0 var(--panel-padding) var(--panel-padding);
+    border-top: 1px solid var(--border);
+}
+
+.drawing-section-summary:hover {
+    background: var(--bg-elevated);
+}
+
+.drawing-section-summary:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: -3px;
+}
+
+@media (max-width: 640px) {
+    .drawing-section-summary {
+        padding: 12px 14px;
+    }
+    .drawing-section-body {
+        padding: 0 14px 14px;
+    }
+    .drawing-section-description {
+        flex-basis: 100%;
+        order: 3;
+    }
+    .drawing-section-badge {
+        margin-left: auto;
     }
 }
