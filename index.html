@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta content="#111827" name="theme-color" />
+  <meta content="ExtruXY - Giao diện điều khiển máy vẽ CNC" name="description" />
+  <title>ExtruXY | Plotter Control</title>
+  <link href="./css/style.css" rel="stylesheet" />
+  <script src="./js/app.js" type="module"></script>
+</head>
+<body>
+  <div class="app-shell">
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="app-header">
+      <a aria-label="ExtruXY trang chủ" class="brand" href="#control">
+        <span class="brand-mark">E</span>
+        <span class="brand-text">
+          <strong>ExtruXY</strong>
+          <small>Plotter Control System</small>
+        </span>
+      </a>
+
+      <div class="header-status">
+        <div class="status-item" id="backend-status">
+          <span class="status-dot" id="backend-status-dot"></span>
+          <span id="backend-status-text">Đang kiểm tra backend...</span>
+        </div>
+        <div class="status-item" id="machine-status">
+          <span class="status-dot" id="machine-status-dot"></span>
+          <span>Máy:</span>
+          <strong id="machine-state">Chưa kết nối</strong>
+        </div>
+        <div class="status-item" id="job-status">
+          <span class="status-dot" id="job-status-dot"></span>
+          <span>Công việc:</span>
+          <strong id="job-state">Không có tác vụ</strong>
+        </div>
+      </div>
+
+      <button aria-label="Làm mới trạng thái" class="icon-button" id="refresh-status-btn" title="Làm mới trạng thái" type="button">
+        ↻
+      </button>
+    </header>
+
+    <!-- Cảnh báo mất kết nối / dữ liệu cũ -->
+    <div class="system-alert" hidden="" id="system-alert" role="status">
+      <span aria-hidden="true" class="alert-icon">!</span>
+      <span id="system-alert-text"></span>
+      <button aria-label="Đóng thông báo" class="alert-dismiss" id="dismiss-alert-btn" type="button">×</button>
+    </div>
+
+    <!-- ==================== NAVIGATION ==================== -->
+    <!-- THANH TRÊN CÙNG: chọn tab (trái) + nút an toàn luôn thấy (phải) -->
+    <div class="top-bar">
+      <nav aria-label="Chức năng chính" class="main-nav">
+        <a class="nav-tab" href="#panel-control" id="tab-control">
+          <span class="nav-icon">⌘</span>
+          <span>Điều khiển</span>
+        </a>
+        <a class="nav-tab" href="#panel-drawing" id="tab-drawing">
+          <span class="nav-icon">✎</span>
+          <span>Tạo bản vẽ</span>
+        </a>
+        <a class="nav-tab" href="#panel-jobs" id="tab-jobs">
+          <span class="nav-icon">▤</span>
+          <span>Công việc</span>
+        </a>
+        <a class="nav-tab" href="#panel-settings" id="tab-settings">
+          <span class="nav-icon">⚙</span>
+          <span>Cài đặt</span>
+        </a>
+      </nav>
+
+      <div aria-label="Điều khiển an toàn" class="top-actions" role="group">
+        <div class="toolbar-machine-info">
+          <span class="status-dot" id="toolbar-status-dot"></span>
+          <div>
+            <strong id="toolbar-machine-state">Chưa kết nối</strong>
+            <small id="toolbar-machine-hint">Điều khiển đang khóa</small>
+          </div>
+        </div>
+        
+        <div class="toolbar-actions">
+          <button class="toolbar-button" data-realtime="hold" disabled="" id="pause-btn" title="Tạm dừng chuyển động (Feed Hold). Có thể Tiếp tục." type="button">Tạm dừng</button>
+          <button class="toolbar-button" data-realtime="resume" disabled="" id="resume-btn" title="Tiếp tục sau khi Tạm dừng" type="button">Tiếp tục</button>
+          <button class="toolbar-button danger-button" disabled="" id="stop-btn" title="Hủy tác vụ đang chạy (cần backend quản lý tác vụ)" type="button">Dừng tác vụ</button>
+          <button class="toolbar-button danger-button" data-realtime="reset" disabled="" id="reset-btn" title="Dừng mềm (Ctrl-X): dừng ngay, máy mất vị trí và phải Home lại" type="button">Reset</button>
+        </div>
+        
+        <p class="toolbar-safety-note">
+          Reset là dừng mềm, không phải dừng khẩn cấp.
+          Dừng khẩn cấp thật: ngắt nguồn máy.
+        </p>
+      </div>
+    </div>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="app-main">
+
+      <!-- ==================================================
+           TAB 1: ĐIỀU KHIỂN
+      =================================================== -->
+      <section aria-labelledby="tab-control" class="tab-panel is-active" id="panel-control" role="tabpanel">
+        
+        <!-- TIÊU ĐỀ: tên trang | tiến trình thu gọn | chế độ kết nối -->
+        <div class="page-heading control-heading">
+          <div class="heading-title">
+            <p class="eyebrow">MACHINE CONTROL</p>
+            <h1>Điều khiển máy</h1>
+            <p class="page-description">
+              Theo dõi vị trí, trạng thái và điều khiển máy vẽ.
+            </p>
+          </div>
+          
+          <!-- Tiến trình thu gọn, nằm cạnh tiêu đề -->
+          <div aria-label="Tiến trình công việc" class="heading-progress">
+            <div class="heading-progress-top">
+              <span id="progress-job-name">Chưa có công việc</span>
+              <strong id="job-progress-percent">0%</strong>
+            </div>
+            <div aria-label="Tiến trình công việc" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="progress-track" id="job-progress-track" role="progressbar">
+              <div class="progress-fill" id="job-progress-fill"></div>
+            </div>
+            <div class="heading-progress-bottom">
+              <span id="job-progress-lines">Dòng lệnh: —</span>
+              <span id="job-progress-eta">Còn lại: —</span>
+            </div>
+          </div>
+          
+          <div class="machine-mode">
+            <span class="mode-label">Chế độ</span>
+            <strong id="active-connection-mode">Chưa kết nối</strong>
+          </div>
+        </div>
+
+        <!-- Thông báo máy thật đang ở chế độ chỉ đọc (JS sẽ bật/tắt) -->
+        <div class="notice notice-warning" hidden="" id="readonly-banner" role="status">
+          <strong>Máy thật đang ở chế độ chỉ đọc.</strong>
+          <span>
+            Home, jog, bút và chạy tệp bị khóa. Các lệnh dừng
+            (Tạm dừng, Reset) vẫn hoạt động.
+          </span>
+        </div>
+
+        <div class="control-layout">
+          <!-- ===== CỘT TRÁI: VỊ TRÍ, JOG, TỆP, TRẠNG THÁI ===== -->
+          <div class="control-sidebar">
+            
+            <!-- Vị trí (kiểu AxioCNC): Zero | Workspace | Machine | Home -->
+            <article class="panel coordinates-panel">
+              <div class="panel-heading panel-heading-compact">
+                <div>
+                  <h2>Vị trí</h2>
+                  <p>Hệ tọa độ <strong>G54</strong> · đơn vị mm</p>
+                </div>
+                <span class="panel-tag" id="coordinate-source">
+                  Chưa có dữ liệu
+                </span>
+              </div>
+              
+              <div class="coordinate-table">
+                <div class="coordinate-header">
+                  <span>Trục</span>
+                  <span>Zero</span>
+                  <span>Workspace</span>
+                  <span>Machine</span>
+                  <span>Home</span>
+                </div>
+                
+                <div class="coordinate-row">
+                  <span class="axis-label axis-x">X</span>
+                  <button aria-label="Zero trục X" class="icon-action" data-command="G10 L20 P1 X0" disabled="" id="zero-x-btn" title="Zero X: đặt gốc làm việc tại vị trí hiện tại" type="button">↺</button>
+                  <output class="coord-workspace" id="workspace-x">—</output>
+                  <output class="coord-machine" id="machine-x">—</output>
+                  <button aria-label="Home trục X" class="icon-action" data-command="$HX" disabled="" id="home-x-btn" title="Home trục X: chạy về công tắc hành trình" type="button">⌂</button>
+                </div>
+                
+                <div class="coordinate-row">
+                  <span class="axis-label axis-y">Y</span>
+                  <button aria-label="Zero trục Y" class="icon-action" data-command="G10 L20 P1 Y0" disabled="" id="zero-y-btn" title="Zero Y: đặt gốc làm việc tại vị trí hiện tại" type="button">↺</button>
+                  <output class="coord-workspace" id="workspace-y">—</output>
+                  <output class="coord-machine" id="machine-y">—</output>
+                  <button aria-label="Home trục Y" class="icon-action" data-command="$HY" disabled="" id="home-y-btn" title="Home trục Y: chạy về công tắc hành trình" type="button">⌂</button>
+                </div>
+                
+                <!-- Z là servo nâng/hạ bút: chỉ hiển thị, điều khiển bằng 2 nút Bút -->
+                <div class="coordinate-row coordinate-row-pen">
+                  <span class="axis-label axis-z">Z</span>
+                  <span class="axis-note">Bút</span>
+                  <output class="coord-workspace" id="workspace-z">—</output>
+                  <output class="coord-machine" id="machine-z">—</output>
+                  <span class="axis-note" id="pen-state">—</span>
+                </div>
+              </div>
+              
+              <div class="coordinate-actions">
+                <button data-command="G10 L20 P1 X0 Y0" disabled="" id="zero-all-btn" title="Đặt gốc làm việc X0 Y0 tại vị trí hiện tại" type="button">↺ Zero tất cả</button>
+                <button data-command="$H" disabled="" id="home-btn" title="Home tất cả các trục" type="button">⌂ Home tất cả</button>
+              </div>
+              
+              <div class="coordinate-footer">
+                <span>Feed rate</span>
+                <strong id="machine-feed">— mm/min</strong>
+              </div>
+            </article>
+
+            <!-- Jog: XY bên trái, bút lên/xuống bên phải -->
+            <article class="panel jog-panel">
+              <div class="panel-heading panel-heading-compact">
+                <div>
+                  <h2>Di chuyển thủ công</h2>
+                  <p>Jog theo từng bước</p>
+                </div>
+                <button class="text-button" data-realtime="jog_cancel" disabled="" id="jog-cancel-btn" title="Hủy lệnh jog đang chạy" type="button">Hủy jog</button>
+              </div>
+              
+              <div class="jog-settings">
+                <label for="jog-distance">
+                  Bước (mm)
+                  <select id="jog-distance" name="jog-distance">
+                    <option value="0.1">0,1</option>
+                    <option selected="" value="1">1</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+                <label for="jog-feed">
+                  Tốc độ (mm/phút)
+                  <select id="jog-feed" name="jog-feed">
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                    <option selected="" value="3000">3000</option>
+                    <option value="6000">6000</option>
+                  </select>
+                </label>
+              </div>
+              
+              <div class="jog-layout">
+                <div aria-label="Bàn phím điều khiển trục X Y" class="jog-pad">
+                  <span class="jog-spacer"></span>
+                  <button aria-label="Di chuyển Y âm" class="jog-button" data-jog-axis="y" data-jog-direction="-1" disabled="" type="button">↑<small>Y−</small></button>
+                  <span class="jog-spacer"></span>
+                  <button aria-label="Di chuyển X âm" class="jog-button" data-jog-axis="x" data-jog-direction="-1" disabled="" type="button">←<small>X−</small></button>
+                  <button class="jog-center" data-action="goto-work-zero" disabled="" id="jog-center-btn" title="Về gốc làm việc (X0 Y0)" type="button">XY 0</button>
+                  <button aria-label="Di chuyển X dương" class="jog-button" data-jog-axis="x" data-jog-direction="1" disabled="" type="button">→<small>X+</small></button>
+                  <span class="jog-spacer"></span>
+                  <button aria-label="Di chuyển Y dương" class="jog-button" data-jog-axis="y" data-jog-direction="1" disabled="" type="button">↓<small>Y+</small></button>
+                  <span class="jog-spacer"></span>
+                </div>
+                <!-- Bút (trục Z là servo): chỉ cần 2 nút -->
+                <div aria-label="Nâng hạ bút" class="jog-pen" role="group">
+                  <button data-pen="up" disabled="" id="pen-up-btn" title="Nâng bút (Z5)" type="button">▲<small>Bút lên</small></button>
+                  <button data-pen="down" disabled="" id="pen-down-btn" title="Hạ bút (Z0)" type="button">▼<small>Bút xuống</small></button>
+                </div>
+              </div>
+              
+              <p class="help-text">
+                Jog chỉ mở khi máy rảnh (Idle). Máy chưa Home vẫn jog được,
+                nhưng không chạy được G-code.
+              </p>
+            </article>
+
+            <!-- Tệp G-code: nạp từ máy tính và tệp có sẵn trong máy -->
+            <article class="panel gcode-panel">
+              <div class="panel-heading panel-heading-compact">
+                <div>
+                  <h2>Tệp G-code</h2>
+                  <p>Nạp từ máy tính hoặc chọn tệp trong máy</p>
+                </div>
+                <span class="panel-tag">Chưa có API</span>
+              </div>
+              
+              <div class="file-section">
+                <h3>Nạp từ máy tính</h3>
+                <label class="upload-zone upload-zone-compact" for="gcode-file">
+                  <span aria-hidden="true" class="upload-icon">↑</span>
+                  <strong>Chọn tệp G-code</strong>
+                  <span>.gcode · .nc · .gc · .ngc · .txt</span>
+                </label>
+                <input accept=".gcode,.nc,.gc,.ngc,.txt" class="visually-hidden" id="gcode-file" type="file"/>
+              </div>
+              
+              <div class="file-section">
+                <div class="file-section-head">
+                  <h3>Tệp trong máy</h3>
+                  <div class="file-section-tools">
+                    <label class="visually-hidden" for="device-storage">
+                      Nơi lưu tệp
+                    </label>
+                    <select disabled="" id="device-storage">
+                      <option value="sd">Thẻ SD</option>
+                      <option value="flash">Flash</option>
+                    </select>
+                    <button class="text-button" disabled="" id="refresh-files-btn" type="button">Làm mới</button>
+                  </div>
+                </div>
+                <div class="storage-line">
+                  <span id="storage-usage-text">Dung lượng: — / —</span>
+                </div>
+                <div class="progress-track storage-bar">
+                  <div class="progress-fill" id="storage-usage-fill"></div>
+                </div>
+                <ul class="file-list" id="device-file-list">
+                  <li class="file-list-empty">
+                    Chưa có API liệt kê tệp. Danh sách sẽ hiện ở đây.
+                  </li>
+                </ul>
+              </div>
+              
+              <dl class="detail-list detail-list-compact">
+                <div>
+                  <dt>Tệp đã chọn</dt>
+                  <dd id="gcode-selected-name">—</dd>
+                </div>
+                <div>
+                  <dt>Số dòng · vùng bao</dt>
+                  <dd id="gcode-selected-info">—</dd>
+                </div>
+              </dl>
+              
+              <label class="checkbox-inline" for="run-confirm">
+                <input disabled="" id="run-confirm" type="checkbox"/>
+                Tôi đã xem trước đường chạy và vùng vẽ
+              </label>
+              
+              <div class="gcode-actions">
+                <button disabled="" id="preview-gcode-btn" type="button">
+                  Xem trước
+                </button>
+                <button class="primary-button" disabled="" id="run-job-btn" type="button">▶ Chạy</button>
+              </div>
+            </article>
+          </div>
+
+          <!-- ===== CỘT PHẢI: KHUNG VẼ, MACRO, TERMINAL ===== -->
+          <div class="control-workspace">
+            
+            <!-- Trạng thái bộ điều khiển: đặt phía trên khung nhìn 2D -->
+            <!-- Trạng thái bộ điều khiển (gồm Alarm, lỗi, đã/chưa home) -->
+            <article class="panel controller-panel">
+              <div class="panel-heading panel-heading-compact">
+                <h2>Trạng thái bộ điều khiển</h2>
+                <button class="secondary-button" data-command="$X" disabled="" id="unlock-btn" title="Mở khóa sau Alarm (không làm máy chuyển động)" type="button">Mở khóa ($X)</button>
+              </div>
+              
+              <dl class="detail-list detail-list-compact">
+                <div>
+                  <dt>Trạng thái máy</dt>
+                  <dd id="controller-state">—</dd>
+                </div>
+                <div>
+                  <dt>Đã Home (ước đoán)</dt>
+                  <dd id="homed-indicator">Chưa biết</dd>
+                </div>
+                <div>
+                  <dt>Alarm gần nhất</dt>
+                  <dd id="last-alarm">Không có</dd>
+                </div>
+                <div>
+                  <dt>Lỗi gần nhất</dt>
+                  <dd id="last-error">Không có</dd>
+                </div>
+                <div>
+                  <dt>Firmware</dt>
+                  <dd id="firmware-version">—</dd>
+                </div>
+                <div>
+                  <dt>Planner còn trống</dt>
+                  <dd id="planner-free">—</dd>
+                </div>
+                <div>
+                  <dt>Bộ đệm RX</dt>
+                  <dd id="rx-free">—</dd>
+                </div>
+                <div>
+                  <dt>Cập nhật cuối</dt>
+                  <dd id="last-update-time">—</dd>
+                </div>
+              </dl>
+            </article>
+
+            <!-- Khung nhìn 2D (kích thước cố định theo biến CSS) -->
+            <article class="panel preview-panel">
+              <div class="panel-heading preview-heading">
+                <div>
+                  <h2>Khung nhìn 2D</h2>
+                  <p>Xem đường vẽ từ trên xuống</p>
+                </div>
+                <div class="preview-actions">
+                  <button aria-label="Thu nhỏ" class="secondary-button" id="zoom-out-btn" type="button">−</button>
+                  <button aria-label="Phóng to" class="secondary-button" id="zoom-in-btn" type="button">+</button>
+                  <button class="secondary-button" id="fit-preview-btn" type="button">Về toàn cảnh</button>
+                </div>
+              </div>
+              
+              <div class="preview-toolbar">
+                <span class="preview-legend">
+                  <span class="legend-dot legend-machine"></span>
+                  Vùng làm việc
+                </span>
+                <span class="preview-legend">
+                  <span class="legend-dot legend-path"></span>
+                  Đường vẽ
+                </span>
+                <span class="preview-legend">
+                  <span class="legend-dot legend-travel"></span>
+                  Đường di chuyển
+                </span>
+                <span class="preview-legend">
+                  <span class="legend-dot legend-position"></span>
+                  Vị trí máy
+                </span>
+                <label class="checkbox-inline preview-toggle" for="show-grid">
+                  <input checked="" id="show-grid" type="checkbox"/>
+                  Lưới
+                </label>
+                <label class="checkbox-inline preview-toggle" for="show-travel">
+                  <input checked="" id="show-travel" type="checkbox"/>
+                  Hiện đường di chuyển
+                </label>
+              </div>
+              
+              <div class="preview-canvas-container" id="preview-canvas-container">
+                <!-- Khung vùng làm việc (ước lượng bằng CSS, JS sẽ vẽ thay) -->
+                <div aria-hidden="true" class="work-area-frame">
+                  <span class="work-area-origin">O (0, 0)</span>
+                  <span class="work-area-size" id="work-area-label">
+                    285 × 310 mm
+                  </span>
+                </div>
+                <canvas aria-label="Khung xem trước đường vẽ hai chiều" id="preview-canvas"></canvas>
+                <div class="preview-empty" id="preview-empty">
+                  <span aria-hidden="true" class="empty-icon">⌗</span>
+                  <strong>Chưa có đường vẽ</strong>
+                  <p>Nạp hoặc tạo bản vẽ để xem trước tại đây.</p>
+                </div>
+              </div>
+              
+              <div class="preview-footer">
+                <span id="preview-dimensions">
+                  Vùng làm việc: chưa xác định
+                </span>
+                <span id="preview-zoom">100%</span>
+              </div>
+            </article>
+
+            <!-- Terminal: ngay dưới khung vẽ -->
+            <details class="panel terminal-panel" id="terminal-panel" open="">
+              <summary class="terminal-summary">
+                <span>
+                  <strong>Terminal / Console</strong>
+                  <small>Gửi lệnh và theo dõi phản hồi</small>
+                </span>
+                <span aria-hidden="true" class="terminal-toggle">⌄</span>
+              </summary>
+              <div class="terminal-content">
+                <div class="terminal-toolbar">
+                  <span id="terminal-connection-label">Chưa kết nối</span>
+                  <button class="text-button" id="clear-terminal-btn" type="button">Xóa log hiển thị</button>
+                </div>
+                <pre aria-label="Nhật ký lệnh máy" aria-live="polite" class="terminal-output" id="terminal-output">Đang chờ kết nối backend...</pre>
+                <form class="terminal-input-row" id="terminal-form">
+                  <label class="visually-hidden" for="terminal-command">
+                    Lệnh gửi đến máy
+                  </label>
+                  <span aria-hidden="true" class="terminal-prompt">&gt;</span>
+                  <input autocomplete="off" disabled="" id="terminal-command" name="command" placeholder="Nhập lệnh G-code hoặc lệnh firmware..." type="text"/>
+                  <button disabled="" id="terminal-send-btn" type="submit">
+                    Gửi
+                  </button>
+                </form>
+                <p class="help-text">
+                  Chỉ gửi lệnh khi đã hiểu tác dụng và xác nhận
+                  đúng chế độ kết nối.
+                </p>
+              </div>
+            </details>
+
+            <!-- Macro nhanh -->
+            <article class="panel quick-macro-panel">
+              <div class="panel-heading panel-heading-compact">
+                <div>
+                  <h2>Macro nhanh</h2>
+                  <p>Chạy các chuỗi lệnh đã lưu</p>
+                </div>
+                <a class="text-link" href="#panel-settings">Quản lý macro</a>
+              </div>
+              <div class="quick-macro-list" id="quick-macro-list">
+                <span class="muted-text" id="quick-macro-empty">
+                  Chưa có macro. Thêm macro trong Cài đặt.
+                </span>
+              </div>
+            </article>
+
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================
+           TAB 2: TẠO BẢN VẼ
+      =================================================== -->
+      <section aria-labelledby="tab-drawing" class="tab-panel" id="panel-drawing" role="tabpanel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">DRAWING WORKSPACE</p>
+            <h1>Tạo bản vẽ</h1>
+            <p class="page-description">
+              Chuẩn bị hình ảnh, đường nét và G-code cho máy vẽ.
+            </p>
+          </div>
+        </div>
+
+        <details class="panel drawing-section drawing-workflow-panel" open="">
+          <summary class="drawing-section-summary">
+            <span class="drawing-section-title">Quy trình xử lý bản vẽ</span>
+            <span class="drawing-section-description">Các bước được thiết kế theo thứ tự thực hiện.</span>
+            <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+          </summary>
+          <div class="drawing-section-body">
+            <ol class="workflow-steps">
+              <li class="workflow-step is-current" data-step="1">
+                <span class="step-number">1</span>
+                <span class="step-title">Nạp ảnh</span>
+              </li>
+              <li class="workflow-step" data-step="2">
+                <span class="step-number">2</span>
+                <span class="step-title">Tiền xử lý</span>
+              </li>
+              <li class="workflow-step" data-step="3">
+                <span class="step-number">3</span>
+                <span class="step-title">Vector hóa</span>
+              </li>
+              <li class="workflow-step" data-step="4">
+                <span class="step-number">4</span>
+                <span class="step-title">Tạo G-code</span>
+              </li>
+              <li class="workflow-step" data-step="5">
+                <span class="step-number">5</span>
+                <span class="step-title">Xem trước</span>
+              </li>
+            </ol>
+          </div>
+        </details>
+
+        <div class="drawing-layout">
+          <div class="drawing-sidebar">
+            
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Nguồn hình ảnh</span>
+                <span class="drawing-section-description">PNG, JPG hoặc SVG</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <label class="upload-zone" for="drawing-file">
+                  <span aria-hidden="true" class="upload-icon">↑</span>
+                  <strong>Chọn tệp bản vẽ</strong>
+                  <span>Nhấn để chọn tệp từ máy tính</span>
+                </label>
+                <input accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml" id="drawing-file" name="drawing-file" type="file"/>
+                <p class="help-text" id="drawing-file-name">
+                  Chưa chọn tệp.
+                </p>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Kích thước và bố trí</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="form-grid form-grid-spaced">
+                  <label for="drawing-paper">
+                    Khổ giấy
+                    <select id="drawing-paper">
+                      <option selected="" value="a4">A4 (210 × 297 mm)</option>
+                      <option value="a5">A5 (148 × 210 mm)</option>
+                      <option value="letter">Letter (216 × 279 mm)</option>
+                      <option value="custom">Tùy chọn</option>
+                    </select>
+                  </label>
+                  <label for="drawing-origin">
+                    Gốc đặt hình
+                    <select id="drawing-origin">
+                      <option selected="" value="work">Theo gốc làm việc (G54)</option>
+                      <option value="machine">Theo gốc máy (sau Home)</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="form-grid">
+                  <label for="drawing-width">
+                    Chiều rộng (mm)
+                    <input id="drawing-width" min="1" step="0.1" type="number" value="100"/>
+                  </label>
+                  <label for="drawing-height">
+                    Chiều cao (mm)
+                    <input id="drawing-height" min="1" step="0.1" type="number" value="100"/>
+                  </label>
+                  <label for="drawing-margin">
+                    Lề an toàn (mm)
+                    <input id="drawing-margin" min="0" step="1" type="number" value="5"/>
+                  </label>
+                  <label for="drawing-fit-mode">
+                    Cách bố trí
+                    <select id="drawing-fit-mode">
+                      <option value="contain">Giữ tỷ lệ</option>
+                      <option value="stretch">Kéo giãn</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="checkbox-list">
+                  <label>
+                    <input checked="" id="drawing-lock-ratio" type="checkbox"/>
+                    Khóa tỉ lệ rộng/cao
+                  </label>
+                  <label>
+                    <input checked="" id="drawing-center" type="checkbox"/>
+                    Căn giữa vùng làm việc
+                  </label>
+                  <label>
+                    <input id="drawing-flip-x" type="checkbox"/>
+                    Lật theo trục X
+                  </label>
+                  <label>
+                    <input id="drawing-flip-y" type="checkbox"/>
+                    Lật theo trục Y
+                  </label>
+                  <label>
+                    <input id="drawing-reverse" type="checkbox"/>
+                    Đảo thứ tự đường vẽ
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Tiền xử lý ảnh</span>
+                <span class="panel-tag drawing-section-badge">Chưa khả dụng</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <fieldset disabled="">
+                  <label for="image-threshold">
+                    Ngưỡng đen trắng
+                    <input id="image-threshold" max="255" min="0" type="range" value="128"/>
+                  </label>
+                  <label for="image-contrast">
+                    Độ tương phản
+                    <input id="image-contrast" max="200" min="0" type="range" value="100"/>
+                  </label>
+                  <label for="image-noise">
+                    Khử nhiễu
+                    <select id="image-noise">
+                      <option value="off">Tắt</option>
+                      <option value="low">Nhẹ</option>
+                      <option value="medium">Vừa</option>
+                      <option value="high">Mạnh</option>
+                    </select>
+                  </label>
+                </fieldset>
+                <p class="help-text">
+                  Chức năng xử lý và vector hóa cần được triển khai
+                  trước khi có thể sử dụng.
+                </p>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Vector hóa</span>
+                <span class="drawing-section-description">Chọn kiểu nét phù hợp với bút vẽ.</span>
+                <span class="panel-tag drawing-section-badge">Chưa khả dụng</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <fieldset disabled="">
+                  <label for="vector-mode">
+                    Kiểu nét vẽ
+                    <select id="vector-mode">
+                      <option value="outline">Viền (outline)</option>
+                      <option value="centerline">Đường giữa nét (centerline)</option>
+                      <option value="hatch">Tô bóng bằng nét (hatch)</option>
+                    </select>
+                  </label>
+                  <div class="form-grid form-grid-spaced">
+                    <label for="simplify-tolerance">
+                      Đơn giản hóa (mm)
+                      <input id="simplify-tolerance" min="0" step="0.01" type="number" value="0.1"/>
+                    </label>
+                    <label for="merge-tolerance">
+                      Gộp nét gần nhau (mm)
+                      <input id="merge-tolerance" min="0" step="0.05" type="number" value="0.3"/>
+                    </label>
+                    <label for="min-path-length">
+                      Bỏ nét ngắn hơn (mm)
+                      <input id="min-path-length" min="0" step="0.1" type="number" value="0.5"/>
+                    </label>
+                    <label for="hatch-spacing">
+                      Khoảng cách nét tô (mm)
+                      <input id="hatch-spacing" min="0.1" step="0.1" type="number" value="1"/>
+                    </label>
+                  </div>
+                  <div class="checkbox-list">
+                    <label>
+                      <input checked="" id="optimize-order" type="checkbox"/>
+                      Sắp xếp đường đi để giảm quãng di chuyển
+                    </label>
+                  </div>
+                </fieldset>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Thông số vẽ</span>
+                <span class="drawing-section-description">Dùng khi tạo G-code.</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="form-grid">
+                  <label for="draw-feed">
+                    Tốc độ vẽ (mm/phút)
+                    <input id="draw-feed" max="6000" min="50" step="50" type="number" value="3000"/>
+                  </label>
+                  <label for="travel-feed">
+                    Tốc độ di chuyển không vẽ (mm/phút)
+                    <input id="travel-feed" max="6000" min="50" step="50" type="number" value="6000"/>
+                  </label>
+                  <label for="pen-up-z">
+                    Z khi nâng bút
+                    <input id="pen-up-z" max="5" min="0" step="0.1" type="number" value="5"/>
+                  </label>
+                  <label for="pen-down-z">
+                    Z khi hạ bút
+                    <input id="pen-down-z" max="5" min="0" step="0.1" type="number" value="0"/>
+                  </label>
+                  <label for="pen-delay-down">
+                    Chờ sau khi hạ bút (giây)
+                    <input id="pen-delay-down" min="0" step="0.05" type="number" value="0.2"/>
+                  </label>
+                  <label for="pen-delay-up">
+                    Chờ sau khi nâng bút (giây)
+                    <input id="pen-delay-up" min="0" step="0.05" type="number" value="0.2"/>
+                  </label>
+                </div>
+                <p class="help-text">
+                  Theo cấu hình hiện tại Z0 là bút xuống, Z5 là bút lên. Thời gian chờ
+                  để servo kịp nâng hoặc chạm giấy trước khi máy di chuyển tiếp.
+                </p>
+              </div>
+            </details>
+
+          </div>
+
+          <div class="drawing-workspace">
+            <details class="panel drawing-section drawing-preview-panel" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Xem trước bản vẽ</span>
+                <span class="drawing-section-description">So sánh hình gốc và đường nét dự kiến.</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="drawing-preview-grid">
+                  <div class="drawing-preview-box">
+                    <h3>Ảnh gốc</h3>
+                    <div class="drawing-image-stage" id="original-image-stage">
+                      <span>Chưa có ảnh</span>
+                    </div>
+                  </div>
+                  <div class="drawing-preview-box">
+                    <h3>Đường nét</h3>
+                    <div class="drawing-image-stage" id="vector-image-stage">
+                      <span>Chưa vector hóa</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="drawing-preview-actions">
+                  <button disabled="" id="preprocess-image-btn" type="button">Tiền xử lý</button>
+                  <button disabled="" id="vectorize-image-btn" type="button">Vector hóa</button>
+                  <button disabled="" id="generate-gcode-btn" type="button">Tạo G-code</button>
+                </div>
+                <div aria-live="polite" class="drawing-warnings" id="drawing-warnings">
+                  <strong>Cảnh báo</strong>
+                  <ul id="drawing-warning-list">
+                    <li class="muted-text">
+                      Chưa có cảnh báo. Cảnh báo vượt vùng làm việc sẽ hiện ở đây.
+                    </li>
+                  </ul>
+                </div>
+                <div class="drawing-confirm">
+                  <label class="checkbox-inline" for="drawing-confirm">
+                    <input disabled="" id="drawing-confirm" type="checkbox"/>
+                    Tôi đã kiểm tra kích thước, vị trí và vùng làm việc
+                  </label>
+                  <div class="drawing-preview-actions">
+                    <button disabled="" id="regenerate-gcode-btn" type="button">Tạo lại</button>
+                    <button disabled="" id="save-gcode-btn" type="button">Lưu G-code</button>
+                    <button class="primary-button" disabled="" id="send-to-control-btn" type="button">
+                      Chuyển sang Điều khiển
+                    </button>
+                  </div>
+                </div>
+                <p class="help-text">
+                  Chưa có API xử lý ảnh/G-code được nối tại bước này.
+                  Các thao tác trên đang bị khóa.
+                </p>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title">Thông tin bản vẽ</span>
+                <span aria-hidden="true" class="drawing-section-chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <dl class="detail-list">
+                  <div>
+                    <dt>Tệp nguồn</dt>
+                    <dd id="drawing-source-info">—</dd>
+                  </div>
+                  <div>
+                    <dt>Kích thước đường vẽ</dt>
+                    <dd id="drawing-size-info">—</dd>
+                  </div>
+                  <div>
+                    <dt>Số đường nét</dt>
+                    <dd id="drawing-path-count">—</dd>
+                  </div>
+                  <div>
+                    <dt>G-code</dt>
+                    <dd id="drawing-gcode-status">Chưa tạo</dd>
+                  </div>
+                  <div>
+                    <dt>Vùng bao (X × Y)</dt>
+                    <dd id="drawing-bounds-info">—</dd>
+                  </div>
+                  <div>
+                    <dt>Độ dài nét vẽ · di chuyển</dt>
+                    <dd id="drawing-length-info">—</dd>
+                  </div>
+                  <div>
+                    <dt>Thời gian ước tính</dt>
+                    <dd id="drawing-eta-info">—</dd>
+                  </div>
+                  <div>
+                    <dt>Trong vùng làm việc?</dt>
+                    <dd id="drawing-in-bounds">—</dd>
+                  </div>
+                </dl>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================
+           TAB 3: CÔNG VIỆC
+      =================================================== -->
+      <section aria-labelledby="tab-jobs" class="tab-panel" id="panel-jobs" role="tabpanel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">JOB MANAGEMENT</p>
+            <h1>Công việc</h1>
+            <p class="page-description">
+              Theo dõi tác vụ hiện tại và khu vực quản lý hàng đợi.
+            </p>
+          </div>
+        </div>
+
+        <div class="job-summary-grid">
+          <article class="panel summary-card">
+            <span class="summary-label">Tác vụ hiện tại</span>
+            <strong id="current-job-name">Không có</strong>
+            <small id="current-job-detail">Chưa có dữ liệu từ backend</small>
+          </article>
+          
+          <article class="panel summary-card">
+            <span class="summary-label">Tiến trình</span>
+            <strong id="jobs-progress-value">0%</strong>
+            <small id="jobs-progress-detail">Chưa có tác vụ chạy</small>
+          </article>
+          
+          <article class="panel summary-card">
+            <span class="summary-label">Nguồn dữ liệu</span>
+            <strong id="jobs-data-source">Backend</strong>
+            <small>Chỉ hiển thị dữ liệu đã xác nhận</small>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Hàng đợi công việc</h2>
+              <p>Danh sách sẽ được kết nối khi backend hỗ trợ.</p>
+            </div>
+            <span class="panel-tag">Chưa có API</span>
+          </div>
+          
+          <div class="empty-state" id="jobs-empty-state">
+            <span aria-hidden="true" class="empty-icon">▤</span>
+            <strong>Chưa có dữ liệu hàng đợi</strong>
+            <p>
+              Backend hiện tại cần cung cấp API quản lý và lịch sử
+              công việc trước khi chức năng này hoạt động.
+            </p>
+          </div>
+          
+          <div class="table-scroll" hidden="" id="jobs-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tên công việc</th>
+                  <th>Trạng thái</th>
+                  <th>Tiến trình</th>
+                  <th>Thời gian</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="jobs-table-body"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <div class="job-secondary-grid">
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Thẻ SD</h2>
+                <p>Dung lượng và tệp lưu trong máy. Chạy tệp: dùng khối Tệp G-code ở tab Điều khiển.</p>
+              </div>
+              <span class="panel-tag">Chưa có API</span>
+            </div>
+            <dl class="detail-list detail-list-compact">
+              <div>
+                <dt>Thẻ nhớ</dt>
+                <dd id="jobs-sd-status">Chưa biết</dd>
+              </div>
+              <div>
+                <dt>Đã dùng / Tổng</dt>
+                <dd id="jobs-sd-usage">— / —</dd>
+              </div>
+            </dl>
+            <div class="progress-track storage-bar">
+              <div class="progress-fill" id="jobs-sd-usage-fill"></div>
+            </div>
+            <div class="panel-actions">
+              <button class="secondary-button" disabled="" id="jobs-refresh-sd-btn" type="button">
+                Làm mới danh sách
+              </button>
+            </div>
+          </article>
+          
+          <article class="panel">
+            <div class="panel-heading">
+              <h2>Lịch sử tác vụ</h2>
+              <span class="panel-tag">Chưa có API</span>
+            </div>
+            <p class="muted-text">
+              Lịch sử chỉ hiển thị sau khi có API lưu và truy vấn
+              các công việc đã thực hiện.
+            </p>
+          </article>
+        </div>
+
+        <article class="panel log-panel">
+          <div class="panel-heading">
+            <div>
+              <h2>Nhật ký lệnh và lỗi</h2>
+              <p>Lệnh đã gửi, phản hồi và lỗi từ máy.</p>
+            </div>
+            <div class="log-tools">
+              <label class="visually-hidden" for="log-filter">Lọc nhật ký</label>
+              <select id="log-filter">
+                <option value="all">Tất cả</option>
+                <option value="tx">Lệnh đã gửi</option>
+                <option value="rx">Phản hồi</option>
+                <option value="error">Lỗi và Alarm</option>
+              </select>
+              <button class="text-button" id="clear-log-btn" type="button">
+                Xóa hiển thị
+              </button>
+            </div>
+          </div>
+          <pre aria-live="off" class="terminal-output log-output" id="log-output">Chưa có nhật ký.</pre>
+        </article>
+      </section>
+
+      <!-- ==================================================
+           TAB 4: CÀI ĐẶT
+      =================================================== -->
+      <section aria-labelledby="tab-settings" class="tab-panel" id="panel-settings" role="tabpanel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">APPLICATION SETTINGS</p>
+            <h1>Cài đặt</h1>
+            <p class="page-description">
+              Cấu hình giao diện và kết nối bộ điều khiển.
+            </p>
+          </div>
+        </div>
+
+        <div class="settings-layout">
+          
+          <!-- Cài đặt chung -->
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Giao diện chung</h2>
+                <p>Tùy chỉnh hiển thị ứng dụng.</p>
+              </div>
+            </div>
+            
+            <div class="setting-row">
+              <div>
+                <strong>Ngôn ngữ</strong>
+                <p>Ngôn ngữ hiển thị của ứng dụng.</p>
+              </div>
+              <select id="language-select">
+                <option value="vi">Tiếng Việt</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            
+            <div class="setting-row">
+              <div>
+                <strong>Giao diện</strong>
+                <p>Chế độ sáng hoặc tối.</p>
+              </div>
+              <select id="theme-select">
+                <option value="dark">Tối</option>
+                <option value="light">Sáng</option>
+              </select>
+            </div>
+          </article>
+
+          <!-- Kết nối -->
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Kết nối máy</h2>
+                <p>Thiết lập chế độ kết nối backend.</p>
+              </div>
+            </div>
+            <form id="connection-form">
+              <label for="connection-mode">
+                Chế độ kết nối
+                <select id="connection-mode" name="mode">
+                  <option value="sim">Máy giả lập (SimLink)</option>
+                  <option value="serial">Máy thật (Serial)</option>
+                </select>
+              </label>
+              
+              <label for="serial-port">
+                Cổng COM
+                <div class="input-with-action">
+                  <select disabled="" id="serial-port" name="port">
+                    <option value="">Chưa tải danh sách cổng</option>
+                  </select>
+                  <button class="secondary-button" disabled="" id="refresh-ports-btn" type="button">Làm mới</button>
+                </div>
+              </label>
+              
+              <label for="serial-baud">
+                Baud rate
+                <select disabled="" id="serial-baud" name="baudrate">
+                  <option selected="" value="115200">115200</option>
+                  <option value="230400">230400</option>
+                  <option value="250000">250000</option>
+                </select>
+              </label>
+              
+              <div class="connection-actions">
+                <button class="primary-button" id="connect-btn" type="submit">Kết nối</button>
+                <button class="secondary-button" disabled="" id="disconnect-btn" type="button">Ngắt kết nối</button>
+              </div>
+              
+              <p class="help-text" id="connection-help">
+                Hãy kiểm tra chế độ và cổng kết nối trước khi
+                điều khiển máy thật.
+              </p>
+            </form>
+          </article>
+
+          <!-- Macro -->
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Macro</h2>
+                <p>Các nhóm lệnh thao tác nhanh.</p>
+              </div>
+              <button class="secondary-button" id="add-macro-btn" type="button">+ Thêm macro</button>
+            </div>
+            <div class="macro-list" id="macro-list">
+              <div class="macro-empty-state" id="macro-empty-state">
+                <strong>Chưa có macro tùy chỉnh</strong>
+                <p>Các macro có thể được quản lý ở bước sau.</p>
+              </div>
+            </div>
+          </article>
+
+          <!-- Cấu hình máy -->
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Cấu hình máy</h2>
+                <p>Thông số phần cứng và firmware.</p>
+              </div>
+              <span class="panel-tag">Chỉ đọc</span>
+            </div>
+            <dl class="detail-list">
+              <div>
+                <dt>Tên máy</dt>
+                <dd>ExtruXY Plotter</dd>
+              </div>
+              <div>
+                <dt>Firmware</dt>
+                <dd id="settings-firmware-version">Chưa xác định</dd>
+              </div>
+              <div>
+                <dt>Kiểu cơ cấu</dt>
+                <dd>CoreXY (theo cấu hình dự án)</dd>
+              </div>
+              <div>
+                <dt>Cấu hình từ backend</dt>
+                <dd id="machine-config-status">Chưa có API đọc cấu hình</dd>
+              </div>
+            </dl>
+            <p class="help-text">
+              Không chỉnh trực tiếp thông số firmware từ giao diện
+              khi chưa có API và cơ chế xác nhận an toàn.
+            </p>
+          </article>
+
+          <!-- Thông số hiển thị máy (chỉ ảnh hưởng giao diện) -->
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Thông số hiển thị máy</h2>
+                <p>Chỉ ảnh hưởng giao diện, không ghi vào máy.</p>
+              </div>
+            </div>
+            <div class="form-grid">
+              <label for="setting-area-x">
+                Vùng làm việc X (mm)
+                <input id="setting-area-x" min="1" step="1" type="number" value="285"/>
+              </label>
+              <label for="setting-area-y">
+                Vùng làm việc Y (mm)
+                <input id="setting-area-y" min="1" step="1" type="number" value="310"/>
+              </label>
+              <label for="setting-pen-up-z">
+                Z bút lên
+                <input id="setting-pen-up-z" max="5" min="0" step="0.1" type="number" value="5"/>
+              </label>
+              <label for="setting-pen-down-z">
+                Z bút xuống
+                <input id="setting-pen-down-z" max="5" min="0" step="0.1" type="number" value="0"/>
+              </label>
+              <label for="setting-jog-max-step">
+                Bước jog tối đa (mm)
+                <input id="setting-jog-max-step" min="1" step="1" type="number" value="50"/>
+              </label>
+              <label for="setting-feed-max">
+                Tốc độ tối đa (mm/phút)
+                <input id="setting-feed-max" min="50" step="50" type="number" value="6000"/>
+              </label>
+            </div>
+            <p class="help-text">
+              Các giá trị này nên khớp với file cấu hình máy (configNCKH-13).
+              Thay đổi tại đây không sửa firmware.
+            </p>
+          </article>
+
+          <!-- Hoạt động -->
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2>Hoạt động</h2>
+                <p>Cách giao diện cập nhật và xác nhận thao tác.</p>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <strong>Tần suất cập nhật trạng thái</strong>
+                <p>Khoảng thời gian giữa hai lần đọc trạng thái máy.</p>
+              </div>
+              <select id="poll-interval">
+                <option value="300">300 ms</option>
+                <option selected="" value="500">500 ms</option>
+                <option value="1000">1 giây</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <strong>Xác nhận trước khi Home</strong>
+                <p>Hỏi lại trước khi máy tự chạy về công tắc hành trình.</p>
+              </div>
+              <select id="confirm-home">
+                <option selected="" value="on">Bật</option>
+                <option value="off">Tắt</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <strong>Phím tắt bàn phím</strong>
+                <p>Jog bằng phím mũi tên. Mặc định tắt để tránh bấm nhầm.</p>
+              </div>
+              <select id="shortcuts-enabled">
+                <option selected="" value="off">Tắt</option>
+                <option value="on">Bật</option>
+              </select>
+            </div>
+          </article>
+
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>
