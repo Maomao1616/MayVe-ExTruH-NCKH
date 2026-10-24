@@ -1,0 +1,20 @@
+{
+  "app.title": "ExtruXY",
+  "nav.control": "Control",
+  "nav.drawing": "Image & Drawing",
+  "nav.jobs": "Status",
+  "nav.settings": "Settings",
+  "language.vi": "Vietnamese",
+  "language.en": "English",
+  "theme.dark": "Dark",
+  "theme.light": "Light",
+  "common.loading": "Loading...",
+  "common.notAvailable": "Backend not available",
+  "error.backendUnavailable": "Unable to connect to the backend.",
+  "settings.language": "Language",
+  "settings.languageDescription": "The language displayed in the application.",
+  "settings.generalTitle": "General appearance",
+  "settings.generalDescription": "Customize the application display.",
+  "settings.theme": "Theme",
+  "settings.themeDescription": "Light or dark mode."
+}

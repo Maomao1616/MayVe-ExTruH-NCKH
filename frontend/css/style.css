@@ -3,54 +3,6 @@
    ExtruXY - GIAO DIEN XEM TRUOC
    Giai doan HTML + CSS, chua co JS
 ======================================== */
-
-/* 1. BANG MAU - SUA CAC BIEN NAY DE DOI MAU */
-:root {
-    color-scheme: dark;
-
-    --bg-main: #0f0f0f;
-    --bg-panel: #111111;
-    --bg-elevated: #1c2330;
-
-    --text-main: #00ffff;
-    --text-muted: #464c58;
-
-    --accent: #0d2929;
-    --accent-hover: #f80000;
-    --accent-text: #00ffff;      /* mau CHU va bieu tuong nhan manh (accent o tren qua toi de doc) */
-
-    --border: #293244;
-    --success: #00ffa2;
-    --warning: #ff7b00;
-    --danger: #f80000;
-
-    --radius-panel: 12px;
-    --radius-button: 8px;
-
-}
-
-/* 1B. BANG CHINH BO CUC - CHI CAN DOI SO O DAY, LUU FILE LA THAY DOI NGAY
-   (don vi px; khong can hieu code. Tren man hinh nho cac gia tri tu giam, xem muc 17) */
-:root {
-    /* --- Chung --- */
-    --page-width: 1600px;        /* chieu rong toi da cua trang */
-    --font-size-base: 14px;      /* co chu chinh */
-    --layout-gap: 20px;          /* khoang cach giua cac khoi */
-    --panel-padding: 18px;       /* le ben trong moi khoi */
-    --control-height: 38px;      /* chieu cao nut va o nhap */
-
-    /* --- Tab Dieu khien --- */
-    --sidebar-width: 360px;      /* chieu rong cot trai (vi tri, jog, tep) */
-    --canvas-height: 520px;      /* chieu cao khung ve 2D (khoa cung) */
-    --canvas-aspect: 285 / 310;  /* ti le vung lam viec X / Y (khop muc Cai dat) */
-    --terminal-height: 180px;    /* chieu cao o log cua terminal */
-    --progress-max-width: 480px; /* chieu rong toi da cua tien trinh canh tieu de */
-
-    /* --- Nut --- */
-    --jog-button-size: 54px;     /* kich thuoc nut jog X/Y */
-    --icon-button-size: 32px;    /* kich thuoc nut Zero / Home tung truc */
-}
-
 /* 2. RESET */
 * {
     box-sizing: border-box;
@@ -294,18 +246,13 @@ p {
     font-size: 18px;
 }
 
-/* Chi danh dau tab duoc chon trong che do xem truoc */
-body:has(.tab-panel:target) .nav-tab {
+/* Trang thai tab duoc chon do JavaScript quan ly */
+.nav-tab {
     background: transparent;
     color: var(--text-muted);
 }
 
-/* Chua chon tab nao (khong co #) thi tab Dieu khien sang */
-body:not(:has(.tab-panel:target)) a[href="#panel-control"],
-body:has(#panel-control:target) a[href="#panel-control"],
-body:has(#panel-drawing:target) a[href="#panel-drawing"],
-body:has(#panel-jobs:target) a[href="#panel-jobs"],
-body:has(#panel-settings:target) a[href="#panel-settings"] {
+.nav-tab.is-active {
     background: var(--accent);
     color: #fff;
 }
@@ -1523,24 +1470,14 @@ fieldset > * + * {
     border: 0;
 }
 
-/* 16. XEM TRUOC CAC TAB KHONG CAN JAVASCRIPT */
+/* 16. DOI THANH XEM TAB QUA jAVASCRIPT LUA CHON
+/* Chi hien thi panel dang duoc chon */
 .tab-panel {
     display: none;
-    min-width: 0;
 }
 
-#panel-control {
+.tab-panel.is-active {
     display: block;
-}
-
-/* URL co hash se mo dung tab tuong ung */
-.tab-panel:target {
-    display: block;
-}
-
-/* Khi chon tab khac, an tab mac dinh */
-body:has(.tab-panel:target) #panel-control:not(:target) {
-    display: none;
 }
 
 /* 17. RESPONSIVE (man hinh nho thi cac bien ben duoi se thay bien o dau file) */

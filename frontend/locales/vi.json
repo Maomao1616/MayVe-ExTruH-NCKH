@@ -1,0 +1,20 @@
+{
+  "app.title": "ExtruXY",
+  "nav.control": "Điều khiển",
+  "nav.drawing": "Ảnh và đường vẽ",
+  "nav.jobs": "Trạng thái",
+  "nav.settings": "Cài đặt",
+  "language.vi": "Tiếng Việt",
+  "language.en": "English",
+  "theme.dark": "Tối",
+  "theme.light": "Sáng",
+  "common.loading": "Đang tải...",
+  "common.notAvailable": "Chưa có backend",
+  "error.backendUnavailable": "Không thể kết nối backend.",
+  "settings.language":"Ngôn ngữ",
+  "settings.languageDescription": "Ngôn ngữ hiển thị của ứng dụng",
+  "settings.generalTitle": "Giao diện chung",
+  "settings.generalDescription": "Tùy chỉnh hiển thị ứng dụng.",
+  "settings.theme": "Giao diện",
+  "settings.themeDescription": "Chế độ sáng hoặc tối."
+}

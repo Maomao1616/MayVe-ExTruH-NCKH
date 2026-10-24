@@ -1,0 +1,46 @@
+/* 1. BANG MAU - SUA CAC BIEN NAY DE DOI MAU */
+:root {
+    color-scheme: dark;
+
+    --bg-main: #0f0f0f;
+    --bg-panel: #111111;
+    --bg-elevated: #1c2330;
+
+    --text-main: #ff9102;
+    --text-muted: #464c58;
+
+    --accent: #0d2929;
+    --accent-hover: #f80000;
+    --accent-text: #e0b013;      /* mau CHU va bieu tuong nhan manh (accent o tren qua toi de doc) */
+
+    --border: #293244;
+    --success: #00ffa2;
+    --warning: #ff7b00;
+    --danger: #f80000;
+
+    --radius-panel: 12px;
+    --radius-button: 8px;
+
+}
+
+/* 1B. BANG CHINH BO CUC - CHI CAN DOI SO O DAY, LUU FILE LA THAY DOI NGAY
+   (don vi px; khong can hieu code. Tren man hinh nho cac gia tri tu giam, xem muc 17) */
+:root {
+    /* --- Chung --- */
+    --page-width: 1600px;        /* chieu rong toi da cua trang */
+    --font-size-base: 14px;      /* co chu chinh */
+    --layout-gap: 20px;          /* khoang cach giua cac khoi */
+    --panel-padding: 18px;       /* le ben trong moi khoi */
+    --control-height: 38px;      /* chieu cao nut va o nhap */
+
+    /* --- Tab Dieu khien --- */
+    --sidebar-width: 360px;      /* chieu rong cot trai (vi tri, jog, tep) */
+    --canvas-height: 520px;      /* chieu cao khung ve 2D (khoa cung) */
+    --canvas-aspect: 285 / 310;  /* ti le vung lam viec X / Y (khop muc Cai dat) */
+    --terminal-height: 180px;    /* chieu cao o log cua terminal */
+    --progress-max-width: 480px; /* chieu rong toi da cua tien trinh canh tieu de */
+
+    /* --- Nut --- */
+    --jog-button-size: 54px;     /* kich thuoc nut jog X/Y */
+    --icon-button-size: 32px;    /* kich thuoc nut Zero / Home tung truc */
+}
