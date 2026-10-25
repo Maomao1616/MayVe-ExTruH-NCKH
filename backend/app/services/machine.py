@@ -211,6 +211,10 @@ class MachineService:
             link = self._require_link()
             if action != "status":
                 self._add_log("tx", "realtime", action)
+            if action == "reset":
+                # Reset hủy mọi thứ đang chờ: không để `ok` đến muộn làm homed_guess bật sai.
+                self._homing_pending = False
+                self._saw_home = False
             try:
                 link.write_realtime(data)
             except LinkError as exc:

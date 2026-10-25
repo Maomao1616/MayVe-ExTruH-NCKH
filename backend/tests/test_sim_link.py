@@ -141,3 +141,16 @@ def test_planner_fills_and_holds_back_ok():
         assert oks_now < 41  # chưa thể ok hết khi planner đầy
     finally:
         r.close()
+
+
+def test_default_travel_matches_config_14():
+    # ConfigNCKH-14.yaml: X 285, Y 318, Z 5. Tắt must_home để thử biên mà không cần Home.
+    r = Rig(must_home=False)
+    try:
+        r.link.write_line("G1 Y318 F6000")
+        assert wait_for(lambda: r.count("ok") == 1)
+        assert r.count("ALARM:2") == 0
+        r.link.write_line("G1 Y318.5 F6000")
+        assert wait_for(lambda: r.count("ALARM:2") == 1)
+    finally:
+        r.link.close()

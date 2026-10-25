@@ -19,7 +19,7 @@ Tài liệu này nối **nút/khối trên giao diện** với **lệnh gửi xu
 | `--control-height` | Chiều cao nút và ô nhập | 38px |
 | `--sidebar-width` | Chiều rộng cột trái tab Điều khiển | 360px |
 | `--canvas-height` | Chiều cao khung vẽ 2D (cố định) | 520px |
-| `--canvas-aspect` | Tỉ lệ vùng làm việc X / Y | 285 / 310 |
+| `--canvas-aspect` | Tỉ lệ vùng làm việc X / Y | 285 / 318 |
 | `--terminal-height` | Chiều cao ô log terminal | 180px |
 | `--progress-max-width` | Chiều rộng tối đa tiến trình cạnh tiêu đề | 480px |
 | `--jog-button-size` | Kích thước nút jog X/Y | 54px |
@@ -45,7 +45,6 @@ Lệnh gửi qua `POST /api/command` (một dòng) hoặc `POST /api/realtime`.
 | Tạm dừng | `pause-btn` | realtime `hold` | Luôn bật khi đã kết nối. |
 | Tiếp tục | `resume-btn` | realtime `resume` | |
 | Reset | `reset-btn` | realtime `reset` | Dừng mềm, **không phải dừng khẩn cấp**. Máy mất vị trí, phải Home lại. |
-| Dừng tác vụ | `stop-btn` | (chưa có) | Cần backend quản lý tác vụ. |
 | Chạy | `run-job-btn` | (chưa có) | Chỉ bật khi đã tick `run-confirm`. Cần backend. |
 
 Lưu ý kỹ thuật (đã đối chiếu source FluidNC v4.1.1):

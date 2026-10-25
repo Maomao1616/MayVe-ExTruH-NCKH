@@ -87,3 +87,12 @@ def test_real_machine_is_read_only_by_default(svc):
     svc.send_realtime("hold")  # lệnh dừng luôn được phép
     assert fake.sent == ["$I", b"!"]
     svc._link = None
+
+
+def test_reset_clears_pending_home_guess(svc):
+    svc.connect("sim")  # tốc độ thật: $H mất 1,5 giây, kịp reset giữa chừng
+    svc.send_line("$H")
+    svc.send_realtime("reset")
+    svc.send_line("$I")
+    assert wait_for(lambda: sum(1 for e in svc.log_since(0)["entries"] if e["text"] == "ok") >= 1)
+    assert svc.snapshot()["homed_guess"] is False

@@ -1,4 +1,3 @@
-
 const DEFAULT_LANGUAGE = "vi";
 
 let currentLanguage = DEFAULT_LANGUAGE;
@@ -38,8 +37,18 @@ export function t(key) {
 
 export function applyTranslations(root = document) {
     root.querySelectorAll("[data-i18n]").forEach((element) => {
-        const key = element.dataset.i18n;
-        element.textContent = t(key);
+        // Cú pháp: "khóa" (đặt chữ) hoặc "[thuộc-tính]khóa" (đặt thuộc tính),
+        // nhiều phần ngăn cách bằng dấu ";"
+        element.dataset.i18n.split(";").forEach((part) => {
+            const rule = part.trim();
+            if (!rule) return;
+
+            const match = rule.match(/^\[([^\]]+)\](.+)$/);
+            if (match) {
+                element.setAttribute(match[1], t(match[2].trim()));
+            } else {
+                element.textContent = t(rule);
+            }
+        });
     });
 }
-

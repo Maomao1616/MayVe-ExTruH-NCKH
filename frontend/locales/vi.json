@@ -23,7 +23,6 @@
   
   "common.action.pause": "Tạm dừng",
   "common.action.resume": "Tiếp tục",
-  "common.action.stopJob": "Dừng tác vụ",
   "common.action.reset": "Reset",
   "common.action.refresh": "Làm mới",
   "common.action.preview": "Xem trước",
@@ -58,6 +57,7 @@
   "control.heading.eyebrow": "MACHINE CONTROL",
   "control.heading.title": "Điều khiển máy",
   "control.heading.desc": "Theo dõi vị trí, trạng thái và điều khiển máy vẽ.",
+  "control.progress.noJob": "Chưa có công việc",
   "control.progress.lines": "Dòng lệnh: —",
   "control.progress.eta": "Còn lại: —",
   "control.mode.label": "Chế độ",
@@ -104,6 +104,12 @@
   "control.gcode.selectedFile": "Tệp đã chọn",
   "control.gcode.fileInfo": "Số dòng · vùng bao",
   "control.gcode.confirm": "Tôi đã xem trước đường chạy và vùng vẽ",
+  "control.gcode.mode": "Cách chạy",
+  "control.gcode.modeStream": "Gửi từ máy tính",
+  "control.gcode.modeDevice": "Chạy từ bộ nhớ máy",
+  "control.gcode.uploadToDevice": "Tải lên máy", 
+
+
   
   "control.controller.title": "Trạng thái bộ điều khiển",
   "control.controller.unlock": "Mở khóa ($X)",

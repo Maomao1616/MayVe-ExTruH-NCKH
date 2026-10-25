@@ -23,7 +23,6 @@
   
   "common.action.pause": "Pause",
   "common.action.resume": "Resume",
-  "common.action.stopJob": "Stop Job",
   "common.action.reset": "Reset",
   "common.action.refresh": "Refresh",
   "common.action.preview": "Preview",
@@ -58,6 +57,7 @@
   "control.heading.eyebrow": "MACHINE CONTROL",
   "control.heading.title": "Machine Control",
   "control.heading.desc": "Monitor the plotter position, status, and controls.",
+  "control.progress.noJob": "No job yet",
   "control.progress.lines": "Command: —",
   "control.progress.eta": "Remaining: —",
   "control.mode.label": "Mode",
@@ -104,7 +104,11 @@
   "control.gcode.selectedFile": "Selected file",
   "control.gcode.fileInfo": "Line count · bounding box",
   "control.gcode.confirm": "I have previewed the toolpath and drawing area",
-  
+  "control.gcode.mode": "Run mode",
+  "control.gcode.modeStream": "Stream from computer",
+  "control.gcode.modeDevice": "Run from machine storage",
+  "control.gcode.uploadToDevice": "Upload to machine", 
+
   "control.controller.title": "Controller Status",
   "control.controller.unlock": "Unlock ($X)",
   "control.controller.state": "Machine status",

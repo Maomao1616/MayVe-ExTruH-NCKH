@@ -85,7 +85,6 @@
         <div class="toolbar-actions">
           <button class="toolbar-button" data-i18n="[title]action.pause.title; common.action.pause" data-realtime="hold" disabled="" id="pause-btn" title="Tạm dừng chuyển động (Feed Hold). Có thể Tiếp tục." type="button">Tạm dừng</button>
           <button class="toolbar-button" data-i18n="[title]action.resume.title; common.action.resume" data-realtime="resume" disabled="" id="resume-btn" title="Tiếp tục sau khi Tạm dừng" type="button">Tiếp tục</button>
-          <button class="toolbar-button danger-button" data-i18n="[title]action.stop.title; common.action.stopJob" disabled="" id="stop-btn" title="Hủy tác vụ đang chạy (cần backend quản lý tác vụ)" type="button">Dừng tác vụ</button>
           <button class="toolbar-button danger-button" data-i18n="[title]action.reset.title; common.action.reset" data-realtime="reset" disabled="" id="reset-btn" title="Dừng mềm (Ctrl-X): dừng ngay, máy mất vị trí và phải Home lại" type="button">Reset</button>
         </div>
         <p class="toolbar-safety-note" data-i18n="toolbar.safetyNote">
@@ -115,7 +114,7 @@
 
           <div aria-label="Tiến trình công việc" class="heading-progress" data-i18n="[aria-label]aria.jobProgress">
             <div class="heading-progress-top">
-              <span id="progress-job-name">Chưa có công việc</span>
+              <span id="progress-job-name" data-i18n="control.progress.noJob">Chưa có công việc</span>
               <strong id="job-progress-percent">0%</strong>
             </div>
             <div aria-label="Tiến trình công việc" aria-valuemax="100" aria-valuemin="0" aria-valuenow="0" class="progress-track" id="job-progress-track" role="progressbar" data-i18n="[aria-label]aria.jobProgress">
@@ -145,24 +144,24 @@
           <!-- ===== CỘT TRÁI: VỊ TRÍ, JOG, TỆP ===== -->
           <div class="control-sidebar">
             
-            <article class="panel coordinates-panel">
-              <div class="panel-heading panel-heading-compact">
-                <div>
-                  <h2 data-i18n="control.position.title">Vị trí</h2>
-                  <p><span data-i18n="control.position.coordSystem">Hệ tọa độ </span><strong>G54</strong><span data-i18n="control.position.units"> · đơn vị mm</span></p>
+           <article class="panel coordinates-panel">
+                <div class="panel-heading panel-heading-compact">
+                  <div>
+                    <h2 data-i18n="control.position.title">Vị trí</h2>
+                    <p><span data-i18n="control.position.coordSystem">Hệ tọa độ </span><strong>G54</strong><span data-i18n="control.position.units"> · đơn vị mm</span></p>
+                  </div>
+                  <span class="panel-tag" data-i18n="common.status.noData" id="coordinate-source">
+                    Chưa có dữ liệu
+                  </span>
                 </div>
-                <span class="panel-tag" data-i18n="common.status.noData" id="coordinate-source">
-                  Chưa có dữ liệu
-                </span>
-              </div>
-              <div class="coordinate-table">
-                <div class="coordinate-header">
-                  <span data-i18n="control.position.axis">Trục</span>
-                  <span data-i18n="control.position.zero">Zero</span>
-                  <span data-i18n="control.position.workspace">Workspace</span>
-                  <span data-i18n="control.position.machine">Machine</span>
-                  <span data-i18n="control.position.home">Home</span>
-                </div>
+                <div class="coordinate-table">
+                  <div class="coordinate-header">
+                    <span data-i18n="control.position.axis">Trục</span>
+                    <span data-i18n="control.position.zero">Zero</span>
+                    <span data-i18n="control.position.workspace">Workspace</span>
+                    <span data-i18n="control.position.machine">Machine</span>
+                    <span data-i18n="control.position.home">Home</span>
+                  </div>
                 <div class="coordinate-row">
                   <span class="axis-label axis-x">X</span>
                   <button aria-label="Zero trục X" class="icon-action" data-command="G10 L20 P1 X0" disabled="" id="zero-x-btn" title="Zero X: đặt gốc làm việc tại vị trí hiện tại" type="button" data-i18n="[aria-label]aria.zeroX; [title]action.zeroX.title">↺</button>
@@ -247,7 +246,7 @@
               </p>
             </article>
 
-            <article class="panel gcode-panel">
+            <article class="panel gcode-panel" data-mode="stream">
               <div class="panel-heading panel-heading-compact">
                 <div>
                   <h2 data-i18n="control.gcode.title">Tệp G-code</h2>
@@ -255,6 +254,17 @@
                 </div>
                 <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
               </div>
+                <fieldset class="mode-switch">
+                     <legend class="visually-hidden" data-i18n="control.gcode.mode">Cách chạy</legend>
+                      <label>
+                        <input type="radio" name="run-mode" value="stream" checked>
+                        <span data-i18n="control.gcode.modeStream">Gửi từ máy tính</span>
+                      </label>
+                      <label>
+                        <input type="radio" name="run-mode" value="device">
+                        <span data-i18n="control.gcode.modeDevice">Chạy từ bộ nhớ máy</span>
+                      </label>
+                </fieldset>
               <div class="file-section">
                 <h3 data-i18n="control.gcode.upload">Nạp từ máy tính</h3>
                 <label class="upload-zone upload-zone-compact" for="gcode-file">
@@ -263,9 +273,11 @@
                   <span>.gcode · .nc · .gc · .ngc · .txt</span>
                 </label>
                 <input accept=".gcode,.nc,.gc,.ngc,.txt" class="visually-hidden" id="gcode-file" type="file"/>
+                <button class="device-only" data-i18n="control.gcode.uploadToDevice"
+                        disabled id="upload-to-device-btn" type="button">Tải lên máy</button>
               </div>
-              <div class="file-section">
-                <div class="file-section-head">
+              <div class="file-section device-only">
+                    <div class="file-section-head">
                   <h3 data-i18n="control.gcode.machineFiles">Tệp trong máy</h3>
                   <div class="file-section-tools">
                     <label class="visually-hidden" for="device-storage">

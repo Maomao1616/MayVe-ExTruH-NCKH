@@ -1,5 +1,6 @@
-/* 1. BANG MAU - SUA CAC BIEN NAY DE DOI MAU */
+/* 1. BANG MAU - SUA CAC BIEN NAY DE DOI MAU - TOI */
 :root {
+
     color-scheme: dark;
 
     --bg-main: #0f0f0f;
@@ -7,11 +8,11 @@
     --bg-elevated: #1c2330;
 
     --text-main: #ff9102;
-    --text-muted: #464c58;
+    --text-muted: #aeb6c7;
 
     --accent: #0d2929;
     --accent-hover: #f80000;
-    --accent-text: #e0b013;      /* mau CHU va bieu tuong nhan manh (accent o tren qua toi de doc) */
+    --accent-text: #00b6bd;     
 
     --border: #293244;
     --success: #00ffa2;
@@ -22,6 +23,29 @@
     --radius-button: 8px;
 
 }
+
+
+/* 1A. BANG MAU - CHO THEME SANG */
+[data-theme="light"] {
+    color-scheme: light;
+
+    --bg-main: #fdfdfd;
+    --bg-panel: #ffffff;
+    --bg-elevated: #ffedcc;
+
+    --text-main: #080808;
+    --text-muted: #8a7500;
+
+    --accent: #dceef0;
+    --accent-hover: #c62828;
+    --accent-text: #00b6bd;
+
+    --border: #d5dce3;
+    --success: #00875a;
+    --warning: #b86b00;
+    --danger: #c62828;
+    }
+
 
 /* 1B. BANG CHINH BO CUC - CHI CAN DOI SO O DAY, LUU FILE LA THAY DOI NGAY
    (don vi px; khong can hieu code. Tren man hinh nho cac gia tri tu giam, xem muc 17) */
@@ -36,7 +60,7 @@
     /* --- Tab Dieu khien --- */
     --sidebar-width: 360px;      /* chieu rong cot trai (vi tri, jog, tep) */
     --canvas-height: 520px;      /* chieu cao khung ve 2D (khoa cung) */
-    --canvas-aspect: 285 / 310;  /* ti le vung lam viec X / Y (khop muc Cai dat) */
+    --canvas-aspect: 285 / 318;  /* ti le vung lam viec X / Y (khop muc Cai dat) */
     --terminal-height: 180px;    /* chieu cao o log cua terminal */
     --progress-max-width: 480px; /* chieu rong toi da cua tien trinh canh tieu de */
 

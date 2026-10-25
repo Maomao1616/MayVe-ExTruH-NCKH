@@ -5,7 +5,7 @@ Các điểm chưa chắc, cần hiệu chỉnh bằng log thật ở Bước 4:
   - thời điểm và dạng `ok` ở một số lệnh,
   - phản hồi sau ALARM:14 (ở đây chỉ phát ALARM, không phát ok/error),
   - chuyển động dùng vận tốc không đổi (không mô phỏng gia tốc).
-Giới hạn mặc định lấy từ configNCKH-13: X 285, Y 310, Z 5 mm, must_home bật.
+Giới hạn mặc định lấy từ ConfigNCKH-14: X 285, Y 318, Z 5 mm, must_home bật.
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ class SimLink(BaseLink):
     # Alarm làm mất vị trí gốc (ước lượng).
     _LOSE_HOME = {1, 3, 6, 7, 8, 9, 12, 13, 14, 16}
 
-    def __init__(self, travel=(285.0, 310.0, 5.0), rapid_mm_min=(6000.0, 6000.0, 3000.0),
+    def __init__(self, travel=(285.0, 318.0, 5.0), rapid_mm_min=(6000.0, 6000.0, 3000.0),
                  planner_blocks: int = 15, rx_size: int = 128, speed: float = 1.0,
                  must_home: bool = True, homing_time_s: float = 1.5) -> None:
         super().__init__()
