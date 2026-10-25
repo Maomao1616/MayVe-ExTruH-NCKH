@@ -86,13 +86,13 @@ class SimLink(BaseLink):
     # --- giao diện ghi --------------------------------------------------------
     def write_line(self, text: str) -> None:
         if not self._open:
-            raise LinkError("SimLink chưa mở")
+            raise LinkError("SimLink is not open")
         with self._lock:
             self._input.append(text)
 
     def write_realtime(self, data: bytes) -> None:
         if not self._open:
-            raise LinkError("SimLink chưa mở")
+            raise LinkError("SimLink is not open")
         with self._lock:
             for byte in data:
                 if byte == 0x3F:      # ?

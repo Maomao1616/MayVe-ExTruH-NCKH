@@ -50,7 +50,7 @@ class SerialLink(BaseLink):
         try:
             ser.open()
         except (serial.SerialException, OSError) as exc:
-            raise LinkError(f"Không mở được {self.port}: {exc}") from exc
+            raise LinkError(f"Cannot open {self.port}: {exc}")
         self._ser = ser
         self._stop.clear()
         self._thread = threading.Thread(target=self._read_loop, name="serial-reader", daemon=True)
@@ -98,9 +98,9 @@ class SerialLink(BaseLink):
 
     def _write(self, data: bytes) -> None:
         if not self.is_open:
-            raise LinkError("Cổng serial chưa mở")
+            raise LinkError("Serial port is not open")
         try:
             with self._write_lock:
                 self._ser.write(data)
         except Exception as exc:
-            raise LinkError(f"Ghi serial thất bại: {exc}") from exc
+            raise LinkError(f"Serial write failed: {exc}")

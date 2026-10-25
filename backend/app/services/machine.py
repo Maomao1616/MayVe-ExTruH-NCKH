@@ -89,7 +89,7 @@ class MachineService:
             self._link = link
             self._info = {"mode": mode, "port": port if mode == "serial" else None,
                           "baud": baud if mode == "serial" else None}
-            self._add_log("sys", "system", f"Đã kết nối ({mode})")
+            self._add_log("sys", "system", f"Connected ({mode})")
             self._poll_stop.clear()
             self._poller = threading.Thread(target=self._poll_loop, name="status-poller", daemon=True)
             self._poller.start()
@@ -101,7 +101,7 @@ class MachineService:
             self._poll_stop.set()
         if link is not None:
             link.close()
-            self._add_log("sys", "system", "Đã ngắt kết nối")
+            self._add_log("sys", "system", "Disconnected")
         return self.connection_info()
 
     def _on_link_closed(self, reason: str) -> None:

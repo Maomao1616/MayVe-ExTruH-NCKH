@@ -1783,3 +1783,11 @@ fieldset > * + * {
 .gcode-panel[data-mode="stream"] .device-only {
     display: none;
 }
+
+/* Terminal: màu sắc cho các loại tin nhắn khác nhau */
+.terminal-output .term-tx     { color: var(--accent-text); }
+.terminal-output .term-rx     { color: var(--text-main); }
+.terminal-output .term-err    { color: var(--danger); }
+.terminal-output .term-app    { color: var(--warning); }
+.terminal-output .term-sys,
+.terminal-output .term-status { color: var(--text-muted); }
