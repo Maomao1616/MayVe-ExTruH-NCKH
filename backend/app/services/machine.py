@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+import re
 import threading
 import time
 from collections import deque
@@ -59,6 +60,8 @@ class MachineService:
         # "Đã home" chỉ là ĐOÁN: FluidNC không có trường báo cáo riêng cho việc này.
         # Hai tín hiệu: (1) thấy trạng thái Home rồi Idle, (2) nhận `ok` sau khi ta gửi $H.
         self._homed_guess = False
+        self._homed_axes: set[str] = set()   # trục đã Home (đoán); đủ X và Y mới coi là đã Home
+        self._homing_axes = "XY"             # trục của lệnh Home gần nhất ($H, $HX, $HY)
         self._saw_home = False
         self._homing_pending = False
         self._updated_at: float | None = None
@@ -141,17 +144,26 @@ class MachineService:
             if kind == "alarm":
                 self._last_alarm = {"code": info["code"], "name": info["name"], "at": time.time()}
                 if info["code"] in _LOSE_HOME:
+                    # ALARM:14 (chưa Home) chỉ làm mất trục đã Home khi ta đang đoán sai.
+                    if info["code"] != 14 or self._homed_guess:
+                        self._homed_axes.clear()
                     self._homed_guess = False
                 self._saw_home = False
                 self._homing_pending = False
             elif kind == "ok":
                 if self._homing_pending:  # chỉ đáng tin khi chưa có lệnh khác đang chờ ok
-                    self._homed_guess, self._homing_pending = True, False
+                    self._mark_homed()
+                    self._homing_pending = False
             elif kind == "error":
                 self._last_error = {"code": info["code"], "name": info["name"], "at": time.time()}
             elif kind == "banner":
                 self._banner = info["text"]
             self._add_log("rx", "device", line)
+
+    def _mark_homed(self) -> None:
+        """Ghi nhận trục vừa Home xong; chỉ coi là đã Home khi đủ cả X và Y."""
+        self._homed_axes |= set(self._homing_axes)
+        self._homed_guess = {"X", "Y"} <= self._homed_axes
 
     def _update_status(self, st: dict) -> None:
         if st["wco"]:
@@ -166,7 +178,8 @@ class MachineService:
         if state == "Home":
             self._saw_home = True
         elif state == "Idle" and self._saw_home:
-            self._homed_guess, self._saw_home = True, False
+            self._mark_homed()
+            self._saw_home = False
         elif state == "Alarm":
             self._saw_home = False
         self._status = st
@@ -195,8 +208,10 @@ class MachineService:
                     "Máy thật đang ở chế độ chỉ đọc. Chỉ cho phép lệnh đọc thông tin "
                     "(vd $I, $CMD, $G, $SD/ListJSON).", 403)
             self._add_log("tx", source, text)
-            if text.replace(" ", "").upper() == "$H":
+            command = text.replace(" ", "").upper()
+            if re.fullmatch(r"\$H[XY]*", command):   # $H, $HX, $HY
                 self._homing_pending = True
+                self._homing_axes = command[2:] or "XY"
             try:
                 link.write_line(text)
             except LinkError as exc:

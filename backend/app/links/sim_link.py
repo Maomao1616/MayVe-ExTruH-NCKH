@@ -53,6 +53,9 @@ class SimLink(BaseLink):
         self._hold_left = 0.0
         self._home_left = 0.0
         self._homed = False
+        self._homed_axes: set[str] = set()   # trục đã Home
+        self._home_axes = "XY"               # trục đang Home
+        self._wco = [0.0, 0.0, 0.0]          # độ lệch hệ tọa độ làm việc (G10 L20 P1)
         self._absolute = True
         self._motion_mode = 0
         self._feed = 1000.0
@@ -152,6 +155,8 @@ class SimLink(BaseLink):
         self._state = "Alarm"
         if code in self._LOSE_HOME:
             self._homed = False
+            if code != 14:               # ALARM:14 không làm mất trục đã Home
+                self._homed_axes.clear()
         self._emit(f"ALARM:{code}")
 
     def _handle(self, text: str) -> None:
@@ -173,10 +178,11 @@ class SimLink(BaseLink):
                 self._state = "Idle"
                 self._emit("[MSG:INFO: Caution: Unlocked]")
             self._emit("ok")
-        elif text == "$H":
+        elif re.fullmatch(r"\$H[XY]*", text):   # $H, $HX, $HY
             if self._state not in ("Idle", "Alarm"):
                 self._error(8)
             else:
+                self._home_axes = text[2:] or "XY"
                 self._state = "Home"
                 self._home_left = self._homing_time
         elif text.startswith("$REPORT/"):
@@ -195,7 +201,7 @@ class SimLink(BaseLink):
         target = self._base_target()
         for i, axis in enumerate(_AXES):
             if axis in vals:
-                target[i] = vals[axis] if absolute else target[i] + vals[axis]
+                target[i] = vals[axis] + self._wco[i] if absolute else target[i] + vals[axis]
         return target
 
     def _out_of_range(self, target: list[float]) -> bool:
@@ -205,12 +211,26 @@ class SimLink(BaseLink):
         if self._state == "Alarm":
             self._error(9)
             return
-        gs, vals = [], {}
+        gs, vals, extra = [], {}, {}
         for letter, num in _WORD.findall(text):
             if letter == "G":
                 gs.append(int(float(num)))
             elif letter in "XYZF":
                 vals[letter] = float(num)
+            elif letter in "LP":
+                extra[letter] = float(num)
+        if 10 in gs:
+            # G10 L20 P1 X.. Y..: đặt gốc làm việc G54 tại vị trí hiện tại (không chuyển động)
+            if extra.get("L") == 20 and extra.get("P") == 1:
+                base = self._base_target()
+                for i, axis in enumerate(_AXES):
+                    if axis in vals:
+                        self._wco[i] = base[i] - vals[axis]
+                self._reports = 0  # báo WCO ngay ở lần báo cáo kế tiếp
+                self._emit("ok")
+            else:
+                self._error(20)
+            return
         for g in gs:
             if g in (2, 3):
                 self._error(20)
@@ -297,6 +317,8 @@ class SimLink(BaseLink):
         self._state = "Alarm"
         if code in self._LOSE_HOME:
             self._homed = False
+            if code != 14:               # ALARM:14 không làm mất trục đã Home
+                self._homed_axes.clear()
         self._emit(f"ALARM:{code}")
 
     # --- chuyển động ----------------------------------------------------------
@@ -304,8 +326,10 @@ class SimLink(BaseLink):
         if self._state == "Home":
             self._home_left -= dt
             if self._home_left <= 0:
-                self._pos[0] = self._pos[1] = 0.0
-                self._homed = True
+                for axis in self._home_axes:
+                    self._pos[_AXES.index(axis)] = 0.0
+                self._homed_axes |= set(self._home_axes)
+                self._homed = {"X", "Y"} <= self._homed_axes
                 self._state = "Idle"
                 self._emit("ok")
             return
@@ -345,6 +369,6 @@ class SimLink(BaseLink):
         fields = [state, f"MPos:{mpos}", f"Bf:{self._planner_free()},{self._rx_size}",
                   f"FS:{self._feed if self._current else 0:.0f},0"]
         if self._reports % 10 == 0:
-            fields.append("WCO:0.000,0.000,0.000")
+            fields.append("WCO:" + ",".join(f"{v:.3f}" for v in self._wco))
         self._reports += 1
         return "<" + "|".join(fields) + ">"

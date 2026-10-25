@@ -20,6 +20,8 @@
   "common.status.unavailable": "Unavailable",
   "common.status.on": "On",
   "common.status.off": "Off",
+  "common.status.live": "Live data",
+
   
   "common.action.pause": "Pause",
   "common.action.resume": "Resume",
@@ -119,7 +121,8 @@
   "control.controller.planner": "Planner free",
   "control.controller.rx": "RX buffer",
   "control.controller.lastUpdate": "Last update",
-  
+  "control.controller.notHomed": "Not confirmed",
+
   "control.preview.title": "2D Preview",
   "control.preview.desc": "Top-down toolpath view",
   "control.preview.fit": "Fit to view",

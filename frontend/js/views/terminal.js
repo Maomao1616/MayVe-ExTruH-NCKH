@@ -261,6 +261,12 @@ export function initTerminal() {
 
     unlockButton?.addEventListener("click", () => sendCommand("$X"));
 
+    // Thông báo từ view khác (ví dụ control.js khi gọi API lỗi).
+    window.addEventListener("extruxy:message", (event) => {
+    const { error, text } = event.detail ?? {};
+    addLine("app", error ? describeError(error) : String(text ?? ""));
+    });
+
     subscribe((snapshot) => {
         syncLogs(snapshot);
         reportBackendTransition(snapshot);

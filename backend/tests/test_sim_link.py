@@ -154,3 +154,43 @@ def test_default_travel_matches_config_14():
         assert wait_for(lambda: r.count("ALARM:2") == 1)
     finally:
         r.link.close()
+
+
+def test_zero_sets_work_offset_and_reports_wco(rig):
+    rig.link.write_line("$J=G91 G21 X10 F6000")
+    assert wait_for(lambda: rig.count("ok") >= 1)
+    rig.wait_idle()
+    rig.link.write_line("G10 L20 P1 X0")
+    assert wait_for(lambda: rig.count("ok") >= 2)
+    st = rig.status()
+    assert st["wco"] == [pytest.approx(10.0), 0.0, 0.0]
+    assert st["mpos"][0] == pytest.approx(10.0)  # Zero không làm máy chuyển động
+
+
+def test_absolute_jog_uses_work_coordinates(rig):
+    rig.link.write_line("$J=G91 G21 X10 F6000")
+    assert wait_for(lambda: rig.count("ok") >= 1)
+    rig.wait_idle()
+    rig.link.write_line("G10 L20 P1 X0")
+    rig.link.write_line("$J=G90 G21 X5 F6000")
+    assert wait_for(lambda: rig.count("ok") >= 3)
+    rig.wait_idle()
+    assert rig.status()["mpos"][0] == pytest.approx(15.0)  # work X5 = máy X15
+
+
+def test_other_g10_forms_are_unsupported(rig):
+    rig.link.write_line("G10 L2 P1 X0")
+    assert wait_for(lambda: "error:20" in rig.lines)
+
+
+def test_per_axis_homing_needs_both_axes_for_gcode(rig):
+    rig.link.write_line("$HX")
+    assert wait_for(lambda: rig.count("ok") >= 1)
+    rig.link.write_line("G0 X1")
+    assert wait_for(lambda: "ALARM:14" in rig.lines)   # mới Home trục X
+    rig.link.write_line("$X")
+    rig.link.write_line("$HY")
+    assert wait_for(lambda: rig.count("ok") >= 3)
+    rig.link.write_line("G0 X1")
+    assert wait_for(lambda: rig.count("ok") >= 4)
+    assert rig.count("ALARM:14") == 1

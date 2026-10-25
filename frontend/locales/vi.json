@@ -20,7 +20,8 @@
   "common.status.unavailable": "Chưa khả dụng",
   "common.status.on": "Bật",
   "common.status.off": "Tắt",
-  
+  "common.status.live": "Dữ liệu trực tiếp",
+
   "common.action.pause": "Tạm dừng",
   "common.action.resume": "Tiếp tục",
   "common.action.reset": "Reset",
@@ -121,7 +122,9 @@
   "control.controller.planner": "Planner còn trống",
   "control.controller.rx": "Bộ đệm RX",
   "control.controller.lastUpdate": "Cập nhật cuối",
-  
+  "control.controller.notHomed": "Chưa xác nhận",
+
+
   "control.preview.title": "Khung nhìn 2D",
   "control.preview.desc": "Xem đường vẽ từ trên xuống",
   "control.preview.fit": "Về toàn cảnh",

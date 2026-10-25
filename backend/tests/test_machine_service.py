@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from app.links.base import BaseLink
@@ -96,3 +98,24 @@ def test_reset_clears_pending_home_guess(svc):
     svc.send_line("$I")
     assert wait_for(lambda: sum(1 for e in svc.log_since(0)["entries"] if e["text"] == "ok") >= 1)
     assert svc.snapshot()["homed_guess"] is False
+
+
+def test_per_axis_homing_needs_both_axes(svc):
+    svc.connect("sim", sim_speed=100)
+    svc.send_line("$HX")
+    assert wait_for(lambda: any(e["text"] == "ok" for e in svc.log_since(0)["entries"]))
+    time.sleep(0.6)  # đủ vài báo cáo trạng thái để chắc chắn không bật nhầm
+    assert svc.snapshot()["homed_guess"] is False
+    svc.send_line("$HY")
+    assert wait_for(lambda: svc.snapshot()["homed_guess"])
+
+
+def test_alarm_14_keeps_axes_already_homed(svc):
+    svc.connect("sim", sim_speed=100)
+    svc.send_line("$HX")
+    assert wait_for(lambda: any(e["text"] == "ok" for e in svc.log_since(0)["entries"]))
+    svc.send_line("G0 X1")                       # mới Home X: sim báo ALARM:14
+    assert wait_for(lambda: svc.snapshot()["last_alarm"] is not None)
+    svc.send_line("$X")
+    svc.send_line("$HY")
+    assert wait_for(lambda: svc.snapshot()["homed_guess"])
