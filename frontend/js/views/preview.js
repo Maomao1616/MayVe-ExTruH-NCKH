@@ -10,6 +10,7 @@ import { MACHINE, VIEW } from "../config.js";
 import { subscribe, isConnected } from "../state.js";
 import { subscribeStore } from "../jobstore.js";
 import { positionAt, formatDuration } from "../gcode.js";
+import { api, ApiError } from "../api.js";
 
 const MARGIN = 14;
 const MIN_ZOOM = 0.5;
@@ -290,6 +291,9 @@ export function initPreview() {
     el.travel?.addEventListener("change", requestDraw);
 
     canvas.addEventListener("wheel", (event) => {
+        // Chỉ phóng to/thu nhỏ khi người dùng giữ phím Shift
+        if (!event.shiftKey) return; 
+        
         event.preventDefault();
         const rect = canvas.getBoundingClientRect();
         zoomAt(event.deltaY < 0 ? 1.15 : 1 / 1.15, event.clientX - rect.left, event.clientY - rect.top);

@@ -105,14 +105,33 @@ function initGcodePanel() {
         render();
     });
 
-    cancelButton?.addEventListener("click", async () => {
-        if (!window.confirm(t("job.confirmCancel"))) return;
-        try {
-            await api.jobCancel();
-        } catch (error) {
-            message({ error });
-        }
-    });
+    // --- XỬ LÝ NÚT VÀ HỘP THOẠI HỦY TÁC VỤ (Đặt trong initPreview) ---
+    const cancelJobBtn = document.getElementById("cancel-job-btn");
+    const customCancelModal = document.getElementById("custom-cancel-modal");
+    const modalCancelJobClose = document.getElementById("modal-cancel-job-btn-close");
+    const modalCancelJobConfirm = document.getElementById("modal-cancel-job-btn-confirm");
+
+    if (cancelJobBtn && customCancelModal) {
+        cancelJobBtn.addEventListener("click", () => {
+            customCancelModal.removeAttribute("hidden");
+        });
+
+        modalCancelJobClose.addEventListener("click", () => {
+            customCancelModal.setAttribute("hidden", "");
+        });
+
+        modalCancelJobConfirm.addEventListener("click", async () => {
+            customCancelModal.setAttribute("hidden", "");
+            try {
+                // Gọi API hủy / dừng tác vụ
+                await api.realtime("reset"); 
+            } catch (error) {
+                console.error("Lỗi khi gửi lệnh Hủy tác vụ:", error);
+                // Bắn event thông báo lỗi ra ngoài nếu cần hiển thị lên terminal
+                window.dispatchEvent(new CustomEvent("extruxy:message", { detail: { error } }));
+            }
+        });
+    }
 
     /* --- tính trạng thái hiện tại từ dữ liệu backend --- */
     const jobOf = (snapshot) => snapshot?.status?.job ?? null;
@@ -198,7 +217,15 @@ function initGcodePanel() {
 
     function setBar(percent) {
         const fill = $("job-progress-fill");
-        if (fill) fill.style.width = `${percent}%`;
+        if (fill) {
+            fill.style.width = `${percent}%`;
+            // Tự động bật class hiệu ứng sọc chéo khi đang chạy, tắt khi xong
+            if (percent > 0 && percent < 100) {
+                fill.classList.add("is-active");
+            } else {
+                fill.classList.remove("is-active");
+            }
+        }
         $("job-progress-track")?.setAttribute("aria-valuenow", String(percent));
     }
 

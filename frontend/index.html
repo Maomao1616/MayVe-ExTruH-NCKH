@@ -319,7 +319,6 @@
               <div class="gcode-actions">
                 <button data-i18n="common.action.preview" disabled="" id="preview-gcode-btn" type="button">Xem trước</button>
                 <button class="primary-button" data-i18n="common.action.run" disabled="" id="run-job-btn" type="button">▶ Chạy</button>
-                <button class="danger-button" data-i18n="control.gcode.cancelJob" hidden id="cancel-job-btn" type="button">Hủy tác vụ</button>
               </div>
             </article>
 
@@ -421,6 +420,8 @@
                 </select>
                 <span id="preview-time">0:00 / 0:00</span>
                 <button class="text-button" id="clear-trail-btn" data-i18n="control.preview.clearTrail" type="button">Xóa vết</button>
+                <button class="danger-button" data-i18n="control.gcode.cancelJob" hidden id="cancel-job-btn" type="button">Hủy tác vụ</button>
+
               </div>
 
               <div class="preview-canvas-container" id="preview-canvas-container">
@@ -1219,6 +1220,18 @@
   </div>
 </div>
 
+<!-- Bảng thông báo Hủy tác vụ (Glassmorphism Modal) -->
+<div class="glass-modal-overlay" id="custom-cancel-modal" hidden>
+  <div class="glass-modal-box">
+    <div class="glass-modal-icon">⏹️</div>
+    <h3>Xác nhận Hủy tác vụ</h3>
+    <p>Máy sẽ dừng vẽ ngay lập tức và hủy bỏ tệp G-code đang chạy. Bạn có chắc chắn muốn hủy không?</p>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" id="modal-cancel-job-btn-close" type="button">Tiếp tục chạy</button>
+      <button class="primary-button danger-button" id="modal-cancel-job-btn-confirm" type="button">Đồng ý Hủy</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
