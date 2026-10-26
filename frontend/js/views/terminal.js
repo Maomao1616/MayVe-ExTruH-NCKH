@@ -27,7 +27,12 @@ const API_ERRORS = {
     link_error: "Serial link error.",
     pyserial_missing: "pyserial is not installed on the backend.",
     validation_error: "Invalid input.",
-    http_error: "Request failed."
+    http_error: "Request failed.",
+    job_running: "Blocked: a job is running. Cancel it first.",
+    not_idle: "The machine must be Idle.",
+    bad_gcode: "Invalid G-code.",
+    empty_job: "The file has no G-code lines.",
+    no_job: "No job is running.",
 };
 
 export function initTerminal() {
@@ -161,8 +166,11 @@ export function initTerminal() {
         const motionUnlocked =
             snapshot.status?.connection?.motion_unlocked !== false;
 
-        input.disabled = !canSend || sending;
-        sendButton.disabled = !canSend || sending;
+        const job = snapshot.status?.job;
+        const jobActive = job?.state === "running" || job?.state === "finishing";
+
+        input.disabled = !canSend || jobActive || sending;
+        sendButton.disabled = !canSend || jobActive || sending;
 
         if (connectionLabel) {
             connectionLabel.textContent = !snapshot.backendOnline

@@ -6,7 +6,8 @@ export const MACHINE = {
     travelY: 318,        // mm (yaml 14; bản 13 là 310)
     penUpZ: 5,           // GIẢ ĐỊNH: Z5 = bút lên (chưa thử máy thật)
     penDownZ: 0,         // GIẢ ĐỊNH: Z0 = bút xuống
-    penFeed: 3000        // mm/phút
+    penFeed: 3000,       // mm/phút
+    rapidFeed: 6000      // mm/phút khi G0
 };
 
 export const POLL = {
@@ -16,3 +17,7 @@ export const POLL = {
 };
 
 export const DEFAULT_BAUD = 115200;
+
+// Chiều hiển thị khung 2D: mặc định gốc (0,0) ở góc trên trái, X sang phải, Y xuống dưới.
+// Đổi true nếu thử máy thật thấy ngược chiều.
+export const VIEW = { flipX: false, flipY: false };

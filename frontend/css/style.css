@@ -1791,3 +1791,21 @@ fieldset > * + * {
 .terminal-output .term-app    { color: var(--warning); }
 .terminal-output .term-sys,
 .terminal-output .term-status { color: var(--text-muted); }
+
+
+
+/* Khung 2D: canvas tự vẽ vùng làm việc nên ẩn khung HTML tĩnh */
+.preview-canvas-container.is-canvas .work-area-frame { display: none; }
+.preview-canvas-container {
+    --path-color: var(--accent-text);
+    --live-color: var(--success);
+    --head-color: var(--warning);
+}
+.legend-path { background: var(--accent-text); }
+
+.preview-playback { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; }
+.preview-playback[hidden],
+.gcode-actions button[hidden] { display: none; }
+.preview-playback input[type="range"] { flex: 1; min-width: 80px; height: auto; padding: 0; border: 0; background: transparent; }
+.preview-playback select { width: auto; }
+#preview-time { color: var(--text-muted); font-size: 12px; white-space: nowrap; }

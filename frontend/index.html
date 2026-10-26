@@ -319,6 +319,7 @@
               <div class="gcode-actions">
                 <button data-i18n="common.action.preview" disabled="" id="preview-gcode-btn" type="button">Xem trước</button>
                 <button class="primary-button" data-i18n="common.action.run" disabled="" id="run-job-btn" type="button">▶ Chạy</button>
+                <button class="danger-button" data-i18n="control.gcode.cancelJob" hidden id="cancel-job-btn" type="button">Hủy tác vụ</button>
               </div>
             </article>
 
@@ -406,6 +407,22 @@
                   <span data-i18n="control.preview.showTravel">Hiện đường di chuyển</span>
                 </label>
               </div>
+
+              <div class="preview-playback" id="preview-playback" hidden>
+                <button class="secondary-button" id="preview-restart-btn" type="button"
+                        aria-label="Phát lại từ đầu" data-i18n="[aria-label]aria.previewRestart">⏮</button>
+                <button class="secondary-button" id="preview-play-btn" type="button"
+                        aria-label="Phát / tạm dừng" data-i18n="[aria-label]aria.previewPlay">▶</button>
+                <input id="preview-progress" type="range" min="0" max="1000" value="0"
+                      aria-label="Tiến trình xem trước" data-i18n="[aria-label]aria.previewProgress">
+                <select id="preview-speed" aria-label="Tốc độ phát lại" data-i18n="[aria-label]aria.previewSpeed">
+                  <option value="1">1×</option><option value="5">5×</option><option value="20">20×</option>
+                  <option value="100">100×</option><option value="500">500×</option><option value="2000">2000×</option>
+                </select>
+                <span id="preview-time">0:00 / 0:00</span>
+                <button class="text-button" id="clear-trail-btn" data-i18n="control.preview.clearTrail" type="button">Xóa vết</button>
+              </div>
+
               <div class="preview-canvas-container" id="preview-canvas-container">
                 <div aria-hidden="true" class="work-area-frame">
                   <span class="work-area-origin">O (0, 0)</span>

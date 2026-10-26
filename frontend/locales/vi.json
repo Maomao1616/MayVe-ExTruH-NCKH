@@ -109,7 +109,16 @@
   "control.gcode.modeStream": "Gửi từ máy tính",
   "control.gcode.modeDevice": "Chạy từ bộ nhớ máy",
   "control.gcode.uploadToDevice": "Tải lên máy", 
+  "control.gcode.lines": "dòng",
+  "control.gcode.outOfRange": "vượt vùng làm việc",
+  "control.gcode.deviceUnsupported": "Chạy từ bộ nhớ máy chưa được hỗ trợ",
+  "control.gcode.cancelJob": "Hủy tác vụ",
 
+
+
+  "control.progress.linesLabel": "Dòng lệnh",
+  "control.progress.etaLabel": "Còn lại",
+  
 
   
   "control.controller.title": "Trạng thái bộ điều khiển",
@@ -137,7 +146,9 @@
   "control.preview.noPath": "Chưa có đường vẽ",
   "control.preview.uploadHint": "Nạp hoặc tạo bản vẽ để xem trước tại đây.",
   "control.preview.dimensions": "Vùng làm việc: chưa xác định",
-  
+  "control.preview.clearTrail": "Xóa vết",
+
+
   "control.terminal.title": "Terminal / Console",
   "control.terminal.desc": "Gửi lệnh và theo dõi phản hồi",
   "control.terminal.clear": "Xóa log hiển thị",
@@ -263,6 +274,14 @@
   "drawing.info.eta": "Thời gian ước tính",
   "drawing.info.inBounds": "Trong vùng làm việc?",
   
+
+  "job.confirmCancel": "Hủy tác vụ sẽ Reset máy (vào Alarm) và bút có thể còn đang hạ. Tiếp tục?",
+    "job.state.running": "Đang chạy",
+    "job.state.finishing": "Đang hoàn tất",
+    "job.state.done": "Hoàn tất",
+    "job.state.failed": "Lỗi",
+    "job.state.cancelled": "Đã hủy",
+
   "jobs.heading.eyebrow": "JOB MANAGEMENT",
   "jobs.heading.desc": "Theo dõi tác vụ hiện tại và khu vực quản lý hàng đợi.",
   "jobs.summary.current": "Tác vụ hiện tại",
@@ -412,7 +431,14 @@
   "aria.zoomIn": "Phóng to",
   "aria.previewCanvas": "Khung xem trước đường vẽ hai chiều",
   "aria.terminalLog": "Nhật ký lệnh máy",
-  
+  "aria.previewRestart": "Phát lại từ đầu",
+  "aria.previewPlay": "Phát / tạm dừng",
+  "aria.previewProgress": "Tiến trình xem trước",
+  "aria.previewSpeed": "Tốc độ phát lại",
+
+
+
+
   "dynamic.checkingBackend": "Đang kiểm tra backend...",
   "dynamic.noJob": "Không có tác vụ",
   "dynamic.waitingBackend": "Đang chờ kết nối backend...",

@@ -22,6 +22,11 @@ class CommandRequest(BaseModel):
     line: str = Field(min_length=1, max_length=200)
 
 
+class JobStartRequest(BaseModel):
+    name: str = Field("gcode", max_length=120)
+    lines: list[str] = Field(min_length=1, max_length=200_000)
+
+
 class RealtimeRequest(BaseModel):
     action: Literal["status", "hold", "resume", "reset", "jog_cancel"]
 
@@ -68,6 +73,16 @@ def command(req: CommandRequest):
 @router.post("/realtime")
 def realtime(req: RealtimeRequest):
     return machine.send_realtime(req.action)
+
+
+@router.post("/jobs")
+def start_job(req: JobStartRequest):
+    return machine.start_job(req.name, req.lines)
+
+
+@router.post("/jobs/cancel")
+def cancel_job():
+    return machine.cancel_job()
 
 
 @router.get("/log")
