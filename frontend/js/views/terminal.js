@@ -262,10 +262,33 @@ export function initTerminal() {
     pauseButton?.addEventListener("click", () => sendRealtime("hold"));
     resumeButton?.addEventListener("click", () => sendRealtime("resume"));
 
-    resetButton?.addEventListener("click", () => {
-        if (!window.confirm(t("safety.confirmReset"))) return;
-        sendRealtime("reset");
+    // ĐOẠN CODE MỚI: TÍCH HỢP BẢNG THÔNG BÁO KÍNH
+const resetBtn = document.getElementById("reset-btn");
+const customModal = document.getElementById("custom-reset-modal");
+const modalCancelBtn = document.getElementById("modal-cancel-btn");
+const modalConfirmBtn = document.getElementById("modal-confirm-btn");
+
+if (resetBtn && customModal) {
+    // Hiện bảng thông báo khi bấm Reset
+    resetBtn.addEventListener("click", () => {
+        customModal.removeAttribute("hidden");
     });
+
+    // Ẩn bảng khi bấm Hủy
+    modalCancelBtn.addEventListener("click", () => {
+        customModal.setAttribute("hidden", "");
+    });
+
+    // Gửi lệnh Reset khi bấm Đồng ý
+    modalConfirmBtn.addEventListener("click", async () => {
+        customModal.setAttribute("hidden", "");
+        try {
+            await api.realtime("reset");
+        } catch (error) {
+            console.error("Lỗi khi gửi lệnh Reset:", error);
+        }
+    });
+}
 
     unlockButton?.addEventListener("click", () => sendCommand("$X"));
 

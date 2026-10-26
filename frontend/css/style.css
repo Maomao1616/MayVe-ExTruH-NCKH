@@ -1784,7 +1784,7 @@ fieldset > * + * {
     display: none;
 }
 
-/* Terminal: màu sắc cho các loại tin nhắn khác nhau */
+/* 19. Terminal: màu sắc cho các loại tin nhắn khác nhau */
 .terminal-output .term-tx     { color: var(--accent-text); }
 .terminal-output .term-rx     { color: var(--text-main); }
 .terminal-output .term-err    { color: var(--danger); }
@@ -1794,7 +1794,7 @@ fieldset > * + * {
 
 
 
-/* Khung 2D: canvas tự vẽ vùng làm việc nên ẩn khung HTML tĩnh */
+/* 20.Khung 2D: canvas tự vẽ vùng làm việc nên ẩn khung HTML tĩnh */
 .preview-canvas-container.is-canvas .work-area-frame { display: none; }
 .preview-canvas-container {
     --path-color: var(--accent-text);
@@ -1809,3 +1809,181 @@ fieldset > * + * {
 .preview-playback input[type="range"] { flex: 1; min-width: 80px; height: auto; padding: 0; border: 0; background: transparent; }
 .preview-playback select { width: auto; }
 #preview-time { color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+
+
+
+/* ========================================
+   HOẠT ẢNH SÁNG TẠO & KHUNG VẼ 2D
+======================================== */
+
+/* 1. XÓA NỀN LƯỚI KHUNG VẼ & THÊM CHIỀU SÂU 
+   Ghi đè thuộc tính background cũ của .preview-canvas-container */
+.preview-canvas-container {
+    background-image: radial-gradient(circle at 50% 50%, var(--bg-elevated) 0%, var(--bg-main) 100%) !important;
+    background-size: cover !important;
+    box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.08); /* Đổ bóng chìm tạo cảm giác vùng làm việc lõm xuống */
+}
+
+/* 2. MŨI TÊN THU GỌN (Hiệu ứng nảy đàn hồi - Elastic Bounce) */
+.terminal-toggle,
+.drawing-section-chevron {
+    display: inline-block;
+    /* Dùng cubic-bezier để tạo cảm giác xoay vọt qua rồi nảy nhẹ lại */
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    transform: rotate(0deg);
+}
+
+.terminal-panel[open] .terminal-toggle,
+#terminal-panel[open] .terminal-toggle,
+.drawing-section[open] > .drawing-section-summary .drawing-section-chevron {
+    transform: rotate(180deg);
+}
+
+/* 3. ĐÈN TRẠNG THÁI (Hiệu ứng "Nhịp thở" - Breathing Glow) */
+@keyframes status-breathing {
+    0% { 
+        box-shadow: 0 0 0 0 rgba(67, 217, 163, 0.7); 
+        transform: scale(0.95);
+    }
+    50% { 
+        box-shadow: 0 0 0 6px rgba(67, 217, 163, 0); 
+        transform: scale(1.15); /* Phình to nhẹ */
+    }
+    100% { 
+        box-shadow: 0 0 0 0 rgba(67, 217, 163, 0); 
+        transform: scale(0.95);
+    }
+}
+
+.status-dot.is-online,
+.status-dot.active,
+.status-dot.running {
+    background: var(--success);
+    animation: status-breathing 2.5s infinite ease-in-out;
+}
+
+/* 4. THANH TIẾN TRÌNH (Hiệu ứng sọc chuyển động - Barber Pole Shimmer) */
+@keyframes progress-stripe {
+    from { background-position: 24px 0; }
+    to { background-position: 0 0; }
+}
+
+.progress-fill.is-active {
+    background-color: var(--accent);
+    /* Tạo vân sọc chéo xen kẽ chạy liên tục */
+    background-image: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 24px 24px;
+    animation: progress-stripe 1s linear infinite;
+}
+
+/* 5. NÚT REFRESH (Xoay mượt mà, có gia tốc) */
+@keyframes spin-accelerate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.is-spinning,
+.icon-button.is-loading {
+    /* Mượt hơn linear, nút xoay có cảm giác trớn */
+    animation: spin-accelerate 1s cubic-bezier(0.4, 0.1, 0.1, 1) infinite;
+}
+
+/* 6. GIẢM CHUYỂN ĐỘNG CHO MÁY YẾU */
+@media (prefers-reduced-motion: reduce) {
+    .terminal-toggle,
+    .drawing-section-chevron,
+    .status-dot,
+    .is-spinning,
+    .progress-fill {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+
+
+/* ========================================
+   GIAO DIỆN KÍNH & HOẠT ẢNH CHUYỂN TRANG
+======================================== */
+
+/* --- 1. ĐỔI MÀU SÁNG/TỐI (THEME TRANSITION) --- */
+/* Tạo hiệu ứng fade mượt mà khi đổi màu nền, viền và chữ */
+body, .panel, .top-bar, .app-header, input, select, button, .nav-tab, .drawing-section-summary, .coordinate-row {
+    transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Đảm bảo mũi tên xoay không bị mất hiệu ứng do rule bên trên đè */
+.terminal-toggle, .drawing-section-chevron {
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), color 0.4s ease !important;
+}
+
+/* --- 2. HIỆU ỨNG CHUYỂN TAB (TAB FADE & SLIDE) --- */
+@keyframes tabEnter {
+    0% { opacity: 0; transform: translateY(15px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.tab-panel.is-active {
+    display: block;
+    /* Nội dung tab sẽ trượt nhẹ từ dưới lên và rõ dần */
+    animation: tabEnter 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+/* --- 3. BẢNG THÔNG BÁO GLASSMORPHISM (HIỆU ỨNG KÍNH) --- */
+.glass-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Làm nền đen mờ và hiệu ứng kính làm nhòe (blur) vạn vật phía sau */
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Khi xóa thuộc tính [hidden] bằng JS */
+.glass-modal-overlay:not([hidden]) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.glass-modal-box {
+    width: 90%;
+    max-width: 360px;
+    padding: 24px;
+    /* Pha trộn màu nền hiện tại (sáng hoặc tối) với 20% trong suốt để tạo độ kính */
+    background: color-mix(in srgb, var(--bg-panel) 85%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    
+    /* Hiệu ứng nảy (pop up) khi xuất hiện */
+    transform: translateY(30px) scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.glass-modal-overlay:not([hidden]) .glass-modal-box {
+    transform: translateY(0) scale(1);
+}
+
+.glass-modal-box h3 { margin-bottom: 8px; font-size: 18px; }
+.glass-modal-box p { color: var(--text-muted); font-size: 14px; margin-bottom: 22px; line-height: 1.5; }
+.glass-modal-icon { font-size: 32px; margin-bottom: 12px; }
+.glass-modal-actions { display: flex; gap: 10px; justify-content: center; }
+.glass-modal-actions button { flex: 1; padding: 10px; font-weight: 600; }
