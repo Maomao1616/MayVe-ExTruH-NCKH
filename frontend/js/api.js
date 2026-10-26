@@ -44,5 +44,7 @@ export const api = {
     status: () => request("GET", "/status"),
     command: (line) => request("POST", "/command", { line }),
     realtime: (action) => request("POST", "/realtime", { action }),
+    jobStart: (name, lines) => request("POST", "/jobs", { name, lines }),
+    jobCancel: () => request("POST", "/jobs/cancel"),
     log: (since = 0) => request("GET", `/log?since=${since}`)
 };

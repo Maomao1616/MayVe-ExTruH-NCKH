@@ -6,24 +6,26 @@ import {
     applyTranslations
 } from "./i18n.js";
 
-import { startPolling, subscribe, state } from "./state.js";
-import { api, ApiError } from "./api.js";
+import { startPolling } from "./state.js";
 import { initTerminal } from "./views/terminal.js";
 import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
 import { initJobs } from "./views/jobs.js";
+import { initPreview } from "./views/preview.js";
+
+
 
 async function initApp() {
     try {
         initTabs();
         await initLanguageSelector();
         initThemeSelector();
-        initSettings();
         startPolling();
         initControl();
-        initJobs();
+        initPreview();
         initTerminal();
-        
+        initJobs();
+        initSettings();
 
         console.log("ExtruXY đã khởi động.");
         console.log("Ngôn ngữ hiện tại:", getLanguage());

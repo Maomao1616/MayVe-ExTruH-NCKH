@@ -55,7 +55,8 @@ def test_connect_sim_status_shape_and_double_connect(client: TestClient):
 
     body = client.get("/api/status").json()
     assert set(body) == {"connection", "machine", "homed_guess", "last_alarm",
-                         "last_error", "banner", "updated_at"}
+                         "last_error", "banner", "updated_at", "job"}
+    assert body["job"] is None
     assert body["machine"]["state"] == "Idle"
     assert isinstance(body["updated_at"], float)
 
@@ -95,3 +96,30 @@ def test_disconnect_clears_machine(client: TestClient):
     t0 = body["updated_at"]
     time.sleep(0.4)  # lâu hơn POLL_S: nếu poller còn chạy thì updated_at sẽ đổi
     assert client.get("/api/status").json()["updated_at"] == t0
+
+def test_job_routes_validation(client):
+    assert client.post("/api/jobs", json={"name": "x", "lines": []}).status_code == 422
+    r = client.post("/api/jobs", json={"name": "x", "lines": ["G0 X1"]})
+    assert r.status_code == 409 and err_code(r) == "not_connected"
+    r = client.post("/api/jobs/cancel")
+    assert r.status_code == 409 and err_code(r) == "no_job"
+
+
+def test_job_rejects_dollar_lines_via_api(client):
+    client.post("/api/connect", json={"mode": "sim", "sim_speed": 100})
+    assert wait_for(lambda: client.get("/api/status").json()["machine"] is not None)
+    r = client.post("/api/jobs", json={"name": "x", "lines": ["G21", "$H"]})
+    assert r.status_code == 400 and err_code(r) == "bad_gcode"
+
+
+def test_job_runs_via_api(client):
+    client.post("/api/connect", json={"mode": "sim", "sim_speed": 100})
+    client.post("/api/command", json={"line": "$H"})
+    assert wait_for(lambda: client.get("/api/status").json()["homed_guess"])
+    assert wait_for(lambda: (client.get("/api/status").json()["machine"] or {}).get("state") == "Idle")
+    r = client.post("/api/jobs", json={"name": "t", "lines": ["G90", "G1 F6000", "G1 X10 Y10"]})
+    assert r.status_code == 200 and r.json()["state"] == "running"
+    assert wait_for(lambda: (client.get("/api/status").json()["job"] or {}).get("state") == "done",
+                    timeout=10)
+    r = client.post("/api/command", json={"line": "$I"})
+    assert r.status_code == 200          # xong tác vụ thì gửi lệnh lại được

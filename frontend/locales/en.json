@@ -110,6 +110,15 @@
   "control.gcode.modeStream": "Stream from computer",
   "control.gcode.modeDevice": "Run from machine storage",
   "control.gcode.uploadToDevice": "Upload to machine", 
+  "control.gcode.lines": "lines",
+  "control.gcode.outOfRange": "outside work area",
+  "control.gcode.deviceUnsupported": "Running from machine storage is not supported yet",
+  "control.gcode.cancelJob": "Cancel job",
+
+
+  "control.progress.linesLabel": "Lines",
+  "control.progress.etaLabel": "Remaining",
+  
 
   "control.controller.title": "Controller Status",
   "control.controller.unlock": "Unlock ($X)",
@@ -135,7 +144,8 @@
   "control.preview.noPath": "No drawing path",
   "control.preview.uploadHint": "Upload or create a drawing to preview it here.",
   "control.preview.dimensions": "Work area: undefined",
-  
+  "control.preview.clearTrail": "Clear trail",
+
   "control.terminal.title": "Terminal / Console",
   "control.terminal.desc": "Send commands and monitor responses",
   "control.terminal.clear": "Clear displayed log",
@@ -260,6 +270,13 @@
   "drawing.info.eta": "Estimated Time",
   "drawing.info.inBounds": "Within work area?",
   
+  "job.confirmCancel": "Cancelling resets the machine (Alarm state) and the pen may still be down. Continue?",
+  "job.state.running": "Running",
+  "job.state.finishing": "Finishing",
+  "job.state.done": "Done",
+  "job.state.failed": "Failed",
+  "job.state.cancelled": "Cancelled",
+
   "jobs.heading.eyebrow": "JOB MANAGEMENT",
   "jobs.heading.desc": "Monitor the current job and manage the queue.",
   "jobs.summary.current": "Current Job",
@@ -409,6 +426,10 @@
   "aria.zoomIn": "Zoom in",
   "aria.previewCanvas": "2D drawing preview canvas",
   "aria.terminalLog": "Machine command log",
+  "aria.previewRestart": "Restart from the beginning",
+  "aria.previewPlay": "Play / pause",
+  "aria.previewProgress": "Preview progress",
+  "aria.previewSpeed": "Playback speed",
   
   "dynamic.checkingBackend": "Checking backend...",
   "dynamic.noJob": "No task",

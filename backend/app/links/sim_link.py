@@ -233,9 +233,8 @@ class SimLink(BaseLink):
             return
         for g in gs:
             if g in (2, 3):
-                self._error(20)
-                return
-            if g == 90:
+                self._motion_mode = 1   # cung tròn: sim chỉ đi thẳng tới điểm cuối
+            elif g == 90:
                 self._absolute = True
             elif g == 91:
                 self._absolute = False

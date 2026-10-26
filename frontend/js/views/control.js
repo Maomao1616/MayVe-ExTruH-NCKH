@@ -56,20 +56,6 @@ const STATUS_FIELDS = [
 ];
 
 function initStatusPanel() {
-    const showNoJobProgress = () => {
-        // API hiện chưa có tiến trình công việc; jobs.js sẽ tiếp quản phần này.
-        setText("progress-job-name", t("control.progress.noJob"));
-        setText("job-progress-percent", "—");
-        setText("job-progress-lines", "—");
-        setText("job-progress-eta", "—");
-
-        const fill = $("job-progress-fill");
-        if (fill) fill.style.width = "0%";
-
-        const track = $("job-progress-track");
-        if (track) track.setAttribute("aria-valuenow", "0");
-    };
-
     const displayStatus = (snapshot) => {
         const status = snapshot.status;
         const machine = status?.machine;
@@ -94,7 +80,6 @@ function initStatusPanel() {
             const banner = $("readonly-banner");
             if (banner) banner.hidden = true;
 
-            showNoJobProgress();
             return;
         }
 
@@ -150,7 +135,7 @@ function initStatusPanel() {
         }
 
         setText("firmware-version", "—");   // chưa có trong API status
-        showNoJobProgress();
+        
     };
 
     subscribe(displayStatus);

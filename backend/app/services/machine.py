@@ -12,6 +12,7 @@ from collections import deque
 
 from ..links.base import BaseLink, LinkError
 from ..links.sim_link import SimLink
+from .job import JobError, JobRunner, clean_gcode
 from ..protocol import (CYCLE_START, FEED_HOLD, JOG_CANCEL, SOFT_RESET, STATUS_QUERY,
                         classify_line, is_read_only_command)
 
@@ -49,6 +50,7 @@ class MachineService:
         self._seq = 0
         self._info: dict = {"mode": None, "port": None, "baud": None}
         self._lost_reason: str | None = None
+        self._job = JobRunner(self)
         self._clear_machine()
 
     def _clear_machine(self) -> None:
@@ -82,6 +84,7 @@ class MachineService:
             else:
                 raise ServiceError("bad_request", f"Chế độ không hợp lệ: {mode}", 400)
             self._clear_machine()
+            self._job.reset()
             self._lost_reason = None
             link.add_listener(self._on_line)
             link.add_close_listener(self._on_link_closed)
@@ -103,6 +106,7 @@ class MachineService:
             link, self._link = self._link, None
             self._poll_stop.set()
         if link is not None:
+            self._job.abort("disconnected", "Disconnected")
             link.close()
             self._add_log("sys", "system", "Disconnected")
         return self.connection_info()
@@ -114,6 +118,7 @@ class MachineService:
             self._link = None
             self._poll_stop.set()
             self._lost_reason = reason
+            self._job.abort("link_lost", reason)
             self._add_log("sys", "system", reason)
 
     def _poll_loop(self) -> None:
@@ -150,12 +155,16 @@ class MachineService:
                     self._homed_guess = False
                 self._saw_home = False
                 self._homing_pending = False
+                self._job.on_alarm(info["code"])
             elif kind == "ok":
+                if self._job.on_response("ok", info):
+                    return  # `ok` của dòng G-code trong tác vụ: không ghi nhật ký (quá nhiều)
                 if self._homing_pending:  # chỉ đáng tin khi chưa có lệnh khác đang chờ ok
                     self._mark_homed()
                     self._homing_pending = False
             elif kind == "error":
                 self._last_error = {"code": info["code"], "name": info["name"], "at": time.time()}
+                self._job.on_response("error", info)
             elif kind == "banner":
                 self._banner = info["text"]
             self._add_log("rx", "device", line)
@@ -202,6 +211,10 @@ class MachineService:
             raise ServiceError("bad_request", "Lệnh phải là đúng một dòng, không rỗng.", 400)
         with self._lock:
             link = self._require_link()
+            if self._job.active:
+                raise ServiceError(
+                    "job_running",
+                    "Đang chạy tác vụ G-code. Hãy dừng tác vụ trước khi gửi lệnh khác.", 409)
             if self._info["mode"] == "serial" and not self.allow_motion and not is_read_only_command(text):
                 raise ServiceError(
                     "motion_locked",
@@ -236,6 +249,54 @@ class MachineService:
                 raise ServiceError("link_error", str(exc), 502) from exc
         return {"sent": action}
 
+    # --- tác vụ G-code (gửi từng dòng, xem services/job.py) ---------------------
+    def start_job(self, name: str, lines: list[str]) -> dict:
+        try:
+            cleaned = clean_gcode(lines)           # ngoài khóa: tệp lớn có thể mất một lúc
+        except JobError as exc:
+            raise ServiceError(exc.code, exc.message, exc.status) from exc
+        with self._lock:
+            self._require_link()
+            if self._info["mode"] == "serial" and not self.allow_motion:
+                raise ServiceError("motion_locked", "Máy thật đang ở chế độ chỉ đọc.", 403)
+            state = self._status["state"] if self._status else None
+            if state != "Idle":
+                raise ServiceError("not_idle", f"Máy phải ở trạng thái Idle (hiện tại: {state}).", 409)
+            try:
+                return self._job.start(name, cleaned, pre_cleaned=True)
+            except JobError as exc:
+                raise ServiceError(exc.code, exc.message, exc.status) from exc
+
+    def cancel_job(self) -> dict:
+        try:
+            self._job.cancel()
+        except JobError as exc:
+            raise ServiceError(exc.code, exc.message, exc.status) from exc
+        try:
+            self.send_realtime("reset")            # dừng ngay (sẽ vào Alarm 3, cần mở khóa)
+        except ServiceError:
+            pass
+        return self._job.snapshot()
+
+    # JobRunner gọi các hàm dưới đây từ luồng của nó.
+    def log_system(self, text: str) -> None:
+        with self._lock:
+            self._add_log("sys", "system", text)
+
+    def job_write(self, line: str) -> None:
+        with self._lock:
+            self._require_link().write_line(line)   # không ghi nhật ký từng dòng
+
+    def job_hold(self) -> None:
+        try:
+            self.send_realtime("hold")
+        except ServiceError:
+            pass
+
+    def machine_state(self) -> tuple[str | None, float | None]:
+        with self._lock:
+            return (self._status["state"] if self._status else None), self._updated_at
+
     # --- đọc dữ liệu ----------------------------------------------------------
     def snapshot(self) -> dict:
         with self._lock:
@@ -247,6 +308,7 @@ class MachineService:
                 "last_error": self._last_error,
                 "banner": self._banner,
                 "updated_at": self._updated_at,
+                "job": self._job.snapshot(),
             }
 
     def log_since(self, seq: int = 0) -> dict:
