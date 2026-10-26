@@ -6,10 +6,6 @@ export function initSettings() {
     initConnection();
 }
 
-
-
-
-
 /* ==================== KẾT NỐI BACKEND ==================== */
     function initConnection() {
     const form = document.getElementById("connection-form");
