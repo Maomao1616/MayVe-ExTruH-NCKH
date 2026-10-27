@@ -362,7 +362,7 @@ function initGcodePanel() {
             customCancelModal.setAttribute("hidden", "");
             try {
                 // Gọi API hủy / dừng tác vụ
-                await api.realtime("reset"); 
+                await api.jobCancel();   // backend tự Reset sau khi đánh dấu hủy
             } catch (error) {
                 console.error("Lỗi khi gửi lệnh Hủy tác vụ:", error);
                 // Bắn event thông báo lỗi ra ngoài nếu cần hiển thị lên terminal

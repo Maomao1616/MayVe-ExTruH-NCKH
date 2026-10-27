@@ -164,6 +164,7 @@ class MachineService:
                     self._homing_pending = False
             elif kind == "error":
                 self._last_error = {"code": info["code"], "name": info["name"], "at": time.time()}
+                self._homing_pending = False        # thêm
                 self._job.on_response("error", info)
             elif kind == "banner":
                 self._banner = info["text"]

@@ -78,6 +78,10 @@ class JobRunner:
             self._cancel = False
             self._awaiting = False
             self._response = None
+            
+    def is_live(self, job_id: int) -> bool:
+        with self._cond:
+            return self._live(job_id)
 
     def snapshot(self) -> dict | None:
         with self._cond:
@@ -145,6 +149,8 @@ class JobRunner:
     def _finish(self, state: str) -> None:
         self._info["state"] = state
         self._info["finished_at"] = time.time()
+        self._awaiting = False      # thêm
+        self._response = None       # thêm
 
     def _fail(self, code: str, text: str, line: int | None = None,
               device_code: int | None = None) -> None:
