@@ -10,10 +10,6 @@ import { startPolling } from "./state.js";
 import { initTerminal } from "./views/terminal.js";
 import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
-import { initJobs } from "./views/jobs.js";
-import { initPreview } from "./views/preview.js";
-
-
 
 async function initApp() {
     try {
@@ -22,9 +18,7 @@ async function initApp() {
         initThemeSelector();
         startPolling();
         initControl();
-        initPreview();
         initTerminal();
-        initJobs();
         initSettings();
 
         console.log("ExtruXY đã khởi động.");

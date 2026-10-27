@@ -10,7 +10,6 @@ import { MACHINE, VIEW } from "../config.js";
 import { subscribe, isConnected } from "../state.js";
 import { subscribeStore } from "../jobstore.js";
 import { positionAt, formatDuration } from "../gcode.js";
-import { api, ApiError } from "../api.js";
 
 const MARGIN = 14;
 const MIN_ZOOM = 0.5;
