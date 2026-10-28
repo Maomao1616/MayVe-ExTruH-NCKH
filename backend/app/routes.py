@@ -30,6 +30,14 @@ class JobStartRequest(BaseModel):
 class RealtimeRequest(BaseModel):
     action: Literal["status", "hold", "resume", "reset", "jog_cancel"]
 
+class MotionRequest(BaseModel):
+    on: bool
+    pin: str | None = Field(None, max_length=64)
+
+@router.post("/motion")
+def motion(req: MotionRequest):
+    return machine.set_motion(req.on, req.pin)
+
 
 @router.get("/health")
 def health():

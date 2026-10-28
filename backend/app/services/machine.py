@@ -4,7 +4,8 @@
 """
 from __future__ import annotations
 
-import os
+import os 
+import secrets
 import re
 import threading
 import time
@@ -43,6 +44,14 @@ class MachineService:
         if allow_motion is None:
             allow_motion = os.environ.get("EXTRUXY_ALLOW_MOTION") == "1"
         self.allow_motion = allow_motion
+        self._motion_permanent = bool(allow_motion)
+        self._unlock_forbidden = os.environ.get("EXTRUXY_NO_UNLOCK") == "1"
+        self._unlock_pin = os.environ.get("EXTRUXY_UNLOCK_PIN") or None
+        try:
+            self._unlock_minutes = float(os.environ.get("EXTRUXY_UNLOCK_MINUTES", "15"))
+        except ValueError:
+            self._unlock_minutes = 15.0
+        self._motion_activity = 0.0
         self._lock = threading.RLock()
         self._link: BaseLink | None = None
         self._poll_stop = threading.Event()
@@ -125,11 +134,13 @@ class MachineService:
             self._link = None
             self._poll_stop.set()
             self._lost_reason = reason
+            self._relock("Connection lost")
             self._job.abort("link_lost", reason)
             self._add_log("sys", "system", reason)
 
     def _poll_loop(self, stop: threading.Event) -> None:
         while not stop.wait(self.POLL_S):
+            self._check_relock()
             link = self._link
             if link is None:
                 return
@@ -138,12 +149,60 @@ class MachineService:
             except LinkError as exc:
                 self._on_link_closed(str(exc))
                 return
+            
+    def set_motion(self, on: bool, pin: str | None = None) -> dict:
+        with self._lock:
+            if on:
+                if self._unlock_forbidden:
+                    raise ServiceError("unlock_forbidden", "Mở khóa từ giao diện đã bị tắt.", 403)
+                if self._unlock_pin is not None and not secrets.compare_digest(
+                        (pin or "").encode(), self._unlock_pin.encode()):
+                    raise ServiceError("bad_pin", "Sai mã PIN.", 403)
+                self.allow_motion = True
+                self._motion_activity = time.time()
+                self._add_log("sys", "system", "Motion unlocked")
+            else:
+                if self._motion_permanent:
+                    raise ServiceError("unlock_permanent",
+                                    "Máy được mở khóa từ lúc khởi động.", 409)
+                self._relock("Motion locked")
+            return self.connection_info()
+
+    def _relock(self, why: str) -> None:       # gọi khi đang giữ self._lock
+        if self.allow_motion and not self._motion_permanent:
+            self.allow_motion = False
+            self._add_log("sys", "system", f"{why}: motion locked")
+
+    def _touch_motion(self) -> None:
+        self._motion_activity = time.time()
+
+    def _unlock_seconds_left(self) -> int | None:
+        if not self.allow_motion or self._motion_permanent or self._unlock_minutes <= 0:
+            return None
+        return max(0, int(self._unlock_minutes * 60 - (time.time() - self._motion_activity)))
+
+    def _check_relock(self) -> None:
+        with self._lock:
+            if not self.allow_motion or self._motion_permanent or self._unlock_minutes <= 0:
+                return
+            state = self._status["state"] if self._status else None
+            if self._job.active or state not in (None, "Idle", "Alarm", "Sleep"):
+                self._motion_activity = time.time()
+                return
+            if time.time() - self._motion_activity > self._unlock_minutes * 60:
+                self._relock("Idle timeout")
 
     def connection_info(self) -> dict:
         with self._lock:
             return {"connected": self._link is not None, **self._info,
                     "lost_reason": self._lost_reason,
-                    "motion_unlocked": self._info["mode"] == "sim" or self.allow_motion}
+                    "motion_unlocked": self._info["mode"] == "sim" or self.allow_motion,
+                    "motion_permanent": self._motion_permanent,
+                    "unlock_available": not self._unlock_forbidden,
+                    "unlock_needs_pin": self._unlock_pin is not None,
+                    "unlock_seconds_left": self._unlock_seconds_left()  
+}
+        self._relock("Disconnected")
 
     # --- nhận dữ liệu ---------------------------------------------------------
     def _on_line(self, line: str) -> None:
@@ -229,6 +288,8 @@ class MachineService:
                     "Máy thật đang ở chế độ chỉ đọc. Chỉ cho phép lệnh đọc thông tin "
                     "(vd $I, $CMD, $G, $SD/ListJSON).", 403)
             self._add_log("tx", source, text)
+            if not is_read_only_command(text):
+                self._touch_motion()
             command = text.replace(" ", "").upper()
             if re.fullmatch(r"\$H[XY]*", command):   # $H, $HX, $HY
                 self._homing_pending = True
@@ -271,6 +332,7 @@ class MachineService:
             if state != "Idle":
                 raise ServiceError("not_idle", f"Máy phải ở trạng thái Idle (hiện tại: {state}).", 409)
             try:
+                self._touch_motion()
                 return self._job.start(name, cleaned, pre_cleaned=True)
             except JobError as exc:
                 raise ServiceError(exc.code, exc.message, exc.status) from exc

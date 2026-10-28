@@ -14,6 +14,8 @@ import { initPreview } from "./preview.js";
 
 const $ = (id) => document.getElementById(id);
 
+let lastConnection = null;
+
 const setText = (id, value) => {
     const element = $(id);
     if (element) element.textContent = value;
@@ -58,6 +60,7 @@ export function initControl() {
     initGcodePanel();
     initRunModeSwitch();
     initPreview();
+    initMotionLock();
 }
 
 /* ==================== BẢNG VỊ TRÍ / TRẠNG THÁI ==================== */
@@ -148,6 +151,20 @@ function initStatusPanel() {
                 connection.motion_unlocked === false
             );
         }
+
+
+        lastConnection = connection;
+        const liveBanner = $("motion-live-banner");
+        if (liveBanner) {
+            liveBanner.hidden = !(connection.mode === "serial" && connection.motion_unlocked === true);
+            const left = connection.unlock_seconds_left;
+            setText("motion-live-timer", Number.isFinite(left)
+                ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "—");
+            const relock = $("relock-motion-btn");
+            if (relock) relock.hidden = connection.motion_permanent === true;
+        }
+        const unlock = $("unlock-motion-btn");
+        if (unlock) unlock.disabled = connection.unlock_available === false;
 
         setText("firmware-version", "—");   // chưa có trong API status
         
@@ -261,11 +278,23 @@ function initMotionControls() {
     subscribe(updateControls);
 }
 
-//  - Nạp tệp từ máy tính, đọc bằng gcode.js, hiện số dòng / vùng bao / cảnh báo.
-//  - "Xem trước": báo cho preview.js phát lại (không gửi gì cho máy).
-//  - "Chạy": gửi các dòng đã làm sạch cho backend (POST /api/jobs), backend gửi từng dòng.
-//  - Hiện tiến trình ở thanh tiêu đề; nút Hủy tác vụ.
-// Chế độ "chạy từ bộ nhớ máy" (thẻ SD / flash) chưa hỗ trợ: nút Chạy tắt ở chế độ đó.
+/* ==================== MỞ KHÓA / KHÓA CHUYỂN ĐỘNG ==================== */
+
+function initMotionLock() {
+    const setMotion = async (on) => {
+        try {
+            let pin = null;
+            if (on && lastConnection?.unlock_needs_pin) {
+                pin = window.prompt(t("control.motion.pin_prompt"));
+                if (pin === null) return;
+            }
+            await api.motion(on, pin);
+            message({ text: on ? "Motion unlocked." : "Motion locked." });
+        } catch (error) { reportError(error); }
+    };
+    $("unlock-motion-btn")?.addEventListener("click", () => setMotion(true));
+    $("relock-motion-btn")?.addEventListener("click", () => setMotion(false));
+}
 
 
 /* ==================== CHUYỂN ĐỔI CHẾ ĐỘ CHẠY G-CODE ==================== */

@@ -56,6 +56,13 @@
   "toolbar.controlsLocked": "Controls locked",
   "toolbar.safetyNote": "Reset is a soft stop, not an emergency stop. For a real emergency stop, disconnect machine power.",
   
+
+  "control.motion.unlock": "Unlock Motion",
+  "control.motion.live_title": "LIVE RUN: Motion is unlocked.",
+  "control.motion.live_timer": "Auto-lock in:",
+  "control.motion.relock": "Lock Motion",
+  "control.motion.pin_prompt": "Enter PIN to unlock motion:",
+
   "control.heading.eyebrow": "MACHINE CONTROL",
   "control.heading.title": "Machine Control",
   "control.heading.desc": "Monitor the plotter position, status, and controls.",

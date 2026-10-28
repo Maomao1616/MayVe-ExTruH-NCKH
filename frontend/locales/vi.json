@@ -55,6 +55,16 @@
   "toolbar.controlsLocked": "Điều khiển đang khóa",
   "toolbar.safetyNote": "Reset là dừng mềm, không phải dừng khẩn cấp. Dừng khẩn cấp thật: ngắt nguồn máy.",
   
+
+
+
+  "control.motion.unlock": "Mở khóa chuyển động",
+  "control.motion.live_title": "CHẠY THẬT: chuyển động đang mở khóa.",
+  "control.motion.live_timer": "Tự khóa lại sau:",
+  "control.motion.relock": "Khóa chuyển động",
+  "control.motion.pin_prompt": "Nhập mã PIN để mở khóa chuyển động:",
+
+  
   "control.heading.eyebrow": "MACHINE CONTROL",
   "control.heading.title": "Điều khiển máy",
   "control.heading.desc": "Theo dõi vị trí, trạng thái và điều khiển máy vẽ.",

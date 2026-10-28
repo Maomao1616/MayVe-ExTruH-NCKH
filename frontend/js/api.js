@@ -46,5 +46,6 @@ export const api = {
     realtime: (action) => request("POST", "/realtime", { action }),
     jobStart: (name, lines) => request("POST", "/jobs", { name, lines }),
     jobCancel: () => request("POST", "/jobs/cancel"),
-    log: (since = 0) => request("GET", `/log?since=${since}`)
+    log: (since = 0) => request("GET", `/log?since=${since}`),
+    motion: (on, pin = null) => request("POST", "/motion", { on, pin }),
 };

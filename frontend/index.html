@@ -135,9 +135,16 @@
         <div class="notice notice-warning" hidden="" id="readonly-banner" role="status">
           <strong data-i18n="control.readonly.title">Máy thật đang ở chế độ chỉ đọc.</strong>
           <span data-i18n="control.readonly.desc">
+                <button class="secondary-button" data-i18n="control.motion.unlock" id="unlock-motion-btn" type="button">Mở khóa chuyển động</button>
             Home, jog, bút và chạy tệp bị khóa. Các lệnh dừng
             (Tạm dừng, Reset) vẫn hoạt động.
           </span>
+        </div>
+
+        <div class="notice notice-warning" hidden="" id="motion-live-banner" role="status">
+          <strong data-i18n="control.motion.live_title">CHẠY THẬT: chuyển động đang mở khóa.</strong>
+          <span><span data-i18n="control.motion.live_timer">Tự khóa lại sau</span> <b id="motion-live-timer">—</b></span>
+          <button class="secondary-button" data-i18n="control.motion.relock" id="relock-motion-btn" type="button">Khóa lại</button>
         </div>
 
         <div class="control-layout">
