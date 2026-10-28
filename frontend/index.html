@@ -64,10 +64,6 @@
           <span class="nav-icon">✎</span>
           <span data-i18n="nav.drawing">Tạo bản vẽ</span>
         </a>
-        <a class="nav-tab" href="#panel-jobs" id="tab-jobs">
-          <span class="nav-icon">▤</span>
-          <span data-i18n="nav.jobs">Công việc</span>
-        </a>
         <a class="nav-tab" href="#panel-settings" id="tab-settings">
           <span class="nav-icon">⚙</span>
           <span data-i18n="nav.settings">Cài đặt</span>
@@ -526,10 +522,42 @@
                   Chỉ gửi lệnh khi đã hiểu tác dụng và xác nhận
                   đúng chế độ kết nối.
                 </p>
+
               </div>
             </details>
 
   
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <h2 data-i18n="jobs.queue.title">Hàng đợi công việc</h2>
+              <p data-i18n="jobs.queue.desc">Danh sách sẽ được kết nối khi backend hỗ trợ.</p>
+            </div>
+            <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
+          </div>
+          <div class="empty-state" id="jobs-empty-state">
+            <span aria-hidden="true" class="empty-icon">▤</span>
+            <strong data-i18n="jobs.queue.empty">Chưa có dữ liệu hàng đợi</strong>
+            <p data-i18n="jobs.queue.help">
+              Backend hiện tại cần cung cấp API quản lý và lịch sử
+              công việc trước khi chức năng này hoạt động.
+            </p>
+          </div>
+          <div class="table-scroll" hidden="" id="jobs-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-i18n="jobs.queue.colName">Tên công việc</th>
+                  <th data-i18n="jobs.queue.colStatus">Trạng thái</th>
+                  <th data-i18n="jobs.queue.colProgress">Tiến trình</th>
+                  <th data-i18n="jobs.queue.colTime">Thời gian</th>
+                  <th data-i18n="jobs.queue.colActions">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="jobs-table-body"></tbody>
+            </table>
+          </div>
+        </article>
 
           </div>
         </div>
@@ -896,141 +924,8 @@
         </div>
       </section>
 
-
       <!-- ==================================================
-                 TAB 3: CÔNG VIỆC
-            =================================================== -->
-      <section aria-labelledby="tab-jobs" class="tab-panel" id="panel-jobs" role="tabpanel">
-        
-        <div class="page-heading">
-          <div>
-            <p class="eyebrow" data-i18n="jobs.heading.eyebrow">JOB MANAGEMENT</p>
-            <h1 data-i18n="nav.jobs">Công việc</h1>
-            <p class="page-description" data-i18n="jobs.heading.desc">
-              Theo dõi tác vụ hiện tại và khu vực quản lý hàng đợi.
-            </p>
-          </div>
-        </div>
-
-        <div class="job-summary-grid">
-          <article class="panel summary-card">
-            <span class="summary-label" data-i18n="jobs.summary.current">Tác vụ hiện tại</span>
-            <strong data-i18n="common.status.none" id="current-job-name">Không có</strong>
-            <small data-i18n="jobs.summary.noData" id="current-job-detail">Chưa có dữ liệu từ backend</small>
-          </article>
-          <article class="panel summary-card">
-            <span class="summary-label" data-i18n="jobs.summary.progress">Tiến trình</span>
-            <strong id="jobs-progress-value">0%</strong>
-            <small data-i18n="jobs.summary.noJob" id="jobs-progress-detail">Chưa có tác vụ chạy</small>
-          </article>
-          <article class="panel summary-card">
-            <span class="summary-label" data-i18n="jobs.summary.source">Nguồn dữ liệu</span>
-            <strong data-i18n="jobs.summary.backend" id="jobs-data-source">Backend</strong>
-            <small data-i18n="jobs.summary.confirmedOnly">Chỉ hiển thị dữ liệu đã xác nhận</small>
-          </article>
-        </div>
-
-        <article class="panel">
-          <div class="panel-heading">
-            <div>
-              <h2 data-i18n="jobs.queue.title">Hàng đợi công việc</h2>
-              <p data-i18n="jobs.queue.desc">Danh sách sẽ được kết nối khi backend hỗ trợ.</p>
-            </div>
-            <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
-          </div>
-          <div class="empty-state" id="jobs-empty-state">
-            <span aria-hidden="true" class="empty-icon">▤</span>
-            <strong data-i18n="jobs.queue.empty">Chưa có dữ liệu hàng đợi</strong>
-            <p data-i18n="jobs.queue.help">
-              Backend hiện tại cần cung cấp API quản lý và lịch sử
-              công việc trước khi chức năng này hoạt động.
-            </p>
-          </div>
-          <div class="table-scroll" hidden="" id="jobs-table-container">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th data-i18n="jobs.queue.colName">Tên công việc</th>
-                  <th data-i18n="jobs.queue.colStatus">Trạng thái</th>
-                  <th data-i18n="jobs.queue.colProgress">Tiến trình</th>
-                  <th data-i18n="jobs.queue.colTime">Thời gian</th>
-                  <th data-i18n="jobs.queue.colActions">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="jobs-table-body"></tbody>
-            </table>
-          </div>
-        </article>
-
-        <div class="job-secondary-grid">
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="jobs.sd.title">Thẻ SD</h2>
-                <p data-i18n="jobs.sd.desc">Dung lượng và tệp lưu trong máy. Chạy tệp: dùng khối Tệp G-code ở tab Điều khiển.</p>
-              </div>
-              <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
-            </div>
-            <dl class="detail-list detail-list-compact">
-              <div>
-                <dt data-i18n="jobs.sd.memoryCard">Thẻ nhớ</dt>
-                <dd data-i18n="common.status.unknown" id="jobs-sd-status">Chưa biết</dd>
-              </div>
-              <div>
-                <dt data-i18n="jobs.sd.usage">Đã dùng / Tổng</dt>
-                <dd id="jobs-sd-usage">— / —</dd>
-              </div>
-            </dl>
-            <div class="progress-track storage-bar">
-              <div class="progress-fill" id="jobs-sd-usage-fill"></div>
-            </div>
-            <div class="panel-actions">
-              <button class="secondary-button" data-i18n="common.action.refreshList" disabled="" id="jobs-refresh-sd-btn" type="button">
-                Làm mới danh sách
-              </button>
-            </div>
-          </article>
-          <article class="panel">
-            <div class="panel-heading">
-              <h2 data-i18n="jobs.history.title">Lịch sử tác vụ</h2>
-              <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
-            </div>
-            <p class="muted-text" data-i18n="jobs.history.help">
-              Lịch sử chỉ hiển thị sau khi có API lưu và truy vấn
-              các công việc đã thực hiện.
-            </p>
-          </article>
-        </div>
-
-        <article class="panel log-panel">
-          <div class="panel-heading">
-            <div>
-              <h2 data-i18n="jobs.log.title">Nhật ký lệnh và lỗi</h2>
-              <p data-i18n="jobs.log.desc">Lệnh đã gửi, phản hồi và lỗi từ máy.</p>
-            </div>
-            <div class="log-tools">
-              <label class="visually-hidden" for="log-filter">
-                <span data-i18n="jobs.log.filterLabel">Lọc nhật ký</span>
-              </label>
-              <select id="log-filter">
-                <option data-i18n="common.filter.all" value="all">Tất cả</option>
-                <option data-i18n="jobs.log.filterTx" value="tx">Lệnh đã gửi</option>
-                <option data-i18n="jobs.log.filterRx" value="rx">Phản hồi</option>
-                <option data-i18n="jobs.log.filterError" value="error">Lỗi và Alarm</option>
-              </select>
-              <button class="text-button" data-i18n="common.action.clearDisplay" id="clear-log-btn" type="button">
-                Xóa hiển thị
-              </button>
-            </div>
-          </div>
-          <pre aria-live="off" class="terminal-output log-output" id="log-output" data-i18n="dynamic.noLog">Chưa có nhật ký.</pre>
-        </article>
-
-      </section>
-
-
-      <!-- ==================================================
-                 TAB 4: CÀI ĐẶT
+                 TAB 3: CÀI ĐẶT
             =================================================== -->
       <section aria-labelledby="tab-settings" class="tab-panel" id="panel-settings" role="tabpanel">
         
@@ -1072,6 +967,34 @@
                 <option data-i18n="theme.dark" value="dark">Tối</option>
                 <option data-i18n="theme.light" value="light">Sáng</option>
               </select>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="jobs.sd.title">Thẻ SD</h2>
+                <p data-i18n="jobs.sd.desc">Dung lượng và tệp lưu trong máy. Chạy tệp: dùng khối Tệp G-code ở tab Điều khiển.</p>
+              </div>
+              <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
+            </div>
+            <dl class="detail-list detail-list-compact">
+              <div>
+                <dt data-i18n="jobs.sd.memoryCard">Thẻ nhớ</dt>
+                <dd data-i18n="common.status.unknown" id="jobs-sd-status">Chưa biết</dd>
+              </div>
+              <div>
+                <dt data-i18n="jobs.sd.usage">Đã dùng / Tổng</dt>
+                <dd id="jobs-sd-usage">— / —</dd>
+              </div>
+            </dl>
+            <div class="progress-track storage-bar">
+              <div class="progress-fill" id="jobs-sd-usage-fill"></div>
+            </div>
+            <div class="panel-actions">
+              <button class="secondary-button" data-i18n="common.action.refreshList" disabled="" id="jobs-refresh-sd-btn" type="button">
+                Làm mới danh sách
+              </button>
             </div>
           </article>
 
