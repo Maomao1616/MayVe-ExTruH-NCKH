@@ -14,8 +14,10 @@ const MAX_LINES = 500;
 const STATUS_ECHO = {
     enabled: true,          // false = tắt hẳn dòng trạng thái trong terminal
     intervalMs: 1000,       // tối đa 1 dòng mỗi giây
-    onlyWhenChanged: true   // false = cứ đủ 1 giây là in, kể cả khi không đổi
+    onlyWhenChanged: false   // false = cứ đủ 1 giây là in, kể cả khi không đổi
 };
+
+const SHOW_TIME = false;   // true = hiện [hh:mm:ss] đầu mỗi dòng
 
 // Lỗi gọi API hiển thị trong terminal (tiếng Anh, theo ApiError.code).
 const API_ERRORS = {
@@ -72,7 +74,7 @@ export function initTerminal() {
     function addLine(kind, text, whenMs) {
         const line = document.createElement("div");
         line.className = `term-line term-${kind}`;
-        line.textContent = `[${timeLabel(whenMs)}] ${text}`;
+        line.textContent = SHOW_TIME ? `[${timeLabel(whenMs)}] ${text}` : text;
 
         // Chỉ tự cuộn xuống khi người dùng đang ở cuối; đang đọc phía trên thì giữ nguyên.
         const nearBottom =
@@ -136,7 +138,12 @@ export function initTerminal() {
             ? machine.mpos.map((v) => Number(v).toFixed(3)).join(",")
             : "-";
         const sub = machine.substate == null ? "" : `:${machine.substate}`;
-        const text = `${machine.state}${sub}  MPos ${mpos}  F${machine.feed ?? 0}`;
+        const wpos = Array.isArray(machine.wpos)
+            ? machine.wpos.map((v) => Number(v).toFixed(3)).join(",")
+            : null;
+        const pins = machine.pins ? `  Pn:${machine.pins}` : "";
+        const text = `${machine.state}${sub}  MPos ${mpos}` +
+            `${wpos ? `  WPos ${wpos}` : ""}  F${machine.feed ?? 0}${pins}`;
 
         if (STATUS_ECHO.onlyWhenChanged && text === lastEcho.text) return;
 

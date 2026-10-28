@@ -214,8 +214,11 @@ class JobRunner:
                 deadline = now + RESPONSE_TIMEOUT_S         # đang tạm dừng: không tính timeout
             elif now > deadline:
                 with self._cond:
-                    if self._live(job_id):
+                    failed = self._live(job_id)
+                    if failed:
                         self._fail("timeout", "Máy không phản hồi.", line=index)
+                if failed:
+                    self._svc.job_hold()      # ngoài self._cond
                 return None
 
     def _wait_finish(self, job_id: int) -> None:

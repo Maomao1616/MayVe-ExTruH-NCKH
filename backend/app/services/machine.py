@@ -9,6 +9,7 @@ import re
 import threading
 import time
 from collections import deque
+from tracemalloc import stop
 
 from ..links.base import BaseLink, LinkError
 from ..links.sim_link import SimLink
@@ -69,6 +70,7 @@ class MachineService:
         self._updated_at: float | None = None
 
     # --- kết nối --------------------------------------------------------------
+    
     def connect(self, mode: str, port: str | None = None, baud: int = 115200,
                 sim_speed: float = 1.0) -> dict:
         with self._lock:
@@ -96,10 +98,15 @@ class MachineService:
             self._info = {"mode": mode, "port": port if mode == "serial" else None,
                           "baud": baud if mode == "serial" else None}
             self._add_log("sys", "system", f"Connected ({mode})")
-            self._poll_stop.clear()
-            self._poller = threading.Thread(target=self._poll_loop, name="status-poller", daemon=True)
+            self._poll_stop = threading.Event()
+            self._poller = threading.Thread(target=self._poll_loop, args=(self._poll_stop,),
+                                name="status-poller", daemon=True)
             self._poller.start()
+
+            
             return self.connection_info()
+        
+        
 
     def disconnect(self) -> dict:
         with self._lock:
@@ -121,8 +128,8 @@ class MachineService:
             self._job.abort("link_lost", reason)
             self._add_log("sys", "system", reason)
 
-    def _poll_loop(self) -> None:
-        while not self._poll_stop.wait(self.POLL_S):
+    def _poll_loop(self, stop: threading.Event) -> None:
+        while not stop.wait(self.POLL_S):
             link = self._link
             if link is None:
                 return
