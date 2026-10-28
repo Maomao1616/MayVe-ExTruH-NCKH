@@ -3,8 +3,8 @@
 
 export const MACHINE = {
     travelX: 285,        // mm
-    travelY: 318,        // mm (yaml 14; bản 13 là 310)
-    penUpZ: 5,           // GIẢ ĐỊNH: Z5 = bút lên (chưa thử máy thật)
+    travelY: 318,        // mm 
+    penUpZ: 5,           // GIẢ ĐỊNH: Z5 = bút lên 
     penDownZ: 0,         // GIẢ ĐỊNH: Z0 = bút xuống
     penFeed: 3000,       // mm/phút
     rapidFeed: 6000      // mm/phút khi G0

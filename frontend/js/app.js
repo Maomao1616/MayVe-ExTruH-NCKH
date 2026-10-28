@@ -10,7 +10,8 @@ import { startPolling } from "./state.js";
 import { initTerminal } from "./views/terminal.js";
 import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
-
+import { initHeader } from "./views/header.js";
+import { initDock } from "./views/dock.js";
 async function initApp() {
     try {
         initTabs();
@@ -20,7 +21,9 @@ async function initApp() {
         initControl();
         initTerminal();
         initSettings();
-
+        initHeader();
+        initDock();
+        keepScrollSpace()
         console.log("ExtruXY đã khởi động.");
         console.log("Ngôn ngữ hiện tại:", getLanguage());
         console.log("Kiểm tra i18n:", t("nav.control"));
@@ -120,3 +123,26 @@ function initThemeSelector() {
 }
 
 
+
+/* ==================== CHỐNG GIẬT KHUNG HÌNH (SCROLL MEMORY) ==================== */
+function keepScrollSpace() {
+    // Khung bao bọc toàn bộ nội dung của bạn
+    const appShell = document.querySelector('.app-shell');
+    if (!appShell) return;
+
+    // Tìm tất cả các khối có thể đóng mở (Terminal, Tiền xử lý, Nguồn hình ảnh...)
+    document.querySelectorAll('details').forEach(detail => {
+        detail.addEventListener('click', function(e) {
+            // Chỉ kích hoạt nếu người dùng bấm vào thanh tiêu đề (summary) và khối đó ĐANG MỞ
+            if (e.target.closest('summary') && this.open) {
+                // Ép vùng chứa giữ nguyên chiều cao lớn nhất hiện tại
+                appShell.style.minHeight = `${appShell.scrollHeight}px`;
+            }
+        });
+    });
+
+    // Tùy chọn: Reset lại bộ nhớ chiều cao nếu người dùng thay đổi kích thước cửa sổ trình duyệt
+    window.addEventListener('resize', () => {
+        appShell.style.minHeight = '100vh'; // Trả về mặc định để tính toán lại
+    });
+}

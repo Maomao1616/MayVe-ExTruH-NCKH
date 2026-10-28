@@ -17,6 +17,8 @@ app = FastAPI(title="ExtruXY Backend", version="0.2.0", lifespan=lifespan)
 app.include_router(router)
 
 
+from .routes_draw import router as draw_router; app.include_router(draw_router)
+
 @app.exception_handler(ServiceError)
 async def service_error_handler(request: Request, exc: ServiceError):
     return JSONResponse(status_code=exc.status,

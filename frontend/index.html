@@ -26,12 +26,12 @@
       <div class="header-status">
         <div class="status-item" id="backend-status">
           <span class="status-dot" id="backend-status-dot"></span>
-          <span id="backend-status-text" data-i18n="dynamic.checkingBackend">Đang kiểm tra backend...</span>
+          <span id="backend-status-text" >Đang kiểm tra backend...</span>
         </div>
         <div class="status-item" id="machine-status">
           <span class="status-dot" id="machine-status-dot"></span>
           <span data-i18n="header.machine">Máy:</span>
-          <strong id="machine-state" data-i18n="common.status.disconnected">Chưa kết nối</strong>
+          <strong id="machine-state">Chưa kết nối</strong>
         </div>
         <div class="status-item" id="job-status">
           <span class="status-dot" id="job-status-dot"></span>
@@ -93,6 +93,59 @@
         </p>
       </div>
     </div>
+
+
+<!-- ==================== DOCK (truy cập nhanh, mọi tab) ==================== -->
+    <aside class="dock" id="dock" data-i18n="[aria-label]dock.title" aria-label="Truy cập nhanh">
+      <div class="dock-panel" hidden="" id="dock-panel">
+        <div class="dock-head">
+          <strong data-i18n="dock.title">Truy cập nhanh</strong>
+          <button class="icon-button" data-i18n="[aria-label]dock.close" aria-label="Thu lại" id="dock-close" type="button">×</button>
+        </div>
+
+        <section class="dock-section">
+          <div class="dock-section-head">
+            <h3 data-i18n="dock.macros">Macro</h3>
+            <button class="secondary-button" data-i18n="dock.macro.add" id="macro-add-btn" type="button">+ Thêm</button>
+          </div>
+          <p class="help-text" data-i18n="dock.macro.empty" id="macro-empty">Chưa có macro. Bấm “Thêm” để tạo nút hành động quen thuộc.</p>
+          <div class="dock-list" id="dock-macro-list"></div>
+
+          <form class="dock-form" hidden="" id="macro-form">
+            <label><span data-i18n="dock.macro.name">Tên</span>
+              <input id="macro-name" maxlength="40" type="text" autocomplete="off">
+            </label>
+            <label><span data-i18n="dock.macro.type">Loại</span>
+              <select id="macro-type">
+                <option value="gcode" data-i18n="dock.macro.type.gcode">G-code (nhiều dòng, chạy như tác vụ)</option>
+                <option value="command" data-i18n="dock.macro.type.command">Lệnh đơn (một dòng, có thể là $H, $X…)</option>
+              </select>
+            </label>
+            <label><span data-i18n="dock.macro.lines">Nội dung</span>
+              <textarea id="macro-lines" rows="5" spellcheck="false"></textarea>
+            </label>
+            <label class="dock-check">
+              <input id="macro-needs-home" type="checkbox">
+              <span data-i18n="dock.macro.needsHome">Chỉ cho chạy khi máy đã Home</span>
+            </label>
+            <p class="help-text" data-i18n="dock.macro.hint">Mỗi dòng một lệnh. Dòng bắt đầu bằng $ chỉ dùng được ở loại Lệnh đơn.</p>
+            <p class="dock-error" hidden="" id="macro-form-error" role="alert"></p>
+            <div class="dock-form-actions">
+              <button class="primary-button" data-i18n="dock.macro.save" type="submit">Lưu</button>
+              <button class="secondary-button" data-i18n="dock.macro.cancel" id="macro-cancel-btn" type="button">Hủy</button>
+              <button class="danger-button" data-i18n="dock.macro.delete" hidden="" id="macro-delete-btn" type="button">Xóa</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="dock-section">
+          <h3 data-i18n="dock.files">Tệp nhanh</h3>
+          <p class="help-text" data-i18n="dock.files.soon">Chạy nhanh tệp từ thẻ SD / flash sẽ có khi phần lưu trữ sẵn sàng.</p>
+        </section>
+      </div>
+      <button aria-controls="dock-panel" aria-expanded="false" class="dock-handle" data-i18n="[title]dock.toggle; [aria-label]dock.toggle" id="dock-toggle" title="Truy cập nhanh" aria-label="Truy cập nhanh" type="button">⚡</button>
+    </aside>
+
 
 
     <!-- ==================== MAIN CONTENT ==================== -->
@@ -476,20 +529,7 @@
               </div>
             </details>
 
-            <article class="panel quick-macro-panel">
-              <div class="panel-heading panel-heading-compact">
-                <div>
-                  <h2 data-i18n="control.macro.title">Macro nhanh</h2>
-                  <p data-i18n="control.macro.desc">Chạy các chuỗi lệnh đã lưu</p>
-                </div>
-                <a class="text-link" data-i18n="control.macro.manage" href="#panel-settings">Quản lý macro</a>
-              </div>
-              <div class="quick-macro-list" id="quick-macro-list">
-                <span class="muted-text" data-i18n="control.macro.empty" id="quick-macro-empty">
-                  Chưa có macro. Thêm macro trong Cài đặt.
-                </span>
-              </div>
-            </article>
+  
 
           </div>
         </div>
@@ -1078,21 +1118,6 @@
             </form>
           </article>
 
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.macro.title">Macro</h2>
-                <p data-i18n="settings.macro.desc">Các nhóm lệnh thao tác nhanh.</p>
-              </div>
-              <button class="secondary-button" data-i18n="settings.macro.add" id="add-macro-btn" type="button">+ Thêm macro</button>
-            </div>
-            <div class="macro-list" id="macro-list">
-              <div class="macro-empty-state" id="macro-empty-state">
-                <strong data-i18n="settings.macro.empty">Chưa có macro tùy chỉnh</strong>
-                <p data-i18n="settings.macro.help">Các macro có thể được quản lý ở bước sau.</p>
-              </div>
-            </div>
-          </article>
 
           <article class="panel">
             <div class="panel-heading">

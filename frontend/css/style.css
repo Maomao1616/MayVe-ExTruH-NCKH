@@ -3,6 +3,186 @@
    ExtruXY - GIAO DIEN XEM TRUOC
    Giai doan HTML + CSS, chua co JS
 ======================================== */
+
+/* ==================== Khóa chiều cao khung WEB ==================== */
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px;
+    overflow-anchor: none; /* THÊM DÒNG NÀY */
+}
+
+/* ==================== DOCK (truy cập nhanh) + chấm trạng thái ==================== */
+
+/* --- CHẤM TRẠNG THÁI --- */
+.status-dot.is-offline { 
+    background: var(--danger); 
+    box-shadow: 0 0 8px color-mix(in srgb, var(--danger) 40%, transparent); /* Thêm viền sáng nhẹ */
+}
+.status-dot.is-pending { 
+    background: var(--warning); 
+    animation: dot-pending 1.5s infinite ease-in-out; 
+}
+@keyframes dot-pending { 
+    0%, 100% { opacity: 1; transform: scale(0.95); } 
+    50% { opacity: 0.35; transform: scale(1.15); box-shadow: 0 0 10px var(--warning); } /* Thêm nhịp đập to nhỏ */
+}
+
+/* --- DOCK TỔNG THỂ --- */
+.dock { 
+    position: fixed; 
+    left: 0; 
+    top: 150px; 
+    z-index: 40; 
+    display: flex; 
+    align-items: flex-start; 
+}
+
+/* --- NÚT TAY CẦM (DOCK HANDLE) --- */
+.dock-handle {
+    /* Khắc phục lỗi lệch logo: Dùng Flexbox để căn giữa tuyệt đối theo cả 2 chiều */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px; 
+    height: 56px; 
+    cursor: pointer;
+    border: 1px solid var(--border); 
+    border-left: 0;
+    border-radius: 0 var(--radius-button) var(--radius-button) 0;
+    
+    /* Làm nền đặc lại để không xuyên thấu */
+    background: var(--bg-panel); 
+    color: var(--accent); 
+    font-size: 18px;
+    
+    /* Hiệu ứng chuyển động mượt mà khi hover */
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Đưa chuột vào tay cầm sẽ sáng lên và kéo dài ra một chút xíu */
+.dock-handle:hover {
+    background: var(--bg-elevated);
+    width: 40px; 
+    filter: brightness(1.2);
+}
+
+/* --- BẢNG DOCK (DOCK PANEL) --- */
+.dock-panel {
+    width: min(320px, 82vw); 
+    max-height: calc(100vh - 170px); 
+    overflow-y: auto;
+    padding: 16px; /* Tăng lề một chút cho thoáng */
+    border: 1px solid var(--border); 
+    border-left: 0;
+    border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+    
+    /* Khắc phục nền trong suốt: Pha màu nền đen (hoặc xám tối) đậm 95% + Làm nhòe nền (Blur) */
+    background-color: color-mix(in srgb, var(--bg-panel) 95%, black); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    /* Đổ bóng hiện đại: bóng ngoài mềm hơn, có đường ánh sáng hắt viền bên trong (inset) */
+    box-shadow: 10px 15px 40px rgba(0, 0, 0, 0.6), 
+                inset 1px 1px 0 rgba(255, 255, 255, 0.05);
+    
+    /* Hoạt ảnh trượt ngang từ trái sang khi bảng Dock mở ra */
+    animation: dockSlideIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes dockSlideIn {
+    from { opacity: 0; transform: translateX(-15px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.dock-panel[hidden] { display: none; }
+
+/* --- NỘI DUNG BÊN TRONG --- */
+.dock-head, .dock-section-head { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 8px; 
+    margin-bottom: 14px;
+}
+
+.dock-section { 
+    margin-top: 20px; 
+    padding-top: 14px; 
+    border-top: 1px dashed color-mix(in srgb, var(--border) 50%, transparent); /* Dòng kẻ ngăn cách các khối */
+}
+.dock-section:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; } /* Bỏ dòng kẻ ở khối đầu tiên */
+
+.dock-section h3 { 
+    margin: 0 0 10px; 
+    font-size: 13px; 
+    color: var(--text-muted); 
+    text-transform: uppercase; /* Viết hoa chữ nhỏ để trông giống menu chuyên nghiệp */
+    letter-spacing: 0.05em;
+    font-weight: 700;
+}
+
+.dock-list { display: flex; flex-direction: column; gap: 4px; }
+
+/* Các hàng (Macro/Item) */
+.dock-row { 
+    display: flex; 
+    gap: 8px; 
+    align-items: center; 
+    padding: 6px 8px;
+    margin-left: -8px; /* Kéo giãn ra sát lề để hover đẹp hơn */
+    margin-right: -8px;
+    border-radius: var(--radius-button);
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+/* Hiệu ứng nổi bật hàng khi trỏ chuột vào */
+.dock-row:hover {
+    background: color-mix(in srgb, var(--bg-elevated) 80%, transparent);
+    transform: translateX(2px);
+}
+
+.dock-run { 
+    flex: 1; 
+    text-align: left; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    font-weight: 500;
+}
+
+/* --- BIỂU MẪU (FORM) --- */
+.dock-form { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 12px; 
+    margin-top: 12px; 
+    background: rgba(0,0,0,0.15); /* Nền chìm nhẹ cho vùng nhập liệu */
+    padding: 12px;
+    border-radius: var(--radius-button);
+}
+
+.dock-form label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-muted); }
+.dock-form .dock-check { flex-direction: row; align-items: center; gap: 8px; cursor: pointer; }
+.dock-form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+.dock-error { 
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin: 0; 
+    color: var(--danger); 
+    font-size: 12px; 
+    line-height: 1.4;
+}
+
+/* --- TÙY CHỈNH THANH CUỘN (SCROLLBAR) MỎNG CHO DOCK --- */
+.dock-panel::-webkit-scrollbar { width: 5px; }
+.dock-panel::-webkit-scrollbar-track { background: transparent; }
+.dock-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+.dock-panel::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
 /* 2. RESET */
 * {
     box-sizing: border-box;
