@@ -58,7 +58,6 @@ export function initControl() {
     initStatusPanel();
     initMotionControls();
     initGcodePanel();
-    initRunModeSwitch();
     initPreview();
     initMotionLock();
 }
@@ -297,29 +296,15 @@ function initMotionLock() {
 }
 
 
-/* ==================== CHUYỂN ĐỔI CHẾ ĐỘ CHẠY G-CODE ==================== */
-function initRunModeSwitch() {
-    const panel = document.querySelector(".gcode-panel[data-mode]");
-    const radios = document.querySelectorAll('input[name="run-mode"]');
-
-    const sync = () => {
-        const checked = document.querySelector('input[name="run-mode"]:checked');
-        if (panel && checked) panel.dataset.mode = checked.value;
-    };
-
-    radios.forEach((radio) => radio.addEventListener("change", sync));
-    sync(); // đồng bộ ngay lúc tải trang, kể cả khi trình duyệt nhớ lựa chọn cũ
-}
 
 /* ==================== TỆP G-CODE, XEM TRƯỚC, CHẠY, TIẾN TRÌNH ==================== */
 function initGcodePanel() {
-    const panel = document.querySelector(".gcode-panel[data-mode]");
     const fileInput = $("gcode-file");
     const previewButton = $("preview-gcode-btn");
     const confirmBox = $("run-confirm");
     const runButton = $("run-job-btn");
     const cancelButton = $("cancel-job-btn");
-    if (!panel || !fileInput || !previewButton || !confirmBox || !runButton) return;
+    if ( !fileInput || !previewButton || !confirmBox || !runButton) return;
 
     let previewed = false;       // đã bấm Xem trước cho tệp hiện tại
     let lastSnapshot = null;
@@ -439,16 +424,14 @@ function initGcodePanel() {
         // nút
         const connection = snapshot?.status?.connection;
         const machineState = snapshot?.status?.machine?.state;
-        const streaming = panel.dataset.mode === "stream";
         previewButton.disabled = !file;
         confirmBox.disabled = !file || !previewed || active;
         if (confirmBox.disabled && !active) confirmBox.checked = false;
 
         const canRun = Boolean(file) && !problem && previewed && confirmBox.checked &&
             isConnected() && !isStale() && connection?.motion_unlocked !== false &&
-            machineState === "Idle" && !active && streaming;
+            machineState === "Idle" && !active;
         runButton.disabled = !canRun;
-        runButton.title = streaming ? "" : t("control.gcode.deviceUnsupported");
 
         if (cancelButton) {
             cancelButton.hidden = !active;

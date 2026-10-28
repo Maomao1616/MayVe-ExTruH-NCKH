@@ -73,13 +73,12 @@
   "common.action.regenerate": "Regenerate",
   "common.action.saveGcode": "Save G-code",
   "common.action.sendToControl": "Go to Control",
-  "common.action.refreshList": "Refresh List",
+ 
   "common.action.clearDisplay": "Clear Display",
   "common.action.connect": "Connect",
   "common.action.disconnect": "Disconnect",
   
-  "common.storage.sd": "SD Card",
-  "common.storage.flash": "Flash",
+
   "common.icon.chevron": "⌄",
   "common.level.off": "Off",
   "common.level.low": "Low",
@@ -144,23 +143,21 @@
   "control.jog.help": "Jog is available only while the machine is idle. Jogging is allowed before homing, but G-code cannot run until homing.",
   
   "control.gcode.title": "G-code File",
-  "control.gcode.desc": "Upload from your computer or select a file on the machine",
+  "control.gcode.desc": "Upload from your computer and run line by line",
   "control.gcode.upload": "Upload from Computer",
   "control.gcode.chooseFile": "Choose G-code File",
-  "control.gcode.machineFiles": "Files on Machine",
-  "control.gcode.storage": "File storage",
-  "control.gcode.storageUsage": "Storage: — / —",
-  "control.gcode.noFileList": "The file-list API is not available yet. Files will appear here.",
+
+   
+
   "control.gcode.selectedFile": "Selected file",
   "control.gcode.fileInfo": "Line count · bounding box",
   "control.gcode.confirm": "I have previewed the toolpath and drawing area",
-  "control.gcode.mode": "Run mode",
-  "control.gcode.modeStream": "Stream from computer",
-  "control.gcode.modeDevice": "Run from machine storage",
-  "control.gcode.uploadToDevice": "Upload to machine", 
+
+
+
   "control.gcode.lines": "lines",
   "control.gcode.outOfRange": "outside work area",
-  "control.gcode.deviceUnsupported": "Running from machine storage is not supported yet",
+  
   "control.gcode.cancelJob": "Cancel job",
 
 
@@ -348,10 +345,7 @@
   "jobs.queue.colTime": "Time",
   "jobs.queue.colActions": "Actions",
   
-  "jobs.sd.title": "SD Card",
-  "jobs.sd.desc": "Storage capacity and files on the machine. To run a file, use the G-code File panel in the Control tab.",
-  "jobs.sd.memoryCard": "Memory Card",
-  "jobs.sd.usage": "Used / Total",
+
   
   "jobs.history.title": "Job History",
   "jobs.history.help": "History will be shown once an API is available to save and retrieve completed jobs.",

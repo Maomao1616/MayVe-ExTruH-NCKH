@@ -77,13 +77,12 @@
   "common.action.regenerate": "Tạo lại",
   "common.action.saveGcode": "Lưu G-code",
   "common.action.sendToControl": "Chuyển sang Điều khiển",
-  "common.action.refreshList": "Làm mới danh sách",
+
   "common.action.clearDisplay": "Xóa hiển thị",
   "common.action.connect": "Kết nối",
   "common.action.disconnect": "Ngắt kết nối",
   
-  "common.storage.sd": "Thẻ SD",
-  "common.storage.flash": "Flash",
+
   "common.icon.chevron": "⌄",
   "common.level.off": "Tắt",
   "common.level.low": "Nhẹ",
@@ -151,23 +150,22 @@
   "control.jog.help": "Jog chỉ mở khi máy rảnh (Idle). Máy chưa Home vẫn jog được, nhưng không chạy được G-code.",
   
   "control.gcode.title": "Tệp G-code",
-  "control.gcode.desc": "Nạp từ máy tính hoặc chọn tệp trong máy",
+  "control.gcode.desc": "Nạp từ máy tính và chạy từng dòng",
   "control.gcode.upload": "Nạp từ máy tính",
   "control.gcode.chooseFile": "Chọn tệp G-code",
-  "control.gcode.machineFiles": "Tệp trong máy",
-  "control.gcode.storage": "Nơi lưu tệp",
-  "control.gcode.storageUsage": "Dung lượng: — / —",
-  "control.gcode.noFileList": "Chưa có API liệt kê tệp. Danh sách sẽ hiện ở đây.",
+  
+
+
+
   "control.gcode.selectedFile": "Tệp đã chọn",
   "control.gcode.fileInfo": "Số dòng · vùng bao",
   "control.gcode.confirm": "Tôi đã xem trước đường chạy và vùng vẽ",
-  "control.gcode.mode": "Cách chạy",
-  "control.gcode.modeStream": "Gửi từ máy tính",
-  "control.gcode.modeDevice": "Chạy từ bộ nhớ máy",
-  "control.gcode.uploadToDevice": "Tải lên máy", 
+
+  
+
   "control.gcode.lines": "dòng",
   "control.gcode.outOfRange": "vượt vùng làm việc",
-  "control.gcode.deviceUnsupported": "Chạy từ bộ nhớ máy chưa được hỗ trợ",
+ 
   "control.gcode.cancelJob": "Hủy tác vụ",
 
 
@@ -361,10 +359,7 @@
   "jobs.queue.colTime": "Thời gian",
   "jobs.queue.colActions": "Thao tác",
   
-  "jobs.sd.title": "Thẻ SD",
-  "jobs.sd.desc": "Dung lượng và tệp lưu trong máy. Chạy tệp: dùng khối Tệp G-code ở tab Điều khiển.",
-  "jobs.sd.memoryCard": "Thẻ nhớ",
-  "jobs.sd.usage": "Đã dùng / Tổng",
+
   
   "jobs.history.title": "Lịch sử tác vụ",
   "jobs.history.help": "Lịch sử chỉ hiển thị sau khi có API lưu và truy vấn các công việc đã thực hiện.",

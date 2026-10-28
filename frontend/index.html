@@ -300,25 +300,15 @@
               </p>
             </article>
 
-            <article class="panel gcode-panel" data-mode="stream">
+            <article class="panel gcode-panel">
               <div class="panel-heading panel-heading-compact">
                 <div>
                   <h2 data-i18n="control.gcode.title">Tệp G-code</h2>
                   <p data-i18n="control.gcode.desc">Nạp từ máy tính hoặc chọn tệp trong máy</p>
                 </div>
-                <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
+             
               </div>
-                <fieldset class="mode-switch">
-                     <legend class="visually-hidden" data-i18n="control.gcode.mode">Cách chạy</legend>
-                      <label>
-                        <input type="radio" name="run-mode" value="stream" checked>
-                        <span data-i18n="control.gcode.modeStream">Gửi từ máy tính</span>
-                      </label>
-                      <label>
-                        <input type="radio" name="run-mode" value="device">
-                        <span data-i18n="control.gcode.modeDevice">Chạy từ bộ nhớ máy</span>
-                      </label>
-                </fieldset>
+               
               <div class="file-section">
                 <h3 data-i18n="control.gcode.upload">Nạp từ máy tính</h3>
                 <label class="upload-zone upload-zone-compact" for="gcode-file">
@@ -327,35 +317,9 @@
                   <span>.gcode · .nc · .gc · .ngc · .txt</span>
                 </label>
                 <input accept=".gcode,.nc,.gc,.ngc,.txt" class="visually-hidden" id="gcode-file" type="file"/>
-                <button class="device-only" data-i18n="control.gcode.uploadToDevice"
-                        disabled id="upload-to-device-btn" type="button">Tải lên máy</button>
+
               </div>
-              <div class="file-section device-only">
-                    <div class="file-section-head">
-                  <h3 data-i18n="control.gcode.machineFiles">Tệp trong máy</h3>
-                  <div class="file-section-tools">
-                    <label class="visually-hidden" for="device-storage">
-                      <span data-i18n="control.gcode.storage">Nơi lưu tệp</span>
-                    </label>
-                    <select disabled="" id="device-storage">
-                      <option data-i18n="common.storage.sd" value="sd">Thẻ SD</option>
-                      <option data-i18n="common.storage.flash" value="flash">Flash</option>
-                    </select>
-                    <button class="text-button" data-i18n="common.action.refresh" disabled="" id="refresh-files-btn" type="button">Làm mới</button>
-                  </div>
-                </div>
-                <div class="storage-line">
-                  <span data-i18n="control.gcode.storageUsage" id="storage-usage-text">Dung lượng: — / —</span>
-                </div>
-                <div class="progress-track storage-bar">
-                  <div class="progress-fill" id="storage-usage-fill"></div>
-                </div>
-                <ul class="file-list" id="device-file-list">
-                  <li class="file-list-empty" data-i18n="control.gcode.noFileList">
-                    Chưa có API liệt kê tệp. Danh sách sẽ hiện ở đây.
-                  </li>
-                </ul>
-              </div>
+              
               <dl class="detail-list detail-list-compact">
                 <div>
                   <dt data-i18n="control.gcode.selectedFile">Tệp đã chọn</dt>
