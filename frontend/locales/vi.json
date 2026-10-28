@@ -187,6 +187,9 @@
     "error.15": "Jog vượt hành trình máy",
     "error.16": "Lệnh jog không hợp lệ (thiếu tốc độ F hoặc trục)",
     "error.20": "Lệnh G-code không được hỗ trợ",
+    "error.2": "Sai định dạng số hoặc cú pháp lệnh",
+    "error.22": "Thiếu tốc độ F",
+    "error.60": "Không mở được thẻ SD",
 
 
   "control.macro.title": "Macro nhanh",

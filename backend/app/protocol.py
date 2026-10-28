@@ -27,6 +27,7 @@ ERROR_NAMES = {
     3: "InvalidStatement", 8: "IdleError", 9: "SystemGcLock",
     10: "SoftLimitError", 11: "Overflow", 15: "TravelExceeded",
     16: "InvalidJogCommand", 20: "GcodeUnsupportedCommand",
+    2: "BadNumberFormat", 22: "GcodeUndefinedFeedRate", 60: "FsFailedMount",
 }
 
 

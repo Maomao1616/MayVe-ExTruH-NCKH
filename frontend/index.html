@@ -135,10 +135,8 @@
         <div class="notice notice-warning" hidden="" id="readonly-banner" role="status">
           <strong data-i18n="control.readonly.title">Máy thật đang ở chế độ chỉ đọc.</strong>
           <span data-i18n="control.readonly.desc">
-                <button class="secondary-button" data-i18n="control.motion.unlock" id="unlock-motion-btn" type="button">Mở khóa chuyển động</button>
-            Home, jog, bút và chạy tệp bị khóa. Các lệnh dừng
-            (Tạm dừng, Reset) vẫn hoạt động.
           </span>
+          <button class="secondary-button" data-i18n="control.motion.unlock" id="unlock-motion-btn" type="button">Mở khóa chuyển động</button>
         </div>
 
         <div class="notice notice-warning" hidden="" id="motion-live-banner" role="status">
@@ -385,6 +383,7 @@
                   <button aria-label="Thu nhỏ" class="secondary-button" id="zoom-out-btn" type="button" data-i18n="[aria-label]aria.zoomOut">−</button>
                   <button aria-label="Phóng to" class="secondary-button" id="zoom-in-btn" type="button" data-i18n="[aria-label]aria.zoomIn">+</button>
                   <button class="secondary-button" data-i18n="control.preview.fit" id="fit-preview-btn" type="button">Về toàn cảnh</button>
+                  <button class="secondary-button" data-i18n="control.preview.clearTrail" id="clear-trail-btn" type="button">Xóa vết</button>
                 </div>
               </div>
               <div class="preview-toolbar">
@@ -426,7 +425,6 @@
                   <option value="100">100×</option><option value="500">500×</option><option value="2000">2000×</option>
                 </select>
                 <span id="preview-time">0:00 / 0:00</span>
-                <button class="text-button" id="clear-trail-btn" data-i18n="control.preview.clearTrail" type="button">Xóa vết</button>
                 <button class="danger-button" data-i18n="control.gcode.cancelJob" hidden id="cancel-job-btn" type="button">Hủy tác vụ</button>
 
               </div>

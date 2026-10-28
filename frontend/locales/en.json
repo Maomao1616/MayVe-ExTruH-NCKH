@@ -181,6 +181,9 @@
     "error.15": "Jog target exceeds machine travel",
     "error.16": "Invalid jog command (missing feed rate or axis)",
     "error.20": "Unsupported G-code command",
+    "error.2": "Bad number format or syntax",
+    "error.22": "Feed rate (F) is missing",
+    "error.60": "SD card could not be mounted",
 
   "control.macro.title": "Quick Macros",
   "control.macro.desc": "Run saved command sequences",
