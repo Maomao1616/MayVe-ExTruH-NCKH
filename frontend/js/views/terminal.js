@@ -4,9 +4,9 @@
 //  - Terminal chỉ THÊM dòng mới (theo seq), không bao giờ vẽ lại toàn bộ.
 //  - Lỗi từ firmware hiện ở bảng trạng thái (dịch i18n), không phải ở đây.
 
-import { api, ApiError } from "./api.js";
-import { state, subscribe, isConnected, isStale } from "./state.js";
-import { t } from "./i18n.js";
+import { api, ApiError } from "../core/api.js";
+import { state, subscribe, isConnected, isStale } from "../core/state.js";
+import { t } from "../core/i18n.js";
 
 const MAX_LINES = 500;
 
@@ -32,11 +32,19 @@ const API_ERRORS = {
     pyserial_missing: "pyserial is not installed on the backend.",
     validation_error: "Invalid input.",
     http_error: "Request failed.",
-    job_running: "Blocked: a job is running. Cancel it first.",
+    job_running: "Blocked: a job is running. Only ? ! ~ and the stop buttons work now.",
     not_idle: "The machine must be Idle.",
     bad_gcode: "Invalid G-code.",
     empty_job: "The file has no G-code lines.",
     no_job: "No job is running.",
+    stopping: "Blocked: safe stop in progress (hold/reset/pen lift). Wait for it to finish.",
+    stop_superseded: "Safe stop is no longer valid (connection changed).",
+    bad_host: "Blocked: request host is not allowed.",
+    bad_origin: "Blocked: request came from another site.",
+    too_large: "Request is too large.",
+    busy: "Busy reading/writing the machine configuration. Try again in a moment.",
+    device_error: "The controller rejected the command.",
+    timeout: "The controller did not answer in time.",
 };
 
 export function initTerminal() {
@@ -172,14 +180,11 @@ export function initTerminal() {
         const stale = isStale();
         const canSend = connected && !stale;
         const machineState = snapshot.status?.machine?.state;
-        const motionUnlocked =
-            snapshot.status?.connection?.motion_unlocked !== false;
 
-        const job = snapshot.status?.job;
-        const jobActive = job?.state === "running" || job?.state === "finishing";
-
-        input.disabled = !canSend || jobActive || sending;
-        sendButton.disabled = !canSend || jobActive || sending;
+        // Không khóa ô nhập khi đang chạy tác vụ: lúc đó vẫn gõ được ? ! ~ (backend
+        // gửi như ký tự tức thời); dòng khác backend sẽ từ chối với mã job_running.
+        input.disabled = !canSend || sending;
+        sendButton.disabled = !canSend || sending;
 
         if (connectionLabel) {
             connectionLabel.textContent = !snapshot.backendOnline
@@ -203,9 +208,9 @@ export function initTerminal() {
         if (resetButton) {
             resetButton.disabled = !connected;
         }
+        // $X không làm máy chuyển động: backend cho gửi cả khi máy thật đang khóa.
         if (unlockButton) {
-            unlockButton.disabled = !canSend || !motionUnlocked ||
-                machineState !== "Alarm";
+            unlockButton.disabled = !canSend || machineState !== "Alarm";
         }
     }
 

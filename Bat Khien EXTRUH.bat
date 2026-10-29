@@ -1,6 +1,7 @@
 @echo off
 title ExtruXY server
-cd /d "%~dp0"
+rem Chay tu thu muc goc du an: backend nam trong thu muc con "backend".
+cd /d "%~dp0backend"
 call .venv\Scripts\activate.bat
 start "" http://127.0.0.1:8000/
-uvicorn app.main:app --reload
+uvicorn app.main:app

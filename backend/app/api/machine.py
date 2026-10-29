@@ -1,12 +1,12 @@
-"""API HTTP của backend. Giữ mỏng: mọi logic nằm trong MachineService."""
+"""API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService."""
 from __future__ import annotations
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from .services.machine import ServiceError, machine
+from ..services.machine import ServiceError, machine
 
 router = APIRouter(prefix="/api")
 
@@ -24,20 +24,26 @@ class CommandRequest(BaseModel):
 
 class JobStartRequest(BaseModel):
     name: str = Field("gcode", max_length=120)
-    lines: list[str] = Field(min_length=1, max_length=200_000)
+    # Dòng thô có thể kèm chú thích dài; sau khi làm sạch vẫn bị giới hạn 200 ký tự (job.py).
+    lines: list[Annotated[str, Field(max_length=4096)]] = Field(min_length=1, max_length=200_000)
 
 
 class RealtimeRequest(BaseModel):
     action: Literal["status", "hold", "resume", "reset", "jog_cancel"]
 
+
 class MotionRequest(BaseModel):
     on: bool
     pin: str | None = Field(None, max_length=64)
 
+
 class CancelRequest(BaseModel):
     mode: Literal["reset", "soft", "hard"] = "reset"
-    lift_z: float | None = None
-    lift_feed: float = Field(1000.0, gt=0)
+    # Chỉ chặn giá trị vô nghĩa (nan/inf, feed <= 0). Giới hạn hành trình Z do firmware
+    # kiểm (soft limit -> error:15), không tự đặt giới hạn giả định ở đây.
+    lift_z: float | None = Field(None, allow_inf_nan=False)
+    lift_feed: float = Field(1000.0, gt=0, allow_inf_nan=False)
+
 
 @router.post("/motion")
 def motion(req: MotionRequest):
@@ -52,7 +58,7 @@ def health():
 @router.get("/ports")
 def ports():
     try:
-        from .links.serial_link import list_ports
+        from ..links.serial_link import list_ports
         return {"ports": list_ports()}
     except ImportError as exc:
         raise ServiceError("pyserial_missing", f"Chưa cài pyserial: {exc}", 500) from exc
@@ -87,6 +93,7 @@ def command(req: CommandRequest):
 def realtime(req: RealtimeRequest):
     return machine.send_realtime(req.action)
 
+
 @router.get("/log")
 def log(since: int = 0):
     return machine.log_since(since)
@@ -95,6 +102,7 @@ def log(since: int = 0):
 @router.post("/jobs")
 def start_job(req: JobStartRequest):
     return machine.start_job(req.name, req.lines)
+
 
 @router.post("/jobs/cancel")
 def cancel_job(req: CancelRequest = CancelRequest()):

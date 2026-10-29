@@ -4,10 +4,20 @@
 export const MACHINE = {
     travelX: 285,        // mm
     travelY: 318,        // mm 
-    penUpZ: 5,           // GIẢ ĐỊNH: Z5 = bút lên 
-    penDownZ: 0,         // GIẢ ĐỊNH: Z0 = bút xuống
+    // Bút: giá trị mặc định; views/settings.js ghi đè bằng hồ sơ ở backend (Cài đặt → Cấu hình máy).
+    penUpZ: 5,           // Z5 = bút lên (khớp WebUI FluidNC trên máy thật)
+    penMidZ: 2.5,        // nấc giữa: bút lơ lửng sát giấy
+    penDownZ: 0,         // Z0 = bút xuống
     penFeed: 3000,       // mm/phút
+    jogMaxStep: 50,      // mm, bước jog lớn nhất được hiện trong ô chọn
     rapidFeed: 6000      // mm/phút khi G0
+};
+
+// Tùy chọn "Hoạt động" (Cài đặt). views/settings.js nạp từ trình duyệt và ghi đè các giá trị này.
+export const PREFS = {
+    pollMs: 500,         // nhịp hỏi /api/status
+    confirmHome: true,   // hỏi lại trước $H / $HX / $HY
+    shortcuts: false     // jog bằng phím mũi tên (mặc định tắt để tránh bấm nhầm)
 };
 
 export const POLL = {

@@ -4,10 +4,10 @@ import {
     getLanguage,
     t,
     applyTranslations
-} from "./i18n.js";
+} from "./core/i18n.js";
 
-import { startPolling } from "./state.js";
-import { initTerminal } from "./terminal.js";
+import { startPolling } from "./core/state.js";
+import { initTerminal } from "./views/terminal.js";
 import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
 import { initHeader } from "./views/header.js";

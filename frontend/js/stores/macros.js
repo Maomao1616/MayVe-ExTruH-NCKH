@@ -1,6 +1,6 @@
 // macros.js — dữ liệu macro dùng chung (Dock đọc/ghi, không import view nào).
 // Hàm thuần + kho localStorage. Muốn đổi nơi lưu (backend, flash) chỉ sửa readAll/writeAll.
-import { cleanLine } from "./gcode.js";
+import { cleanLine } from "../lib/gcode.js";
 
 export const LIMITS = { name: 40, lines: 50, lineLen: 200, count: 30 };
 const STORAGE_KEY = "extruxy-macros-v1";

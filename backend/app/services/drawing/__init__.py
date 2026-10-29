@@ -6,7 +6,7 @@ Dây chuyền (mỗi bước một file, một hàm thuần):
   optimize.py  tối ưu nét bằng vpype (nối, đơn giản hóa, bỏ nét ngắn, sắp xếp)
   layout.py    đặt đường nét vào khung vẽ trong tờ giấy: kích thước, lề, căn giữa, lật, đảo thứ tự
   gcode.py     đường nét (mm) -> dòng G-code + thống kê
-  service.py   ghép layout + gcode, trả kết quả cho routes_draw.py
+  service.py   ghép layout + gcode, trả kết quả cho api/draw.py
   store.py     bộ nhớ tạm vài bản vẽ đã nạp (đổi tham số không phải nạp lại)
   registry.py  sổ đăng ký kiểu vector hóa (thêm kiểu mới = 1 file + 1 dòng đăng ký)
 Giai đoạn sau thêm: loader ảnh, preprocess, vectorize/.

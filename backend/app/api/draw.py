@@ -1,7 +1,6 @@
 """API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4).
 
-Gắn vào main.py bằng MỘT dòng (đặt ngay sau `app.include_router(router)`):
-    from .routes_draw import router as draw_router; app.include_router(draw_router)
+Được gắn vào app trong api/__init__.py (danh sách ROUTERS).
 """
 from __future__ import annotations
 
@@ -11,11 +10,11 @@ from typing import Any
 from fastapi import APIRouter, File, Form, UploadFile
 from pydantic import BaseModel
 
-from .services.drawing import DrawError, describe, import_svg, make_gcode
-from .services.drawing.shapes import Layer
-from .services.drawing.store import TASKS
-from .services.drawing.svg_in import MAX_SVG_BYTES
-from .services.machine import ServiceError
+from ..services.drawing import DrawError, describe, import_svg, make_gcode
+from ..services.drawing.shapes import Layer
+from ..services.drawing.store import TASKS
+from ..services.drawing.svg_in import MAX_SVG_BYTES
+from ..services.machine import ServiceError
 
 router = APIRouter(prefix="/api/draw")
 

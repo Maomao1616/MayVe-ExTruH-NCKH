@@ -4,10 +4,10 @@ let currentLanguage = DEFAULT_LANGUAGE;
 let messages = {};
 
 const dictionaries = {
-    vi: () => import("../locales/vi.json", {
+    vi: () => import("../../locales/vi.json", {
         with: { type: "json" }
     }),
-    en: () => import("../locales/en.json", {
+    en: () => import("../../locales/en.json", {
         with: { type: "json" }
     })
 };

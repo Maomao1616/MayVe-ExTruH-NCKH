@@ -18,7 +18,10 @@ def test_connect_sim_and_status(svc):
     info = svc.connect("sim", sim_speed=100)
     assert info["connected"] and info["mode"] == "sim"
     assert wait_for(lambda: svc.snapshot()["machine"] is not None)
-    assert svc.snapshot()["machine"]["state"] == "Idle"
+    # Board thật (must_home): bật lên là Alarm 14; `$X` về Idle.
+    assert svc.snapshot()["machine"]["state"] == "Alarm"
+    svc.send_line("$X")
+    assert wait_for(lambda: svc.snapshot()["machine"]["state"] == "Idle")
 
 
 def test_double_connect_is_rejected(svc):
@@ -47,11 +50,19 @@ def test_homed_guess_after_homing(svc):
     assert wait_for(lambda: svc.snapshot()["homed_guess"])
 
 
-def test_alarm_is_recorded(svc):
+def test_boot_alarm_is_recorded(svc):
     svc.connect("sim", sim_speed=100)
-    svc.send_line("G0 X10")
     assert wait_for(lambda: svc.snapshot()["last_alarm"] is not None)
     assert svc.snapshot()["last_alarm"]["name"] == "Unhomed"
+
+
+def test_gcode_in_alarm_is_error_9_then_runs_after_unlock(svc):
+    svc.connect("sim", sim_speed=100)
+    svc.send_line("G0 X10")
+    assert wait_for(lambda: (svc.snapshot()["last_error"] or {}).get("code") == 9)
+    svc.send_line("$X")
+    svc.send_line("G0 X10")                 # máy thật: chạy được kể cả khi chưa Home
+    assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("mpos", [0])[0] == 10.0)
 
 
 def test_log_has_tx_and_rx(svc):
@@ -114,8 +125,7 @@ def test_alarm_14_keeps_axes_already_homed(svc):
     svc.connect("sim", sim_speed=100)
     svc.send_line("$HX")
     assert wait_for(lambda: any(e["text"] == "ok" for e in svc.log_since(0)["entries"]))
-    svc.send_line("G0 X1")                       # mới Home X: sim báo ALARM:14
-    assert wait_for(lambda: svc.snapshot()["last_alarm"] is not None)
+    svc._on_line("ALARM:14")                     # ALARM:14 không làm mất trục X đã Home
     svc.send_line("$X")
     svc.send_line("$HY")
     assert wait_for(lambda: svc.snapshot()["homed_guess"])

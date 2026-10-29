@@ -8,7 +8,7 @@ Quy tắc làm song song (chỉ sửa file thuộc tab vẽ, khóa `draw.*` ở 
 - **Tham số khai báo một chỗ** (`services/drawing/spec.py`): mặc định + giới hạn; dùng để kiểm tra đầu vào và trả cho frontend qua `GET /api/draw/schema`. Thêm tham số = sửa một dòng.
 - **Kiểu vector hóa là sổ đăng ký** (`registry.py`): thêm kiểu = 1 file + 1 dòng đăng ký + 1 khóa `draw.*`.
 - **Dữ liệu trung gian theo lớp** (một lớp = một bút). Mặc định một lớp; tách màu/mức sáng dùng nhiều lớp, **mỗi lớp một tệp G-code**, không dùng `M0` (chưa thử).
-- **Backend không tự đặt số của máy:** vùng làm việc, hành trình Z, tốc độ tối đa, Z bút do frontend gửi (lấy từ `MACHINE` trong `config.js`).
+- **Backend không tự đặt số của máy:** vùng làm việc, hành trình Z, tốc độ tối đa, Z bút do frontend gửi (lấy từ `MACHINE` trong `frontend/js/core/config.js`).
 - **Điểm đổi trục duy nhất:** `gcode.to_machine` + tham số `invert_y` (⚠ hướng trục giả định C5).
 - **Thư viện:** vpype 1.15.0 + python-multipart (đã cài, GĐ2); Pillow, opencv-python-headless (GĐ3). Python 3.12.10, numpy 2.5.4, scipy 1.18.1, shapely 2.2.0. Tự viết bộ xuất G-code, không dùng plugin.
 - **Dùng vpype qua hai cửa:** `vpype.read_multilayer_svg` (đọc SVG) và `vpype_cli.execute(chuỗi lệnh, Document)` (linemerge → linesimplify → filter → linesort). Chuỗi lệnh dựng bằng hàm thuần `optimize.build_pipeline` nên test được không cần vpype. vpype dùng px CSS (96 px = 1 inch); đổi sang mm ngay khi xuất.
@@ -31,7 +31,7 @@ Dòng đầu `G90 G21`; `F` ở G1 đầu tiên và mỗi khi đổi; ≤ 200 k�
 ## 4. Lộ trình
 | GĐ | Nội dung | Tình trạng |
 |---|---|---|
-| 0 | Khung thư mục, kiểu dữ liệu, sổ đăng ký, tham số + `/api/draw/schema`, `routes_draw.py` | ✅ (chờ `pytest` thật) |
+| 0 | Khung thư mục, kiểu dữ liệu, sổ đăng ký, tham số + `/api/draw/schema`, `api/draw.py` | ✅ (chờ `pytest` thật) |
 | 1 | Bố trí + G-code từ danh sách nét (`POST /api/draw/gcode`, nhiều lớp = nhiều tệp), thống kê, cảnh báo | ✅ (chờ `pytest` thật) |
 | 2 | Đọc SVG (nhiều lớp) + tối ưu vpype (gộp nét, đơn giản hóa, lọc nét ngắn, sắp xếp) → demo đầu tiên SVG → Điều khiển → Xem trước/Chạy | ✅ (`POST /api/draw/svg`, `/gcode` nhận `task`; chờ test vpype thật) |
 | 3 | Nạp PNG/JPG, EXIF, thu nhỏ sớm, crop/vùng che, auto-levels, tương phản, khử nhiễu, ngưỡng, ảnh xem trước | ⏳ |

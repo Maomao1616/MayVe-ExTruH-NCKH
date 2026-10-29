@@ -4,10 +4,10 @@
 // Chạy macro đi qua api.js: loại gcode = tác vụ (có tiến trình ở tab Điều khiển),
 // loại command = một lệnh đơn. Backend vẫn là lớp chặn cuối cùng.
 
-import { api } from "../api.js";
-import { t } from "../i18n.js";
-import { subscribe, isConnected, isStale } from "../state.js";
-import { loadMacros, saveMacro, deleteMacro } from "../macros.js";
+import { api } from "../core/api.js";
+import { t } from "../core/i18n.js";
+import { subscribe, isConnected, isStale } from "../core/state.js";
+import { loadMacros, saveMacro, deleteMacro } from "../stores/macros.js";
 
 const $ = (id) => document.getElementById(id);
 const OPEN_KEY = "extruxy-dock-open";

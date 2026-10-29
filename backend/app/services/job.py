@@ -18,6 +18,8 @@ MAX_LINES = 200_000
 MAX_LINE_LEN = 200
 RESPONSE_TIMEOUT_S = 120.0     # chờ `ok` tối đa (không tính lúc máy đang Hold)
 FINISH_TIMEOUT_S = 6 * 3600.0  # chờ máy chạy nốt hàng đợi
+STATUS_STALE_S = 10.0          # quá lâu không có báo cáo trạng thái: coi như mất phản hồi
+FINISH_IDLE_REPORTS = 2        # cần ngần này báo cáo Idle MỚI liên tiếp mới coi là xong
 
 _PAREN = re.compile(r"\([^)]*\)")
 _SPACES = re.compile(r"\s+")
@@ -132,14 +134,14 @@ class JobRunner:
 
     # --- được MachineService gọi khi nhận dòng từ máy ------------------------------
     def on_response(self, kind: str, info: dict) -> bool:
-        """Trả True nếu `ok` này thuộc về tác vụ (không cần ghi vào nhật ký)."""
+        """Trả True nếu `ok`/`error` này thuộc về dòng tác vụ đang chờ."""
         with self._cond:
             if not self._awaiting:
                 return False
             self._awaiting = False
             self._response = (kind, info)
             self._cond.notify_all()
-            return kind == "ok"
+            return True
 
     def on_alarm(self, code: int) -> None:
         with self._cond:
@@ -152,8 +154,8 @@ class JobRunner:
     def _finish(self, state: str) -> None:
         self._info["state"] = state
         self._info["finished_at"] = time.time()
-        self._awaiting = False      # thêm
-        self._response = None       # thêm
+        self._awaiting = False
+        self._response = None
 
     def _fail(self, code: str, text: str, line: int | None = None,
               device_code: int | None = None) -> None:
@@ -211,17 +213,13 @@ class JobRunner:
                     response, self._response = self._response, None
                     return response
                 self._cond.wait(0.1)
-            state, _ = self._svc.machine_state()           # ngoài self._cond
+            state, _, age = self._svc.machine_state()     # ngoài self._cond
             now = time.monotonic()
-            if state == "Hold":
+            # Chỉ tin "đang Hold" khi báo cáo còn mới; mất status thì vẫn tính timeout.
+            if state == "Hold" and age is not None and age < STATUS_STALE_S:
                 deadline = now + RESPONSE_TIMEOUT_S         # đang tạm dừng: không tính timeout
             elif now > deadline:
-                with self._cond:
-                    failed = self._live(job_id)
-                    if failed:
-                        self._fail("timeout", "Máy không phản hồi.", line=index)
-                if failed:
-                    self._svc.job_hold()      # ngoài self._cond
+                self._fail_and_hold(job_id, "timeout", "Máy không phản hồi.", line=index)
                 return None
 
     def _wait_finish(self, job_id: int) -> None:
@@ -229,21 +227,39 @@ class JobRunner:
             if not self._live(job_id):
                 return
             self._info["state"] = "finishing"
-        last_ok = time.time()
+        # Mốc lấy SAU `ok` cuối: chỉ báo cáo đến sau mốc này mới phản ánh hàng đợi cuối cùng.
+        _, last_seq, _ = self._svc.machine_state()
+        idle_reports = 0
         deadline = time.monotonic() + FINISH_TIMEOUT_S
         while True:
             with self._cond:
                 if not self._live(job_id):
                     return
                 self._cond.wait(0.1)
-            state, updated_at = self._svc.machine_state()
-            if state == "Idle" and updated_at is not None and updated_at > last_ok:
-                with self._cond:
-                    if self._live(job_id):
-                        self._finish("done")
+            state, seq, age = self._svc.machine_state()
+            if seq != last_seq:
+                last_seq = seq
+                # Một báo cáo Idle đơn lẻ có thể được tạo ngay trước khi khối cuối bắt đầu chạy.
+                idle_reports = idle_reports + 1 if state == "Idle" else 0
+                if idle_reports >= FINISH_IDLE_REPORTS:
+                    with self._cond:
+                        if self._live(job_id):
+                            self._finish("done")
+                    return
+            if age is None or age > STATUS_STALE_S:
+                self._fail_and_hold(job_id, "status_lost",
+                                    "Mất báo cáo trạng thái; chưa xác nhận máy đã dừng.")
                 return
             if time.monotonic() > deadline:
-                with self._cond:
-                    if self._live(job_id):
-                        self._fail("timeout", "Máy không về trạng thái Idle.")
+                self._fail_and_hold(job_id, "timeout",
+                                    "Máy không về trạng thái Idle; chưa xác nhận máy đã dừng.")
                 return
+
+    def _fail_and_hold(self, job_id: int, code: str, text: str, line: int | None = None) -> None:
+        """Đánh dấu lỗi rồi Feed Hold. `failed` không có nghĩa là máy đã dừng chuyển động."""
+        with self._cond:
+            failed = self._live(job_id)
+            if failed:
+                self._fail(code, text, line=line)
+        if failed:
+            self._svc.job_hold()      # ngoài self._cond

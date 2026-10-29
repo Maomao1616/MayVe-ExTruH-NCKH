@@ -1,4 +1,4 @@
-from app.protocol import classify_line, is_read_only_command, parse_status
+from app.links.protocol import classify_line, is_read_only_command, parse_status
 
 
 def test_status_idle():

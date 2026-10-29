@@ -55,9 +55,9 @@ def test_connect_sim_status_shape_and_double_connect(client: TestClient):
 
     body = client.get("/api/status").json()
     assert set(body) == {"connection", "machine", "homed_guess", "last_alarm",
-                         "last_error", "banner", "updated_at", "job"}
+                         "last_error", "banner", "updated_at", "stopping", "job"}
     assert body["job"] is None
-    assert body["machine"]["state"] == "Idle"
+    assert body["machine"]["state"] == "Alarm"          # board thật bật lên ở Alarm 14
     assert isinstance(body["updated_at"], float)
 
     again = client.post("/api/connect", json={"mode": "sim"})
@@ -81,9 +81,8 @@ def test_log_since(client: TestClient):
     assert client.get(f"/api/log?since={full['last_seq']}").json()["entries"] == []
 
 
-def test_alarm_unhomed_via_api(client: TestClient):
+def test_boot_alarm_unhomed_via_api(client: TestClient):
     client.post("/api/connect", json={"mode": "sim", "sim_speed": 100})
-    client.post("/api/command", json={"line": "G0 X10"})
     assert wait_for(lambda: client.get("/api/status").json()["last_alarm"] is not None)
     body = client.get("/api/status").json()
     assert body["last_alarm"]["code"] == 14

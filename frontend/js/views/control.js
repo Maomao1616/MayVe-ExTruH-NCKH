@@ -4,12 +4,12 @@
 // Terminal và các nút Tạm dừng/Tiếp tục/Reset/Mở khóa thuộc về views/terminal.js.
 // Mọi lệnh đi qua api.js; giao diện không tự suy đoán trạng thái máy.
 
-import { t, getLanguage } from "../i18n.js";
-import { api } from "../api.js";
-import { MACHINE } from "../config.js";
-import { subscribe, isConnected, isStale } from "../state.js";
-import { parseGcode, outOfRange, formatDuration } from "../gcode.js";
-import { store, setFile, requestPreview, subscribeStore } from "../jobstore.js";
+import { t, getLanguage } from "../core/i18n.js";
+import { api } from "../core/api.js";
+import { MACHINE, PREFS } from "../core/config.js";
+import { subscribe, isConnected, isStale, firmwareLabel } from "../core/state.js";
+import { parseGcode, outOfRange, formatDuration } from "../lib/gcode.js";
+import { store, setFile, requestPreview, subscribeStore } from "../stores/jobstore.js";
 import { initPreview } from "./preview.js";
 
 const $ = (id) => document.getElementById(id);
@@ -46,11 +46,12 @@ const codeText = (prefix, item) => {
 };
 
    const MAX_FILE_BYTES = 20 * 1024 * 1024;
-   const PARSE_OPTIONS = {
+   // Tính lúc dùng: hồ sơ bút (Cài đặt → Cấu hình máy) có thể đổi sau khi tải trang.
+   const parseOptions = () => ({
        penUpZ: MACHINE.penUpZ,
        penDownZ: MACHINE.penDownZ,
        rapidFeed: MACHINE.rapidFeed ?? 6000
-   };
+   });
    const message = (detail) => window.dispatchEvent(new CustomEvent("extruxy:message", { detail }));
 
 
@@ -69,8 +70,45 @@ const STATUS_FIELDS = [
     "machine-x", "machine-y", "machine-z",
     "machine-feed", "planner-free", "rx-free",
     "last-update-time", "homed-indicator",
-    "last-alarm", "last-error"
+    "last-alarm", "last-error", "pen-state", "firmware-version"
 ];
+
+const PEN_TOL_MM = 0.05;    // cùng sai số backend dùng để xác nhận nâng bút
+
+// Ba nấc bút (data-pen) -> trường Z trong MACHINE (Cài đặt ghi đè, xem views/settings.js).
+const PEN_LEVELS = { up: "penUpZ", mid: "penMidZ", down: "penDownZ" };
+
+const workZ = (wpos) => (Array.isArray(wpos) ? Number(wpos[2]) : NaN);
+
+// Nấc bút đang ở (up/mid/down) theo Z làm việc, hoặc null nếu không khớp nấc nào.
+function penLevel(wpos) {
+    const z = workZ(wpos);
+    if (!Number.isFinite(z)) return null;
+    return Object.keys(PEN_LEVELS)
+        .find((level) => Math.abs(z - MACHINE[PEN_LEVELS[level]]) <= PEN_TOL_MM) ?? null;
+}
+
+function penText(wpos) {
+    const z = workZ(wpos);
+    if (!Number.isFinite(z)) return "—";
+    const level = penLevel(wpos);
+    return level ? t(`control.pen.${level}`) : `Z ${trim(z)}`;
+}
+
+// Gửi $I một lần mỗi phiên kết nối khi chưa biết firmware: board thật không reset khi
+// mở cổng nên thường không có banner. $I là lệnh chỉ đọc, được phép cả khi máy đang khóa.
+let askedFirmwareFor = null;
+function askFirmwareOnce(snapshot) {
+    const status = snapshot.status;
+    const connection = status?.connection;
+    const key = connection?.connected ? `${connection.mode}:${connection.port}` : null;
+    if (key === null) { askedFirmwareFor = null; return; }
+    if (askedFirmwareFor === key || firmwareLabel() || isStale()) return;
+    const job = status.job?.state;
+    if (job === "running" || job === "finishing" || status.stopping) return;
+    askedFirmwareFor = key;
+    api.command("$I").catch(() => { askedFirmwareFor = null; });
+}
 
 function initStatusPanel() {
     const displayStatus = (snapshot) => {
@@ -97,6 +135,7 @@ function initStatusPanel() {
             const banner = $("readonly-banner");
             if (banner) banner.hidden = true;
 
+            askedFirmwareFor = null;      // lần kết nối sau hỏi lại $I
             return;
         }
 
@@ -108,6 +147,7 @@ function initStatusPanel() {
             setText(`machine-${axis}`, mpos ? formatNumber(mpos[index]) : "—");
             setText(`workspace-${axis}`, wpos ? formatNumber(wpos[index]) : "—");
         });
+        setText("pen-state", penText(wpos));
 
         setText("controller-state", machine.state ?? "—");
 
@@ -167,8 +207,8 @@ function initStatusPanel() {
         const unlock = $("unlock-motion-btn");
         if (unlock) unlock.disabled = connection.unlock_available === false;
 
-        setText("firmware-version", "—");   // chưa có trong API status
-        
+        setText("firmware-version", firmwareLabel() ?? "—");
+        askFirmwareOnce(snapshot);
     };
 
     subscribe(displayStatus);
@@ -191,8 +231,8 @@ function initMotionControls() {
     );
     const jogCancel = $("jog-cancel-btn");
     const centerButton = $("jog-center-btn");
-    const penUp = $("pen-up-btn");
-    const penDown = $("pen-down-btn");
+    const penButtons = document.querySelectorAll(".pen-bar [data-pen]");
+    const jogDistance = $("jog-distance");
 
     const readJogSettings = () => {
         const distance = Number($("jog-distance")?.value);
@@ -229,17 +269,75 @@ function initMotionControls() {
         sendCommand(`$J=G90 G21 X0 Y0 F${settings.feed}`);
     });
 
-    // Bút lên/xuống: hằng số trong config.js (Z5/Z0 là giả định, chưa thử máy thật).
-    penUp?.addEventListener("click", () => {
-        sendCommand(`$J=G90 G21 Z${MACHINE.penUpZ} F${MACHINE.penFeed}`);
-    });
-    penDown?.addEventListener("click", () => {
-        sendCommand(`$J=G90 G21 Z${MACHINE.penDownZ} F${MACHINE.penFeed}`);
+    // Thanh bút 3 nấc: jog tuyệt đối tới Z của nấc (đã khớp WebUI FluidNC trên máy thật).
+    penButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const z = MACHINE[PEN_LEVELS[button.dataset.pen]];
+            sendCommand(`$J=G90 G21 Z${trim(z)} F${trim(MACHINE.penFeed)}`);
+        });
     });
 
+    // Hồ sơ máy đổi (Cài đặt): ghi lại số Z trên nút, ẩn bước jog lớn hơn mức tối đa.
+    const applyProfile = () => {
+        for (const [level, field] of Object.entries(PEN_LEVELS)) {
+            setText(`pen-${level}-z`, `Z${trim(MACHINE[field])}`);
+        }
+        if (!jogDistance) return;
+        for (const option of jogDistance.options) {
+            option.hidden = option.disabled = Number(option.value) > MACHINE.jogMaxStep;
+        }
+        if (jogDistance.selectedOptions[0]?.disabled) {
+            const allowed = [...jogDistance.options].filter((o) => !o.disabled);
+            if (allowed.length) jogDistance.value = allowed[allowed.length - 1].value;
+        }
+    };
+    applyProfile();
+    window.addEventListener("extruxy:profile-changed", applyProfile);
+
     // Zero (G10 L20 P1 ...) và Home ($H, $HX, $HY): lệnh nằm sẵn trong data-command.
+    // Home hỏi lại trước nếu bật "Xác nhận trước khi Home" (Cài đặt → Hoạt động).
+    const homeModal = $("custom-home-modal");
+    let pendingHome = null;
+    const closeHomeModal = () => { if (homeModal) homeModal.hidden = true; pendingHome = null; };
+    $("modal-home-cancel-btn")?.addEventListener("click", closeHomeModal);
+    $("modal-home-confirm-btn")?.addEventListener("click", () => {
+        const command = pendingHome;
+        closeHomeModal();
+        if (command) sendCommand(command);
+    });
+
     commandButtons.forEach((button) => {
-        button.addEventListener("click", () => sendCommand(button.dataset.command));
+        button.addEventListener("click", () => {
+            const command = button.dataset.command;
+            if (command.startsWith("$H") && PREFS.confirmHome && homeModal) {
+                pendingHome = command;
+                setText("modal-home-command", command);
+                homeModal.hidden = false;
+                $("modal-home-cancel-btn")?.focus();
+                return;
+            }
+            sendCommand(command);
+        });
+    });
+
+    // Jog bằng phím mũi tên (Cài đặt → Hoạt động → Phím tắt, mặc định tắt).
+    // Chỉ "bấm hộ" nút jog tương ứng, nên mọi điều kiện khóa của nút vẫn áp dụng.
+    const KEY_TO_JOG = {
+        ArrowLeft: ["x", "-1"], ArrowRight: ["x", "1"],
+        ArrowUp: ["y", "-1"], ArrowDown: ["y", "1"]     // khớp bàn jog: ↑ là Y−
+    };
+    document.addEventListener("keydown", (event) => {
+        const target = KEY_TO_JOG[event.key];
+        if (!target || !PREFS.shortcuts) return;
+        if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.repeat) return;
+        if (event.target.closest?.("input, textarea, select, [contenteditable]")) return;
+        if (!$("panel-control")?.classList.contains("is-active")) return;
+        if (document.querySelector(".glass-modal-overlay:not([hidden])")) return;
+        const button = document.querySelector(
+            `[data-jog-axis="${target[0]}"][data-jog-direction="${target[1]}"]`);
+        if (!button || button.disabled) return;
+        event.preventDefault();         // không cuộn trang
+        button.click();
     });
 
 
@@ -254,8 +352,15 @@ function initMotionControls() {
         const canHome = canMove && (machineState === "Idle" || machineState === "Alarm");
 
         jogButtons.forEach((button) => { button.disabled = !idle; });
-        [centerButton, penUp, penDown].forEach((button) => {
-            if (button) button.disabled = !idle;
+        if (centerButton) centerButton.disabled = !idle;
+
+        // Nấc đang ở được tô sáng theo Z thật máy báo (không theo nút vừa bấm).
+        const level = isConnected() ? penLevel(snapshot.status?.machine?.wpos) : null;
+        penButtons.forEach((button) => {
+            button.disabled = !idle;
+            const active = button.dataset.pen === level;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", String(active));
         });
 
         commandButtons.forEach((button) => {
@@ -312,7 +417,7 @@ function initGcodePanel() {
             return;
         }
         try {
-            const parsed = parseGcode(await chosen.text(), PARSE_OPTIONS);
+            const parsed = parseGcode(await chosen.text(), parseOptions());
             if (parsed.lineCount === 0) {
                 message({ text: "File has no G-code lines." });
                 return;

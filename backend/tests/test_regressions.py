@@ -16,6 +16,8 @@ def homed_service(speed=20):
     assert wait_for(lambda: svc._status is not None, 3.0), "chưa có báo cáo trạng thái đầu tiên"
     svc.send_line("$H")
     assert wait_for(lambda: svc._homed_guess, 8.0), "sim không Home xong"
+    # `[MSG:Homed:XY]` đến trước báo cáo Idle (giống board thật): chờ thêm Idle.
+    assert wait_for(lambda: (svc._status or {}).get("state") == "Idle", 3.0)
     return svc
 
 
@@ -131,6 +133,8 @@ def test_reset_clears_stale_error_and_alarm():
     svc = MachineService(allow_motion=True)
     svc.connect("sim")
     try:
+        svc.send_line("$X")      # Reset khi đang Alarm (chưa Home) sẽ báo lại ALARM:14 như máy thật
+        assert wait_for(lambda: (svc._status or {}).get("state") == "Idle", 3.0)
         svc._on_line("error:9")
         assert svc._last_error is not None
         svc.send_realtime("reset")
@@ -163,10 +167,12 @@ def test_soft_stop_finishes_queue_then_lifts_without_alarm():
     try:
         svc.start_job("t", long_job_lines())
         assert wait_for(lambda: (svc._status or {}).get("state") == "Run", 3.0)
+        before = svc.log_since(0)["last_seq"]          # bỏ ALARM:14 lúc bật máy
         svc.cancel_job("soft", lift_z=5.0, lift_feed=3000.0)
         assert wait_for(lambda: any("pen lift sent" in x for x in texts(svc)), 20.0), texts(svc)[-8:]
         assert wait_for(lambda: z_of(svc) is not None and abs(z_of(svc) - 5.0) < 0.05, 6.0)
-        assert not any(x.startswith("ALARM:") for x in texts(svc))
+        after = [e["text"] for e in svc.log_since(before)["entries"]]
+        assert not any(x.startswith("ALARM:") for x in after)
         assert svc._homed_guess is True            # Dừng êm giữ nguyên trạng thái Home
     finally:
         svc.disconnect()

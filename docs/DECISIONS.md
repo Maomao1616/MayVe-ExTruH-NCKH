@@ -19,10 +19,11 @@
 | C1 | Jog, XY 0, bút, Zero mở khi `Idle`; Home khi `Idle`/`Alarm` | An toàn | ✅ |
 | C2 | Jog dùng `$J=...` | Chạy được khi chưa Home | ✅ |
 | C3 | Zero dùng `G10 L20 P1 ...` | Chuẩn FluidNC | ✅ |
-| C4 | Z5 = bút lên, Z0 = bút xuống | Giả định, chờ test servo thực tế | ⚠ |
+| C4 | Bút 3 nấc: Z5 lên, Z2.5 giữa, Z0 xuống (sửa được ở Cài đặt → Cấu hình máy, mục App) | Khớp WebUI FluidNC, đã thử thanh bút trên máy thật | ✅ |
+| C7 | **Cấu hình máy một panel**: mục "Máy" (YAML trên mạch) Áp dụng = `$/axes/...` vào RAM, Lưu vào mạch = `$CD=/localfs/<tệp>` sau khi sao lưu bản gốc về máy tính; mục "App" lưu ở `backend/data/profile.json`. Không cho sửa chân GPIO, kinematics, stepping | Chỉnh thông số không cần WiFi/WebUI; đã thử đọc, áp dụng, lưu, khởi động lại (MACHINE A11) | ✅ |
 | C5 | Gốc (0,0) trên trái. X+ đi trái, Y+ đi xuống (Khớp WebUI) | `VIEW.flipX/Y = false` | ✅ |
 | C6 | Nút Tạm dừng (Header) chỉ dùng cho Run. Nút Hủy Jog riêng cho Jog. | Đúng bản chất firmware | ✅ |
-| D4 | **Hủy tác vụ 3 chế độ**: `reset` (cũ), `soft` (chạy nốt buffer 60s + nâng bút), `hard` (Hold -> Reset -> $X -> nâng bút). Mặc định UI dùng `soft`, fallback sang `hard` nếu lỗi. | An toàn, giữ được Home nếu có thể | ✅ |
+| D4 | **Hủy tác vụ 3 chế độ**: `reset` (cũ), `soft` (chạy nốt buffer 60s + nâng bút), `hard` (Hold -> Reset -> $X nếu Alarm -> nâng bút, chỉ báo xong khi Z thật tới đích). Mặc định UI dùng `soft`, fallback sang `hard` nếu lỗi. | An toàn, giữ được Home nếu có thể; đã thử trên máy thật (MACHINE A10) | ✅ |
 | D9 | **Bỏ hoàn toàn thẻ SD / Flash**. Chỉ streaming từ máy tính. | MKS quá tải, dễ lỗi. Chờ mini PC i5. | ✅ |
 | D10 | Streaming gửi từng dòng chờ ok. Test 1500 dòng @ F3000 không nhảy Run/Idle. | Ổn định | ✅ |
 | M6 | Boot lên Alarm do must_home. Sau `$X`, G-code chạy được kể cả chưa Home. UI phải cảnh báo. | Sự thật firmware | ✅ |

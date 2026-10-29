@@ -57,13 +57,12 @@ def test_job_runs_to_done_without_flooding_log(svc):
     assert any("Job started" in e["text"] for e in new)
 
 
-def test_job_reports_alarm_when_not_homed(svc):
-    svc.connect("sim", sim_speed=100)
-    assert wait_for(lambda: svc.snapshot()["machine"] is not None)
-    svc.start_job("unhomed", ["G0 X10"])
+def test_job_reports_soft_limit_alarm(svc):
+    homed(svc)
+    svc.start_job("too-far", ["G90", "G0 X1000"])     # máy thật: ok trước, ALARM:2 sau
     assert wait_for(lambda: job_state(svc) == "failed")
     error = svc.snapshot()["job"]["error"]
-    assert error["code"] == "alarm" and error["device_code"] == 14
+    assert error["code"] == "alarm" and error["device_code"] == 2
 
 
 def test_job_stops_on_device_error_and_reports_line(svc):
@@ -115,7 +114,7 @@ def test_start_requires_connection_and_idle(svc):
     assert info.value.code == "not_connected"
     svc.connect("sim", sim_speed=100)
     assert wait_for(lambda: svc.snapshot()["machine"] is not None)
-    svc.send_line("G0 X10")                                   # chưa Home -> Alarm
+    # Board thật: bật lên đã ở Alarm 14 (must_home).
     assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("state") == "Alarm")
     with pytest.raises(ServiceError) as info:
         svc.start_job("x", ["G0 X1"])

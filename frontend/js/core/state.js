@@ -39,6 +39,15 @@ export function isStale() {
         Date.now() - state.lastUpdatedAt > POLL.staleMs;
 }
 
+// "FluidNC v4.1.1 (esp32-wifi)" lấy từ banner `Grbl 4.1 [FluidNC ...]` hoặc dòng `[VER:...]`
+// của lệnh $I. Chưa có thì trả null.
+export function firmwareLabel() {
+    const banner = state.status?.banner;
+    if (!banner) return null;
+    const match = banner.match(/FluidNC\s+v[\w.-]+(?:\s*\([^)]*\))?/i);
+    return match ? match[0] : banner;
+}
+
 /* ---------- đăng ký nhận thay đổi ---------- */
 
 export function subscribe(listener) {
@@ -153,6 +162,22 @@ export function startPolling() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     if (!document.hidden) pollOnce();
+}
+
+// Đổi nhịp thăm dò (Cài đặt → Hoạt động). Áp dụng từ lần hỏi kế tiếp.
+export function setPollInterval(ms) {
+    const value = Number(ms);
+    if (Number.isFinite(value) && value >= 100) POLL.statusMs = value;
+}
+
+// Hỏi backend ngay (nút ↻). Trả Promise xong khi lần hỏi đó kết thúc.
+export async function refreshNow() {
+    if (!polling || requestInProgress) return;
+    if (timerId !== null) {
+        window.clearTimeout(timerId);
+        timerId = null;
+    }
+    await pollOnce();
 }
 
 export function stopPolling() {

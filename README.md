@@ -33,7 +33,7 @@ Giao diện dự kiến có bốn khu vực: **Điều khiển**, **Trạng thá
 | Frontend | Chưa bắt đầu |
 | Jog, Home, gửi G-code, SD, xử lý ảnh | Chưa làm |
 
-Lớp API (`routes.py`) chưa có test tự động; kiểm tra bằng trang `/docs`.
+Lớp API nằm trong `backend/app/api/` (có test tự động; thử tay bằng trang `/docs`). Cây thư mục và vai trò từng file: xem [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md).
 
 ## 3. Cài đặt và chạy
 
@@ -75,13 +75,16 @@ Lỗi trả về dạng ổn định `{"error": {"code": "...", "message": "..."
 ## 5. Máy thật: chế độ chỉ đọc mặc định
 
 - Với `mode: sim`, mọi lệnh đều được phép.
-- Với `mode: serial`, backend **chỉ cho lệnh đọc thông tin** (`$I`, `$G`, `$CMD`, `$CD`, `$SD/ListJSON`...). Các lệnh còn lại (`$H`, jog, G-code) bị từ chối với mã `motion_locked`.
-- Lệnh dừng (`hold`, `reset`, `jog_cancel`) **luôn** gửi được.
+- Với `mode: serial`, khi chưa mở khóa, backend **chỉ cho lệnh đọc thông tin** (danh sách lấy từ `$CMD` của board thật: `$I`, `$$`, `$G`, `$E`, `$A`, `$CD`, `$Limits`, `$SS`, ... cả tên ngắn lẫn tên dài) và `$X` (mở Alarm, không làm máy chạy). Các lệnh còn lại (`$H`, jog, G-code) bị từ chối với mã `motion_locked`. Firmware vẫn là lớp chặn cuối (soft limit, `error:9` khi Alarm).
+- Lệnh dừng (`hold`, `reset`, `jog_cancel`) **luôn** gửi được. Gõ `?`, `!`, `~` một mình trong terminal được gửi như ký tự tức thời, **kể cả khi đang chạy tác vụ**. Các dòng khác bị chặn trong lúc chạy tác vụ (`job_running`), vì mỗi dòng sinh thêm một `ok` làm lệch việc đếm `ok` của tác vụ.
+- `SimLink` đã hiệu chỉnh theo log board thật ([docs/MACHINE.md](docs/MACHINE.md)): bật lên ở `ALARM:14`, `$X` xong chạy được G-code kể cả khi chưa Home, `!` khi Jog thì hủy jog, Reset tại Hold:0 không alarm, soft limit trả `ok` trước `ALARM:2`, ALARM:1 phải Reset trước `$X`.
 - Để mở khóa chuyển động (chỉ khi máy đã sẵn sàng, có người đứng cạnh, tay gần công tắc nguồn):
   ```powershell
   $env:EXTRUXY_ALLOW_MOTION = "1"
   uvicorn app.main:app --reload
   ```
+- Backend chỉ nhận yêu cầu có Host cục bộ (`localhost`, `127.0.0.1`, `[::1]`) và chặn POST đến từ trang web khác (Origin lạ), để một trang web bất kỳ đang mở trong trình duyệt không gửi được lệnh tới máy. **Không có đăng nhập**: muốn dùng qua mạng LAN thì phải đặt `$env:EXTRUXY_ALLOWED_HOSTS = "192.168.1.20,localhost"` (địa chỉ của máy chạy backend), chạy `uvicorn ... --host 0.0.0.0`, và hiểu rằng **mọi máy trong mạng đều điều khiển được máy vẽ**.
+- Trong lúc Dừng êm/Dừng gấp đang chạy (`/api/status` → `"stopping": true`), backend từ chối job mới, lệnh chuyển động và `resume` (mã `stopping`). Lệnh `hold`/`reset`/`jog_cancel` vẫn luôn được phép. Nhật ký phân biệt rõ: *pen lift sent* (đã gửi), *rejected by firmware* (bị từ chối), *pen lift confirmed* (báo cáo trạng thái xác nhận Z đã tới đích).
 
 ## 6. Vì sao làm như vậy (các bước quan trọng)
 

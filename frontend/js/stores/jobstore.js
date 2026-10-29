@@ -1,4 +1,4 @@
-// jobstore.js — tệp G-code đang nạp ở trình duyệt. jobs.js ghi, preview.js đọc.
+// stores/jobstore.js — tệp G-code đang nạp ở trình duyệt. control.js ghi, preview.js đọc.
 // Chỉ giữ dữ liệu, không đụng DOM, không gọi mạng.
 
 export const store = {

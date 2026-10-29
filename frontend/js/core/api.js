@@ -48,5 +48,10 @@ export const api = {
     log: (since = 0) => request("GET", `/log?since=${since}`),
     motion: (on, pin = null) => request("POST", "/motion", { on, pin }),
     jobCancel: (mode = "reset", liftZ = null, liftFeed = 1000) =>
-    request("POST", "/jobs/cancel", { mode, lift_z: liftZ, lift_feed: liftFeed }),
+        request("POST", "/jobs/cancel", { mode, lift_z: liftZ, lift_feed: liftFeed }),
+    machineConfig: () => request("GET", "/machine/config"),
+    machineConfigApply: (values) => request("POST", "/machine/config", { values }),
+    machineConfigSave: () => request("POST", "/machine/config/save"),
+    profile: () => request("GET", "/profile"),
+    profileSave: (profile) => request("PUT", "/profile", profile),
 };

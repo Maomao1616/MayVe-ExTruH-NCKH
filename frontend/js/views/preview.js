@@ -5,11 +5,11 @@
 //   3. đầu máy (vị trí máy báo về) và đầu bút phát lại.
 // Xem trước chỉ đọc G-code ở trình duyệt, không gửi gì cho máy.
 
-import { t } from "../i18n.js";
-import { MACHINE, VIEW } from "../config.js";
-import { subscribe, isConnected } from "../state.js";
-import { subscribeStore } from "../jobstore.js";
-import { positionAt, formatDuration } from "../gcode.js";
+import { t } from "../core/i18n.js";
+import { MACHINE, VIEW } from "../core/config.js";
+import { subscribe, isConnected } from "../core/state.js";
+import { subscribeStore } from "../stores/jobstore.js";
+import { positionAt, formatDuration } from "../lib/gcode.js";
 
 const MARGIN = 14;
 const MIN_ZOOM = 0.5;
@@ -83,7 +83,6 @@ export function initPreview() {
     container.classList.add("is-canvas");   // CSS ẩn khung HTML tĩnh, canvas tự vẽ vùng làm việc
 
     const { travelX, travelY } = MACHINE;
-    const penThreshold = (MACHINE.penUpZ + MACHINE.penDownZ) / 2;
     const view = { zoom: 1, panX: 0, panY: 0 };
     const trail = createTrail();
 
@@ -383,7 +382,8 @@ export function initPreview() {
         if (isConnected() && Array.isArray(machine?.mpos)) {
             const [x, y, z] = machine.mpos;
             live = { x, y };
-            trail.add(x, y, z <= penThreshold);
+            // Đang vẽ khi Z dưới trung điểm nấc Xuống–Giữa (nấc Giữa là bút lơ lửng, không vẽ).
+            trail.add(x, y, z < (MACHINE.penDownZ + MACHINE.penMidZ) / 2);
         } else {
             live = null;
             trail.add(0, 0, false);           // ngắt vết, không nối qua lúc mất dữ liệu

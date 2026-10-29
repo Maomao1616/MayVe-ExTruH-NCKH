@@ -289,9 +289,17 @@
                   <button aria-label="Di chuyển Y dương" class="jog-button" data-jog-axis="y" data-jog-direction="1" disabled="" type="button" data-i18n="[aria-label]aria.jogYPlus">↓<small data-i18n="control.jog.yPlus">Y+</small></button>
                   <span class="jog-spacer"></span>
                 </div>
-                <div aria-label="Nâng hạ bút" class="jog-pen" role="group" data-i18n="[aria-label]aria.penControl">
-                  <button data-pen="up" disabled="" id="pen-up-btn" title="Nâng bút (Z5)" type="button" data-i18n="[title]action.penUp.title">▲<small data-i18n="control.jog.penUp">Bút lên</small></button>
-                  <button data-pen="down" disabled="" id="pen-down-btn" title="Hạ bút (Z0)" type="button" data-i18n="[title]action.penDown.title">▼<small data-i18n="control.jog.penDown">Bút xuống</small></button>
+                <!-- Thanh bút 3 nấc: Z lấy từ hồ sơ máy (Cài đặt → Cấu hình máy), JS ghi số Z -->
+                <div aria-label="Nâng hạ bút" class="pen-bar" role="group" data-i18n="[aria-label]aria.penControl">
+                  <button data-pen="up" disabled="" id="pen-up-btn" type="button" aria-pressed="false">
+                    <span aria-hidden="true">▲</span><small data-i18n="control.pen.up">Lên</small><span class="pen-z" id="pen-up-z">Z5</span>
+                  </button>
+                  <button data-pen="mid" disabled="" id="pen-mid-btn" type="button" aria-pressed="false">
+                    <span aria-hidden="true">●</span><small data-i18n="control.pen.mid">Giữa</small><span class="pen-z" id="pen-mid-z">Z2.5</span>
+                  </button>
+                  <button data-pen="down" disabled="" id="pen-down-btn" type="button" aria-pressed="false">
+                    <span aria-hidden="true">▼</span><small data-i18n="control.pen.down">Xuống</small><span class="pen-z" id="pen-down-z">Z0</span>
+                  </button>
                 </div>
               </div>
               <p class="help-text" data-i18n="control.jog.help">
@@ -445,7 +453,7 @@
               <div class="preview-canvas-container" id="preview-canvas-container">
                 <div aria-hidden="true" class="work-area-frame">
                   <span class="work-area-origin">O (0, 0)</span>
-                  <span class="work-area-size" id="work-area-label">285 × 310 mm</span>
+                  <span class="work-area-size" id="work-area-label">285 × 318 mm</span>
                 </div>
                 <canvas aria-label="Khung xem trước đường vẽ hai chiều" id="preview-canvas" data-i18n="[aria-label]aria.previewCanvas"></canvas>
                 <div class="preview-empty" id="preview-empty">
@@ -474,7 +482,8 @@
                   <button class="text-button" data-i18n="control.terminal.clear" id="clear-terminal-btn" type="button">Xóa log hiển thị</button>
                 </div>
                 <pre aria-label="Nhật ký lệnh máy" aria-live="off" class="terminal-output"
-                      id="terminal-output" data-i18n="[aria-label]aria.terminalLog"></pre>                <form class="terminal-input-row" id="terminal-form">
+                      id="terminal-output" data-i18n="[aria-label]aria.terminalLog"></pre>
+                <form class="terminal-input-row" id="terminal-form">
                   <label class="visually-hidden" for="terminal-command">
                     <span data-i18n="control.terminal.commandLabel">Lệnh gửi đến máy</span>
                   </label>
@@ -908,7 +917,7 @@
           <article class="panel">
             <div class="panel-heading">
               <div>
-                <strong data-i18n="settings.general.title">Giao diện chung</strong>
+                <h2 data-i18n="settings.general.title">Giao diện chung</h2>
                 <p data-i18n="settings.general.desc">Tùy chỉnh hiển thị ứng dụng.</p>
               </div>
             </div>
@@ -978,19 +987,19 @@
           </article>
 
 
-          <article class="panel">
+          <article class="panel machine-config-panel" id="machine-config-panel">
             <div class="panel-heading">
               <div>
                 <h2 data-i18n="settings.machine.title">Cấu hình máy</h2>
-                <p data-i18n="settings.machine.desc">Thông số phần cứng và firmware.</p>
+                <p data-i18n="mc.desc">Thông số trên mạch (tệp YAML) và thông số phần mềm, chỉnh tại một chỗ.</p>
               </div>
-              <span class="panel-tag" data-i18n="settings.machine.readonly">Chỉ đọc</span>
+              <div class="mc-heading-actions">
+                <span class="panel-tag" id="mc-file" title="Tệp cấu hình đang dùng trên mạch">—</span>
+                <button class="secondary-button" data-i18n="mc.read" id="mc-read-btn" type="button">↻ Đọc từ máy</button>
+              </div>
             </div>
-            <dl class="detail-list">
-              <div>
-                <dt data-i18n="settings.machine.name">Tên máy</dt>
-                <dd data-i18n="settings.machine.defaultName">ExtruXY Plotter</dd>
-              </div>
+
+            <dl class="detail-list detail-list-compact mc-summary">
               <div>
                 <dt data-i18n="settings.machine.firmware">Firmware</dt>
                 <dd data-i18n="common.status.unknown" id="settings-firmware-version">Chưa xác định</dd>
@@ -999,53 +1008,27 @@
                 <dt data-i18n="settings.machine.kinematics">Kiểu cơ cấu</dt>
                 <dd data-i18n="settings.machine.corexy">CoreXY (theo cấu hình dự án)</dd>
               </div>
-              <div>
-                <dt data-i18n="settings.machine.configBackend">Cấu hình từ backend</dt>
-                <dd data-i18n="settings.machine.noConfigApi" id="machine-config-status">Chưa có API đọc cấu hình</dd>
-              </div>
             </dl>
-            <p class="help-text" data-i18n="settings.machine.help">
-              Không chỉnh trực tiếp thông số firmware từ giao diện
-              khi chưa có API và cơ chế xác nhận an toàn.
-            </p>
-          </article>
 
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.display.title">Thông số hiển thị máy</h2>
-                <p data-i18n="settings.display.desc">Chỉ ảnh hưởng giao diện, không ghi vào máy.</p>
-              </div>
+            <p class="mc-legend">
+              <span data-i18n="mc.legend.board">Mục không có nhãn: nằm trong tệp YAML trên mạch.</span>
+              <span class="mc-badge mc-badge-app" data-i18n="mc.badge.app">App</span>
+              <span data-i18n="mc.legend.app">chỉ phần mềm dùng, lưu ở backend</span>
+              <span class="mc-flag" aria-hidden="true">●</span>
+              <span data-i18n="mc.legend.unsaved">đã áp dụng nhưng chưa lưu vào mạch</span>
+            </p>
+
+            <div class="mc-groups" id="mc-groups"></div>
+
+            <p class="mc-status" id="mc-status" role="status"></p>
+            <div class="mc-actions">
+              <button class="secondary-button" data-i18n="mc.revert" disabled="" id="mc-revert-btn" type="button">Hoàn tác</button>
+              <button class="primary-button" data-i18n="mc.apply" disabled="" id="mc-apply-btn" type="button">Áp dụng</button>
+              <button class="danger-button" data-i18n="mc.save" disabled="" id="mc-save-btn" type="button">Lưu vào mạch</button>
             </div>
-            <div class="form-grid">
-              <label for="setting-area-x">
-                <span data-i18n="settings.display.xArea">Vùng làm việc X (mm)</span>
-                <input id="setting-area-x" min="1" step="1" type="number" value="285"/>
-              </label>
-              <label for="setting-area-y">
-                <span data-i18n="settings.display.yArea">Vùng làm việc Y (mm)</span>
-                <input id="setting-area-y" min="1" step="1" type="number" value="318"/>
-              </label>
-              <label for="setting-pen-up-z">
-                <span data-i18n="settings.display.penUp">Z bút lên</span>
-                <input id="setting-pen-up-z" max="5" min="0" step="0.1" type="number" value="5"/>
-              </label>
-              <label for="setting-pen-down-z">
-                <span data-i18n="settings.display.penDown">Z bút xuống</span>
-                <input id="setting-pen-down-z" max="5" min="0" step="0.1" type="number" value="0"/>
-              </label>
-              <label for="setting-jog-max-step">
-                <span data-i18n="settings.display.jogMax">Bước jog tối đa (mm)</span>
-                <input id="setting-jog-max-step" min="1" step="1" type="number" value="50"/>
-              </label>
-              <label for="setting-feed-max">
-                <span data-i18n="settings.display.feedMax">Tốc độ tối đa (mm/phút)</span>
-                <input id="setting-feed-max" min="50" step="50" type="number" value="6000"/>
-              </label>
-            </div>
-            <p class="help-text" data-i18n="settings.display.help">
-              Các giá trị này nên khớp với file cấu hình máy (configNCKH-13).
-              Thay đổi tại đây không sửa firmware.
+            <p class="help-text" data-i18n="mc.help">
+              Áp dụng: gửi ngay vào máy, mất khi tắt nguồn (mục App thì lưu luôn). Lưu vào mạch: ghi đè
+              tệp YAML để lần bật sau vẫn còn; bản gốc được sao lưu về máy tính trước.
             </p>
           </article>
 
@@ -1109,13 +1092,42 @@
   </div>
 </div>
 
+<!-- Xác nhận ghi đè tệp cấu hình trên mạch -->
+<div class="glass-modal-overlay" id="custom-config-save-modal" hidden>
+  <div class="glass-modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-config-title">
+    <div class="glass-modal-icon">💾</div>
+    <h3 id="modal-config-title" data-i18n="modal.config.title">Lưu cấu hình vào mạch</h3>
+    <p><span data-i18n="modal.config.desc">Tệp sẽ bị ghi đè:</span> <b id="modal-config-file">—</b></p>
+    <p data-i18n="modal.config.format">FluidNC viết lại tệp theo dạng chuẩn: mất các dòng chú thích (#) và có thêm các mục mặc định. Bản gốc nguyên văn được sao lưu vào backend/data/config_backups trên máy tính.</p>
+    <p><span data-i18n="modal.config.changes">Mục sẽ được lưu:</span> <b id="modal-config-changes">—</b></p>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="modal.home.cancel" id="modal-config-cancel-btn" type="button">Hủy bỏ</button>
+      <button class="primary-button danger-button" data-i18n="mc.save" id="modal-config-confirm-btn" type="button">Lưu vào mạch</button>
+    </div>
+  </div>
+</div>
+
+<!-- Xác nhận Home (bật/tắt ở Cài đặt → Hoạt động) -->
+<div class="glass-modal-overlay" id="custom-home-modal" hidden>
+  <div class="glass-modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-home-title">
+    <div class="glass-modal-icon">⌂</div>
+    <h3 id="modal-home-title" data-i18n="modal.home.title">Xác nhận Home</h3>
+    <p data-i18n="modal.home.desc">Máy sẽ tự chạy về công tắc hành trình. Kiểm tra không có vật cản và bút đang được nâng.</p>
+    <p><span data-i18n="modal.home.command">Lệnh:</span> <b id="modal-home-command">$H</b></p>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="modal.home.cancel" id="modal-home-cancel-btn" type="button">Hủy bỏ</button>
+      <button class="primary-button" data-i18n="modal.home.confirm" id="modal-home-confirm-btn" type="button">Home</button>
+    </div>
+  </div>
+</div>
+
 <!-- Bảng thông báo Hủy tác vụ (Glassmorphism Modal) -->
 <div class="glass-modal-overlay" id="custom-cancel-modal" hidden>
   <div class="glass-modal-box">
     <div class="glass-modal-icon">⏹️</div>
     <h3>Xác nhận Hủy tác vụ</h3>
     <p><b>Dừng êm:</b> ngừng gửi lệnh, máy chạy nốt các đoạn đã nằm trong bộ đệm rồi nâng bút. Không báo Alarm, giữ nguyên trạng thái Home.</p>
-    <p><b>Dừng gấp:</b> Feed Hold, Reset rồi nâng bút. Máy vào Alarm và cần Home lại.</p>
+    <p><b>Dừng gấp:</b> Feed Hold cho máy dừng tại chỗ, Reset, rồi nâng bút. Nếu firmware báo Alarm, phần mềm tự mở khóa trước khi nâng bút.</p>
     <div class="glass-modal-actions">
       <button class="secondary-button" id="modal-cancel-job-btn-close" type="button">Tiếp tục chạy</button>
       <button class="primary-button danger-button" id="modal-cancel-job-btn-hard" type="button">Dừng gấp</button>
