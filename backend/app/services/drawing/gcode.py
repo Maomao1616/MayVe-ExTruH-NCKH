@@ -13,7 +13,7 @@ import math
 from ..job import MAX_LINE_LEN, MAX_LINES
 from .errors import DrawError
 from .spec import Params
-from .types import Stroke
+from .shapes import Stroke
 
 
 def fmt(v: float, precision: int) -> str:

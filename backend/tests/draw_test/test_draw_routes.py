@@ -20,7 +20,7 @@ def client():
 
 def test_schema(client):
     body = client.get("/api/draw/schema").json()
-    assert body["papers"]["a4"]["w"] == 210.0
+    assert body["papers"]["a4"]["w"] == 210.0 and "a6" in body["papers"]
     assert {r["name"] for r in body["params"]["machine"]} >= {"work_w", "work_h", "z_travel", "rapid_feed"}
 
 
@@ -34,7 +34,7 @@ def test_gcode_ok(client):
 def test_draw_error_uses_the_project_error_shape(client):
     r = client.post("/api/draw/gcode", json={**BODY, "layout": {"width_mm": 285, "height_mm": 100}})
     assert r.status_code == 400
-    assert r.json()["error"]["code"] == "box_out_of_area"
+    assert r.json()["error"]["code"] == "box_out_of_paper"
 
 
 def test_unknown_param_is_bad_param(client):

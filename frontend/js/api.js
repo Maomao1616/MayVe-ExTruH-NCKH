@@ -45,7 +45,8 @@ export const api = {
     command: (line) => request("POST", "/command", { line }),
     realtime: (action) => request("POST", "/realtime", { action }),
     jobStart: (name, lines) => request("POST", "/jobs", { name, lines }),
-    jobCancel: () => request("POST", "/jobs/cancel"),
     log: (since = 0) => request("GET", `/log?since=${since}`),
     motion: (on, pin = null) => request("POST", "/motion", { on, pin }),
+    jobCancel: (mode = "reset", liftZ = null, liftFeed = 1000) =>
+    request("POST", "/jobs/cancel", { mode, lift_z: liftZ, lift_feed: liftFeed }),
 };

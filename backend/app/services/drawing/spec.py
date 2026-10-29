@@ -28,20 +28,26 @@ class Param:
 
 
 # Khổ giấy dựng sẵn (mm, đặt đứng). Frontend dùng để điền rộng/cao; backend không phụ thuộc.
-PAPERS = {"a4": (210.0, 297.0), "a5": (148.0, 210.0), "letter": (215.9, 279.4)}
+PAPERS = {"a4": (210.0, 297.0), "a5": (148.0, 210.0), "a6": (105.0, 148.0), "letter": (215.9, 279.4)}
 
-# Khung vẽ trong vùng làm việc của máy.
+# Tờ giấy + khung vẽ. Tờ giấy đặt ở GỐC máy O(0,0) (góc trên trái, Y xuống) rồi mới dịch bằng paper_x/y.
+# Khung vẽ nằm TRONG tờ giấy (trừ lề); "căn giữa" = căn khung vẽ giữa phần trong lề của tờ giấy.
 LAYOUT = (
-    Param("width_mm", "float", 100.0, 1, 5000, unit="mm"),
-    Param("height_mm", "float", 100.0, 1, 5000, unit="mm"),
-    Param("margin_mm", "float", 5.0, 0, 500, unit="mm"),
+    Param("paper", "choice", "a4", choices=tuple(PAPERS) + ("custom",)),
+    Param("paper_width_mm", "float", None, 1, 5000, unit="mm"),    # chỉ dùng khi paper = custom
+    Param("paper_height_mm", "float", None, 1, 5000, unit="mm"),
+    Param("paper_x_mm", "float", 0.0, 0, 5000, unit="mm"),         # góc trên trái tờ giấy trên máy
+    Param("paper_y_mm", "float", 0.0, 0, 5000, unit="mm"),
+    Param("margin_mm", "float", 5.0, 0, 500, unit="mm"),           # lề an toàn, tính từ mép TỜ GIẤY
+    Param("width_mm", "float", None, 1, 5000, unit="mm"),          # None = lấp đầy phần trong lề
+    Param("height_mm", "float", None, 1, 5000, unit="mm"),
     Param("fit", "choice", "contain", choices=("contain", "stretch")),
-    Param("center", "bool", True),                       # căn giữa khung vẽ trong vùng làm việc
-    Param("offset_x_mm", "float", 0.0, 0, 5000, unit="mm"),   # góc trên trái khung khi center=false
+    Param("center", "bool", True),                                 # căn giữa khung vẽ trong tờ giấy
+    Param("offset_x_mm", "float", 0.0, 0, 5000, unit="mm"),        # khi center=false: tính từ góc trong lề
     Param("offset_y_mm", "float", 0.0, 0, 5000, unit="mm"),
     Param("flip_x", "bool", False),
     Param("flip_y", "bool", False),
-    Param("reverse", "bool", False),                     # đảo thứ tự các nét
+    Param("reverse", "bool", False),                               # đảo thứ tự các nét
 )
 
 # Thông số vẽ (khớp các ô trong tab).

@@ -11,8 +11,10 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from .services.drawing import DrawError, describe, make_gcode
-from .services.drawing.types import Layer
+from .services.drawing.shapes import Layer
 from .services.machine import ServiceError
+
+
 
 router = APIRouter(prefix="/api/draw")
 
@@ -29,7 +31,6 @@ class GcodeRequest(BaseModel):
     gcode: dict[str, Any] = Field(default_factory=dict)
     source_bounds: tuple[float, float, float, float] | None = None
 
-
 @router.get("/schema")
 def schema():
     return describe()
@@ -42,3 +43,4 @@ def gcode(req: GcodeRequest):
         return make_gcode(layers, req.machine, req.layout, req.gcode, req.source_bounds)
     except DrawError as exc:       # đổi sang lỗi chuẩn của dự án: {"error": {"code", "message"}}
         raise ServiceError(exc.code, exc.message, exc.status) from exc
+

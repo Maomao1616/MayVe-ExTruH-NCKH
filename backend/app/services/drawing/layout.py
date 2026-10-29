@@ -1,7 +1,9 @@
-"""Bố trí: đặt đường nét vào KHUNG VẼ (mm) trong vùng làm việc của máy.
+"""Bố trí: đặt đường nét vào KHUNG VẼ nằm trong TỜ GIẤY, tờ giấy nằm trong vùng làm việc của máy.
 
-Thứ tự: tính khung (căn giữa hoặc theo offset) -> kiểm lề -> co giãn (contain/stretch)
--> căn nội dung giữa khung -> lật trong khung -> đảo thứ tự nét.
+Tờ giấy neo ở gốc máy O(0,0) (góc trên trái, Y xuống), có thể dịch bằng paper_x/paper_y.
+Thứ tự: xác định tờ giấy -> kiểm tờ giấy nằm trong vùng máy -> trừ lề -> khung vẽ (mặc định lấp đầy,
+căn giữa hoặc theo offset) -> co giãn (contain/stretch) -> căn nội dung giữa khung -> lật trong khung
+-> đảo thứ tự nét.
 Mọi lớp dùng CHUNG một phép đặt (tính trên hộp bao của tất cả lớp) để các lớp luôn khớp nhau.
 Tọa độ ra: mm, gốc trên trái, Y xuống (chưa đảo trục máy; việc đó nằm ở gcode.to_machine).
 """
@@ -11,8 +13,8 @@ from dataclasses import dataclass
 from typing import Iterable
 
 from .errors import DrawError
-from .spec import Params
-from .types import Box, Layer
+from .shapes import Box, Layer
+from .spec import PAPERS, Params
 
 EPS = 1e-6
 
@@ -20,6 +22,7 @@ EPS = 1e-6
 @dataclass(frozen=True)
 class Placement:
     src: Box          # hộp bao nội dung gốc
+    paper: Box        # tờ giấy trên máy
     box: Box          # khung vẽ trên máy
     sx: float
     sy: float
@@ -51,16 +54,35 @@ def content_bounds(layers: Iterable[Layer]) -> Box:
     return Box(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys))
 
 
+def paper_size(layout: Params) -> tuple[float, float]:
+    if layout.paper == "custom":
+        if layout.paper_width_mm is None or layout.paper_height_mm is None:
+            raise DrawError("bad_param", "layout: paper=custom cần paper_width_mm và paper_height_mm")
+        return layout.paper_width_mm, layout.paper_height_mm
+    return PAPERS[layout.paper]
+
+
 def plan(src: Box, layout: Params, machine: Params) -> Placement:
     W, H = machine.work_w, machine.work_h
-    w, h, m = layout.width_mm, layout.height_mm, layout.margin_mm
+    pw, ph = paper_size(layout)
+    px, py = layout.paper_x_mm, layout.paper_y_mm
+    if px + pw > W + EPS or py + ph > H + EPS:
+        raise DrawError("paper_out_of_area",
+                        f"Tờ giấy {pw:g}x{ph:g} mm đặt tại ({px:g}, {py:g}) vượt vùng làm việc {W:g}x{H:g} mm.")
+    m = layout.margin_mm
+    iw, ih = pw - 2 * m, ph - 2 * m                  # phần trong lề của tờ giấy
+    if iw <= EPS or ih <= EPS:
+        raise DrawError("bad_param", f"layout: lề {m:g} mm quá lớn so với tờ giấy {pw:g}x{ph:g} mm")
+    w = layout.width_mm if layout.width_mm is not None else iw
+    h = layout.height_mm if layout.height_mm is not None else ih
     if layout.center:
-        bx, by = (W - w) / 2, (H - h) / 2
+        bx, by = px + m + (iw - w) / 2, py + m + (ih - h) / 2
     else:
-        bx, by = layout.offset_x_mm, layout.offset_y_mm
-    if bx < m - EPS or by < m - EPS or bx + w > W - m + EPS or by + h > H - m + EPS:
-        raise DrawError("box_out_of_area",
-                        f"Khung vẽ {w:g}x{h:g} mm (lề {m:g}) không nằm trong vùng làm việc {W:g}x{H:g} mm.")
+        bx, by = px + m + layout.offset_x_mm, py + m + layout.offset_y_mm
+    if (w > iw + EPS or h > ih + EPS or bx < px + m - EPS or by < py + m - EPS
+            or bx + w > px + m + iw + EPS or by + h > py + m + ih + EPS):
+        raise DrawError("box_out_of_paper",
+                        f"Khung vẽ {w:g}x{h:g} mm không nằm trong phần trong lề ({iw:g}x{ih:g} mm) của tờ giấy.")
     cw, ch = src.w, src.h
     if cw <= EPS and ch <= EPS:
         raise DrawError("empty_drawing", "Nội dung chỉ là một điểm, không có gì để vẽ.")
@@ -74,7 +96,8 @@ def plan(src: Box, layout: Params, machine: Params) -> Placement:
         sx = sy = s
     ox = bx + (w - cw * sx) / 2
     oy = by + (h - ch * sy) / 2
-    return Placement(src, Box(bx, by, w, h), sx, sy, ox, oy, layout.flip_x, layout.flip_y)
+    return Placement(src, Box(px, py, pw, ph), Box(bx, by, w, h), sx, sy, ox, oy,
+                     layout.flip_x, layout.flip_y)
 
 
 def place_layers(layers: list[Layer], pl: Placement, reverse: bool) -> list[Layer]:

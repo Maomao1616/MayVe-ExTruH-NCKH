@@ -8,7 +8,7 @@ from typing import Any, Mapping
 from ..job import JobError, clean_gcode
 from . import gcode as gc, layout as lo, spec
 from .errors import DrawError
-from .types import Box, Layer
+from .shapes import Box, Layer
 
 MAX_POINTS = 2_000_000       # chặn đầu vào quá lớn (bảo vệ RAM máy yếu)
 
@@ -77,7 +77,8 @@ def make_gcode(layers: list[Layer], machine_raw: Mapping[str, Any] | None,
         warnings += [dict(w, layer=layer.id) for w in warns]
     if not files:
         raise DrawError("empty_drawing", "Không có nét nào để vẽ.")
-    b = pl.box
-    return {"files": files, "box": {"x": b.x, "y": b.y, "w": b.w, "h": b.h,
-                                    "scale_x": pl.sx, "scale_y": pl.sy},
+    b, p = pl.box, pl.paper
+    return {"files": files,
+            "paper": {"x": p.x, "y": p.y, "w": p.w, "h": p.h},
+            "box": {"x": b.x, "y": b.y, "w": b.w, "h": b.h, "scale_x": pl.sx, "scale_y": pl.sy},
             "warnings": warnings}

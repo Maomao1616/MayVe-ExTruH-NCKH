@@ -2,7 +2,7 @@ import pytest
 
 from app.services.drawing import make_gcode
 from app.services.drawing.errors import DrawError
-from app.services.drawing.types import Layer
+from app.services.drawing.shapes import Layer
 
 MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000}
 GCODE = {"pen_up_z": 5, "pen_down_z": 0}
@@ -26,6 +26,8 @@ def test_single_layer_end_to_end():
     assert f["name"] == "draw" and f["gcode"].startswith("G90 G21\n") and f["gcode"].endswith("\n")
     assert f["stats"]["draw_mm"] == 400.0
     assert r["box"]["w"] == 100 and r["box"]["scale_x"] == pytest.approx(10)
+    assert r["paper"] == {"x": 0, "y": 0, "w": 210.0, "h": 297.0}      # tờ giấy A4 ở gốc O(0,0)
+    assert r["box"]["x"] == pytest.approx(55) and r["box"]["y"] == pytest.approx(98.5)
 
 
 def test_two_layers_give_two_files_in_one_frame():
@@ -57,15 +59,16 @@ def test_pen_z_rules():
     assert code(gcode={"pen_up_z": None}) == "bad_param"
 
 
-def test_box_outside_work_area_is_an_error_not_a_clip():
-    assert code(layout={"width_mm": 285, "height_mm": 100}) == "box_out_of_area"
+def test_box_or_paper_outside_is_an_error_not_a_clip():
+    assert code(layout={"width_mm": 285, "height_mm": 100}) == "box_out_of_paper"
+    assert code(layout={"paper_x_mm": 100}) == "paper_out_of_area"
 
 
 def test_source_bounds_keep_image_margins():
     r = run(layers=[Layer("1", [[(40, 40), (60, 60)]])], source_bounds=(0, 0, 100, 100),
             layout={"width_mm": 100, "height_mm": 100})
     b = r["files"][0]["stats"]["bounds"]
-    assert b["x0"] == pytest.approx(92.5 + 40) and b["x1"] == pytest.approx(92.5 + 60)
+    assert b["x0"] == pytest.approx(55 + 40) and b["x1"] == pytest.approx(55 + 60)
 
 
 def test_bad_source_bounds():

@@ -2,7 +2,7 @@ import pytest
 
 from app.services.drawing import layout as lo, spec
 from app.services.drawing.errors import DrawError
-from app.services.drawing.types import Box, Layer
+from app.services.drawing.shapes import Box, Layer
 
 M = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000})
 
@@ -11,12 +11,30 @@ def L(**kw):
     return spec.parse("layout", kw)
 
 
-def test_contain_keeps_ratio_and_centers_in_box():
+def code(fn, *a):
+    with pytest.raises(DrawError) as e:
+        fn(*a)
+    return e.value.code
+
+
+def test_paper_sits_at_machine_origin_top_left():
+    pl = lo.plan(Box(0, 0, 10, 10), L(paper="a4"), M)
+    assert pl.paper == Box(0, 0, 210, 297)
+    assert lo.plan(Box(0, 0, 10, 10), L(paper="a6"), M).paper == Box(0, 0, 105, 148)
+
+
+def test_default_box_fills_the_paper_inside_margin():
+    pl = lo.plan(Box(0, 0, 10, 10), L(paper="a4", margin_mm=5), M)
+    assert (pl.box.x, pl.box.y, pl.box.w, pl.box.h) == (5, 5, 200, 287)
+    assert pl.sx == pl.sy == pytest.approx(20)          # contain: 200/10 (cạnh ngắn quyết định)
+
+
+def test_contain_keeps_ratio_and_centers_inside_paper():
     pl = lo.plan(Box(0, 0, 200, 100), L(width_mm=100, height_mm=100), M)
     assert pl.sx == pl.sy == pytest.approx(0.5)
-    # khung 100x100 ở giữa vùng 285x318 -> góc trên trái (92.5, 109); nội dung 100x50 căn giữa theo Y
-    assert pl.map(0, 0) == (pytest.approx(92.5), pytest.approx(134.0))
-    assert pl.map(200, 100) == (pytest.approx(192.5), pytest.approx(184.0))
+    # khung 100x100 căn giữa phần trong lề của A4 (200x287): góc (55, 98.5); nội dung 100x50 căn giữa theo Y
+    assert pl.map(0, 0) == (pytest.approx(55), pytest.approx(123.5))
+    assert pl.map(200, 100) == (pytest.approx(155), pytest.approx(173.5))
 
 
 def test_stretch_fills_box():
@@ -26,12 +44,40 @@ def test_stretch_fills_box():
 
 def test_source_origin_is_subtracted():
     pl = lo.plan(Box(50, 70, 10, 10), L(width_mm=10, height_mm=10), M)
-    assert pl.map(50, 70) == (pytest.approx(137.5), pytest.approx(154.0))
+    assert pl.map(50, 70) == (pytest.approx(100), pytest.approx(143.5))
 
 
-def test_not_centered_uses_offset():
+def test_not_centered_uses_offset_from_inner_corner():
     pl = lo.plan(Box(0, 0, 10, 10), L(width_mm=10, height_mm=10, center=False, offset_x_mm=20, offset_y_mm=30), M)
-    assert pl.map(0, 0) == (pytest.approx(20), pytest.approx(30))
+    assert pl.map(0, 0) == (pytest.approx(25), pytest.approx(35))       # 5 (lề) + offset
+
+
+def test_paper_can_be_moved_on_the_bed():
+    pl = lo.plan(Box(0, 0, 10, 10), L(paper="a5", paper_x_mm=50, paper_y_mm=10, margin_mm=0), M)
+    assert pl.paper == Box(50, 10, 148, 210)
+    assert (pl.box.x, pl.box.y) == (50, 10)
+
+
+def test_custom_paper_needs_its_size():
+    assert code(lo.plan, Box(0, 0, 10, 10), L(paper="custom"), M) == "bad_param"
+    pl = lo.plan(Box(0, 0, 10, 10), L(paper="custom", paper_width_mm=100, paper_height_mm=80, margin_mm=0), M)
+    assert pl.paper == Box(0, 0, 100, 80)
+
+
+def test_paper_outside_work_area_is_rejected():
+    assert code(lo.plan, Box(0, 0, 10, 10), L(paper="a4", paper_x_mm=100), M) == "paper_out_of_area"
+    assert code(lo.plan, Box(0, 0, 10, 10), L(paper="custom", paper_width_mm=300, paper_height_mm=100), M) \
+        == "paper_out_of_area"
+
+
+def test_box_must_stay_inside_the_paper_margin():
+    assert code(lo.plan, Box(0, 0, 10, 10), L(width_mm=205, height_mm=100), M) == "box_out_of_paper"
+    assert code(lo.plan, Box(0, 0, 10, 10),
+                L(width_mm=10, height_mm=10, center=False, offset_x_mm=195), M) == "box_out_of_paper"
+
+
+def test_margin_larger_than_paper_is_bad_param():
+    assert code(lo.plan, Box(0, 0, 10, 10), L(paper="a6", margin_mm=60), M) == "bad_param"
 
 
 def test_flip_mirrors_inside_the_box():
@@ -40,31 +86,13 @@ def test_flip_mirrors_inside_the_box():
     assert pl.map(10, 0)[0] == pytest.approx(pl.box.x)
 
 
-def test_box_must_respect_margin():
-    with pytest.raises(DrawError) as e:
-        lo.plan(Box(0, 0, 10, 10), L(width_mm=10, height_mm=10, center=False, offset_x_mm=2, offset_y_mm=20), M)
-    assert e.value.code == "box_out_of_area"          # lề 5 mặc định, offset_x=2 < 5
-
-
-def test_box_bigger_than_work_area_is_rejected():
-    with pytest.raises(DrawError) as e:
-        lo.plan(Box(0, 0, 10, 10), L(width_mm=300, height_mm=100), M)
-    assert e.value.code == "box_out_of_area"
-
-
-def test_a4_portrait_fits_machine_with_margin():
-    lo.plan(Box(0, 0, 10, 10), L(width_mm=210 - 10, height_mm=297 - 10), M)
-
-
 def test_line_has_zero_height_but_still_scales():
     pl = lo.plan(Box(0, 0, 50, 0), L(width_mm=100, height_mm=100), M)
     assert pl.sx == pl.sy == pytest.approx(2.0)
 
 
 def test_single_point_is_empty_drawing():
-    with pytest.raises(DrawError) as e:
-        lo.plan(Box(5, 5, 0, 0), L(), M)
-    assert e.value.code == "empty_drawing"
+    assert code(lo.plan, Box(5, 5, 0, 0), L(), M) == "empty_drawing"
 
 
 def test_empty_layers_are_rejected():

@@ -123,11 +123,13 @@ function initStatusPanel() {
                 : "control.controller.notHomed")
             : t("common.status.unknown"));
 
-        // Alarm chỉ có nghĩa khi máy đang ở trạng thái Alarm
-        // (backend không tự xóa last_alarm). Lỗi giữ kèm giờ xảy ra.
-        setText("last-alarm", machine.state === "Alarm"
-            ? codeText("alarm", status.last_alarm)
-            : "—");
+        const alarmText = machine.state === "Alarm"
+            ? (status.last_alarm?.code != null
+                ? codeText("alarm", status.last_alarm)
+                : t("control.controller.alarmNoCode"))
+            : "—";
+        setText("last-alarm", alarmText);
+
 
         const lastError = status.last_error;
         setText("last-error", lastError?.code == null
@@ -240,13 +242,6 @@ function initMotionControls() {
         button.addEventListener("click", () => sendCommand(button.dataset.command));
     });
 
-    jogCancel?.addEventListener("click", async () => {
-        try {
-            await api.realtime(jogCancel.dataset.realtime ?? "jog_cancel");
-        } catch (error) {
-            reportError(error);
-        }
-    });
 
     // Bật/tắt theo trạng thái thật. Backend và firmware vẫn là lớp kiểm tra cuối.
     const updateControls = (snapshot) => {
@@ -268,10 +263,6 @@ function initMotionControls() {
             button.disabled = !(isHome ? canHome : idle);
         });
 
-        if (jogCancel) {
-            jogCancel.disabled =
-                !(isConnected() && !isStale() && machineState === "Jog");
-        }
     };
 
     subscribe(updateControls);
@@ -372,17 +363,16 @@ function initGcodePanel() {
             customCancelModal.setAttribute("hidden", "");
         });
 
-        modalCancelJobConfirm.addEventListener("click", async () => {
-            customCancelModal.setAttribute("hidden", "");
-            try {
-                // Gọi API hủy / dừng tác vụ
-                await api.jobCancel();   // backend tự Reset sau khi đánh dấu hủy
-            } catch (error) {
-                console.error("Lỗi khi gửi lệnh Hủy tác vụ:", error);
-                // Bắn event thông báo lỗi ra ngoài nếu cần hiển thị lên terminal
-                window.dispatchEvent(new CustomEvent("extruxy:message", { detail: { error } }));
-            }
-        });
+            const cancelWith = async (mode) => {
+                customCancelModal.setAttribute("hidden", "");
+                try {
+                    await api.jobCancel(mode, MACHINE.penUpZ, MACHINE.penFeed);
+                } catch (error) {
+                    window.dispatchEvent(new CustomEvent("extruxy:message", { detail: { error } }));
+                }
+            };
+                modalCancelJobConfirm.addEventListener("click", () => cancelWith("soft"));
+                $("modal-cancel-job-btn-hard")?.addEventListener("click", () => cancelWith("hard"));
     }
 
     /* --- tính trạng thái hiện tại từ dữ liệu backend --- */

@@ -81,6 +81,7 @@
         <div class="toolbar-actions">
           <button class="toolbar-button" data-i18n="[title]action.pause.title; common.action.pause" data-realtime="hold" disabled="" id="pause-btn" title="Tạm dừng chuyển động (Feed Hold). Có thể Tiếp tục." type="button">Tạm dừng</button>
           <button class="toolbar-button" data-i18n="[title]action.resume.title; common.action.resume" data-realtime="resume" disabled="" id="resume-btn" title="Tiếp tục sau khi Tạm dừng" type="button">Tiếp tục</button>
+          <button class="toolbar-button" data-i18n="[title]action.cancelJog.title; control.jog.cancel" data-realtime="jog_cancel" disabled="" id="jog-cancel-btn" title="Hủy lệnh jog đang chạy" type="button">Hủy jog</button>
           <button class="toolbar-button danger-button" data-i18n="[title]action.reset.title; common.action.reset" data-realtime="reset" disabled="" id="reset-btn" title="Dừng mềm (Ctrl-X): dừng ngay, máy mất vị trí và phải Home lại" type="button">Reset</button>
         </div>
         <p class="toolbar-safety-note" data-i18n="toolbar.safetyNote">
@@ -254,7 +255,6 @@
                   <h2 data-i18n="control.jog.title">Di chuyển thủ công</h2>
                   <p data-i18n="control.jog.desc">Jog theo từng bước</p>
                 </div>
-                <button class="text-button" data-i18n="[title]action.cancelJog.title; control.jog.cancel" data-realtime="jog_cancel" disabled="" id="jog-cancel-btn" title="Hủy lệnh jog đang chạy" type="button">Hủy jog</button>
               </div>
               <div class="jog-settings">
                 <label for="jog-distance">
@@ -1142,13 +1142,12 @@
   <div class="glass-modal-box">
     <div class="glass-modal-icon">⏹️</div>
     <h3>Xác nhận Hủy tác vụ</h3>
-    <p>Máy sẽ dừng vẽ ngay lập tức và hủy bỏ tệp G-code đang chạy. Bạn có chắc chắn muốn hủy không?</p>
+    <p><b>Dừng êm:</b> ngừng gửi lệnh, máy chạy nốt các đoạn đã nằm trong bộ đệm rồi nâng bút. Không báo Alarm, giữ nguyên trạng thái Home.</p>
+    <p><b>Dừng gấp:</b> Feed Hold, Reset rồi nâng bút. Máy vào Alarm và cần Home lại.</p>
     <div class="glass-modal-actions">
       <button class="secondary-button" id="modal-cancel-job-btn-close" type="button">Tiếp tục chạy</button>
-      <button class="primary-button danger-button" id="modal-cancel-job-btn-confirm" type="button">Đồng ý Hủy</button>
+      <button class="primary-button danger-button" id="modal-cancel-job-btn-hard" type="button">Dừng gấp</button>
+      <button class="primary-button danger-button" id="modal-cancel-job-btn-confirm" type="button">Dừng êm</button>
     </div>
   </div>
 </div>
-
-</body>
-</html>
