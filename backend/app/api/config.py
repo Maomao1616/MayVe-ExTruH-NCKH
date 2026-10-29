@@ -44,6 +44,16 @@ def machine_config_save():
     return _wrap(machine_config.save_to_board, machine)
 
 
+@router.get("/machine/config/backups")
+def machine_config_backups():
+    return {"backups": machine_config.list_backups()}
+
+
+@router.get("/machine/config/backups/{name}")
+def machine_config_backup(name: str):
+    return _wrap(machine_config.read_backup, name)
+
+
 # --- hồ sơ phần mềm (services/profile.py) ------------------------------------------
 class ProfileRequest(BaseModel):
     pen_up_z: Finite

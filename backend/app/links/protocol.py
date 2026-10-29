@@ -14,6 +14,12 @@ FEED_HOLD = b"!"
 CYCLE_START = b"~"
 SOFT_RESET = b"\x18"
 JOG_CANCEL = b"\x85"
+# Ghi đè tốc độ (feed override): tính theo % của F trong tệp, firmware giới hạn 10–200 %.
+FEED_OV_RESET = b"\x90"
+FEED_OV_PLUS_10 = b"\x91"
+FEED_OV_MINUS_10 = b"\x92"
+FEED_OV_PLUS_1 = b"\x93"
+FEED_OV_MINUS_1 = b"\x94"
 
 # Tên mã theo `$A` và `$E` đọc từ board thật (MKS DLC32, FluidNC v4.1.1, 29/10/2026).
 ALARM_NAMES = {
@@ -107,7 +113,7 @@ def parse_status(line: str) -> dict[str, Any] | None:
         "state": state, "substate": sub or None,
         "mpos": None, "wpos": None, "wco": None,
         "planner_free": None, "rx_free": None,
-        "feed": None, "spindle": None, "sd": None, "pins": None,
+        "feed": None, "spindle": None, "sd": None, "pins": None, "overrides": None,
     }
     for field in parts[1:]:
         key, _, val = field.partition(":")
@@ -126,6 +132,8 @@ def parse_status(line: str) -> dict[str, Any] | None:
                 out["feed"], out["spindle"] = float(feed), float(spindle)
             elif key == "F":
                 out["feed"] = float(val)
+            elif key == "Ov":            # Ov:feed,rapid,spindle (%): không có trong mọi báo cáo
+                out["overrides"] = [int(v) for v in val.split(",")[:3]]
             elif key == "Pn":
                 out["pins"] = val
             elif key == "SD":

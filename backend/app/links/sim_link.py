@@ -9,7 +9,8 @@ Hiệu chỉnh theo log board thật (MKS DLC32, FluidNC v4.1.1, MACHINE.md 29/1
   - soft limit G-code: `ok` TRƯỚC rồi mới `ALARM:2`,
   - Home xong: `[MSG:Homed:XY]` rồi `ok`,
   - ALARM:1 (hard limit): `$X` trả ok nhưng vẫn Alarm, phải Reset trước.
-Vẫn là XẤP XỈ: vận tốc không đổi (không gia tốc), cung G2/G3 đi thẳng tới điểm cuối.
+Vẫn là XẤP XỈ: vận tốc không đổi (không gia tốc). Cung G2/G3 (I/J hoặc R) đi theo cung thật.
+Ghi đè tốc độ 0x90-0x94 như FluidNC (10-200 %), báo `Ov:` cùng nhịp với `WCO:`.
 Giới hạn mặc định lấy từ ConfigNCKH-16 ($130-$132): X 285, Y 318, Z 5 mm, must_home bật.
 """
 from __future__ import annotations
@@ -103,6 +104,7 @@ class SimLink(BaseLink):
         self._absolute = True
         self._motion_mode = 0
         self._feed = 1000.0
+        self._feed_ov = 100                  # ghi đè tốc độ (%), Reset đưa về 100
         self._input: deque[str] = deque()
         self._planner: deque[dict] = deque()
         self._current: dict | None = None
@@ -155,6 +157,16 @@ class SimLink(BaseLink):
                     self._soft_reset()
                 elif byte == 0x85:    # hủy jog
                     self._jog_cancel()
+                elif byte in self._FEED_OV:
+                    self._set_feed_override(byte)
+
+    # Ghi đè tốc độ: 0x90 về 100 %, 0x91/0x92 ±10 %, 0x93/0x94 ±1 % (giới hạn 10–200 %).
+    _FEED_OV = {0x90: None, 0x91: 10, 0x92: -10, 0x93: 1, 0x94: -1}
+
+    def _set_feed_override(self, byte: int) -> None:
+        delta = self._FEED_OV[byte]
+        self._feed_ov = 100 if delta is None else max(10, min(200, self._feed_ov + delta))
+        self._reports = 0                    # báo Ov ngay ở lần báo cáo kế tiếp
 
     # --- vòng lặp nền ---------------------------------------------------------
     def _run(self) -> None:
@@ -364,7 +376,7 @@ class SimLink(BaseLink):
                 gs.append(int(float(num)))
             elif letter in "XYZF":
                 vals[letter] = float(num)
-            elif letter in "LP":
+            elif letter in "LPIJR":
                 extra[letter] = float(num)
         if 10 in gs:
             # G10 L20 P1 X.. Y..: đặt gốc làm việc G54 tại vị trí hiện tại (không chuyển động)
@@ -379,29 +391,65 @@ class SimLink(BaseLink):
                 self._error(20)
             return
         for g in gs:
-            if g in (2, 3):
-                self._motion_mode = 1   # cung tròn: sim chỉ đi thẳng tới điểm cuối
+            if g in (0, 1, 2, 3):
+                self._motion_mode = g
             elif g == 90:
                 self._absolute = True
             elif g == 91:
                 self._absolute = False
-            elif g in (0, 1):
-                self._motion_mode = g
         if "F" in vals:
             self._feed = vals["F"]
         if not any(a in vals for a in _AXES):
             self._emit("ok")
             return
         # Máy thật: sau `$X`, G-code chạy được kể cả khi chưa Home (must_home chỉ chặn lúc bật).
+        start = self._base_target()
         target = self._targets(vals, self._absolute)
         if self._out_of_range(target):
             self._emit("[MSG:INFO: Soft limit exceeded]")
             self._emit("ok")             # máy thật trả ok TRƯỚC rồi mới ALARM:2
             self._alarm(2)
             return
-        self._planner.append({"target": target, "rapid": self._motion_mode == 0,
-                              "feed": self._feed, "jog": False})
+        block = {"target": target, "rapid": self._motion_mode == 0, "feed": self._feed, "jog": False}
+        if self._motion_mode in (2, 3) and any(k in extra for k in "IJR"):
+            arc = self._arc(start, target, extra, clockwise=self._motion_mode == 2)
+            if arc is None:
+                self._error(33)          # GcodeInvalidTarget: bán kính R không với tới điểm cuối
+                return
+            block["arc"] = arc
+        self._planner.append(block)
         self._emit("ok")
+
+    @staticmethod
+    def _arc(start, target, words, clockwise: bool) -> dict | None:
+        """Cung trong mặt XY (G17). I/J là độ lệch tâm so với điểm đầu; R theo công thức Grbl."""
+        dx, dy = target[0] - start[0], target[1] - start[1]
+        if "R" in words:
+            r = words["R"]
+            chord = math.hypot(dx, dy)
+            disc = 4 * r * r - dx * dx - dy * dy
+            if chord == 0 or disc < 0:
+                return None
+            h = -math.sqrt(disc) / chord
+            if not clockwise:
+                h = -h
+            if r < 0:                    # R âm: cung lớn hơn nửa vòng
+                h = -h
+            i, j = 0.5 * (dx - dy * h), 0.5 * (dy + dx * h)
+        else:
+            i, j = words.get("I", 0.0), words.get("J", 0.0)
+        cx, cy = start[0] + i, start[1] + j
+        r0 = math.hypot(start[0] - cx, start[1] - cy)
+        r1 = math.hypot(target[0] - cx, target[1] - cy)
+        a0 = math.atan2(start[1] - cy, start[0] - cx)
+        sweep = math.atan2(target[1] - cy, target[0] - cx) - a0
+        if clockwise and sweep >= -1e-9:
+            sweep -= 2 * math.pi         # điểm đầu = điểm cuối: cả vòng tròn
+        elif not clockwise and sweep <= 1e-9:
+            sweep += 2 * math.pi
+        length = max(abs(sweep) * (r0 + r1) / 2, 1e-6)
+        return {"c": (cx, cy), "r0": r0, "r1": r1, "a0": a0, "sweep": sweep,
+                "z0": start[2], "len": length, "done": 0.0}
 
     def _jog(self, text: str) -> None:
         if self._state == "Alarm":
@@ -458,6 +506,7 @@ class SimLink(BaseLink):
         self._current = None
         self._home_left = 0.0
         self._reset_required = False
+        self._feed_ov = 100                  # FluidNC: Reset đưa ghi đè tốc độ về 100 %
         if moving:
             self._alarm(6 if state == "Home" else 3)
         elif state == "Alarm":
@@ -496,8 +545,17 @@ class SimLink(BaseLink):
                 self._state = "Idle"
             return
         block = self._current
-        rate_mm_min = self._rapid[0] if block["rapid"] else min(block["feed"], self._rapid[0])
+        if block["rapid"]:
+            rate_mm_min = self._rapid[0]
+        else:
+            feed = block["feed"] if block["jog"] else block["feed"] * self._feed_ov / 100
+            rate_mm_min = min(feed, self._rapid[0])
         step = max(rate_mm_min, 1.0) / 60.0 * dt
+        if "arc" in block:
+            self._advance_arc(block, step)
+            if self._current is None and not self._planner:
+                self._state = "Idle"
+            return
         delta = [block["target"][i] - self._pos[i] for i in range(3)]
         dist = math.sqrt(sum(d * d for d in delta))
         if dist <= step:
@@ -509,6 +567,20 @@ class SimLink(BaseLink):
         if self._current is None and not self._planner:
             self._state = "Idle"
 
+    def _advance_arc(self, block: dict, step: float) -> None:
+        arc = block["arc"]
+        arc["done"] += step
+        f = min(1.0, arc["done"] / arc["len"])
+        if f >= 1.0:
+            self._pos = list(block["target"])
+            self._current = None
+            return
+        angle = arc["a0"] + arc["sweep"] * f
+        r = arc["r0"] + (arc["r1"] - arc["r0"]) * f
+        cx, cy = arc["c"]
+        z = arc["z0"] + (block["target"][2] - arc["z0"]) * f
+        self._pos = [cx + r * math.cos(angle), cy + r * math.sin(angle), z]
+
     # --- báo cáo trạng thái ---------------------------------------------------
     def _status_line(self) -> str:
         state = f"Hold:{self._hold_sub}" if self._state == "Hold" else self._state
@@ -517,5 +589,6 @@ class SimLink(BaseLink):
                   f"FS:{self._feed if self._current else 0:.0f},0"]
         if self._reports % 10 == 0:
             fields.append("WCO:" + ",".join(f"{v:.3f}" for v in self._wco))
+            fields.append(f"Ov:{self._feed_ov},100,100")
         self._reports += 1
         return "<" + "|".join(fields) + ">"

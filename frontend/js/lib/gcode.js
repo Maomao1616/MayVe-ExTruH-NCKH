@@ -85,7 +85,9 @@ export function parseGcode(text, options = {}) {
     let ended = false;
     const features = { arcs: 0, hasZ };
 
+    let seq = 0;            // số thứ tự dòng thực sự gửi đi (khớp job.sent/acked của backend)
     const push = (segment) => {
+        segment.seq = seq;
         segment.t0 = time;
         time += segment.dur;
         segments.push(segment);
@@ -96,6 +98,7 @@ export function parseGcode(text, options = {}) {
         const line = cleanLine(raw);
         if (!line || ended) return;     // sau M2/M30 chương trình đã kết thúc: không gửi, không vẽ
         lines.push(line);
+        seq = lines.length;
 
         const words = [...line.toUpperCase().matchAll(WORD)].map((m) => [m[1], Number(m[2])]);
         const vals = {};

@@ -52,6 +52,8 @@ export const api = {
     machineConfig: () => request("GET", "/machine/config"),
     machineConfigApply: (values) => request("POST", "/machine/config", { values }),
     machineConfigSave: () => request("POST", "/machine/config/save"),
+    machineConfigBackups: () => request("GET", "/machine/config/backups"),
+    machineConfigBackup: (name) => request("GET", `/machine/config/backups/${encodeURIComponent(name)}`),
     profile: () => request("GET", "/profile"),
     profileSave: (profile) => request("PUT", "/profile", profile),
 };

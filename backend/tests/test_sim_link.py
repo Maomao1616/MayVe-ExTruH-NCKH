@@ -1,4 +1,5 @@
 """SimLink phải khớp hành vi đã thấy trên board thật (MACHINE.md, 29/10/2026)."""
+import math
 import time
 
 import pytest
@@ -275,3 +276,65 @@ def test_settings_dump_matches_board(rig):
     assert wait_for(lambda: rig.count("ok") >= 1)
     for setting in ("$130=285.000", "$131=318.000", "$132=5.000", "$112=3000.000"):
         assert setting in rig.lines
+
+
+# --- cung tròn và ghi đè tốc độ (đợt 29/10/2026) --------------------------------
+def _track(rig, condition, timeout=6.0):
+    """Lấy mẫu vị trí trong lúc máy chạy, tới khi condition() đúng."""
+    import time as _t
+    points, end = [], _t.monotonic() + timeout
+    while _t.monotonic() < end:
+        st = rig.status()
+        points.append(st["mpos"])
+        if condition(st):
+            return points
+        _t.sleep(0.01)
+    raise AssertionError("hết giờ")
+
+
+def test_arc_follows_the_circle_not_the_chord():
+    # Lỗi cũ: G2/G3 đi thẳng tới điểm cuối, khung 2D thấy đường chéo thay vì cung.
+    r = Rig(speed=2)
+    try:
+        r.unlock()
+        r.link.write_line("G90 G1 X50 Y50 F6000")
+        assert wait_for(lambda: r.status()["mpos"][:2] == [50.0, 50.0], 6.0)   # Idle ngay lúc đầu nên chờ vị trí
+        r.link.write_line("G3 X70 Y50 I10 J0 F3000")    # nửa vòng tròn tâm (60,50), R10, đi qua phía Y−
+        pts = _track(r, lambda st: st["state"] == "Idle" and st["mpos"][0] > 69.9)
+        mid = [p for p in pts if 55 < p[0] < 65]
+        assert mid, pts
+        for x, y, _ in pts:
+            assert abs(math.hypot(x - 60, y - 50) - 10) < 0.2      # luôn nằm trên đường tròn
+        assert min(p[1] for p in mid) < 42                         # thật sự cong ra xa dây cung
+    finally:
+        r.close()
+
+
+def test_arc_with_radius_word_and_bad_radius():
+    r = Rig()
+    try:
+        r.unlock()
+        r.link.write_line("G90 G1 X10 Y10 F6000")
+        r.link.write_line("G2 X30 Y10 R10")                      # nửa vòng, tâm (20,10)
+        assert wait_for(lambda: r.status()["mpos"][:2] == [30.0, 10.0], 3.0), r.status()
+        r.link.write_line("G2 X80 Y10 R5")                       # R quá nhỏ: không với tới
+        assert wait_for(lambda: "error:33" in r.lines)
+    finally:
+        r.close()
+
+
+def test_feed_override_scales_file_feed_and_is_reported():
+    r = Rig()
+    try:
+        r.unlock()
+        for byte in (b"\x92", b"\x92", b"\x94"):                 # -10, -10, -1 => 79 %
+            r.link.write_realtime(byte)
+        assert r.status()["overrides"] == [79, 100, 100]
+        for _ in range(20):
+            r.link.write_realtime(b"\x91")                       # +10 x20: chặn ở 200 %
+        assert r.status()["overrides"][0] == 200
+        r.link.write_realtime(b"\x18")                           # Reset: về 100 %
+        r.link.write_realtime(b"\x90")
+        assert r.status()["overrides"][0] == 100
+    finally:
+        r.close()

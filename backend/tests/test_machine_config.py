@@ -161,3 +161,22 @@ def test_query_right_after_a_terminal_command_does_not_take_its_ok(svc):
     svc.send_line("$I")
     assert mc.config_filename(svc) == "ConfigNCKH-16.yaml"
     assert svc._pending_acks == 0
+
+
+def test_backups_list_and_read(svc, tmp_path):
+    assert mc.list_backups() == []
+    mc.apply_values(svc, {"axes/x/max_rate_mm_per_min": 5500})
+    mc.save_to_board(svc)                       # sao lưu bản gốc (6000) rồi ghi 5500
+    [item] = mc.list_backups()
+    backup = mc.read_backup(item["name"])
+    assert backup["values"]["axes/x/max_rate_mm_per_min"] == 6000.0
+    for bad in ("../profile.json", "x.yaml", "20261029-120000_..\a.yaml"):
+        with pytest.raises(mc.ConfigError):
+            mc.read_backup(bad)
+
+
+def test_backup_routes(client, tmp_path, monkeypatch):
+    monkeypatch.setattr(mc, "BACKUP_DIR", tmp_path / "backups")
+    assert client.get("/api/machine/config/backups").json() == {"backups": []}
+    r = client.get("/api/machine/config/backups/20261029-120000_ConfigNCKH-16.yaml")
+    assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"

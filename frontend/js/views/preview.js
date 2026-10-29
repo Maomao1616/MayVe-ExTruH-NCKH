@@ -62,6 +62,32 @@ export function createTrail(limit = 50000, minStep = 0.05) {
     };
 }
 
+// Điểm gần (x, y) nhất trên đoạn s (x0,y0)->(x1,y1): { x, y, d }.
+export function nearestOnSegment(s, x, y) {
+    const dx = s.x1 - s.x0, dy = s.y1 - s.y0;
+    const len2 = dx * dx + dy * dy;
+    const f = len2 > 0 ? Math.min(1, Math.max(0, ((x - s.x0) * dx + (y - s.y0) * dy) / len2)) : 0;
+    const px = s.x0 + dx * f, py = s.y0 + dy * f;
+    return { x: px, y: py, d: Math.hypot(x - px, y - py) };
+}
+
+// Tìm đoạn máy đang đi trên đường của tệp.
+// Chỉ xét từ đoạn đã tới trở về sau (tiến độ không lùi) và chỉ các dòng máy đã nhận (`acked`):
+// máy không thể ở sau dòng chưa gửi. Lấy đoạn ĐẦU TIÊN đi qua vị trí máy (sai số onPathMm).
+export function trackProgress(segments, from, acked, x, y, { window = 400, onPathMm = 0.5 } = {}) {
+    let best = null;
+    const start = Math.max(0, from);
+    for (let i = start; i < segments.length && i < start + window; i++) {
+        const s = segments[i];
+        if (s.seq > acked) break;
+        if (s.kind === "dwell" || s.kind === "z") continue;
+        const p = nearestOnSegment(s, x, y);
+        if (!best || p.d < best.d) best = { index: i, x: p.x, y: p.y, d: p.d };
+        if (p.d <= onPathMm) break;
+    }
+    return best;
+}
+
 /* ---------- giao diện ---------- */
 
 export function initPreview() {
@@ -82,7 +108,8 @@ export function initPreview() {
 
     container.classList.add("is-canvas");   // CSS ẩn khung HTML tĩnh, canvas tự vẽ vùng làm việc
 
-    const { travelX, travelY } = MACHINE;
+    // Hành trình đọc lại mỗi lần vẽ: Cài đặt → Cấu hình máy cập nhật MACHINE.travelX/Y theo YAML.
+    let travelX = MACHINE.travelX, travelY = MACHINE.travelY;
     const view = { zoom: 1, panX: 0, panY: 0 };
     const trail = createTrail();
 
@@ -95,6 +122,9 @@ export function initPreview() {
     let lastTick = 0;
     let lastToken = 0;
     let live = null;                 // { x, y } vị trí máy
+    // Tiến độ tác vụ trên đường của tệp. Vết nối các lần hỏi vị trí (0,5 giây/lần) biến cung tròn
+    // thành đa giác, nên khi đang chạy đúng tệp này thì vẽ lại chính đường của tệp tới chỗ máy đang ở.
+    const progress = { jobId: null, index: -1, x: 0, y: 0, done: false, hidden: false };
     let wco = [0, 0, 0];
     let lastJobId = null;
     let frame = 0;
@@ -109,6 +139,8 @@ export function initPreview() {
 
     function draw() {
         if (!ctx || width === 0) return;
+        travelX = MACHINE.travelX;
+        travelY = MACHINE.travelY;
         const css = getComputedStyle(container);
         const c = {
             border: color(css, "--border", "#2a3038"),
@@ -206,6 +238,7 @@ export function initPreview() {
             strokeSegments(T, segments, new Set(["draw"]), where.index + 1);
         }
         ctx.globalAlpha = 1;
+        drawProgress(T, c, segments);
 
         if (where) {                          // đầu bút phát lại
             const [px, py] = T.toScreen(where.x + wco[0], where.y + wco[1]);
@@ -215,6 +248,39 @@ export function initPreview() {
             ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2);
             ctx.fill(); ctx.stroke();
         }
+    }
+
+    // Phần máy đã vẽ của tác vụ, theo đúng hình học của tệp (cung tròn vẫn tròn).
+    function drawProgress(T, c, segments) {
+        if (progress.hidden || progress.index < 0) return;
+        const end = progress.done ? segments.length : progress.index;
+        ctx.strokeStyle = c.live;
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        strokeSegments(T, segments, new Set(["draw"]), end);
+        const s = segments[progress.index];
+        if (!progress.done && s?.kind === "draw") {          // đoạn đang vẽ dở
+            const [ox, oy] = wco;
+            const [x0, y0] = T.toScreen(s.x0 + ox, s.y0 + oy);
+            const [x1, y1] = T.toScreen(progress.x + ox, progress.y + oy);
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        }
+    }
+
+    // Đang chạy đúng tệp đang nạp? (cùng tên và cùng số dòng gửi đi)
+    const tracksFile = (job) => Boolean(file && job &&
+        job.name === file.name && job.total === file.parsed.lines.length);
+
+    function updateProgress(job, machine) {
+        if (progress.jobId !== job.id) {
+            Object.assign(progress, { jobId: job.id, index: -1, done: false, hidden: false });
+        }
+        if (job.state === "done") { progress.done = true; return; }
+        const wpos = Array.isArray(machine?.wpos) ? machine.wpos
+            : Array.isArray(machine?.mpos) ? machine.mpos.map((m, i) => m - (wco[i] ?? 0)) : null;
+        if (!wpos || !(job.state === "running" || job.state === "finishing")) return;
+        const hit = trackProgress(file.parsed.segments, progress.index, job.acked, wpos[0], wpos[1]);
+        if (hit) Object.assign(progress, { index: hit.index, x: hit.x, y: hit.y });
     }
 
     function drawTrail(T, c) {
@@ -338,7 +404,11 @@ export function initPreview() {
         requestDraw();
     });
     el.speed?.addEventListener("change", () => { speed = Number(el.speed.value) || speed; });
-    el.clearTrail?.addEventListener("click", () => { trail.clear(); requestDraw(); });
+    el.clearTrail?.addEventListener("click", () => {
+        trail.clear();
+        progress.hidden = true;              // ẩn tới khi có tác vụ mới
+        requestDraw();
+    });
 
     function pickDefaultSpeed() {
         // Chọn tốc độ phát lại để cả bản vẽ xem hết trong khoảng 30 giây.
@@ -354,6 +424,7 @@ export function initPreview() {
         if (changed) {
             clock = 0;
             playing = false;
+            Object.assign(progress, { jobId: null, index: -1, done: false, hidden: false });
             if (el.playback) el.playback.hidden = !file;
             if (file) pickDefaultSpeed();
             fitView();
@@ -379,11 +450,15 @@ export function initPreview() {
             if (job) trail.clear();
         }
 
+        const following = tracksFile(job);
+        if (following) updateProgress(job, machine);
+
         if (isConnected() && Array.isArray(machine?.mpos)) {
             const [x, y, z] = machine.mpos;
             live = { x, y };
-            // Đang vẽ khi Z dưới trung điểm nấc Xuống–Giữa (nấc Giữa là bút lơ lửng, không vẽ).
-            trail.add(x, y, z < (MACHINE.penDownZ + MACHINE.penMidZ) / 2);
+            // Đang chạy đúng tệp: vết lấy từ đường của tệp (drawProgress), không nối điểm hỏi.
+            // Ngoài tác vụ (jog tay): vẽ khi Z dưới trung điểm nấc Xuống–Giữa.
+            trail.add(x, y, !following && z < (MACHINE.penDownZ + MACHINE.penMidZ) / 2);
         } else {
             live = null;
             trail.add(0, 0, false);           // ngắt vết, không nối qua lúc mất dữ liệu

@@ -338,6 +338,10 @@
                   <dd id="gcode-selected-info">—</dd>
                 </div>
               </dl>
+              <p class="inline-warning" hidden="" id="gcode-origin-warning" role="status">
+                <span aria-hidden="true">⚠</span>
+                <span data-i18n="control.gcode.originWarning">Máy chưa Home: gốc vị trí (X0 Y0) có thể không đúng chỗ trên giấy. Kiểm tra gốc làm việc trước khi chạy.</span>
+              </p>
               <label class="checkbox-inline" for="run-confirm">
                 <input disabled="" id="run-confirm" type="checkbox"/>
                 <span data-i18n="control.gcode.confirm">Tôi đã xem trước đường chạy và vùng vẽ</span>
@@ -345,6 +349,20 @@
               <div class="gcode-actions">
                 <button data-i18n="common.action.preview" disabled="" id="preview-gcode-btn" type="button">Xem trước</button>
                 <button class="primary-button" data-i18n="common.action.run" disabled="" id="run-job-btn" type="button">▶ Chạy</button>
+              </div>
+              <div class="feed-override" role="group" aria-labelledby="feed-override-label">
+                <div class="feed-override-head">
+                  <span data-i18n="control.feed.label" id="feed-override-label">Tốc độ vẽ</span>
+                  <strong id="feed-override-value">100%</strong>
+                </div>
+                <div class="feed-override-buttons">
+                  <button data-feed="feed_minus10" disabled="" type="button">−10</button>
+                  <button data-feed="feed_minus1" disabled="" type="button">−1</button>
+                  <button data-feed="feed_reset" data-i18n="[title]control.feed.resetTitle" disabled="" title="Về 100%" type="button">100%</button>
+                  <button data-feed="feed_plus1" disabled="" type="button">+1</button>
+                  <button data-feed="feed_plus10" disabled="" type="button">+10</button>
+                </div>
+                <p class="help-text" data-i18n="control.feed.help">Nhân với tốc độ F có trong tệp (80% của F3000 là 2400 mm/phút), chỉnh được cả khi đang vẽ. Firmware giới hạn 10–200%; Reset đưa về 100%.</p>
               </div>
             </article>
 
@@ -500,7 +518,8 @@
             </details>
 
   
-        <article class="panel">
+        <!-- Hàng đợi công việc: ẩn tạm, làm sau khi xong tab Tạo bản vẽ -->
+        <article class="panel" hidden="">
           <div class="panel-heading">
             <div>
               <h2 data-i18n="jobs.queue.title">Hàng đợi công việc</h2>
@@ -1019,6 +1038,14 @@
             </p>
 
             <div class="mc-groups" id="mc-groups"></div>
+
+            <div class="mc-backup">
+              <label for="mc-backup-select"><span data-i18n="mc.backup.label">Bản sao lưu trên máy tính</span></label>
+              <div class="input-with-action">
+                <select id="mc-backup-select"><option value="" data-i18n="mc.backup.none">Chưa có bản sao lưu</option></select>
+                <button class="secondary-button" data-i18n="mc.backup.load" disabled="" id="mc-backup-load-btn" type="button">Nạp vào ô</button>
+              </div>
+            </div>
 
             <p class="mc-status" id="mc-status" role="status"></p>
             <div class="mc-actions">

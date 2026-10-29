@@ -69,9 +69,9 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/stores/macros.js` | Macro: kiểm tra hợp lệ + kho `localStorage` |
 | `js/views/header.js` | Đầu trang + ô trạng thái trên thanh tab + thanh cảnh báo + nút ↻ |
 | `js/views/terminal.js` | Terminal và nút Tạm dừng / Tiếp tục / Hủy jog / Reset / Mở khóa |
-| `js/views/control.js` | Tab Điều khiển: trạng thái, mở khóa chuyển động, jog, **thanh bút 3 nấc**, Zero, Home (hỏi lại), tệp G-code, tiến trình, hủy tác vụ |
-| `js/views/preview.js` | Khung 2D (khối con của Điều khiển) |
-| `js/views/settings.js` | Tab Cài đặt: kết nối · Hoạt động · **Cấu hình máy** (YAML trên mạch + hồ sơ phần mềm) |
+| `js/views/control.js` | Tab Điều khiển: trạng thái, mở khóa chuyển động, jog, **thanh bút 3 nấc**, Zero, Home (hỏi lại), tệp G-code (cảnh báo gốc vị trí khi chưa Home), **ghi đè tốc độ**, tiến trình, hủy tác vụ. Hàng đợi công việc: HTML đang ẩn, làm sau tab vẽ |
+| `js/views/preview.js` | Khung 2D (khối con của Điều khiển). Đang chạy đúng tệp đã nạp: vết vẽ theo đường của tệp (`trackProgress`), cung tròn không bị gãy theo nhịp hỏi vị trí |
+| `js/views/settings.js` | Tab Cài đặt: kết nối (nhớ cổng lần trước) · Hoạt động · **Cấu hình máy** (YAML trên mạch + hồ sơ phần mềm + nạp bản sao lưu) |
 | `js/views/dock.js` | Dock bên trái: macro |
 | `js/views/drawing.js` | Tab Tạo bản vẽ: ⏳ (AI khác làm, mục 7) |
 

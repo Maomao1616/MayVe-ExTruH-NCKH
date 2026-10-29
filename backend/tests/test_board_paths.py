@@ -135,3 +135,21 @@ def test_ver_line_from_dollar_i_is_kept_as_firmware():
     with svc._lock:
         svc._on_line("[VER:4.1 FluidNC v4.1.1 (esp32-wifi) :]")
     assert svc.snapshot()["banner"] == "[VER:4.1 FluidNC v4.1.1 (esp32-wifi) :]"
+
+
+def test_feed_override_actions_reach_board_and_status_keeps_last_value():
+    svc = MachineService(allow_motion=False)
+    fake = FakeSerial()
+    svc._link, svc._info = fake, {"mode": "serial", "port": "COM9", "baud": 115200}
+    try:
+        for action in ("feed_minus10", "feed_plus1", "feed_reset"):
+            svc.send_realtime(action)               # máy thật đang khóa vẫn gửi được
+        assert fake.sent == [b"\x92", b"\x93", b"\x90"]
+        with svc._lock:
+            svc._on_line("<Run|MPos:1,2,0|Ov:80,100,100>")
+            svc._on_line("<Run|MPos:1,2,0>")         # báo cáo không có Ov: giữ 80
+        assert svc.snapshot()["machine"]["overrides"] == [80, 100, 100]
+        svc.send_realtime("reset")
+        assert svc._overrides == [100, 100, 100]
+    finally:
+        svc._link = None

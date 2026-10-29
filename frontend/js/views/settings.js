@@ -42,7 +42,18 @@ function initConnection() {
     let currentMode = null;
     let lastActionAt = 0;
 
-    const originalPortOption = portSelect.options[0]?.cloneNode(true);
+    // Nhớ lần kết nối thành công gần nhất (trình duyệt này) để không phải chọn lại cổng.
+    const CONN_KEY = "extruxy-connection-v1";
+    const remembered = (() => {
+        try { return JSON.parse(localStorage.getItem(CONN_KEY) ?? "null"); } catch { return null; }
+    })();
+    const remember = (mode, port, baud) => {
+        try { localStorage.setItem(CONN_KEY, JSON.stringify({ mode, port, baud })); } catch { /* bị chặn */ }
+    };
+    if (remembered?.mode === "sim" || remembered?.mode === "serial") modeSelect.value = remembered.mode;
+    if ([...baudSelect.options].some((o) => o.value === String(remembered?.baud))) {
+        baudSelect.value = String(remembered.baud);
+    }
 
     function setMessage(key, fallback) {
         const translated = t(key);
@@ -256,6 +267,11 @@ function initConnection() {
                 }
             }
 
+            // Chọn lại cổng của lần trước nếu vẫn còn cắm.
+            if ([...portSelect.options].some((o) => o.value === remembered?.port)) {
+                portSelect.value = remembered.port;
+            }
+
             setMessage(
                 "settings.connection.portsLoaded",
                 `Đã tải danh sách cổng: ${portSelect.options.length} mục.`
@@ -335,6 +351,7 @@ function initConnection() {
             // Đọc lại trạng thái thật trước khi kết luận.
             await refreshConnection();
 
+            if (connected) remember(mode, port, baud);
             if (!connected) {
                 setMessage(
                     "settings.connection.verifyFailed",
@@ -502,6 +519,8 @@ function initMachineConfig() {
     const saveBtn = $("mc-save-btn");
     const revertBtn = $("mc-revert-btn");
     const modal = $("custom-config-save-modal");
+    const backupSelect = $("mc-backup-select");
+    const backupLoadBtn = $("mc-backup-load-btn");
     if (!groupsBox || !status || !readBtn || !applyBtn || !saveBtn || !revertBtn) return;
 
     let board = null;            // kết quả /api/machine/config gần nhất (null: chưa đọc)
@@ -631,6 +650,7 @@ function initMachineConfig() {
 
         const dirty = Object.keys(boardEdits).length + Object.keys(appEdits).length;
         readBtn.disabled = !canRead;
+        if (backupLoadBtn) backupLoadBtn.disabled = busy || !board || !backupSelect?.value;
         revertBtn.disabled = busy || dirty === 0;
         applyBtn.disabled = busy || dirty === 0 || (Object.keys(boardEdits).length > 0 && blocked !== null);
         // Chỉ lưu khi máy đang chạy giá trị khác tệp và không còn ô "Máy" chưa áp dụng.
@@ -682,6 +702,36 @@ function initMachineConfig() {
 
     readBtn.addEventListener("click", readBoard);
 
+    // Bản sao lưu nằm trên máy tính (backend/data/config_backups). Qua USB chỉ ghi được cấu hình
+    // ĐANG CHẠY, nên khôi phục = nạp giá trị vào ô -> Áp dụng -> Lưu vào mạch (mất chú thích #).
+    async function loadBackupList() {
+        if (!backupSelect) return;
+        try {
+            const { backups } = await api.machineConfigBackups();
+            const keep = backupSelect.value;
+            backupSelect.replaceChildren(...(backups.length ? backups : [null]).map((item) => {
+                const option = document.createElement("option");
+                option.value = item?.name ?? "";
+                option.textContent = item ? item.name.replace(/^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})_/,
+                    "$3/$2/$1 $4:$5:$6 · ") : t("mc.backup.none");
+                return option;
+            }));
+            if ([...backupSelect.options].some((o) => o.value === keep)) backupSelect.value = keep;
+        } catch { /* backend chưa chạy: giữ danh sách cũ */ }
+        refreshState();
+    }
+    backupSelect?.addEventListener("change", refreshState);
+    backupLoadBtn?.addEventListener("click", () => run(async () => {
+        const { name, values } = await api.machineConfigBackup(backupSelect.value);
+        let count = 0;
+        for (const r of rows().filter((item) => item.dataset.kind === "board")) {
+            const value = values[r.dataset.id];
+            if (Number.isFinite(value)) { r.querySelector("input").value = show(value); count += 1; }
+        }
+        setStatus(`${t("mc.backup.loaded")} ${name} (${count}). ${t("mc.backup.next")}`);
+    }));
+    loadBackupList();
+
     revertBtn.addEventListener("click", () => {
         fillInputs();
         setStatus("");
@@ -728,6 +778,7 @@ function initMachineConfig() {
             setStatus(t("mc.saving"));
             const result = await api.machineConfigSave();
             useBoard(await api.machineConfig());
+            loadBackupList();                       // vừa có thêm một bản sao lưu
             setStatus(`${result.verified ? t("mc.savedOk") : t("mc.savedMismatch")} ${t("mc.backupAt")} ${result.backup}`,
                 result.verified ? "success" : "error");
         });

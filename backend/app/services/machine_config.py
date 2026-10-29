@@ -197,6 +197,33 @@ def apply_values(svc, values: dict[str, float]) -> dict:
     return result
 
 
+_BACKUP_NAME = re.compile(r"\d{8}-\d{6}_[\w.\-]+\.ya?ml")
+
+
+def list_backups() -> list[dict]:
+    """Bản sao lưu trên máy tính, mới nhất trước."""
+    if not BACKUP_DIR.is_dir():
+        return []
+    items = [p for p in BACKUP_DIR.iterdir() if p.is_file() and _BACKUP_NAME.fullmatch(p.name)]
+    items.sort(key=lambda p: p.name, reverse=True)       # tên bắt đầu bằng ngày giờ
+    return [{"name": p.name, "size": p.stat().st_size} for p in items]
+
+
+def read_backup(name: str) -> dict:
+    """Thông số sửa được trong một bản sao lưu (để nạp lại vào ô, rồi Áp dụng + Lưu).
+
+    Qua USB chỉ ghi tệp được bằng `$CD=` (cấu hình đang chạy), nên không chép nguyên văn
+    bản sao lưu lên mạch được; muốn khôi phục cả chú thích thì tải tệp lên qua WebUI.
+    """
+    if not _BACKUP_NAME.fullmatch(name or ""):
+        raise ConfigError("bad_param", "Tên bản sao lưu không hợp lệ.")
+    path = BACKUP_DIR / name
+    if not path.is_file():
+        raise ConfigError("not_found", f"Không có bản sao lưu {name}.", 404)
+    values = extract(parse_yaml(path.read_text(encoding="utf-8").splitlines()))
+    return {"name": name, "values": {k: v for k, v in values.items() if v is not None}}
+
+
 def save_to_board(svc) -> dict:
     """Sao lưu nguyên văn tệp gốc về máy tính, rồi ghi YAML đang chạy đè lên tệp trên mạch."""
     _require_settled(svc)

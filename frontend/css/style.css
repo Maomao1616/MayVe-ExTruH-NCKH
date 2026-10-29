@@ -943,6 +943,70 @@ label select {
     margin-top: 12px;
 }
 
+/* Canh bao ngan trong khoi (vd: may chua Home, can than goc vi tri) */
+.inline-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 12px 0 0;
+    padding: 8px 10px;
+    border: 1px solid color-mix(in srgb, var(--warning) 60%, transparent);
+    border-left-width: 3px;
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--warning) 8%, var(--bg-main));
+    color: var(--text-main);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.inline-warning > span:first-child {
+    color: var(--warning);
+    font-weight: 700;
+}
+
+/* Ghi de toc do (feed override): % cua F trong tep */
+.feed-override {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+.feed-override-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.feed-override-head strong {
+    color: var(--accent-text);
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+}
+
+.feed-override-head strong.is-changed {
+    color: var(--warning);
+}
+
+.feed-override-buttons {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.feed-override-buttons button {
+    min-height: 30px !important;
+    padding: 2px 0 !important;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.feed-override .help-text {
+    margin-top: 8px;
+}
+
 /* --- Trang thai bo dieu khien (4 cot, nam tren khung 2D) --- */
 .controller-panel .detail-list-compact {
     display: grid;
@@ -1616,6 +1680,13 @@ fieldset.mc-group > * + * {
 .mc-row.is-dirty input {
     border-color: var(--warning) !important;
     background: color-mix(in srgb, var(--warning) 10%, var(--bg-main));
+}
+
+.mc-backup {
+    display: grid;
+    gap: 5px;
+    max-width: 560px;
+    margin-top: 14px;
 }
 
 .mc-status {

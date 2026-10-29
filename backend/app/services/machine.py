@@ -23,8 +23,10 @@ from collections import deque
 from ..links.base import BaseLink, LinkError
 from ..links.sim_link import SimLink
 from .job import JobError, JobRunner, clean_gcode
-from ..links.protocol import (CYCLE_START, FEED_HOLD, JOG_CANCEL, REALTIME_TEXT, SOFT_RESET,
-                        STATUS_QUERY, classify_line, homing_axes, is_motion_free_command)
+from ..links.protocol import (CYCLE_START, FEED_HOLD, FEED_OV_MINUS_1, FEED_OV_MINUS_10,
+                              FEED_OV_PLUS_1, FEED_OV_PLUS_10, FEED_OV_RESET, JOG_CANCEL,
+                              REALTIME_TEXT, SOFT_RESET, STATUS_QUERY, classify_line,
+                              homing_axes, is_motion_free_command)
 
 REALTIME = {
     "status": STATUS_QUERY,
@@ -32,6 +34,12 @@ REALTIME = {
     "resume": CYCLE_START,
     "reset": SOFT_RESET,
     "jog_cancel": JOG_CANCEL,
+    # Ghi đè tốc độ: không làm máy bắt đầu chạy, nên luôn được phép như các lệnh dừng.
+    "feed_reset": FEED_OV_RESET,
+    "feed_plus10": FEED_OV_PLUS_10,
+    "feed_minus10": FEED_OV_MINUS_10,
+    "feed_plus1": FEED_OV_PLUS_1,
+    "feed_minus1": FEED_OV_MINUS_1,
 }
 # Alarm làm mất vị trí gốc (ước lượng, cần xác minh bằng máy thật).
 _LOSE_HOME = {1, 3, 6, 7, 8, 9, 12, 13, 14, 16}
@@ -102,6 +110,7 @@ class MachineService:
     def _clear_machine(self) -> None:
         self._status: dict | None = None
         self._wco: list[float] | None = None
+        self._overrides: list[int] = [100, 100, 100]
         self._last_alarm: dict | None = None
         self._last_error: dict | None = None
         self._banner: str | None = None
@@ -378,6 +387,10 @@ class MachineService:
     def _update_status(self, st: dict) -> None:
         if st["wco"]:
             self._wco = st["wco"]
+        # Ov chỉ có trong một số báo cáo: giữ giá trị gần nhất (Reset đưa về 100 %).
+        if st["overrides"]:
+            self._overrides = st["overrides"]
+        st["overrides"] = self._overrides
         wco = self._wco
         if wco:
             # Chỉ quy đổi khi số trục khớp; zip() sẽ âm thầm cắt bớt nếu lệch.
@@ -485,6 +498,7 @@ class MachineService:
                 self._saw_home = False
                 self._reset_required = False
                 self._pending_acks = 0            # Reset xóa bộ đệm: không còn `ok` nào sắp tới
+                self._overrides = [100, 100, 100]  # FluidNC: Reset đưa ghi đè về 100 %
                 # Xóa lỗi/alarm cũ ngay lúc phát Reset; nếu firmware phát Alarm mới,
                 # _on_line sẽ ghi nhận lại alarm đó sau Reset.
                 self._last_error = None

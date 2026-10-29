@@ -1,6 +1,8 @@
 // views/control.js — Tab Điều khiển.
 //  - initStatusPanel : bảng vị trí / trạng thái (chỉ đọc)
-//  - initMotionControls: jog, bút, Zero, Home, XY 0, hủy jog (gửi lệnh)
+//  - initMotionControls: jog, thanh bút 3 nấc, Zero, Home, XY 0 (gửi lệnh)
+//  - initGcodePanel  : tệp G-code, cảnh báo gốc vị trí, chạy, tiến trình, hủy tác vụ
+//  - initFeedOverride: ghi đè tốc độ (% của F trong tệp) khi đang vẽ
 // Terminal và các nút Tạm dừng/Tiếp tục/Reset/Mở khóa thuộc về views/terminal.js.
 // Mọi lệnh đi qua api.js; giao diện không tự suy đoán trạng thái máy.
 
@@ -59,8 +61,35 @@ export function initControl() {
     initStatusPanel();
     initMotionControls();
     initGcodePanel();
+    initFeedOverride();
     initPreview();
     initMotionLock();
+}
+
+/* ==================== GHI ĐÈ TỐC ĐỘ (feed override) ==================== */
+// Lệnh tức thời của FluidNC: tính theo % của F trong tệp (F3000 ở 80% = 2400 mm/phút).
+// Không làm máy bắt đầu chạy nên backend luôn cho gửi, kể cả khi máy thật đang khóa.
+function initFeedOverride() {
+    const buttons = document.querySelectorAll("[data-feed]");
+    const value = $("feed-override-value");
+    buttons.forEach((button) => {
+        button.addEventListener("click", async () => {
+            try {
+                await api.realtime(button.dataset.feed);
+            } catch (error) {
+                reportError(error);
+            }
+        });
+    });
+    subscribe((snapshot) => {
+        const canSend = isConnected() && !isStale();
+        buttons.forEach((button) => { button.disabled = !canSend; });
+        const feed = snapshot.status?.machine?.overrides?.[0];
+        if (value) {
+            value.textContent = canSend && Number.isFinite(feed) ? `${feed}%` : "—";
+            value.classList.toggle("is-changed", canSend && Number.isFinite(feed) && feed !== 100);
+        }
+    });
 }
 
 /* ==================== BẢNG VỊ TRÍ / TRẠNG THÁI ==================== */
@@ -527,6 +556,12 @@ function initGcodePanel() {
             isConnected() && !isStale() && connection?.motion_unlocked !== false &&
             machineState === "Idle" && !active;
         runButton.disabled = !canRun;
+
+        // Sau $X máy chạy được G-code dù chưa Home (MACHINE.md A3): nhắc kiểm tra gốc vị trí.
+        const originWarning = $("gcode-origin-warning");
+        if (originWarning) {
+            originWarning.hidden = !(file && isConnected() && snapshot?.status?.homed_guess === false);
+        }
 
         if (cancelButton) {
             cancelButton.hidden = !active;
