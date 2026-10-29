@@ -50,3 +50,44 @@ def test_does_not_touch_the_machine(client):
     from app.services.machine import machine
     machine.disconnect()
     assert client.post("/api/draw/gcode", json=BODY).status_code == 200      # chạy được khi chưa kết nối
+
+
+SVG = b"""<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">
+<rect x="10" y="10" width="80" height="80" fill="none" stroke="black"/></svg>"""
+
+
+def test_gcode_needs_exactly_one_of_task_or_layers(client):
+    r = client.post("/api/draw/gcode", json={**BODY, "task": "abc"})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param"
+    body = {k: v for k, v in BODY.items() if k != "layers"}
+    r = client.post("/api/draw/gcode", json=body)
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param"
+
+
+def test_unknown_task_is_404(client):
+    body = {k: v for k, v in BODY.items() if k != "layers"}
+    r = client.post("/api/draw/gcode", json={**body, "task": "khong-co"})
+    assert r.status_code == 404 and r.json()["error"]["code"] == "unknown_task"
+
+
+def test_svg_upload_then_gcode_by_task(client):
+    pytest.importorskip("vpype")
+    up = client.post("/api/draw/svg", files={"file": ("a.svg", SVG, "image/svg+xml")},
+                     data={"options": '{"svg": {"frame": "page"}}'})
+    assert up.status_code == 200, up.text
+    task = up.json()["task"]
+    body = {k: v for k, v in BODY.items() if k != "layers"}
+    r = client.post("/api/draw/gcode", json={**body, "task": task})
+    assert r.status_code == 200, r.text
+    assert r.json()["files"][0]["gcode"].startswith("G90 G21\n")
+    assert client.delete(f"/api/draw/tasks/{task}").json() == {"ok": True}
+
+
+def test_svg_bad_inputs(client):
+    r = client.post("/api/draw/svg", files={"file": ("a.svg", b"khong phai svg", "image/svg+xml")})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_svg"
+    r = client.post("/api/draw/svg", files={"file": ("a.svg", SVG, "image/svg+xml")}, data={"options": "{oops"})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param"
+    r = client.post("/api/draw/svg", files={"file": ("a.svg", SVG, "image/svg+xml")},
+                    data={"options": '{"layout": {}}'})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param"

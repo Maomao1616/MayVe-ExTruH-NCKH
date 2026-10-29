@@ -113,12 +113,15 @@ class JobRunner:
         return self.snapshot()
 
     def cancel(self) -> None:
-        with self._cond:
-            if self._info is None or self._info["state"] not in ("running", "finishing"):
-                raise JobError("no_job", "Không có tác vụ đang chạy.", 409)
-            self._cancel = True
-            self._finish("cancelled")
-            self._cond.notify_all()
+        # Đồng bộ với thời điểm ghi thực tế, không chỉ với lần kiểm tra _live()
+        # ở đầu vòng lặp. Nếu writer còn đang ghi, cancel đợi vùng ghi kết thúc.
+        with self._svc._job_write_lock:
+            with self._cond:
+                if self._info is None or self._info["state"] not in ("running", "finishing"):
+                    raise JobError("no_job", "Không có tác vụ đang chạy.", 409)
+                self._cancel = True
+                self._finish("cancelled")
+                self._cond.notify_all()
 
     def abort(self, code: str, message: str = "") -> None:
         """Dừng tác vụ vì lý do bên ngoài (mất kết nối...). Không làm gì nếu không có tác vụ."""
@@ -173,7 +176,7 @@ class JobRunner:
                 self._awaiting, self._response = True, None
                 self._info["sent"] = index
             try:
-                self._svc.job_write(line)
+                self._svc.job_write(line, job_id)
             except Exception as exc:                      # mất kết nối, serial lỗi...
                 with self._cond:
                     if self._live(job_id):

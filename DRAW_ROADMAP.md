@@ -10,7 +10,9 @@ Quy tắc làm song song (chỉ sửa file thuộc tab vẽ, khóa `draw.*` ở 
 - **Dữ liệu trung gian theo lớp** (một lớp = một bút). Mặc định một lớp; tách màu/mức sáng dùng nhiều lớp, **mỗi lớp một tệp G-code**, không dùng `M0` (chưa thử).
 - **Backend không tự đặt số của máy:** vùng làm việc, hành trình Z, tốc độ tối đa, Z bút do frontend gửi (lấy từ `MACHINE` trong `config.js`).
 - **Điểm đổi trục duy nhất:** `gcode.to_machine` + tham số `invert_y` (⚠ hướng trục giả định C5).
-- **Thư viện (từ GĐ2):** vpype (bản CLI-only, Python 3.12 tương thích), Pillow, numpy, opencv-python-headless, python-multipart. Tự viết bộ xuất G-code, không dùng plugin.
+- **Thư viện:** vpype 1.15.0 + python-multipart (đã cài, GĐ2); Pillow, opencv-python-headless (GĐ3). Python 3.12.10, numpy 2.5.4, scipy 1.18.1, shapely 2.2.0. Tự viết bộ xuất G-code, không dùng plugin.
+- **Dùng vpype qua hai cửa:** `vpype.read_multilayer_svg` (đọc SVG) và `vpype_cli.execute(chuỗi lệnh, Document)` (linemerge → linesimplify → filter → linesort). Chuỗi lệnh dựng bằng hàm thuần `optimize.build_pipeline` nên test được không cần vpype. vpype dùng px CSS (96 px = 1 inch); đổi sang mm ngay khi xuất.
+- **Bộ nhớ tạm `store.py`:** giữ 3 bản vẽ đã nạp gần nhất, trả mã `task`; đổi tham số bố trí/G-code chỉ gọi lại `/gcode` với `task`, không nạp lại tệp.
 - **Máy yếu:** thu nhỏ ảnh sớm (mặc định cạnh dài ≤ 1500 px ⚠), giới hạn dung lượng/số điểm, tác vụ nặng chạy luồng riêng có tiến trình + hủy, cache theo bước.
 
 ## 2. Quy ước bố trí (đã chốt trong code, theo ảnh minh họa của nhóm)
@@ -31,7 +33,7 @@ Dòng đầu `G90 G21`; `F` ở G1 đầu tiên và mỗi khi đổi; ≤ 200 k�
 |---|---|---|
 | 0 | Khung thư mục, kiểu dữ liệu, sổ đăng ký, tham số + `/api/draw/schema`, `routes_draw.py` | ✅ (chờ `pytest` thật) |
 | 1 | Bố trí + G-code từ danh sách nét (`POST /api/draw/gcode`, nhiều lớp = nhiều tệp), thống kê, cảnh báo | ✅ (chờ `pytest` thật) |
-| 2 | Đọc SVG (nhiều lớp) + tối ưu vpype (gộp nét, đơn giản hóa, lọc nét ngắn, sắp xếp) → demo đầu tiên SVG → Điều khiển → Xem trước/Chạy | ⏳ |
+| 2 | Đọc SVG (nhiều lớp) + tối ưu vpype (gộp nét, đơn giản hóa, lọc nét ngắn, sắp xếp) → demo đầu tiên SVG → Điều khiển → Xem trước/Chạy | ✅ (`POST /api/draw/svg`, `/gcode` nhận `task`; chờ test vpype thật) |
 | 3 | Nạp PNG/JPG, EXIF, thu nhỏ sớm, crop/vùng che, auto-levels, tương phản, khử nhiễu, ngưỡng, ảnh xem trước | ⏳ |
 | 4 | Vector hóa: đường giữa nét, viền, cạnh (XDoG/Canny) | ⏳ |
 | 5 | Tô bóng: hatch song song, cross-hatch nhiều mức, cắt theo vùng | ⏳ |
@@ -48,3 +50,9 @@ Test tự động chỉ dùng ảnh tự tạo bằng Pillow, không đưa ảnh
 
 ## 6. Việc chưa kiểm chứng
 Tên hàm chính xác của vpype; tốc độ/RAM thực trên máy yếu; ngưỡng 1500 px; hướng trục (C5); `G4 P` tính theo giây trên FluidNC 4.1.1; thời gian ước tính chưa tính gia tốc (D7).
+
+## 7. Luồng thử GĐ2 (qua /docs)
+1. `POST /api/draw/svg`: chọn tệp SVG, `options` = `{"svg": {"frame": "page"}}` → nhận `task`.
+2. `POST /api/draw/gcode`: gửi `task`, `machine` (work_w 285, work_h 318, z_travel 5, rapid_feed 6000), `layout`, `gcode` (pen_up_z 5, pen_down_z 0) → nhận `files[].gcode`.
+3. Dán G-code vào tab Điều khiển (hoặc nạp tệp) để Xem trước → tích xác nhận → Chạy.
+`frame`: `content` = co theo hộp bao của nét (mặc định); `page` = giữ lề trang SVG. Tệp thử: `demo_ve_nha.svg` (2 lớp: đen, đỏ).

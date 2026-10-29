@@ -72,7 +72,21 @@ MACHINE = (
     Param("invert_y", "bool", False),
 )
 
-GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE}
+# Tối ưu nét (vpype). 0 = tắt bước đó.
+OPTIMIZE = (
+    Param("merge_tolerance_mm", "float", 0.1, 0, 10, unit="mm"),      # nối các nét có đầu cuối gần nhau
+    Param("simplify_tolerance_mm", "float", 0.05, 0, 10, unit="mm"),  # đơn giản hóa (bỏ điểm thừa)
+    Param("min_length_mm", "float", 0.5, 0, 100, unit="mm"),          # bỏ nét ngắn hơn mức này
+    Param("sort", "bool", True),                                      # sắp xếp để giảm quãng bút nâng
+)
+
+# Nạp SVG.
+SVG = (
+    Param("quantization_mm", "float", 0.1, 0.01, 5, unit="mm"),       # sai số khi chia đường cong thành đoạn thẳng
+    Param("frame", "choice", "content", choices=("content", "page")), # co theo hộp bao nét hay theo trang SVG
+)
+
+GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG}
 
 
 class Params:

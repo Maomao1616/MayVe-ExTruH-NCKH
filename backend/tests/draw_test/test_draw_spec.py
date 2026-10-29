@@ -56,3 +56,12 @@ def test_describe_lists_every_param_once():
     assert all(len(v) == len(set(v)) for v in names.values())
     assert d["papers"]["a4"] == {"w": 210.0, "h": 297.0} and d["papers"]["a6"] == {"w": 105.0, "h": 148.0}
     assert d["limits"]["max_lines"] == 200_000
+
+
+def test_optimize_and_svg_groups_have_defaults():
+    o = spec.parse("optimize", {})
+    assert (o.merge_tolerance_mm, o.simplify_tolerance_mm, o.min_length_mm, o.sort) == (0.1, 0.05, 0.5, True)
+    v = spec.parse("svg", {})
+    assert (v.quantization_mm, v.frame) == (0.1, "content")
+    assert code(spec.parse, "svg", {"frame": "all"}) == "bad_param"
+    assert {"optimize", "svg"} <= set(spec.describe()["params"])

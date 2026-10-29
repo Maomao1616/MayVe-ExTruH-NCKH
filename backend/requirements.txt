@@ -19,3 +19,17 @@ uvicorn==0.54.0
 watchfiles==1.3.0
 websockets==17.3
 
+asteval==1.0.10
+cachetools==7.2.7
+dill==0.4.1
+multiprocess==0.70.19
+numpy==2.5.4
+pnoise==0.2.0
+pyphen==0.15.0
+python-multipart==0.0.32
+scipy==1.18.1
+shapely==2.2.0
+svgelements==1.9.6
+svgwrite==1.4.3
+tomli==2.5.0
+vpype==1.15.0

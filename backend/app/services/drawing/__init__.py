@@ -1,15 +1,19 @@
-"""Tab Tạo bản vẽ: ảnh/SVG -> đường nét -> G-code. Lõi thuần Python, không gọi máy.
+"""Tab Tạo bản vẽ: ảnh/SVG -> đường nét -> G-code. Không gọi máy.
 
 Dây chuyền (mỗi bước một file, một hàm thuần):
   spec.py      khai báo tham số MỘT chỗ (mặc định, giới hạn) + kiểm tra đầu vào
-  layout.py    đặt đường nét vào khung vẽ (mm): kích thước, lề, căn giữa, lật, đảo thứ tự
+  svg_in.py    nạp SVG (vpype) -> lớp đường nét (mm)
+  optimize.py  tối ưu nét bằng vpype (nối, đơn giản hóa, bỏ nét ngắn, sắp xếp)
+  layout.py    đặt đường nét vào khung vẽ trong tờ giấy: kích thước, lề, căn giữa, lật, đảo thứ tự
   gcode.py     đường nét (mm) -> dòng G-code + thống kê
-  service.py   ghép các bước, trả kết quả cho routes_draw.py
+  service.py   ghép layout + gcode, trả kết quả cho routes_draw.py
+  store.py     bộ nhớ tạm vài bản vẽ đã nạp (đổi tham số không phải nạp lại)
   registry.py  sổ đăng ký kiểu vector hóa (thêm kiểu mới = 1 file + 1 dòng đăng ký)
-Giai đoạn sau thêm: loader, preprocess, vectorize/, optimize.
+Giai đoạn sau thêm: loader ảnh, preprocess, vectorize/.
 """
 from .errors import DrawError
 from .service import make_gcode
 from .spec import describe
+from .svg_in import import_svg
 
-__all__ = ["DrawError", "make_gcode", "describe"]
+__all__ = ["DrawError", "make_gcode", "describe", "import_svg"]
