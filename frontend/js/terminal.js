@@ -4,9 +4,9 @@
 //  - Terminal chỉ THÊM dòng mới (theo seq), không bao giờ vẽ lại toàn bộ.
 //  - Lỗi từ firmware hiện ở bảng trạng thái (dịch i18n), không phải ở đây.
 
-import { api, ApiError } from "../api.js";
-import { state, subscribe, isConnected, isStale } from "../state.js";
-import { t } from "../i18n.js";
+import { api, ApiError } from "./api.js";
+import { state, subscribe, isConnected, isStale } from "./state.js";
+import { t } from "./i18n.js";
 
 const MAX_LINES = 500;
 
@@ -18,6 +18,8 @@ const STATUS_ECHO = {
 };
 
 const SHOW_TIME = false;   // true = hiện [hh:mm:ss] đầu mỗi dòng
+
+
 
 // Lỗi gọi API hiển thị trong terminal (tiếng Anh, theo ApiError.code).
 const API_ERRORS = {
@@ -44,7 +46,7 @@ export function initTerminal() {
     const output = document.getElementById("terminal-output");
     const clearButton = document.getElementById("clear-terminal-btn");
     const connectionLabel = document.getElementById("terminal-connection-label");
-
+    const jogCancelButton = document.getElementById("jog-cancel-btn");
     const pauseButton = document.getElementById("pause-btn");
     const resumeButton = document.getElementById("resume-btn");
     const resetButton = document.getElementById("reset-btn");
@@ -190,8 +192,10 @@ export function initTerminal() {
         }
 
         if (pauseButton) {
-            pauseButton.disabled = !canSend ||
-                !["Run", "Jog"].includes(machineState);
+            pauseButton.disabled = !canSend || machineState !== "Run";
+        }
+        if (jogCancelButton) {
+            jogCancelButton.disabled = !canSend || machineState !== "Jog";
         }
         if (resumeButton) {
             resumeButton.disabled = !canSend || machineState !== "Hold";
@@ -268,7 +272,7 @@ export function initTerminal() {
 
     pauseButton?.addEventListener("click", () => sendRealtime("hold"));
     resumeButton?.addEventListener("click", () => sendRealtime("resume"));
-
+    jogCancelButton?.addEventListener("click", () => sendRealtime("jog_cancel"));
     // ĐOẠN CODE MỚI: TÍCH HỢP BẢNG THÔNG BÁO KÍNH
 const resetBtn = document.getElementById("reset-btn");
 const customModal = document.getElementById("custom-reset-modal");

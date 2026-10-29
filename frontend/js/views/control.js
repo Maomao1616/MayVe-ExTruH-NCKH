@@ -483,7 +483,7 @@ function initGcodePanel() {
             const where = e.line ? ` at line ${e.line}` : "";
             message({ text: `Job failed${where}: ${e.text ?? e.code ?? "unknown"}. Check the machine before continuing.` });
         } else if (job.state === "cancelled") {
-            message({ text: "Job cancelled. The machine is in Alarm: unlock, then lift the pen." });
+            message({ text: "Job cancelled." });
         }
     }
 

@@ -186,7 +186,7 @@
   "control.controller.rx": "Bộ đệm RX",
   "control.controller.lastUpdate": "Cập nhật cuối",
   "control.controller.notHomed": "Chưa xác nhận",
-
+  "control.controller.alarmNoCode": "Alarm (chưa rõ mã)",
 
   "control.preview.title": "Khung nhìn 2D",
   "control.preview.desc": "Xem đường vẽ từ trên xuống",
@@ -234,6 +234,19 @@
     "error.2": "Sai định dạng số hoặc cú pháp lệnh",
     "error.22": "Thiếu tốc độ F",
     "error.60": "Không mở được thẻ SD",
+    "error.1": "Lệnh G-code không hợp lệ (thiếu chữ cái lệnh)",
+    "error.24": "Xung đột trục trong lệnh G-code",
+    "error.130": "Jog đã bị hủy",
+    "alarm.4": "Đo đầu dò thất bại (ban đầu)",
+    "alarm.5": "Đo đầu dò thất bại (chạm)",
+    "alarm.7": "Home thất bại: cửa mở",
+    "alarm.10": "Lỗi điều khiển trục chính",
+    "alarm.11": "Chân khởi động đang bật khi khởi động",
+    "alarm.13": "Dừng cứng",
+    "alarm.15": "Lỗi khởi tạo",
+    "alarm.16": "Expander reset",
+    "alarm.17": "Lỗi G-code",
+    "alarm.18": "Chạm giới hạn cứng khi đo",
 
 
   "control.macro.title": "Macro nhanh",

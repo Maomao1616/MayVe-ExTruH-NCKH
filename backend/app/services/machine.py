@@ -121,6 +121,8 @@ class MachineService:
         with self._lock:
             link, self._link = self._link, None
             self._poll_stop.set()
+            self._relock("Disconnected")
+            
         if link is not None:
             self._job.abort("disconnected", "Disconnected")
             link.close()
@@ -202,8 +204,7 @@ class MachineService:
                     "unlock_needs_pin": self._unlock_pin is not None,
                     "unlock_seconds_left": self._unlock_seconds_left()  
 }
-        self._relock("Disconnected")
-
+    
     # --- nhận dữ liệu ---------------------------------------------------------
     def _on_line(self, line: str) -> None:
         info = classify_line(line)
@@ -337,16 +338,108 @@ class MachineService:
             except JobError as exc:
                 raise ServiceError(exc.code, exc.message, exc.status) from exc
 
-    def cancel_job(self) -> dict:
+    def cancel_job(self, mode: str = "reset", lift_z: float | None = None,
+                   lift_feed: float = 1000.0) -> dict:
+        if mode not in ("reset", "soft", "hard"):
+            raise ServiceError("bad_request", f"mode không hợp lệ: {mode}", 400)
+
+        # 1) Dừng gửi dòng mới (không Reset — Reset là bước riêng)
         try:
             self._job.cancel()
         except JobError as exc:
             raise ServiceError(exc.code, exc.message, exc.status) from exc
+
+        # 2) Xử lý theo mode
+        if mode == "reset":
+            self._reset_now()
+        elif mode == "soft":
+            if not self._soft_stop(lift_z, lift_feed):
+                # Không thể chạy nốt buffer → rơi về hard
+                self._hard_stop(lift_z, lift_feed)
+        else:  # hard
+            self._hard_stop(lift_z, lift_feed)
+
+        return self._job.snapshot()
+
+    def _reset_now(self) -> None:
+        """Reset ngay (hành vi cũ)."""
         try:
-            self.send_realtime("reset")            # dừng ngay (sẽ vào Alarm 3, cần mở khóa)
+            self.send_realtime("reset")
         except ServiceError:
             pass
-        return self._job.snapshot()
+
+    def _soft_stop(self, lift_z: float | None, lift_feed: float) -> bool:
+        self.log_system("Soft stop: waiting for buffer to finish...")
+        deadline = time.time() + 60.0
+        while time.time() < deadline:
+            state = self.machine_state()[0]
+            if state == "Idle":
+                self.log_system("Soft stop: machine is Idle.")
+                break
+            if state in ("Alarm", "Hold"):
+                self.log_system(f"Soft stop: machine is {state}, falling back to hard stop.")
+                return False
+            time.sleep(0.1)
+        else:
+            self.log_system("Soft stop: timeout, falling back to hard stop.")
+            return False
+
+        if lift_z is not None:
+            self.log_system(f"Soft stop: lifting pen to Z{lift_z}.")
+            try:
+                self.send_line(f"$J=G90 G21 Z{lift_z} F{lift_feed}")
+            except ServiceError as exc:
+                self.log_system(f"Soft stop: failed to lift pen: {exc}")
+                return False
+        return True
+
+    def _hard_stop(self, lift_z: float | None, lift_feed: float) -> None:
+        self.log_system("Hard stop: starting sequence...")
+        
+        # 1) Feed Hold
+        state = self.machine_state()[0]
+        if state in ("Run", "Jog"):
+            self.log_system("Hard stop: sending Feed Hold.")
+            try: self.send_realtime("hold")
+            except ServiceError: pass
+            deadline = time.time() + 3.0
+            while time.time() < deadline:
+                if self.machine_state()[0] in ("Hold", "Alarm", "Idle"):
+                    break
+                time.sleep(0.1)
+
+        # 2) Reset
+        state = self.machine_state()[0]
+        if state != "Alarm":
+            self.log_system("Hard stop: sending Reset.")
+            try: self.send_realtime("reset")
+            except ServiceError: pass
+            deadline = time.time() + 5.0  # Tăng lên 5s để đợi board khởi động lại
+            while time.time() < deadline:
+                if self.machine_state()[0] == "Alarm":
+                    break
+                time.sleep(0.1)
+
+        # 3) $X
+        if self.machine_state()[0] == "Alarm":
+            self.log_system("Hard stop: sending $X.")
+            try: self.send_line("$X")
+            except ServiceError: return
+            deadline = time.time() + 5.0  # Tăng lên 5s
+            while time.time() < deadline:
+                if self.machine_state()[0] == "Idle":
+                    break
+                time.sleep(0.1)
+
+        # 4) Jog Z
+        if lift_z is not None:
+            if self.machine_state()[0] == "Idle":
+                self.log_system(f"Hard stop: lifting pen to Z{lift_z}.")
+                try: self.send_line(f"$J=G90 G21 Z{lift_z} F{lift_feed}")
+                except ServiceError: pass
+            else:
+                self.log_system("Hard stop: machine is not Idle, cannot lift pen.")
+
 
     # JobRunner gọi các hàm dưới đây từ luồng của nó.
     def log_system(self, text: str) -> None:

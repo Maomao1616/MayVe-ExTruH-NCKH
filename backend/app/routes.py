@@ -34,6 +34,11 @@ class MotionRequest(BaseModel):
     on: bool
     pin: str | None = Field(None, max_length=64)
 
+class CancelRequest(BaseModel):
+    mode: Literal["reset", "soft", "hard"] = "reset"
+    lift_z: float | None = None
+    lift_feed: float = Field(1000.0, gt=0)
+
 @router.post("/motion")
 def motion(req: MotionRequest):
     return machine.set_motion(req.on, req.pin)
@@ -82,17 +87,15 @@ def command(req: CommandRequest):
 def realtime(req: RealtimeRequest):
     return machine.send_realtime(req.action)
 
+@router.get("/log")
+def log(since: int = 0):
+    return machine.log_since(since)
+
 
 @router.post("/jobs")
 def start_job(req: JobStartRequest):
     return machine.start_job(req.name, req.lines)
 
-
 @router.post("/jobs/cancel")
-def cancel_job():
-    return machine.cancel_job()
-
-
-@router.get("/log")
-def log(since: int = 0):
-    return machine.log_since(since)
+def cancel_job(req: CancelRequest = CancelRequest()):
+    return machine.cancel_job(req.mode, req.lift_z, req.lift_feed)
