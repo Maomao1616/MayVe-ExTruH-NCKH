@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 # Dữ liệu riêng của từng máy: hồ sơ phần mềm, bản sao lưu cấu hình FluidNC
 backend/data/
+export/

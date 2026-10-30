@@ -1,7 +1,7 @@
-# ExtruXY — Tóm tắt cấu trúc và nút chức năng
+# VMU PlotterPen — khối chức năng và nút bấm
 
 Một trình điều khiển máy vẽ chạy trên laptop: nạp ảnh/SVG → tạo nét → G-code → gửi cho máy (MKS DLC32 + FluidNC). Không có Docker, tunnel hay AI ngôn ngữ trong phạm vi này.
-Tài liệu chi tiết: `PROJECT_MAP.md` (bản đồ file), `DRAW_ROADMAP.md` (tab vẽ), `MACHINE.md` (sự thật máy thật), `DECISIONS.md` (quyết định).
+Dành cho người dùng và người mới: giải thích **khối** và **nút**, không giải thích từng dòng mã. Cách chạy và kiểm tra: `README.md`. Kiến trúc và bản đồ tệp: `ARCHITECTURE.md`; tình trạng: `STATUS.md`; tab vẽ: `DRAW_ROADMAP.md`; máy thật: `MACHINE.md`; quyết định: `DECISIONS.md`.
 
 ## 1. Ba khối lớn
 
@@ -18,18 +18,7 @@ Trình duyệt (frontend, JS thuần)  ⇄  FastAPI (backend)  ⇄  USB serial  
 
 Luồng nối hai tab: Tạo bản vẽ → **bản thảo trên đĩa** (G-code + ảnh minh họa + meta) → Điều khiển đọc từ đó. Không có đường tắt nào khác.
 
-## 2. Backend
-
-| Thư mục | Nội dung |
-|---|---|
-| `app/links/` | Nói chuyện với máy: serial thật, máy giả `SimLink` để phát triển, bộ đọc giao thức |
-| `app/services/machine.py`, `job.py` | Trạng thái máy, gửi lệnh, chạy G-code từng dòng chờ `ok`, hủy 3 chế độ (Reset / Dừng êm / Dừng gấp), chặn lệnh xen vào lúc đang dừng |
-| `app/services/drawing/` | Toàn bộ phần vẽ (mục 3) |
-| `app/api/` | Mỏng: nhận request, gọi service. `api/draw.py` là cửa của tab vẽ |
-
-Quy tắc an toàn đã có: máy thật mặc định **chỉ đọc** (phải "Mở khóa chuyển động"); G-code bị lọc (`$`, `G92`, `G10`, `G28`, `G53` bị chặn); tối đa 200 000 dòng/tệp; mọi nét phải nằm trong vùng làm việc 285 × 318 mm; xem trước + tích xác nhận trước khi chạy.
-
-## 3. Dây chuyền tab Tạo bản vẽ (`services/drawing/`)
+## 2. Dây chuyền tab Tạo bản vẽ (`services/drawing/`)
 
 ```
 SVG  ── svg_in ───────────────────────────────┐
@@ -74,7 +63,7 @@ SVG  ── svg_in ────────────────────�
 
 Đa màu: mỗi màu là **một tệp G-code riêng**, tên lớp = `<số>-<mã màu>` (ví dụ `draw-2-3231a7.gcode`, bản thảo hiện `Bản vẽ · 2-3231a7.gcode`). Vẽ xong tệp nào thì đổi bút rồi nạp tệp kế tiếp; mỗi nút "Nạp …" trong bản thảo có vệt màu bên trái.
 
-## 4. Tab Tạo bản vẽ — nút và ô
+## 3. Tab Tạo bản vẽ — nút và ô
 
 | Nút / ô | Làm gì |
 |---|---|
@@ -95,7 +84,7 @@ Dòng trạng thái sau khi tạo nét ghi tổng thời gian; rê chuột vào 
 
 Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ/di chuyển, thời gian ước tính (chưa tính gia tốc nên chỉ để tham khảo), có nằm trong vùng làm việc không.
 
-## 5. Tab Điều khiển — nút
+## 4. Tab Điều khiển — nút
 
 | Nhóm | Nút | Làm gì |
 |---|---|---|
@@ -114,34 +103,10 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 | Terminal | Gửi, Xóa log hiển thị | Gửi lệnh tay |
 | Dock bên trái | Macro | Lệnh lưu sẵn (thêm/sửa/xóa) |
 
-## 6. Cài đặt
+## 5. Cài đặt
 - **Kết nối:** chọn cổng, Kết nối / Ngắt kết nối. **Giao diện chung:** ngôn ngữ. **Hoạt động:** tùy chọn hành vi.
 - **Bản thảo:** thư mục lưu (mặc định `data/drafts`, có thể đổi sang ổ khác), số bản tối đa, dung lượng tối đa. Vượt hạn mức thì xóa bản **cũ nhất không ghim**.
 - **Hồ sơ máy:** vùng làm việc, Z bút. **Cấu hình máy:** đọc/ghi YAML trên mạch (có sao lưu, hoàn tác).
 
-## 7. Cấu trúc frontend
-
-`index.html` + `css/` + `locales/{vi,en}.json` + `js/`:
-- `core/` (api, config, i18n, state) ← `lib/` (hàm thuần: gcode, paper, drafts) ← `stores/` (dữ liệu dùng chung) ← `views/` (từng tab). Các view **không import lẫn nhau**.
-- Mỗi phần tử HTML chỉ có **một nơi ghi** (quy ước để khỏi giẫm chân).
-- `lib/paper.js` là bản JS của `layout.py`, có test đối chiếu số với backend (`frontend/tests/paper.test.mjs`).
-- Mọi chữ hiển thị qua `locales/*.json`; thêm khóa phải thêm cả hai file.
-- **Giao diện (CSS):** màu nằm ở `assets/css/tokens.css` (sửa ở đó: `--highlight` cam nhấn, `--paper`/`--paper-ink` giấy và mực trên canvas, hai bản tối/sáng). `css/style.css` là nền chung, `css/drawing.css` riêng cho tab vẽ, `css/polish.css` là lớp tinh chỉnh nạp sau cùng (xóa dòng `<link>` của nó để quay về như cũ). Thứ bậc nút: chính = cam đặc, phụ = viền, nguy hiểm = đỏ (chỉ Reset, Dừng gấp, Xóa).
-
-## 8. Chạy và kiểm tra
-| Việc | Lệnh |
-|---|---|
-| Chạy app | Bấm đúp `Bat Khien EXTRUH.bat` (mở `http://127.0.0.1:8000/`) |
-| Cài thư viện (lần đầu hoặc sau khi cập nhật) | trong `backend`, bật venv: `pip install -r requirements.txt` |
-| Test backend | trong `backend`: `python -m pytest` |
-| Test frontend | `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs` |
-| Sinh lại số chuẩn cho test JS (khi đổi `tone.py` / `raster_in.py`) | `python frontend/tests/fixtures/make_image_fixtures.py` (đã bật venv backend) |
-| Máy giả | Chọn cổng giả `SimLink` khi chưa có board |
-
-## 9. Chưa kiểm chứng / còn lại
-- Máy thật: hướng trục X+/Y+, Z bút, thời gian Home, cung G2/G3, `G4 P` tính bằng giây trên FluidNC 4.1.1.
-- **Thử vẽ dải đậm nhạt** với bút 0,2 và 0,4 để chỉnh khoảng cách gạch mặc định (hiện 2 × bề rộng bút) và các preset (`views/drawing/presets.js`).
-- Ngưỡng bắt viền cố định (`edges.py`): chỉnh dần theo ảnh thật; chưa có giao diện cắt ảnh (backend đã nhận `crop_*`).
-- Thời gian xử lý trên MiniPC i5-3210M chưa đo (máy dev: 0,1–2 s cho ảnh A4).
-- Kế hoạch mở cho nhiều người dùng (phân quyền bằng PIN, giới hạn, Ubuntu, tunnel): `PLAN_ONLINE.md`.
-- Nhật ký hệ thống chỉ nằm trong bộ nhớ (chưa ghi ra tệp, chưa xoay vòng); chưa có "tiếp tục từ dòng N"; `lib/gcode.js` chưa có test.
+## 6. Chưa kiểm chứng / còn lại
+Danh sách đầy đủ và cập nhật nằm ở `STATUS.md` (mục 3 chưa kiểm chứng, mục 4 còn lại). Kế hoạch mở cho nhiều người dùng (phân quyền bằng PIN, giới hạn, Ubuntu, tunnel): `PLAN_ONLINE.md`.

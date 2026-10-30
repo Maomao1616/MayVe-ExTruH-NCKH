@@ -1,9 +1,8 @@
-# ExtruXY – Roadmap tab Tạo bản vẽ (30/10/2026)
+# Tab Tạo bản vẽ — thiết kế và hợp đồng API (30/10/2026)
 
-Ký hiệu: ✅ đã viết + test · ⏳ chưa làm · ⚠ giả định chưa kiểm chứng.
-Phần cứng đích: MiniPC i5-3210M (2 nhân/4 luồng, 8 GB). Phát triển trên laptop, chạy mức "max" để thử.
-**Thứ tự làm: chốt hợp đồng API + giao diện (mục 3–5) → frontend → rồi mới viết thuật toán phía sau API (mục 6).**
-Frontend chỉ biết API; thuật toán đổi bên trong không làm đổi giao diện.
+Tài liệu thiết kế của tab Tạo bản vẽ: nguyên tắc, hợp đồng API, bản thảo, dây chuyền ảnh, các quyết định. **Tình trạng và việc còn
+lại: `STATUS.md`** (không lặp ở đây). Phần cứng đích: MiniPC i5-3210M (2 nhân/4 luồng, 8 GB); phát triển trên laptop.
+Frontend chỉ biết API; thuật toán đổi bên trong không làm đổi giao diện (hợp đồng đã chốt và đã cài đặt đầy đủ).
 
 ## 1. Nguyên tắc thiết kế
 - **Mọi thứ là tham số**, khai báo MỘT chỗ (`services/drawing/spec.py`), trả cho frontend qua `GET /api/draw/schema`. Form của tab vẽ sinh từ schema, không rải số cứng. Máy yếu chỉ đổi giá trị, không xóa code.
@@ -41,6 +40,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 | `DELETE /api/draw/drafts/{id}` | xóa | `{ok}` |
 | `GET/PUT /api/draw/settings` | thư mục bản thảo + hạn mức | `{settings, limits, folder}` |
 
+- **`options` của `/import`:** khóa `svg`, `optimize`, `raster`, `style`, `palette`, `layout`. Với ảnh, `layout` chỉ là **hộp tham chiếu**: `paper`/`margin_mm` cho phần trong lề, hoặc `width_mm`/`height_mm` (kích thước khung thật, theo hướng ảnh gốc) để khoảng cách gạch tính đúng theo mm. Kết quả `source.timings` = giây từng bước; `source.layers[].color` = mã màu (đa màu); id lớp đa màu dạng `<số>-<mãmàu>`.
 - **Nhóm tham số** (trong `schema.params`): `layout` (thêm `rotate` 0/90/180/270), `gcode`, `machine`, `optimize` (thêm `two_opt`, `passes`), `svg`, `raster` (bút, tự độ phân giải, cắt ảnh, gamma/mức đen trắng, CLAHE, khử nhiễu — tắt mặc định), `style` (kiểu tô), `palette` (đơn sắc / 2–4 màu).
 - **Kiểu tô `style.kind`:** `outline` (đường giữa nét) · `zigzag` · `wave` · `spiral`; `style.outline_overlay` (bật thêm lớp viền); `levels` 3–5 mức sáng; `angle`; `spacing_mm`; `amplitude_mm`.
 - **Frontend tự biến đổi nét nháp** (di chuyển / co giãn / xoay / lật) bằng đúng công thức `layout.plan`, để kéo thả mượt không gọi mạng. Backend vẫn là nơi quyết định: `/gcode` trả `box`/`paper`, frontend so lại. ⚠ giữ công thức ở một hàm nhỏ trong `lib/`, có test đối chiếu với backend.
@@ -67,7 +67,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 - Tự dọn khi vượt hạn mức: xóa bản **cũ nhất không ghim**.
 - Mỗi bản thảo vài trăm KB; Docker/ổ 256 GB không đáng lo.
 
-## 6. Backend phía sau API (làm SAU khi chốt giao diện)
+## 6. Backend phía sau API (đã cài đặt)
 | Khối | Việc | Thư viện |
 |---|---|---|
 | `worker.py` | một luồng, hàng 1, tiến trình, hủy hợp tác | stdlib |
@@ -109,21 +109,10 @@ EXIF + `Image.draft` → **crop** → **thu nhỏ** về độ phân giải làm
 - Trình duyệt thu nhỏ ảnh về đúng `work_side_px` (công thức trong `lib/imageprep.js`, test đối chiếu số với Python), chỉ thu nhỏ, lỗi thì gửi ảnh gốc. Backend bỏ qua chênh 1 điểm ảnh do làm tròn.
 - Xem trước độ sáng ở trình duyệt khớp `tone.py` (không CLAHE/khử nhiễu), sai lệch tối đa 1 mức xám.
 
-## 7. Lộ trình
-| GĐ | Nội dung | Tình trạng |
-|---|---|---|
-| 0–2 | Khung, tham số + schema, bố trí, G-code, đọc SVG, tối ưu vpype, `store` (81 test) | ✅ |
-| 3 | **Chốt hợp đồng API + sửa HTML/CSS/i18n theo mục 3–4.** Backend: `tasks.py` (một luồng, tiến trình, hủy), `/import` (SVG thật, ảnh = dữ liệu giả `demo.py`), `preview.py`, `drafts.py`, `rotate`, two-opt có ngưỡng, 95 test. Frontend: HTML/CSS (`drawing.css` tách riêng)/i18n/`api.js` xong; **chưa có JS gắn dữ liệu** | ✅ |
-| 4 | Frontend JS: `views/drawing.js` + `drawing/params.js` + `drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề – xoay, bảng số liệu, tiến trình/hủy, nháp, bản thảo, gửi sang Điều khiển), `lib/paper.js` (+ test đối chiếu backend) | ✅ (kiểm bằng trình duyệt thật với SVG; raster vẫn là dữ liệu mẫu) |
-| 5 | Bản thảo (`drafts`) + Hàng đợi ở tab Điều khiển + thư mục ở Cài đặt | ✅ (làm cùng GĐ4) |
-| 6 | Nạp ảnh (`raster_in`) + `tone` (có tự cân sáng) + zigzag/sóng/xoắn ốc (`hatch.py`, `styles.py`) + viền (`edges.py`, `trace.py`) + tự tạo lại nét khi kéo khung (frontend) | ✅ |
-| 7 | Đa màu 2–4 (`palette.py`) ✅, two-opt có ngưỡng ✅; ước tính thời gian có gia tốc (D7) ⏳ | ⏳ |
-| 8 | Sau: hatch theo hướng khối, preset, xuất SVG | ⏳ |
+## 7. Tình trạng, việc chưa kiểm chứng
+Xem `STATUS.md` (mục 2 đã xong, mục 3 chưa kiểm chứng, mục 4 còn lại). Điểm riêng của tab vẽ: tốc độ thật trên MiniPC (two-opt, skeleton, NLM), hướng trục, `G4 P` tính bằng giây trên FluidNC 4.1.1, thời gian ước tính chưa tính gia tốc, mức đậm nhạt thật của từng cặp bút 0,2/0,4 với từng khoảng gạch (cần vẽ thử mẫu).
 
-## 8. Việc chưa kiểm chứng
-Tốc độ thật trên MiniPC (two-opt, skeleton, NLM); hướng trục (C5); `G4 P` tính bằng giây trên FluidNC 4.1.1; thời gian ước tính chưa tính gia tốc; mức đậm nhạt thật của từng cặp bút 0,2/0,4 với từng khoảng gạch (cần vẽ thử mẫu).
-
-## 9. Luồng thử hiện có (SVG)
-1. `POST /api/draw/svg`: chọn tệp SVG, `options` = `{"svg": {"frame": "page"}}` → nhận `task`.
-2. `POST /api/draw/gcode`: gửi `task`, `machine` (work_w 285, work_h 318, z_travel 5, rapid_feed 6000), `layout`, `gcode` (pen_up_z 5, pen_down_z 0) → nhận `files[].gcode`.
-3. Dán G-code vào tab Điều khiển để Xem trước → tích xác nhận → Chạy.
+## 8. Kiểm thử luồng SVG bằng tay (không qua giao diện)
+1. `POST /api/draw/import`: multipart `file` = SVG, `options` = `{"svg": {"frame": "page"}}` → nhận `task` (tác vụ nền; hỏi `GET /api/draw/tasks/{task}` tới khi `done`).
+2. `POST /api/draw/gcode`: `{"task", "machine": {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000}, "layout": {...}, "gcode": {"pen_up_z": 5, "pen_down_z": 0}}` → `files[].gcode`.
+3. Thử tay tại `http://127.0.0.1:8000/docs`. Trong giao diện: dùng tab Tạo bản vẽ → Chuyển sang Điều khiển → Xem trước → tích xác nhận → Chạy.

@@ -1,6 +1,6 @@
-# ExtruXY – Sổ quyết định (Cập nhật 29/10/2026)
+# VMU PlotterPen (ExtruXY) – Sổ quyết định (Cập nhật 30/10/2026)
 
-**Chọn gì – vì sao / đổi ở đâu – mức chắc.** ⚠ = giả định, **chưa kiểm chứng**. ✅ = đã verify trên máy thật (không motor).
+**Chọn gì – vì sao / đổi ở đâu – mức chắc.** ⚠ = giả định, **chưa kiểm chứng**. ✅ = đã làm và kiểm (máy thật không motor hoặc test tự động). ⏳ = đã quyết, chưa làm. ❌ = đã bỏ. Tình trạng chi tiết: `STATUS.md`.
 
 ## Kiến trúc và Quy tắc code
 | # | Quyết định | Vì sao / đổi ở đâu | Chắc |
@@ -35,3 +35,31 @@
 | B2 | Lỗi/alarm firmware dịch theo `.code`. Nếu Alarm không có mã (từ boot) hiển thị "Alarm (chưa rõ mã)". | Tránh hiển thị "—" gây nhầm lẫn | ✅ |
 | B3 | Dòng trạng thái terminal in 1s/lần, chỉ khi có thay đổi | Tránh ngập log | ✅ |
 | B4 | Log cũ (`last_error`, `last_alarm`) giữ nguyên sau Reset | Giúp user trace lỗi lịch sử | ✅ |
+
+## Tạo bản vẽ và xử lý ảnh
+| # | Quyết định | Vì sao / đổi ở đâu | Chắc |
+|---|---|---|---|
+| P1 | Mọi tham số vẽ khai báo MỘT chỗ (`spec.py`), frontend lấy qua `/api/draw/schema` | Không rải số cứng; đổi một dòng | ✅ |
+| P2 | Tab vẽ **không bao giờ gọi máy**; chỉ ghi bản thảo; Hàng đợi = danh sách bản thảo; chạy phải qua xem trước + xác nhận ở Điều khiển | An toàn | ✅ |
+| P3 | Ảnh → nét chạy ở **tiến trình riêng, ưu tiên thấp** (`isolated.py`); hủy = kết thúc tiến trình; trần thời gian 600 s, RAM 4 GB (Linux) | MiniPC yếu vừa điều khiển vừa xử lý ảnh; ảnh lạ không làm sập server | ✅ (RAM trên Ubuntu ⚠) |
+| P4 | Thứ tự xử lý ảnh: EXIF → cắt → thu nhỏ → lọc sắc độ → bắt nét/tô. Lọc **sau** thu nhỏ | Chi phí tỉ lệ số điểm ảnh; làm nét trước thu nhỏ bị mất | ✅ |
+| P5 | Cỡ làm việc = khung thật ÷ bề rộng bút × 1,3, kẹp 400–4000 px; ảnh nhỏ chỉ phóng nhẹ tới 720 px; kéo khung lệch >12% thì tự tạo lại nét | Mật độ gạch đúng theo mm/bút ở kích thước thật; thêm điểm ảnh không thêm chi tiết | ✅ |
+| P6 | Kiểu tô: zigzag (mặc định, góc 45°), sóng (bước sóng tự giãn theo ngân sách 100 000 điểm), xoắn ốc (nối khe trắng < 3 mm), viền (DoG + skeleton) + phủ viền | Ít nhấc bút; không vượt 200 000 dòng G-code | ✅ (ngưỡng viền, góc ⚠) |
+| P7 | Đa màu 2–4: k-means trên Lab có nhấn sắc độ; mỗi màu một lớp **một tệp G-code**, id lớp `<số>-<mãmàu>`; đổi bút giữa các tệp | Chỉ để thử mô hình; tên tệp tự mang mã màu | ✅ |
+| P8 | Trình duyệt thu nhỏ ảnh trước khi gửi và xem trước độ sáng ngay; **backend luôn tự làm được và kiểm lại** | Gửi nhẹ, MiniPC khỏi giải mã ảnh lớn; không tin dữ liệu từ trình duyệt | ✅ |
+| P9 | Giao diện gọn: bỏ "Tạo nháp" và "Tạo G-code" (G-code tự tính lại); có "Tạo lại nét"; 3 preset (Chân dung, Phong cảnh, Mạch điện/Bản vẽ) | Bản nháp không nhanh hơn đáng kể; ít nút thừa | ✅ |
+| P10 | Không làm giao diện cắt ảnh (backend vẫn nhận `crop_*`) | Người dùng chỉnh vùng cần vẽ trước khi gửi | ❌ |
+
+## Triển khai (theo `PLAN_ONLINE.md`)
+| # | Quyết định | Vì sao | Chắc |
+|---|---|---|---|
+| O1 | MiniPC Ubuntu không màn hình chạy cả backend và giao diện; Python làm hết việc nặng; **không dùng host chia sẻ**, một địa chỉ qua Cloudflare Tunnel | Host chỉ chứa tệp tĩnh, không giảm tải, thêm CORS/cookie chéo tên miền; USB phải ở MiniPC | ⏳ |
+| O2 | Khách (không đăng nhập) chỉ tải ảnh/dùng tab vẽ/lưu bản thảo; người vận hành nhập PIN ở Cài đặt mới dùng được phần còn lại; **backend chặn thật** | Ai biết địa chỉ cũng gửi được ảnh nhưng không điều khiển được máy | ⏳ |
+| O3 | JS chỉ nhận việc nhẹ khi kết quả giống và nhanh hơn/ngang Python; sắp xếp nét 2-opt trong Web Worker chỉ làm nếu đo trên MiniPC thấy cần | Không viết lại tô nét/skeleton bằng JS (không nhanh hơn, thêm lỗi) | ⏳ |
+
+## Giao diện, tài liệu
+| # | Quyết định | Vì sao / đổi ở đâu | Chắc |
+|---|---|---|---|
+| B5 | Tên **VMU PlotterPen**; màu chỉ sửa ở `tokens.css` (`--highlight` cam nhấn, `--paper*` giấy/mực canvas theo theme); lớp `polish.css` nạp sau cùng, xóa dòng `<link>` là quay về như cũ | Một nơi đổi màu, dễ hoàn nguyên | ✅ |
+| B6 | Bố cục tab Điều khiển: trạng thái một dòng ở hàng tiêu đề; cột trái 2/5 (tọa độ, jog, tệp), cột phải 3/5 (2D + tiến trình, terminal dài chạm hàng đợi); Hàng đợi rộng hết bề ngang | Dễ đọc; tiến trình nằm cạnh khung 2D | ✅ |
+| X1 | Tài liệu có một cửa vào (`AI_START.md`), một nơi tình trạng (`STATUS.md`), bản đồ mã **sinh tự động** (`CODEMAP.md`) và công cụ xuất mã tiết kiệm token (`tools/export_context.py`) | Bàn giao cho AI khác mà không dán cả kho | ✅ |

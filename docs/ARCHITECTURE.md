@@ -1,7 +1,7 @@
-# ExtruXY – Bản đồ dự án và lộ trình (29/10/2026)
+# ARCHITECTURE — kiến trúc và bản đồ dự án
 
-Đọc một lần để biết: file nào làm gì, dữ liệu đi đường nào, ai được ghi vào đâu, đổi gì thì sửa ở đâu.
-Ký hiệu: ✅ người dùng đã áp dụng và thử trên máy giả (SimLink) · 📦 Claude đã đưa bản vá, **chưa xác nhận đã áp dụng** (kiểm bằng `grep` trong mã thật) · ⏳ chưa làm · ⚠ giả định chưa kiểm chứng trên máy thật. **Nếu mã nguồn mới lệch với bảng dưới, mã mới là sự thật.**
+Đọc để biết: khối nào làm gì, dữ liệu đi đường nào, quy tắc phụ thuộc, đổi gì thì sửa ở đâu. Tình trạng và việc còn lại:
+`STATUS.md`. Danh sách tệp kèm token và route API: `CODEMAP.md` (sinh tự động). **Nếu mã lệch với tài liệu, mã mới là sự thật.**
 
 ## 1. Sơ đồ và cây thư mục
 ```
@@ -13,9 +13,10 @@ Trình duyệt:  core/api.js → core/state.js (hỏi backend mỗi 0,5 giây) �
 ```
 ```
 ExtruXY/
-├─ README.md                 Cài đặt, chạy, API
+├─ README.md                 Giới thiệu, cài đặt, chạy, kiểm tra
 ├─ Bat Khien EXTRUH.bat      Bấm đúp: bật venv trong backend/, mở trình duyệt, chạy server
-├─ docs/                     DECISIONS · MACHINE (sự thật máy thật) · PROJECT_MAP · HANDOVER · DRAW_ROADMAP
+├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE(+RAW) · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · EXPORT_FOR_AI
+├─ tools/export_context.py   Xuất mã gọn cho AI + sinh docs/CODEMAP.md (xem EXPORT_FOR_AI)
 ├─ samples/                  Tệp G-code mẫu để thử
 ├─ backend/
 │  ├─ app/
@@ -27,7 +28,7 @@ ExtruXY/
 │  ├─ tests/                 pytest (draw_test/ của tab vẽ)
 │  └─ tools/                 Script thử nghiệm (probe_vpype.py)
 └─ frontend/
-   ├─ index.html · css/style.css · assets/css/tokens.css (màu + kích thước) · locales/
+   ├─ index.html · css/{style,drawing,polish}.css · assets/css/tokens.css (màu + kích thước) · locales/ · tests/
    └─ js/
       ├─ app.js              Vào cửa: tab, ngôn ngữ, sáng/tối, gọi init của từng view
       ├─ core/               Nền tảng: api · state · i18n · config
@@ -57,7 +58,8 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 ## 3. Frontend (`frontend/`)
 | File | Vai trò |
 |---|---|
-| `index.html`, `css/style.css`, `assets/css/tokens.css` | Khung tab và giao diện. Màu, khoảng cách, kích thước nút: chỉ sửa `tokens.css` |
+| `index.html`, `assets/css/tokens.css` | Khung ba tab. Màu (`--highlight` cam nhấn, `--paper*` giấy/mực canvas), hai bản tối/sáng: chỉ sửa `tokens.css` |
+| `css/style.css` · `css/drawing.css` · `css/polish.css` | Nền chung · riêng tab vẽ · lớp tinh chỉnh nạp sau cùng (bố cục tab Điều khiển, hiệu ứng, tên thương hiệu; xóa dòng `<link>` của nó để quay về như cũ) |
 | `locales/vi.json`, `en.json` | Mọi chữ hiển thị (hai file phải khớp khóa) |
 | `js/app.js` | Vào cửa: tab, ngôn ngữ, sáng/tối, gọi `init*` của các view |
 | `js/core/api.js` | Nơi **duy nhất** gọi backend |
@@ -101,41 +103,48 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | Hành vi máy giả | `links/sim_link.py` |
 | Kiểm tra/lưu macro | `stores/macros.js` |
 
-## 5. Chạy và thử (PowerShell, trong `backend`, đã bật venv)
+## 5. Chạy và thử
 * Chạy: `uvicorn app.main:app --reload` (đang sửa code) hoặc bấm đúp `Bat Khien EXTRUH.bat` ở thư mục gốc (bật venv, mở trình duyệt, không `--reload`) → `http://127.0.0.1:8000/`.
-* Test backend: `python -m pytest`.
+* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~270 test, ~70 s). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs`.
 * Sửa Python xong phải tắt (Ctrl+C) và chạy lại server. Chữ không đổi: Ctrl+Shift+R hoặc F12 → Network → Disable cache. Lỗi lạ: F12 → Console, dán dòng đỏ.
 * Thói quen: áp từng bước nhỏ → test → thử bằng sim → commit Git.
+* Cài thư viện (lần đầu hoặc sau khi cập nhật): `pip install -r requirements.txt -r requirements-dev.txt`.
 
-## 6. Lộ trình và tình trạng
-| # | Giai đoạn | Tình trạng |
+## 6. Luồng dữ liệu chính
+**Điều khiển máy:** trình duyệt `state.js` hỏi `GET /api/status` mỗi 0,5 s → `MachineService` giữ trạng thái từ báo cáo của firmware. Lệnh: `api.js` → `/api/command|realtime|motion|jobs` → `MachineService` → `JobRunner` (gửi từng dòng, chờ `ok`) → `SerialLink`/`SimLink`. Mọi lệnh đi qua một chỗ kiểm tra (khóa chuyển động, đang dừng, đang chạy tác vụ).
+
+**Tạo bản vẽ:** chọn tệp → (ảnh: trình duyệt thu nhỏ về đúng cỡ, `lib/imageprep.js`) → `POST /api/draw/import` → `tasks.py` (một luồng) → `isolated.py` (tiến trình con ưu tiên thấp) → `raster.build_raster` (đọc → sắc độ → tô nét/viền/chia màu → vpype) → lớp nét lưu ở `store.TASKS` (3 bản gần nhất) → `GET .../preview` (nét rút gọn, tọa độ nguồn) → canvas tự bố trí bằng `lib/paper.js` (bản JS của `layout.py`) → `POST /api/draw/gcode` (bố trí + G-code, **không lưu**) → `POST /api/draw/drafts` (lưu bản thảo vào đĩa) → tab Điều khiển nạp bản thảo (`draftstore.loadIntoControl` → `jobstore.setFile`) → xem trước → xác nhận → chạy.
+
+**Kéo khung bản vẽ:** lệch quá 12% so với cỡ lúc tạo nét thì giao diện tự tạo lại nét (`scheduleRetrace` trong `drawing.js`) để khoảng cách gạch luôn đúng theo bề rộng bút thật.
+
+## 7. Dữ liệu trên đĩa và biến môi trường
+| Thứ | Ở đâu | Ghi chú |
 |---|---|---|
-| 1 | Nền tảng: backend, SimLink, kết nối, terminal, an toàn | ✅ |
-| 2 | Tab Điều khiển: trạng thái, jog, bút, Zero, Home | ✅ |
-| 3 | G-code và khung 2D: nạp, xem trước/phát lại, chạy từng dòng, tiến trình, hủy | ✅ |
-| 4 | Sửa 4 lỗi backend + nút mở khóa chuyển động (hướng C) | ✅ |
-| 5 | Dock + macro + chỉ báo đầu trang (`macros.js`, `dock.js`, `header.js`) | ✅ |
-| 6 | Timeout Feed Hold, poller, Reset xóa lỗi cũ, test hồi quy | ✅ |
-| 7 | Hủy tác vụ an toàn (Dừng êm / Dừng gấp): backend + hộp thoại | ✅ (có `test_safe_stop.py`) |
-| 8 | Hồ sơ máy + cấu hình máy trong Cài đặt | ✅ |
-| 9 | Làm đẹp giao diện: nút ↻, thanh cảnh báo, trạng thái chờ/rỗng/lỗi | ✅ (màn hình hẹp: kiểm lại khi cần) |
-| 10 | Hàng chờ công việc = danh sách bản thảo (ghim, đẩy ưu tiên, mở xem) | ✅ |
-| 11 | Việc backend ghi nhận: log rotation 3 ngày, dòng `sys` tiếng Anh, `homed_axes` | ⏳ |
-| 12 | **Thử máy thật** (Phần B `handover-prompt.md`), chỉnh Z/hướng trục/`VIEW` | Khi có motor/servo |
-| 13 | Hoàn thiện SimLink theo dữ liệu thật | Sau 12 |
-| 14 | **Tab Tạo bản vẽ:** SVG + ảnh (3 kiểu tô, viền, 2–4 màu, preset), bản thảo, hàng đợi — xem `DRAW_ROADMAP.md`, `BRIEF.md` | ✅ (chờ thử ảnh thật và máy thật) |
-| 15 | Mini PC: xác thực + PIN thật, WiFi/USB, gửi trước nhiều dòng (D10), Tiếp tục từ dòng N, thư viện G-code (D11), PWA | Chỉ khi cần |
-| — | ~~Thẻ SD/Flash, tab Công việc~~ | **Đã bỏ** (D9, F8) |
+| Hồ sơ phần mềm | `backend/data/profile.json` | Z bút, tốc độ bút, bước jog tối đa |
+| Sao lưu YAML mạch | `backend/data/config_backups/` | tạo trước mỗi lần "Lưu vào mạch" |
+| Cài đặt bản thảo | `backend/data/draw_settings.json` | thư mục, số bản tối đa, dung lượng tối đa |
+| Bản thảo | `backend/data/drafts/` (đổi được ở Cài đặt) | mỗi bản một thư mục: `meta.json`, `draw[-<n>-<màu>].gcode`, `preview.svg` |
+| Nhật ký hệ thống | bộ nhớ | chưa ghi tệp (xem `STATUS.md`) |
 
-## 7. Quy tắc làm song song tab Tạo bản vẽ (AI khác)
-| Quy tắc | Nội dung |
+`backend/data/` không lên Git. Biến môi trường (đều tùy chọn):
+| Biến | Tác dụng |
 |---|---|
-| **Chỉ được sửa** | `js/views/drawing.js`, file mới trong `backend/app/services/drawing/` và `api/draw.py`, khóa `draw.*` ở **cuối** hai file ngôn ngữ, phần HTML của panel Tạo bản vẽ, test mới |
-| **Không được sửa** | `services/machine.py`, `job.py`, `links/protocol.py`, `core/state.js`, `views/control.js`, `terminal.js`, `dock.js`, `header.js`, `settings.js`. `core/api.js` chỉ được **thêm** hàm `draw*` ở cuối. Cần đổi chỗ khác thì hỏi chủ dự án |
-| **Backend** | Router riêng `api/draw.py` (đã gắn trong `api/__init__.py`). Đầu vào ảnh, đầu ra G-code dạng văn bản + thống kê. **Không gọi máy trực tiếp** |
-| **Giao nhận G-code** | Đưa vào `stores/jobstore.js` → `setFile(...)` để tab Điều khiển xem trước, tích xác nhận, chạy. Không tự chạy |
-| **Định dạng G-code** | Theo `lib/gcode.js`/`services/job.py`: bắt đầu `G90 G21`; có `F` (tránh cảnh báo thiếu tốc độ); dòng ≤ 200 ký tự; không `$`, không `G92/G10/G28/G53`; bút lên/xuống theo `MACHINE.penUpZ/penDownZ` trong `core/config.js` (hồ sơ máy); mỗi nét kết thúc bút lên. **Tránh quá nhiều đoạn rất ngắn** (xem D10: gửi từng dòng chờ `ok` có thể làm máy giật) — gộp/đơn giản hóa nét |
-| **Vùng vẽ** | Lấy từ `MACHINE` trong `core/config.js` (285 × 318 mm, cập nhật theo YAML khi đọc cấu hình), không tự đặt số riêng |
-| **Git** | Nhánh riêng `draw`, commit nhỏ, kéo từ nhánh chính mỗi ngày. Hai file ngôn ngữ là chỗ dễ xung đột nhất → chỉ thêm khóa ở cuối |
-| **Quy ước chung** | A1–A8 và F4: không framework, không build, giải thích bằng lời thường, mỗi phần mới có test, ghi rõ chưa kiểm chứng gì |
-| **Hạ tầng** | Xử lý ảnh chạy trên máy cá nhân/mini PC (cần Python 3.12 + vpype, Pillow, numpy, opencv); không dùng Raspberry Pi/hosting chia sẻ |
+| `EXTRUXY_ALLOW_MOTION=1` | mở khóa chuyển động cố định (máy thật mặc định chỉ đọc) |
+| `EXTRUXY_UNLOCK_MINUTES` | tự khóa lại sau chừng này phút (mặc định 15; 0 = tắt) |
+| `EXTRUXY_UNLOCK_PIN` | đòi PIN khi mở khóa chuyển động |
+| `EXTRUXY_NO_UNLOCK=1` | cấm mở khóa từ giao diện |
+| `EXTRUXY_ALLOWED_HOSTS` | danh sách Host được gọi API (mặc định chỉ cục bộ) |
+| `EXTRUXY_DRAW_INPROC=1` | xử lý ảnh ngay trong tiến trình server (test, gỡ lỗi) |
+| `EXTRUXY_DRAW_TIMEOUT_S` | quá giờ thì dừng xử lý ảnh (600) |
+| `EXTRUXY_DRAW_MAX_MB` | trần bộ nhớ ảo của tiến trình xử lý ảnh, chỉ Linux (4096) |
+
+## 8. Các chốt an toàn đã có
+- Máy thật chỉ đọc cho tới khi mở khóa chuyển động; lệnh `hold`/`reset`/`jog_cancel` luôn gửi được; lệnh chỉ đọc lấy từ `$CMD` thật (`links/protocol.py`).
+- Backend chỉ nhận Host cục bộ và chặn POST từ Origin lạ. **Chưa có đăng nhập** (xem `PLAN_ONLINE.md` trước khi mở ra mạng).
+- G-code tệp bị làm sạch (`job.clean_gcode`): bỏ chú thích; từ chối dòng `$...` (cài đặt, Home, jog), ký tự realtime (`? ! ~`, Ctrl-X), ký tự lạ; tối đa 200 000 dòng, 200 ký tự/dòng. G-code do tab vẽ sinh ra cũng phải qua đúng bộ làm sạch này (kiểm trong `service.py`). Bộ làm sạch **không** chặn `G92/G10/G28/G53` (xem `STATUS.md`); G-code của tab vẽ không sinh các lệnh đó.
+- Mọi nét phải nằm trong vùng làm việc; `layout.py` chặn khung vượt giấy, `service.py` kiểm lại trước khi ra G-code.
+- Hủy an toàn 3 chế độ (reset / soft / hard); trong lúc dừng, backend từ chối job mới, lệnh chuyển động và `resume` (`stopping`). Giao diện khóa điều khiển khi báo cáo trạng thái cũ quá 2 s; tác vụ đang chạy coi là mất phản hồi sau `STATUS_STALE_S` (10 s) và tự Feed Hold.
+- Tab vẽ không gọi máy; chỉ một việc xử lý ảnh chạy một lúc; tiến trình xử lý ảnh có giới hạn thời gian/RAM và tự kết thúc khi hủy.
+
+## 9. Định dạng G-code do tab vẽ sinh
+Bắt đầu `G90 G21`; có `F` ở lệnh vẽ; bút lên/xuống theo `pen_up_z`/`pen_down_z` (lấy từ hồ sơ máy); mỗi nét kết thúc bút lên; G0 cho di chuyển nhanh; dòng ≤ 200 ký tự. Tránh quá nhiều đoạn rất ngắn (gửi từng dòng chờ `ok` có thể làm máy giật): `optimize.py` nối/đơn giản hóa nét, sóng tự giãn bước để vượt không quá 200 000 dòng.
