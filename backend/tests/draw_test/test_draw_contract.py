@@ -37,7 +37,7 @@ def slow_import(monkeypatch):
             ctx.step("style", i / 30, "chậm")
             time.sleep(0.02)
         return {"task": token, "source": {}, "warnings": []}
-    monkeypatch.setattr(raster, "import_raster", slow)
+    monkeypatch.setattr(raster, "import_raster", slow)       # INPROC: run_import gọi thẳng hàm này
 
 
 def wait_state(client, token, states=("done", "failed", "cancelled"), timeout=10):

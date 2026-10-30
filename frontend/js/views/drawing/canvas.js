@@ -9,7 +9,10 @@ const CURSORS = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "
 const HANDLE_PX = 7;          // bán kính vùng bắt tay nắm (px màn hình)
 const SNAP_PX = 6;            // hít vào lề/tâm khi cách dưới ngần này px
 const MIN_BOX_MM = 5;
-const LAYER_COLORS = ["", "#ff9f5a", "#7ad66b", "#e0c24a", "#c58bff"];     // "" = màu nhấn của giao diện
+// "" = mực mặc định của giao diện. Bảng màu theo nền: sáng cho giao diện tối, đậm cho giao diện sáng.
+const LAYER_COLORS_DARK = ["", "#ff9f5a", "#7ad66b", "#e0c24a", "#c58bff"];
+const LAYER_COLORS_LIGHT = ["", "#d9480f", "#2b8a3e", "#a67c00", "#7048e8"];
+const isLightTheme = () => document.documentElement.dataset.theme === "light";
 const REFERENCE = [["a6", "A6"], ["a5", "A5"], ["a4", "A4"]];             // khung vẽ sẵn trên bàn máy
 
 const token = (name, fallback) =>
@@ -31,9 +34,11 @@ function layerColor(layer, index, fallback) {
     if (hex) {
         const n = parseInt(hex[1], 16);
         const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
-        if (lum > 0.35 && lum < 0.95) return layer.color;            // màu đen/trắng khó thấy trên nền: dùng màu mặc định
+        const visible = isLightTheme() ? lum < 0.8 : lum > 0.35 && lum < 0.95;   // màu chìm vào nền: dùng màu mặc định
+        if (visible) return layer.color;
     }
-    return LAYER_COLORS[index % LAYER_COLORS.length] || fallback;
+    const palette = isLightTheme() ? LAYER_COLORS_LIGHT : LAYER_COLORS_DARK;
+    return palette[index % palette.length] || fallback;
 }
 
 // Co giãn một khung theo tay nắm. Trả null nếu kết quả ra ngoài phần trong lề (giữ khung cũ).
@@ -136,6 +141,12 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         ctx.save();
         ctx.translate(view.tx, view.ty);
         ctx.scale(view.s, view.s);
+        // tờ giấy đang chọn (nằm dưới lưới để lưới chỉ còn là vạch mờ trên giấy)
+        const paper = scene?.paper;
+        if (paper) {
+            ctx.fillStyle = token("--paper", "#efece4");
+            ctx.fillRect(0, 0, paper.w, paper.h);
+        }
         ctx.lineWidth = 1 / view.s;
         ctx.strokeStyle = grid;
         for (let x = 0; x <= W; x += 10) {
@@ -152,12 +163,6 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         ctx.strokeRect(0, 0, W, H);
         ctx.setLineDash([]);
 
-        // tờ giấy đang chọn
-        const paper = scene?.paper;
-        if (paper) {
-            ctx.fillStyle = "rgba(255,255,255,0.07)";
-            ctx.fillRect(0, 0, paper.w, paper.h);
-        }
         // khung giấy dán sẵn trên bàn máy (A6 / A5 / A4)
         ctx.strokeStyle = accent;
         ctx.globalAlpha = 0.45;
@@ -193,7 +198,7 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
             ctx.lineJoin = "round";
             ctx.globalAlpha = 0.92;
             scene.layers.forEach((layer, i) => {
-                ctx.strokeStyle = layerColor(layer, i, accent);
+                ctx.strokeStyle = layerColor(layer, i, token("--paper-ink", "#16181d"));
                 ctx.stroke(layer.path);
             });
             ctx.restore();
@@ -202,10 +207,11 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
 
         // chữ và tay nắm vẽ ở toạ độ màn hình để luôn rõ nét
         ctx.font = "11px system-ui, sans-serif";
-        ctx.fillStyle = muted;
+        ctx.fillStyle = scene?.paper ? token("--paper-text", "#5a5f6b") : muted;     // gốc nằm trên giấy
         const [ox, oy] = toScreen(0, 0);
         ctx.textBaseline = "top";
         ctx.fillText("O (0, 0)", ox + 6, oy + 5);
+        ctx.fillStyle = muted;
         ctx.textAlign = "right";
         const [mx, my] = toScreen(W, H);
         ctx.textBaseline = "bottom";

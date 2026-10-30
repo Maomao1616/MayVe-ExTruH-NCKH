@@ -24,6 +24,7 @@ Chào bạn, tôi là người phát triển dự án **ExtruXY** (Máy vẽ CNC
 - `PROJECT_MAP.md`: Bản đồ file.
 - `DRAW_ROADMAP.md`: Lộ trình làm tab Vẽ.
 - `BRIEF.md`: Tóm tắt cấu trúc và nút chức năng (đọc đầu tiên).
+- `PLAN_ONLINE.md`: Kế hoạch MiniPC Ubuntu, phân quyền PIN, tunnel.
 
 ---
 *(Hết phần bàn giao. Bạn hãy chào tôi, xác nhận đã hiểu, rồi hỏi tôi muốn làm việc nào trong mục 2.)*

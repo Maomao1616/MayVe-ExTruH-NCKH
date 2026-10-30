@@ -5,6 +5,8 @@ bản vẽ sinh ra có kích thước tự nhiên của ảnh trong hộp đó, 
 """
 from __future__ import annotations
 
+import time
+
 from . import optimize, palette, raster_in, spec, styles, tone
 from .errors import DrawError
 from .hatch import Field
@@ -28,7 +30,9 @@ def reference_box(layout_raw) -> tuple[float, float]:
     return w, h
 
 
-def import_raster(data: bytes, name: str, opts: dict, token: str | None = None, ctx=None) -> dict:
+def build_raster(data: bytes, name: str, opts: dict, ctx=None):
+    """Ảnh -> (lớp nét, khung, thông tin, cảnh báo). Hàm thuần: không đụng bộ nhớ chung, nên chạy được
+    trong tiến trình riêng (isolated.py). `info["timings"]` = giây của từng bước."""
     from .service import MAX_POINTS
     rp = spec.parse("raster", opts.get("raster"))
     sp = spec.parse("style", opts.get("style"))
@@ -38,7 +42,14 @@ def import_raster(data: bytes, name: str, opts: dict, token: str | None = None, 
     if sp.kind not in styles.FILLERS.names():
         raise DrawError("unsupported_style", f"Kiểu tô '{sp.kind}' chưa có.")
 
+    timings: dict[str, float] = {}
+    clock = {"key": "read", "t": time.perf_counter()}
+
     def step(key: str, progress: float, message: str) -> None:
+        now = time.perf_counter()
+        if key != clock["key"]:
+            timings[clock["key"]] = timings.get(clock["key"], 0.0) + now - clock["t"]
+            clock["key"], clock["t"] = key, now
         if ctx:
             ctx.step(key, progress, message)
 
@@ -104,5 +115,14 @@ def import_raster(data: bytes, name: str, opts: dict, token: str | None = None, 
         "optimize": {"before": before, "after": layer_stats(layers),
                      "pipeline": optimize.build_pipeline(op, before["strokes"])},
     }
+    timings[clock["key"]] = timings.get(clock["key"], 0.0) + time.perf_counter() - clock["t"]
+    info["timings"] = {k: round(v, 3) for k, v in timings.items()}
+    info["timings"]["total"] = round(sum(timings.values()), 3)
+    return layers, frame, info, warnings
+
+
+def import_raster(data: bytes, name: str, opts: dict, token: str | None = None, ctx=None) -> dict:
+    """Chạy ngay trong tiến trình này (test, chế độ gỡ lỗi). Đường chính dùng isolated.run_import."""
+    layers, frame, info, warnings = build_raster(data, name, opts, ctx)
     token = TASKS.put(Parsed(layers, frame, info), token)
     return {"task": token, "source": info, "warnings": warnings}

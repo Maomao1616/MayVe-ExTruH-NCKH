@@ -108,7 +108,8 @@ def load(data: bytes, p, ref_w_mm: float, ref_h_mm: float, ctx=None, color: bool
         im = im.crop(box)
     w, h = im.size
     long_side = max(w, h)
-    if long_side != side:                                 # thu nhỏ (trung bình vùng) hoặc phóng nhẹ (bicubic)
+    if abs(long_side - side) > 1:                         # thu nhỏ (trung bình vùng) hoặc phóng nhẹ (bicubic); lệch 1 điểm do
+                                                          # làm tròn (ảnh đã thu nhỏ ở trình duyệt) thì khỏi lọc lại
         k = side / long_side
         method = (Image.Resampling.BICUBIC if k > 1 else
                   Image.Resampling.BOX if k < 0.5 else Image.Resampling.LANCZOS)

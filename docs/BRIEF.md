@@ -53,10 +53,12 @@ SVG  ── svg_in ────────────────────�
 | `layout.py` | Đặt nét vào khung vẽ trong tờ giấy (A6/A5/A4), lề, xoay 0/90/180/270, lật |
 | `gcode.py`, `service.py` | Nét → dòng G-code + thống kê + cảnh báo |
 | `tasks.py` | **Một luồng worker**: nạp ảnh chạy nền, có tiến trình, hủy được; yêu cầu mới hủy yêu cầu cũ (máy yếu) |
+| `isolated.py` | Chạy việc ảnh → nét trong **tiến trình riêng, ưu tiên thấp**: hủy = kết thúc hẳn tiến trình, quá giờ/hết RAM chỉ chết tiến trình con, không làm giật luồng điều khiển máy vẽ. `EXTRUXY_DRAW_INPROC=1` để chạy ngay trong tiến trình (test, gỡ lỗi) |
 | `drafts.py` | Lưu/đọc/dọn bản thảo; kiểm tên và đường dẫn |
 
 ### Nguyên tắc quan trọng
 - **Mọi toạ độ là mm**, gốc trên trái, Y xuống. Khoảng cách gạch tính bằng mm trên khung thật nên mật độ mực đúng với bút.
+- **Trình duyệt giúp một phần:** trước khi gửi, `lib/imageprep.js` thu nhỏ ảnh về đúng cỡ backend cần (ảnh 3600×4800 gửi lên chỉ còn ~650×866), và `views/drawing/tonepreview.js` cho xem ảnh sau chỉnh sáng ngay khi kéo ô (không có CLAHE/khử nhiễu). Chỉ là đường nhanh tùy chọn; backend tự làm được và luôn kiểm tra lại.
 - **Độ phân giải làm việc** (cạnh dài) = khung ÷ bề rộng bút × 1,3, kẹp 400–4000 px. Ảnh lớn thì thu nhỏ; ảnh nhỏ chỉ phóng nhẹ tới 720 px. Độ phân giải chỉ ảnh hưởng thời gian **xử lý**, thời gian **vẽ** do tổng chiều dài nét và số lần nhấc bút quyết định.
 - **Kéo khung lệch quá 12%** so với lúc tạo nét → giao diện tự tạo lại nét theo cỡ mới (đổi ít hơn thì chỉ phóng hình học).
 - **Thứ tự xử lý ảnh:** EXIF → cắt → thu nhỏ → lọc sắc độ → bắt nét/tô. Lọc làm sau thu nhỏ để đỡ tốn CPU.
@@ -88,6 +90,8 @@ SVG  ── svg_in ────────────────────�
 | **Lưu bản thảo** | Ghi G-code + ảnh minh họa + meta vào thư mục bản thảo. Không chuyển tab |
 | **Chuyển sang Điều khiển** | Cần tích "Tôi đã kiểm tra…". **Tự lưu bản thảo** (nếu chưa lưu cùng thông số thì không tạo trùng) rồi nạp vào tab Điều khiển và chuyển sang đó. Không tự chạy |
 | Danh sách bản thảo | Mở xem, Nạp (theo lớp màu), Ghim, Đẩy lên đầu, Xóa (bấm hai lần) |
+
+Dòng trạng thái sau khi tạo nét ghi tổng thời gian; rê chuột vào để xem thời gian từng bước. Ô "Ảnh gốc" dưới canvas có hộp tích **Xem ảnh sau chỉnh sáng** (xem trước độ sáng/gamma/đảo ngay khi chỉnh).
 
 Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ/di chuyển, thời gian ước tính (chưa tính gia tốc nên chỉ để tham khảo), có nằm trong vùng làm việc không.
 
@@ -122,6 +126,7 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 - Mỗi phần tử HTML chỉ có **một nơi ghi** (quy ước để khỏi giẫm chân).
 - `lib/paper.js` là bản JS của `layout.py`, có test đối chiếu số với backend (`frontend/tests/paper.test.mjs`).
 - Mọi chữ hiển thị qua `locales/*.json`; thêm khóa phải thêm cả hai file.
+- **Giao diện (CSS):** màu nằm ở `assets/css/tokens.css` (sửa ở đó: `--highlight` cam nhấn, `--paper`/`--paper-ink` giấy và mực trên canvas, hai bản tối/sáng). `css/style.css` là nền chung, `css/drawing.css` riêng cho tab vẽ, `css/polish.css` là lớp tinh chỉnh nạp sau cùng (xóa dòng `<link>` của nó để quay về như cũ). Thứ bậc nút: chính = cam đặc, phụ = viền, nguy hiểm = đỏ (chỉ Reset, Dừng gấp, Xóa).
 
 ## 8. Chạy và kiểm tra
 | Việc | Lệnh |
@@ -129,7 +134,8 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 | Chạy app | Bấm đúp `Bat Khien EXTRUH.bat` (mở `http://127.0.0.1:8000/`) |
 | Cài thư viện (lần đầu hoặc sau khi cập nhật) | trong `backend`, bật venv: `pip install -r requirements.txt` |
 | Test backend | trong `backend`: `python -m pytest` |
-| Test frontend | `node --test frontend/tests/paper.test.mjs` |
+| Test frontend | `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs` |
+| Sinh lại số chuẩn cho test JS (khi đổi `tone.py` / `raster_in.py`) | `python frontend/tests/fixtures/make_image_fixtures.py` (đã bật venv backend) |
 | Máy giả | Chọn cổng giả `SimLink` khi chưa có board |
 
 ## 9. Chưa kiểm chứng / còn lại
@@ -137,4 +143,5 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 - **Thử vẽ dải đậm nhạt** với bút 0,2 và 0,4 để chỉnh khoảng cách gạch mặc định (hiện 2 × bề rộng bút) và các preset (`views/drawing/presets.js`).
 - Ngưỡng bắt viền cố định (`edges.py`): chỉnh dần theo ảnh thật; chưa có giao diện cắt ảnh (backend đã nhận `crop_*`).
 - Thời gian xử lý trên MiniPC i5-3210M chưa đo (máy dev: 0,1–2 s cho ảnh A4).
+- Kế hoạch mở cho nhiều người dùng (phân quyền bằng PIN, giới hạn, Ubuntu, tunnel): `PLAN_ONLINE.md`.
 - Nhật ký hệ thống chỉ nằm trong bộ nhớ (chưa ghi ra tệp, chưa xoay vòng); chưa có "tiếp tục từ dòng N"; `lib/gcode.js` chưa có test.

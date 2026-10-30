@@ -103,6 +103,12 @@ EXIF + `Image.draft` → **crop** → **thu nhỏ** về độ phân giải làm
 - **Chớp "thông số không hợp lệ":** gõ "4" trên đường tới "4000" nhỏ hơn mức tối thiểu 10 nên backend báo lỗi; frontend nay bỏ qua giá trị ngoài khoảng đang gõ dở (`views/drawing.js`, `onParamChange`).
 - **Không làm:** giao diện cắt ảnh (backend vẫn nhận `crop_*`); người dùng đã chỉnh vùng cần vẽ trước khi gửi ảnh.
 
+### Xử lý ảnh trong tiến trình riêng và chuẩn bị ảnh ở trình duyệt (30/10/2026)
+- `isolated.run_import` chạy `raster.build_raster` ở tiến trình con (ưu tiên thấp, 2 luồng toán học, RAM trần 4 GB trên Linux, quá giờ 600 s). Cha nhận tiến trình qua pipe, kết thúc con khi hủy. Kết quả giống hệt chạy trong tiến trình (có test so khớp).
+- `info.timings` = giây từng bước; giao diện hiện tổng và chi tiết khi rê chuột.
+- Trình duyệt thu nhỏ ảnh về đúng `work_side_px` (công thức trong `lib/imageprep.js`, test đối chiếu số với Python), chỉ thu nhỏ, lỗi thì gửi ảnh gốc. Backend bỏ qua chênh 1 điểm ảnh do làm tròn.
+- Xem trước độ sáng ở trình duyệt khớp `tone.py` (không CLAHE/khử nhiễu), sai lệch tối đa 1 mức xám.
+
 ## 7. Lộ trình
 | GĐ | Nội dung | Tình trạng |
 |---|---|---|

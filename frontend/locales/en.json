@@ -1,5 +1,5 @@
 {
-  "app.title": "ExtruXY",
+  "app.title": "VMU PlotterPen",
   "nav.control": "Control",
   "nav.drawing": "Create Drawing",
   "nav.jobs": "Jobs",
@@ -87,7 +87,7 @@
   
   "error.backendUnavailable": "Unable to connect to the backend.",
   
-  "header.documentTitle": "ExtruXY | Plotter Control",
+  "header.documentTitle": "VMU PlotterPen | Plotter Control",
   "header.subtitle": "Plotter Control System",
   "header.machine": "Machine:",
   "header.job": "Job:",
@@ -377,6 +377,8 @@
   "drawing.preview.title": "Drawing box on paper",
   "drawing.preview.desc": "Drag, resize and rotate the strokes on the sheet; figures below.",
   "drawing.preview.noImage": "No image",
+  "drawing.preview.toneToggle": "Show tone-adjusted image (preview)",
+  "drawing.hint.toneToggle": "Shows the image after auto levels, black/white points, gamma and invert, updated as you type. Preview only: the real result is computed by the backend, which also applies local contrast and denoise if enabled.",
   "drawing.preview.warnings": "Warnings",
   "drawing.preview.noWarnings": "No warnings. Work-area overflow warnings will appear here.",
   "drawing.preview.confirm": "I have checked the size, position, and work area",
@@ -523,7 +525,7 @@
   
   "terminal.input.placeholder": "Enter G-code or firmware command...",
   
-  "aria.home": "ExtruXY Home",
+  "aria.home": "VMU PlotterPen Home",
   "aria.refreshStatus": "Refresh status",
   "aria.closeAlert": "Close alert",
   "aria.mainNav": "Main navigation",
@@ -635,6 +637,8 @@
   "drawing.progress.cancelled": "Cancelled",
   "drawing.progress.stale": "Stroke settings changed: press Retrace to apply.",
   "drawing.progress.step.read": "Reading file…",
+  "drawing.progress.prepare": "Preparing image…",
+  "drawing.progress.step.tone": "Adjusting tone…",
   "drawing.progress.step.style": "Making strokes…",
   "drawing.progress.step.optimize": "Optimizing strokes…",
   "drawing.info.strokes": "strokes",
@@ -668,6 +672,9 @@
   "drawing.error.bad_svg": "Cannot read the SVG file",
   "drawing.error.bad_image": "Cannot read the image (only SVG, PNG, JPG, WEBP; the file may be corrupt or have too many pixels)",
   "drawing.error.unsupported_style": "This fill style is not supported yet",
+  "drawing.error.worker_crashed": "The image worker stopped unexpectedly; retry or use a smaller image",
+  "drawing.error.worker_timeout": "Image processing took too long and was stopped; try a smaller image or sparser strokes",
+  "drawing.error.out_of_memory": "Out of memory while processing the image; try a smaller image or sparser strokes",
   "drawing.error.unknown_task": "The loaded drawing is no longer in memory, load the file again",
   "drawing.error.unknown_draft": "Draft does not exist",
   "drawing.error.optimize_failed": "Stroke optimization failed",

@@ -217,6 +217,22 @@ export function syncVisibility() {
     document.body.classList.toggle("draw-lock-ratio", Boolean(lock));
 }
 
+// Thông số sáng/tối để xem trước ngay trong trình duyệt (khớp tone.py; không có CLAHE / khử nhiễu).
+export function toneSettings() {
+    const num = (id, d) => { const v = Number($(id)?.value); return Number.isFinite(v) && $(id)?.value.trim() !== "" ? v : d; };
+    return {
+        auto: $("image-auto-levels")?.checked ?? true,
+        black: num("image-black-point", 0), white: num("image-white-point", 255), gamma: num("image-gamma", 1) || 1,
+        invert: $("style-invert")?.checked ?? false
+    };
+}
+
+// Cạnh dài tự chọn (điểm ảnh) nếu người dùng đặt, ngược lại null (backend tự tính).
+export function maxSideOverride() {
+    const v = Math.round(Number($("image-max-side")?.value));
+    return Number.isFinite(v) && v > 0 ? v : null;
+}
+
 // Ghi nhiều ô cùng lúc (bộ thông số dựng sẵn). Không phát sự kiện: drawing.js tự tạo lại nét sau đó.
 export function setValues(values) {
     for (const [id, v] of Object.entries(values)) {

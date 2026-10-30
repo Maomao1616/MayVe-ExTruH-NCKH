@@ -14,6 +14,8 @@ import { loadIntoControl, refreshDrafts } from "../stores/draftstore.js";
 import { buildPath, createCanvas } from "./drawing/canvas.js";
 import * as params from "./drawing/params.js";
 import { presetValues } from "./drawing/presets.js";
+import { forget as forgetImage, prepareForUpload } from "../lib/imageprep.js";
+import { initTonePreview, refresh as refreshTone, setFile as showOriginal } from "./drawing/tonepreview.js";
 
 const $ = (id) => document.getElementById(id);
 const EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".webp"];
@@ -30,7 +32,7 @@ const round2 = (v) => Math.round(v * 100) / 100;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
 const S = {
-    file: null, fileName: "", imageUrl: null,
+    file: null, fileName: "",
     jobId: null, taskId: null, importSeq: 0, pollTimer: 0, busy: false,
     preview: null, src: null, layers: [], source: null, importWarnings: [],
     plan: null, result: null, resultError: null, generating: false, genSeq: 0, genTimer: 0,
@@ -49,6 +51,7 @@ export function initDrawing() {
 
     canvas = createCanvas({ canvas: canvasEl, stage, zoomLabel: $("drawing-canvas-zoom"), onBox });
     params.initParams(onParamChange);
+    initTonePreview({ stageEl: $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings });
     initFile();
     initButtons();
     loadSchemaWhenOnline();
@@ -109,21 +112,13 @@ function acceptFile(file) {
     const limit = ext === ".svg" ? MAX_BYTES.svg : MAX_BYTES.raster;
     if (file.size > limit) return setStatus("drawing.error.file_too_large", "", true);
 
+    forgetImage();
     S.file = file;
     S.fileName = file.name;
     $("drawing-file-name").removeAttribute("data-i18n");
     $("drawing-file-name").textContent = `${file.name} · ${file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + " KB" : (file.size / 1048576).toFixed(1) + " MB"}`;
     showOriginal(file);
     startImport("final", { fresh: true });
-}
-
-function showOriginal(file) {
-    if (S.imageUrl) URL.revokeObjectURL(S.imageUrl);
-    S.imageUrl = URL.createObjectURL(file);
-    const img = document.createElement("img");
-    img.src = S.imageUrl;
-    img.alt = file.name;
-    $("original-image-stage").replaceChildren(img);
 }
 
 /* ==================== tác vụ nền: nạp + tiến trình ==================== */
@@ -143,7 +138,15 @@ async function startImport(quality, { fresh = false, box = null } = {}) {
     setButtons();
     let job;
     try {
-        job = await api.drawImport(S.file, params.importOptions(quality, box ?? params.innerBox()));
+        const frameBox = box ?? params.innerBox();
+        let upload = S.file;
+        if (!S.file.name.toLowerCase().endsWith(".svg")) {
+            // Thu nhỏ ảnh ngay trong trình duyệt tới đúng cỡ backend cần: gửi nhẹ hơn, MiniPC khỏi giải mã ảnh lớn.
+            setStatus("drawing.progress.prepare");
+            upload = (await prepareForUpload(S.file, { box: frameBox, pen: params.penWidthMm(), override: params.maxSideOverride() })).file;
+            if (seq !== S.importSeq) return;
+        }
+        job = await api.drawImport(upload, params.importOptions(quality, frameBox));
     } catch (error) {
         return failImport(seq, error);
     }
@@ -206,7 +209,13 @@ async function finishImport(view, seq) {
     S.busy = false;
     if (!S.importKeep) refit();
     setProgress(1);
-    setStatus("drawing.progress.done");
+    const tm = view.source?.timings;                         // giây từng bước (xử lý ảnh chạy ở tiến trình riêng)
+    setStatus("drawing.progress.done", tm ? ` · ${tm.total.toFixed(1)} s` : "");
+    const label = $("drawing-progress-text");
+    if (label) {
+        label.title = tm ? Object.entries(tm).filter(([k]) => k !== "total")
+            .map(([k, v]) => `${t(`drawing.progress.step.${k}`).replace("…", "")}: ${v.toFixed(1)} s`).join("\n") : "";
+    }
     refreshScene();
     invalidateResult();
     scheduleGcode(0);
@@ -268,6 +277,7 @@ function onPreset() {
     S.applyingPreset = true;
     params.setValues(values);
     S.applyingPreset = false;
+    refreshTone();
     if (S.file) startImport("final");
     else setStatus("drawing.progress.stale");
 }
@@ -276,6 +286,7 @@ function onParamChange(kind, id) {
     // Ô số đang gõ dở hoặc ngoài khoảng (vd. gõ "4" trên đường tới "4000"): chờ giá trị hợp lệ, không báo lỗi chớp.
     const el = id ? $(id) : null;
     if (el?.type === "number" && (el.validity.badInput || el.validity.rangeUnderflow || el.validity.rangeOverflow)) return;
+    if (kind === "import" && /^(image|style)-/.test(id ?? "")) refreshTone();
     if (kind === "import" && !S.applyingPreset && /^(image|style|palette)-/.test(id ?? "") && $("draw-preset")) {
         $("draw-preset").value = "custom";
     }
@@ -552,7 +563,9 @@ function renderInfo() {
         set("drawing-eta-info", `~${formatDuration(sum((s) => s.est_seconds))}`);
         const inside = b.x0 >= -1e-6 && b.y0 >= -1e-6 && b.x1 <= MACHINE.travelX + 1e-6 && b.y1 <= MACHINE.travelY + 1e-6;
         set("drawing-in-bounds", t(inside ? "drawing.info.yes" : "drawing.info.no"));
+        $("drawing-in-bounds").dataset.state = inside ? "ok" : "bad";
     } else {
+        delete $("drawing-in-bounds")?.dataset.state;
         set("drawing-gcode-status", t(S.generating ? "drawing.info.generating" : "drawing.info.notGenerated"));
         for (const id of ["drawing-bounds-info", "drawing-length-info", "drawing-lifts-info", "drawing-eta-info", "drawing-in-bounds"]) set(id, dash);
     }

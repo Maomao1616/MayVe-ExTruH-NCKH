@@ -101,3 +101,9 @@ def test_reference_box_uses_the_real_frame_when_given():
     from app.services.drawing import raster
     assert raster.reference_box({"paper": "a4", "margin_mm": 5}) == (200.0, 287.0)
     assert raster.reference_box({"paper": "a4", "margin_mm": 5, "width_mm": 80, "height_mm": 60}) == (80.0, 60.0)
+
+
+def test_image_already_at_working_size_is_not_resampled_again():
+    # ảnh đã thu nhỏ ở trình duyệt, lệch tối đa 1 điểm vì làm tròn: giữ nguyên điểm ảnh
+    r = raster_in.load(png(650, 866), rp(), 200, 287)
+    assert r.gray.shape == (866, 650)

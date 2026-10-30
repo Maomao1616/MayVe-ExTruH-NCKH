@@ -4,14 +4,20 @@
     color-scheme: dark;
 
     --bg-main: #0f0f0f;
-    --bg-panel: #0c0c0c3f;
+    --bg-panel: #131821;
     --bg-elevated: #1c2330;
 
-    --text-main: #ff9102;
-    --text-muted: #aeb6c7;
+    --text-main: #e6e9ef;       /* chu thuong: xam sang trung tinh */
+    --text-muted: #9aa4b6;
+    --highlight: #ff9102;       /* cam: tieu de khoi, so lieu, nut chinh (dung it de con noi bat) */
+    --on-highlight: #1a1000;    /* chu tren nen cam */
+
+    --paper: #1a212c;           /* to giay tren canvas ve: hoa cung giao dien toi */
+    --paper-ink: #00b6bd;       /* nut ve mac dinh tren giay */
+    --paper-text: #8793a8;      /* chu nho tren giay */
 
     --accent: #0d2929;          /* nen dam: nut chinh, tab dang chon, song nen */
-    --accent-hover: #f80000;
+    --accent-hover: #ffb04a;    /* di chuot: cam sang (do danh rieng cho nguy hiem) */
     --accent-text: #00b6bd;     /* mau nhan nhin thay duoc: vien, thanh tien trinh, chu nhan */
 
     --border: #293244;
@@ -33,11 +39,17 @@
     --bg-panel: #ffffff;
     --bg-elevated: #ffedcc;
 
-    --text-main: #080808;
-    --text-muted: #6f5f00;      /* dam hon mot chut de doc duoc tren nen trang */
+    --text-main: #15181d;
+    --text-muted: #5b6370;      /* dam hon mot chut de doc duoc tren nen trang */
+    --highlight: #b85c00;
+    --on-highlight: #ffffff;
+
+    --paper: #ffffff;
+    --paper-ink: #111111;
+    --paper-text: #6b7280;
 
     --accent: #dceef0;
-    --accent-hover: #c62828;
+    --accent-hover: #d96d00;
     --accent-text: #00808a;     /* cyan dam: #00b6bd qua nhat tren nen trang */
 
     --border: #d5dce3;

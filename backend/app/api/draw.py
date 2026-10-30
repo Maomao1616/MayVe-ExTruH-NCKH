@@ -21,7 +21,7 @@ from fastapi.responses import PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from ..services.drawing import DrawError, describe, drafts, import_svg, make_gcode, spec
-from ..services.drawing import preview, raster, service
+from ..services.drawing import isolated, preview, raster, service
 from ..services.drawing.shapes import Layer
 from ..services.drawing.store import TASKS
 from ..services.drawing.svg_in import MAX_SVG_BYTES
@@ -105,7 +105,7 @@ def schema():
 # --- nạp tệp (tác vụ nền) -----------------------------------------------------------
 @router.post("/import", status_code=202)
 def import_file(file: UploadFile = File(...), options: str = Form("{}")):
-    """SVG -> import_svg; ảnh -> raster.import_raster (tô nét). Trả mã tác vụ ngay."""
+    """SVG -> import_svg; ảnh -> isolated.run_import (tiến trình riêng, ưu tiên thấp). Trả mã tác vụ ngay."""
     def run():
         opts = _options(options, IMPORT_KEYS)
         name = (file.filename or "ban-ve")[:80]
@@ -122,7 +122,7 @@ def import_file(file: UploadFile = File(...), options: str = Form("{}")):
             for group in ("raster", "style", "palette", "optimize"):
                 spec.parse(group, opts.get(group))        # lỗi tham số báo ngay, không đợi tác vụ
             raster.reference_box(opts.get("layout"))
-            work = lambda ctx, token: raster.import_raster(data, name, opts, token, ctx)
+            work = lambda ctx, token: isolated.run_import(data, name, opts, token, ctx)
         return JOBS.submit(work).view()
     return _wrap(run)
 

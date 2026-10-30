@@ -1,5 +1,5 @@
 {
-  "app.title": "ExtruXY",
+  "app.title": "VMU PlotterPen",
   "nav.control": "Điều khiển",
   "nav.drawing": "Tạo bản vẽ",
   "nav.jobs": "Công việc",
@@ -91,7 +91,7 @@
   
   "error.backendUnavailable": "Không thể kết nối backend.",
   
-  "header.documentTitle": "ExtruXY | Plotter Control",
+  "header.documentTitle": "VMU PlotterPen | Plotter Control",
   "header.subtitle": "Plotter Control System",
   "header.machine": "Máy:",
   "header.job": "Công việc:",
@@ -389,6 +389,8 @@
   "drawing.preview.title": "Khung vẽ trên giấy",
   "drawing.preview.desc": "Kéo, co giãn, xoay nét ngay trên tờ giấy; số liệu bên dưới.",
   "drawing.preview.noImage": "Chưa có ảnh",
+  "drawing.preview.toneToggle": "Xem ảnh sau chỉnh sáng (xem trước)",
+  "drawing.hint.toneToggle": "Hiện ảnh sau khi tự cân sáng, mức đen/trắng, gamma và đảo sáng tối, cập nhật ngay khi chỉnh. Chỉ để xem trước: bản tính chính thức do backend làm, có thêm cân bằng cục bộ và khử nhiễu nếu bạn bật.",
   "drawing.preview.warnings": "Cảnh báo",
   "drawing.preview.noWarnings": "Chưa có cảnh báo. Cảnh báo vượt vùng làm việc sẽ hiện ở đây.",
   "drawing.preview.confirm": "Tôi đã kiểm tra kích thước, vị trí và vùng làm việc",
@@ -536,7 +538,7 @@
   
   "terminal.input.placeholder": "Nhập lệnh G-code hoặc lệnh firmware...",
   
-  "aria.home": "ExtruXY trang chủ",
+  "aria.home": "VMU PlotterPen trang chủ",
   "aria.refreshStatus": "Làm mới trạng thái",
   "aria.closeAlert": "Đóng thông báo",
   "aria.mainNav": "Chức năng chính",
@@ -651,6 +653,8 @@
   "drawing.progress.cancelled": "Đã hủy",
   "drawing.progress.stale": "Thông số tạo nét đã đổi: bấm Tạo lại nét để áp dụng.",
   "drawing.progress.step.read": "Đọc tệp…",
+  "drawing.progress.prepare": "Đang chuẩn bị ảnh…",
+  "drawing.progress.step.tone": "Chỉnh sắc độ…",
   "drawing.progress.step.style": "Tạo nét…",
   "drawing.progress.step.optimize": "Tối ưu nét…",
   "drawing.info.strokes": "nét",
@@ -684,6 +688,9 @@
   "drawing.error.bad_svg": "Không đọc được tệp SVG",
   "drawing.error.bad_image": "Không đọc được ảnh (chỉ nhận SVG, PNG, JPG, WEBP; tệp có thể bị hỏng hoặc quá nhiều điểm ảnh)",
   "drawing.error.unsupported_style": "Kiểu tô này chưa được hỗ trợ",
+  "drawing.error.worker_crashed": "Tiến trình xử lý ảnh dừng bất ngờ, thử lại hoặc dùng ảnh nhỏ hơn",
+  "drawing.error.worker_timeout": "Xử lý ảnh quá lâu nên đã dừng, thử ảnh nhỏ hơn hoặc nét thưa hơn",
+  "drawing.error.out_of_memory": "Hết bộ nhớ khi xử lý ảnh, thử ảnh nhỏ hơn hoặc nét thưa hơn",
   "drawing.error.unknown_task": "Bản vẽ đã nạp không còn trong bộ nhớ, hãy nạp lại tệp",
   "drawing.error.unknown_draft": "Bản thảo không tồn tại",
   "drawing.error.optimize_failed": "Tối ưu nét thất bại",
