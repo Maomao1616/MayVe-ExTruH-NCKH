@@ -10,7 +10,15 @@ def P(**kw):
 
 def test_default_pipeline_runs_all_four_steps_in_order():
     assert optimize.build_pipeline(P()) == (
-        "linemerge --tolerance 0.1mm linesimplify --tolerance 0.05mm filter --min-length 0.5mm linesort")
+        "linemerge --tolerance 0.1mm linesimplify --tolerance 0.05mm filter --min-length 0.5mm "
+        "linesort --two-opt --passes 50")
+
+
+def test_two_opt_is_skipped_above_the_stroke_limit_or_when_off():
+    big = optimize.TWO_OPT_MAX_STROKES + 1
+    assert optimize.build_pipeline(P(), strokes=big).endswith("linesort")
+    assert optimize.build_pipeline(P(two_opt=False)).endswith("linesort")
+    assert "--passes 200" in optimize.build_pipeline(P(passes=200))
 
 
 def test_zero_turns_a_step_off():

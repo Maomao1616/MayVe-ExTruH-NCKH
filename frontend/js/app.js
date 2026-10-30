@@ -12,13 +12,18 @@ import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
 import { initHeader } from "./views/header.js";
 import { initDock } from "./views/dock.js";
+import { initDrawing } from "./views/drawing.js";
+import { initDrafts } from "./views/drafts.js";
 async function initApp() {
     try {
         initTabs();
+        initDetailsMemory();
         await initLanguageSelector();
         initThemeSelector();
         startPolling();
         initControl();
+        initDrawing();
+        initDrafts();
         initTerminal();
         initSettings();
         initHeader();
@@ -95,6 +100,7 @@ async function initLanguageSelector() {
                     selectedLanguage
                 );
                 applyTranslations();
+                window.dispatchEvent(new Event("extruxy:language-changed"));   // chữ tạo bằng JS tự dịch lại
             } catch (error) {
                 console.error("Không thể đổi ngôn ngữ:", error);
             }
@@ -145,4 +151,32 @@ function keepScrollSpace() {
     window.addEventListener('resize', () => {
         appShell.style.minHeight = '100vh'; // Trả về mặc định để tính toán lại
     });
+}
+
+/* ==================== NHỚ KHỐI ĐÃ THU GỌN / MỞ ==================== */
+// Mỗi khối <details> nhớ trạng thái đóng/mở ở trình duyệt này; mở lại trang giữ nguyên như lần trước.
+// Khóa = tab + khóa dịch của tiêu đề khối (ổn định, không phụ thuộc ngôn ngữ hay thứ tự).
+function initDetailsMemory() {
+    const DETAILS_KEY = "extruxy-details-v1";      // trong hàm: initApp() chạy trước khi file này đọc tới cuối
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(DETAILS_KEY) ?? "{}") || {}; } catch { /* hỏng: bỏ qua */ }
+
+    const keyOf = (details) => {
+        const title = details.querySelector(":scope > summary [data-i18n]")?.dataset.i18n
+            ?? details.id ?? details.className;
+        return `${details.closest(".tab-panel")?.id ?? "app"}:${title}`;
+    };
+
+    document.querySelectorAll("details").forEach((details) => {
+        const value = saved[keyOf(details)];
+        if (typeof value === "boolean") details.open = value;
+    });
+
+    // `toggle` không nổi bọt: nghe ở pha capture trên document.
+    document.addEventListener("toggle", (event) => {
+        const details = event.target;
+        if (!(details instanceof HTMLDetailsElement)) return;
+        saved[keyOf(details)] = details.open;
+        try { localStorage.setItem(DETAILS_KEY, JSON.stringify(saved)); } catch { /* bị chặn */ }
+    }, true);
 }

@@ -11,7 +11,10 @@ def _mm(v: float) -> str:
     return f"{v:.4f}".rstrip("0").rstrip(".") + "mm"
 
 
-def build_pipeline(p: Params) -> str:
+TWO_OPT_MAX_STROKES = 15_000      # 2-opt tăng theo bình phương số nét: quá ngưỡng thì chỉ sắp xếp thường
+
+
+def build_pipeline(p: Params, strokes: int | None = None) -> str:
     parts: list[str] = []
     if p.merge_tolerance_mm > 0:
         parts.append(f"linemerge --tolerance {_mm(p.merge_tolerance_mm)}")
@@ -20,12 +23,14 @@ def build_pipeline(p: Params) -> str:
     if p.min_length_mm > 0:
         parts.append(f"filter --min-length {_mm(p.min_length_mm)}")
     if p.sort:
-        parts.append("linesort")
+        two_opt = p.two_opt and (strokes is None or strokes <= TWO_OPT_MAX_STROKES)
+        parts.append(f"linesort --two-opt --passes {p.passes}" if two_opt else "linesort")
     return " ".join(parts)
 
 
 def run(document, p: Params):
-    pipeline = build_pipeline(p)
+    strokes = sum(len(lc) for lc in document.layers.values()) if hasattr(document, "layers") else None
+    pipeline = build_pipeline(p, strokes)
     if not pipeline:
         return document
     import vpype_cli

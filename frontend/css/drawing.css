@@ -1,0 +1,413 @@
+/* ==================== 9. TAB TAO BAN VE ==================== */
+.drawing-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.5fr);
+    align-items: start;
+    gap: var(--layout-gap);
+    margin-top: var(--layout-gap);
+}
+
+#drawing-file {
+    width: 100%;
+    margin-top: 12px;
+    color: var(--text-muted);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.form-grid-spaced {
+    margin-bottom: 12px;
+}
+
+.drawing-section-body > :first-child {
+    margin-top: 14px;
+}
+
+.checkbox-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.checkbox-list label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--text-main);
+}
+
+.checkbox-list input {
+    width: auto;
+}
+
+.drawing-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.drawing-preview-box {
+    min-width: 0;
+}
+
+.drawing-preview-box h3 {
+    margin-bottom: 8px;
+}
+
+.drawing-image-stage {
+    display: grid;
+    min-height: 220px;
+    overflow: hidden;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.drawing-image-stage img {
+    display: block;
+    max-width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+}
+
+.drawing-preview-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.drawing-warnings {
+    margin-top: 16px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--warning);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
+    font-size: 12px;
+}
+
+.drawing-warnings ul {
+    margin: 6px 0 0;
+    padding-left: 18px;
+}
+
+.drawing-confirm {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.drawing-confirm .drawing-preview-actions {
+    margin-top: 0;
+}
+
+/* Khoi thu gon doc lap (HTML details, khong can JS) */
+.drawing-section {
+    padding: 0;
+    overflow: hidden;
+}
+
+.drawing-section-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    min-height: 50px;
+    padding: 12px var(--panel-padding);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.drawing-section-summary::-webkit-details-marker {
+    display: none;
+}
+
+.drawing-section-summary::marker {
+    content: "";
+}
+
+.drawing-section-summary:hover {
+    background: var(--bg-elevated);
+}
+
+.drawing-section-summary:focus-visible {
+    outline-offset: -3px;
+}
+
+.drawing-section-title {
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.drawing-section-description {
+    flex: 1 1 180px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.drawing-section-badge,
+.drawing-section-chevron {
+    margin-left: auto;
+}
+
+.drawing-section-chevron {
+    font-size: 18px;
+}
+
+.drawing-section-body {
+    padding: 0 var(--panel-padding) var(--panel-padding);
+    border-top: 1px solid var(--border);
+}
+
+/* --- Khung ve tren giay (canvas rieng cua tab, khung 2D cua tab Dieu khien chi de theo doi may) --- */
+.drawing-canvas-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.drawing-canvas-toolbar .drawing-canvas-hint {
+    margin-left: auto;
+    font-size: 0.85em;
+}
+
+.drawing-canvas-toolbar #drawing-canvas-zoom {
+    min-width: 7ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.drawing-canvas-stage {
+    position: relative;
+    aspect-ratio: 285 / 318;          /* vung may 285 x 318 mm */
+    width: 100%;
+    max-height: 70vh;
+    margin-inline: auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
+}
+
+.drawing-canvas-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none;               /* keo/co gian bang con tro, khong cuon trang */
+    cursor: grab;
+}
+
+.drawing-canvas-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 16px;
+    color: var(--text-muted);
+    text-align: center;
+    pointer-events: none;
+}
+
+.drawing-original {
+    min-height: 120px;
+    margin-top: 12px;
+}
+
+/* --- Tien trinh tac vu nen --- */
+.drawing-progress {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 12px;
+}
+
+.drawing-progress progress {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 8px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--bg-elevated);
+    accent-color: var(--accent);
+    overflow: hidden;
+}
+
+.drawing-progress progress::-webkit-progress-bar {
+    background: var(--bg-elevated);
+}
+
+.drawing-progress progress::-webkit-progress-value {
+    background: var(--accent);
+}
+
+/* --- Danh sach ban thao --- */
+.draft-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.draft-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-elevated);
+}
+
+.draft-item.is-pinned {
+    border-left: 3px solid var(--accent);
+}
+
+.draft-item-name {
+    overflow: hidden;
+    color: var(--text-main);
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.draft-item-meta {
+    grid-column: 1;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    font-variant-numeric: tabular-nums;
+}
+
+.draft-item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+/* Muc co goi y (title): con tro doi thanh dau hoi de nguoi dung biet co the chi vao de doc huong dan */
+.drawing-section label[title] {
+    cursor: help;
+}
+
+/* Loi / keo tha tep / hop thoai xem nhap */
+.drawing-progress .is-error,
+.drawing-warnings li.is-error {
+    color: var(--danger);
+}
+
+.upload-zone.is-drag {
+    border-color: var(--accent);
+    background: var(--bg-elevated);
+}
+
+.draft-modal-box {
+    width: min(92vw, 640px);
+}
+
+.draft-modal-stage {
+    display: grid;
+    place-items: center;
+    max-height: 60vh;
+    margin: 12px 0;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-main);
+}
+
+.draft-modal-stage img {
+    display: block;
+    max-width: 100%;
+    max-height: 56vh;
+}
+
+/* Anh goc: nen sang de thay ca net den cua SVG */
+.drawing-original img {
+    max-width: 100%;
+    max-height: 260px;
+    background: #f4f4f4;
+}
+
+.drawing-section-body .checkbox-list + .form-grid {
+    margin-top: 14px;
+}
+
+/* Thong tin ban ve: dai so lieu o dau tab, moi o nhan tren - gia tri duoi de nhin mot luot */
+.drawing-info .detail-list {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.drawing-info .detail-list > div {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--bg-elevated);
+}
+
+.drawing-info .detail-list dt {
+    color: var(--text-muted);
+    font-size: 0.82em;
+}
+
+.drawing-info .detail-list dd {
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    overflow-wrap: anywhere;
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Responsive cua tab nay --- */
+@media (max-width: 1100px) {
+    .drawing-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .drawing-info .detail-list {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .drawing-info .detail-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .drawing-preview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .drawing-image-stage {
+        min-height: 180px;
+    }
+
+    .drawing-section-description {
+        flex-basis: 100%;
+        order: 3;
+    }
+}

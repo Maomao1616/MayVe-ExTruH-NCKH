@@ -5,6 +5,7 @@ export const MACHINE = {
     travelX: 285,        // mm
     travelY: 318,        // mm 
     // Bút: giá trị mặc định; views/settings.js ghi đè bằng hồ sơ ở backend (Cài đặt → Cấu hình máy).
+    travelZ: 5,          // mm, hành trình Z trong YAML (tab Tạo bản vẽ dùng để kiểm Z bút)
     penUpZ: 5,           // Z5 = bút lên (khớp WebUI FluidNC trên máy thật)
     penMidZ: 2.5,        // nấc giữa: bút lơ lửng sát giấy
     penDownZ: 0,         // Z0 = bút xuống

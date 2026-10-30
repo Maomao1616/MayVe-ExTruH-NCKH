@@ -3,18 +3,21 @@
 //   2. initBehavior       Hoạt động: nhịp cập nhật, xác nhận Home, phím tắt (trình duyệt -> PREFS)
 //   3. initFirmwareInfo   Cấu hình máy: dòng Firmware
 //      initMachineConfig  Cấu hình máy: YAML trên mạch + hồ sơ phần mềm (backend -> MACHINE)
+//   4. initDraftSettings  Bản thảo: thư mục lưu + hạn mức (GET/PUT /api/draw/settings)
 // Các view khác KHÔNG import file này: chúng đọc MACHINE / PREFS trong core/config.js.
 // (Ngôn ngữ và sáng/tối ở khối "Giao diện chung" do app.js lo vì phải chạy trước mọi view.)
 import { api, ApiError } from "../core/api.js";
 import { MACHINE, PREFS } from "../core/config.js";
 import { t } from "../core/i18n.js";
 import { subscribe, setPollInterval, firmwareLabel, isConnected, isStale } from "../core/state.js";
+import { refreshDrafts } from "../stores/draftstore.js";
 
 export function initSettings() {
     initConnection();
     initBehavior();
     initFirmwareInfo();
     initMachineConfig();
+    initDraftSettings();
 }
 
 /* ==================== 1. KẾT NỐI MÁY (sim / cổng COM) ==================== */
@@ -807,4 +810,54 @@ function initMachineConfig() {
     });
 
     render();
+}
+
+/* ==================== 4. BẢN THẢO (thư mục lưu + hạn mức) ==================== */
+function initDraftSettings() {
+    const dir = document.getElementById("draft-dir");
+    const count = document.getElementById("draft-max-count");
+    const size = document.getElementById("draft-max-mb");
+    const save = document.getElementById("draft-settings-save-btn");
+    const status = document.getElementById("draft-settings-status");
+    const folder = document.getElementById("draft-settings-folder");
+    if (!dir || !count || !size || !save || !status) return;
+
+    const show = (result) => {
+        dir.value = result.settings.draft_dir;
+        count.value = String(result.settings.max_count);
+        size.value = String(result.settings.max_mb);
+        if (folder) { folder.textContent = result.folder; folder.title = result.folder; }
+    };
+    const say = (key, kind = "") => {
+        status.textContent = t(key);
+        status.classList.toggle("is-error", kind === "error");
+        status.classList.toggle("is-success", kind === "success");
+    };
+
+    async function load() {
+        try {
+            show(await api.drawSettings());
+        } catch { /* backend chưa chạy: giữ giá trị trong HTML */ }
+    }
+
+    save.addEventListener("click", async () => {
+        save.disabled = true;
+        try {
+            show(await api.drawSettingsSave({
+                draft_dir: dir.value.trim(), max_count: Number(count.value), max_mb: Number(size.value)
+            }));
+            say("settings.drafts.saved", "success");
+            refreshDrafts();                          // đổi thư mục: danh sách bản thảo ở hai tab đọc lại
+        } catch (error) {
+            const key = error instanceof ApiError ? `drawing.error.${error.code}` : "drawing.error.internal_error";
+            status.textContent = t(key) === key ? String(error.message) : t(key);
+            if (error instanceof ApiError && error.code === "bad_param" && error.message) status.textContent += ` — ${error.message}`;
+            status.classList.remove("is-success");
+            status.classList.add("is-error");
+        } finally {
+            save.disabled = false;
+        }
+    });
+
+    load();
 }

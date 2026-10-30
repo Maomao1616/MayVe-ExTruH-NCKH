@@ -24,8 +24,8 @@ class TaskStore:
         self._items: OrderedDict[str, Parsed] = OrderedDict()
         self._lock = threading.Lock()
 
-    def put(self, item: Parsed) -> str:
-        token = uuid.uuid4().hex
+    def put(self, item: Parsed, token: str | None = None) -> str:
+        token = token or uuid.uuid4().hex
         with self._lock:
             self._items[token] = item
             while len(self._items) > self.capacity:

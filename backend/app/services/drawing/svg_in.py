@@ -94,11 +94,13 @@ def _page_mm(doc) -> tuple[float, float] | None:
     return None
 
 
-def import_svg(data: bytes, svg_raw=None, optimize_raw=None) -> dict:
+def import_svg(data: bytes, svg_raw=None, optimize_raw=None, token: str | None = None, ctx=None) -> dict:
     from .service import MAX_POINTS
     sp = spec.parse("svg", svg_raw)
     op = spec.parse("optimize", optimize_raw)
 
+    if ctx:
+        ctx.step("read", 0.1, "Đọc SVG")
     doc = read_svg(data, sp.quantization_mm)
     page = _page_mm(doc)
     first, _ = document_to_layers(doc)
@@ -109,6 +111,8 @@ def import_svg(data: bytes, svg_raw=None, optimize_raw=None) -> dict:
     if before["points"] > MAX_POINTS:
         raise DrawError("too_many_points", f"{before['points']} điểm, vượt giới hạn {MAX_POINTS}.")
 
+    if ctx:
+        ctx.step("optimize", 0.5, "Tối ưu nét")
     doc = optimize.run(doc, op)
     layers, meta = document_to_layers(doc)
     if not layers:
@@ -128,7 +132,7 @@ def import_svg(data: bytes, svg_raw=None, optimize_raw=None) -> dict:
         "frame": "page" if frame else "content",
         "bounds": {"x": b.x, "y": b.y, "w": b.w, "h": b.h},
         "layers": [dict(m, **layer_stats([l])) for m, l in zip(meta, layers)],
-        "optimize": {"before": before, "after": after, "pipeline": optimize.build_pipeline(op)},
+        "optimize": {"before": before, "after": after, "pipeline": optimize.build_pipeline(op, before["strokes"])},
     }
-    token = TASKS.put(Parsed(layers, frame, info))
+    token = TASKS.put(Parsed(layers, frame, info), token)
     return {"task": token, "source": info, "warnings": warnings}

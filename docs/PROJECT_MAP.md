@@ -32,7 +32,7 @@ ExtruXY/
       ├─ app.js              Vào cửa: tab, ngôn ngữ, sáng/tối, gọi init của từng view
       ├─ core/               Nền tảng: api · state · i18n · config
       ├─ lib/                Hàm thuần, không DOM, không mạng: gcode
-      ├─ stores/             Dữ liệu dùng chung giữa các view: jobstore · macros
+      ├─ stores/             Dữ liệu dùng chung giữa các view: jobstore · macros · draftstore
       └─ views/              Mỗi khối giao diện một file, là chủ ghi DOM của khối đó
 ```
 Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có thẻ SD/flash** (đã bỏ, D9): G-code luôn được gửi từng dòng từ máy tính. Giai đoạn sau, backend chạy trên **mini PC i5 thế hệ 3**.
@@ -67,13 +67,17 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/lib/gcode.js` | Đọc G-code (thuần tính toán; có `cleanLine`) |
 | `js/stores/jobstore.js` | Tệp G-code đang nạp (Điều khiển ghi, khung 2D đọc; tab vẽ giao tệp qua `setFile`) |
 | `js/stores/macros.js` | Macro: kiểm tra hợp lệ + kho `localStorage` |
+| `js/stores/draftstore.js` | Danh sách bản thảo (`/api/draw/drafts`) dùng chung cho tab Tạo bản vẽ và Hàng đợi; ghim, đẩy ưu tiên, xóa, nạp vào Điều khiển |
+| `js/lib/paper.js` | Bố trí tờ giấy / khung vẽ / xoay (bản JS của `layout.py`, test đối chiếu backend: `node --test frontend/tests/paper.test.mjs`) |
+| `js/lib/drafts.js` | Định dạng số liệu bản thảo |
 | `js/views/header.js` | Đầu trang + ô trạng thái trên thanh tab + thanh cảnh báo + nút ↻ |
 | `js/views/terminal.js` | Terminal và nút Tạm dừng / Tiếp tục / Hủy jog / Reset / Mở khóa |
-| `js/views/control.js` | Tab Điều khiển: trạng thái, mở khóa chuyển động, jog, **thanh bút 3 nấc**, Zero, Home (hỏi lại), tệp G-code (cảnh báo gốc vị trí khi chưa Home), **ghi đè tốc độ**, tiến trình, hủy tác vụ. Hàng đợi công việc: HTML đang ẩn, làm sau tab vẽ |
+| `js/views/control.js` | Tab Điều khiển: trạng thái, mở khóa chuyển động, jog, **thanh bút 3 nấc**, Zero, Home (hỏi lại), tệp G-code (cảnh báo gốc vị trí khi chưa Home), **ghi đè tốc độ**, tiến trình, hủy tác vụ. Hàng đợi công việc do `drafts.js` lo |
 | `js/views/preview.js` | Khung 2D (khối con của Điều khiển). Đang chạy đúng tệp đã nạp: vết vẽ theo đường của tệp (`trackProgress`), cung tròn không bị gãy theo nhịp hỏi vị trí |
 | `js/views/settings.js` | Tab Cài đặt: kết nối (nhớ cổng lần trước) · Hoạt động · **Cấu hình máy** (YAML trên mạch + hồ sơ phần mềm + nạp bản sao lưu) |
 | `js/views/dock.js` | Dock bên trái: macro |
-| `js/views/drawing.js` | Tab Tạo bản vẽ: ⏳ (AI khác làm, mục 7) |
+| `js/views/drawing.js` | Tab Tạo bản vẽ: nạp tệp → tác vụ nền (tiến trình, hủy) → nét nháp → bố trí → G-code → bản thảo / sang Điều khiển. Phần con: `views/drawing/params.js` (các ô ⇄ dữ liệu gửi backend), `views/drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề) |
+| `js/views/drafts.js` | Danh sách bản thảo (tab vẽ) + Hàng đợi công việc (tab Điều khiển) + hộp xem ảnh nháp |
 
 **Quy ước:** mỗi tab một file view với một hàm vào cửa; mỗi khối là một hàm riêng bên trong. **Một phần tử HTML chỉ một chủ ghi** (kiểm: `grep -rn "<id>" frontend/js`). Báo ra terminal bằng sự kiện `extruxy:message` (terminal giữ tiếng Anh).
 

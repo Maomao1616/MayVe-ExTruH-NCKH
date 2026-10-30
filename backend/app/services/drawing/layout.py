@@ -54,6 +54,25 @@ def content_bounds(layers: Iterable[Layer]) -> Box:
     return Box(min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys))
 
 
+def rotate_layers(layers: list[Layer], src: Box, degrees: int) -> tuple[list[Layer], Box]:
+    """Xoay nội dung thuận chiều kim đồng hồ (Y xuống) quanh góc trên trái của khung nguồn."""
+    if degrees % 360 == 0:
+        return layers, src
+    w, h = src.w, src.h
+
+    def turn(x: float, y: float) -> tuple[float, float]:
+        u, v = x - src.x, y - src.y
+        if degrees == 90:
+            return src.x + (h - v), src.y + u
+        if degrees == 180:
+            return src.x + (w - u), src.y + (h - v)
+        return src.x + v, src.y + (w - u)        # 270
+
+    out = [Layer(l.id, [[turn(x, y) for x, y in s] for s in l.strokes]) for l in layers]
+    box = Box(src.x, src.y, h, w) if degrees in (90, 270) else src
+    return out, box
+
+
 def paper_size(layout: Params) -> tuple[float, float]:
     if layout.paper == "custom":
         if layout.paper_width_mm is None or layout.paper_height_mm is None:

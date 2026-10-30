@@ -34,6 +34,13 @@ def _check_layers(layers: list[Layer]) -> None:
 def make_gcode(layers: list[Layer], machine_raw: Mapping[str, Any] | None,
                layout_raw: Mapping[str, Any] | None = None, gcode_raw: Mapping[str, Any] | None = None,
                source_bounds: tuple[float, float, float, float] | None = None) -> dict:
+    return build(layers, machine_raw, layout_raw, gcode_raw, source_bounds)[0]
+
+
+def build(layers: list[Layer], machine_raw: Mapping[str, Any] | None,
+          layout_raw: Mapping[str, Any] | None = None, gcode_raw: Mapping[str, Any] | None = None,
+          source_bounds: tuple[float, float, float, float] | None = None) -> tuple[dict, list[Layer]]:
+    """Như make_gcode nhưng trả thêm các lớp ĐÃ BỐ TRÍ (để vẽ ảnh minh họa bản thảo)."""
     machine = spec.parse("machine", machine_raw)
     layout = spec.parse("layout", layout_raw)
     gp = spec.parse("gcode", gcode_raw)
@@ -53,6 +60,7 @@ def make_gcode(layers: list[Layer], machine_raw: Mapping[str, Any] | None,
     else:
         src = lo.content_bounds(layers)
 
+    layers, src = lo.rotate_layers(layers, src, layout.rotate)
     pl = lo.plan(src, layout, machine)
     placed = lo.place_layers(layers, pl, layout.reverse)
 
@@ -78,7 +86,7 @@ def make_gcode(layers: list[Layer], machine_raw: Mapping[str, Any] | None,
     if not files:
         raise DrawError("empty_drawing", "Không có nét nào để vẽ.")
     b, p = pl.box, pl.paper
-    return {"files": files,
-            "paper": {"x": p.x, "y": p.y, "w": p.w, "h": p.h},
-            "box": {"x": b.x, "y": b.y, "w": b.w, "h": b.h, "scale_x": pl.sx, "scale_y": pl.sy},
-            "warnings": warnings}
+    return ({"files": files,
+             "paper": {"x": p.x, "y": p.y, "w": p.w, "h": p.h},
+             "box": {"x": b.x, "y": b.y, "w": b.w, "h": b.h, "scale_x": pl.sx, "scale_y": pl.sy},
+             "warnings": warnings}, placed)

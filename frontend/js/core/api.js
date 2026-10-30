@@ -11,18 +11,20 @@ export class ApiError extends Error {
     }
 }
 
-async function request(method, path, body) {
+async function request(method, path, body, { text = false } = {}) {
+    const isForm = body instanceof FormData;       // tải tệp lên: để trình duyệt tự đặt Content-Type
     let response;
     try {
         response = await fetch(BASE + path, {
             method,
-            headers: body ? { "Content-Type": "application/json" } : undefined,
-            body: body ? JSON.stringify(body) : undefined
+            headers: body && !isForm ? { "Content-Type": "application/json" } : undefined,
+            body: body ? (isForm ? body : JSON.stringify(body)) : undefined
         });
     } catch {
         throw new ApiError("backend_unreachable", "Không gọi được backend", 0);
     }
 
+    if (text && response.ok) return response.text();      // G-code / SVG: nội dung thô
     let data = null;
     try { data = await response.json(); } catch { /* không có JSON */ }
 
@@ -56,4 +58,26 @@ export const api = {
     machineConfigBackup: (name) => request("GET", `/machine/config/backups/${encodeURIComponent(name)}`),
     profile: () => request("GET", "/profile"),
     profileSave: (profile) => request("PUT", "/profile", profile),
+
+    // --- tab Tạo bản vẽ (docs/DRAW_ROADMAP.md mục 3) ---
+    drawSchema: () => request("GET", "/draw/schema"),
+    drawImport: (file, options = {}) => {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("options", JSON.stringify(options));
+        return request("POST", "/draw/import", form);
+    },
+    drawTask: (task) => request("GET", `/draw/tasks/${task}`),
+    drawTaskCancel: (task) => request("POST", `/draw/tasks/${task}/cancel`),
+    drawTaskDrop: (task) => request("DELETE", `/draw/tasks/${task}`),
+    drawPreview: (task, tol = 0.3) => request("GET", `/draw/tasks/${task}/preview?tol=${tol}`),
+    drawGcode: (payload) => request("POST", "/draw/gcode", payload),
+    drawDraftCreate: (payload) => request("POST", "/draw/drafts", payload),
+    drawDrafts: () => request("GET", "/draw/drafts"),
+    drawDraftGcode: (id, file) => request("GET", `/draw/drafts/${id}/gcode/${file}`, null, { text: true }),
+    drawDraftPreview: (id) => request("GET", `/draw/drafts/${id}/preview.svg`, null, { text: true }),
+    drawDraftUpdate: (id, patch) => request("PATCH", `/draw/drafts/${id}`, patch),
+    drawDraftDelete: (id) => request("DELETE", `/draw/drafts/${id}`),
+    drawSettings: () => request("GET", "/draw/settings"),
+    drawSettingsSave: (settings) => request("PUT", "/draw/settings", settings),
 };

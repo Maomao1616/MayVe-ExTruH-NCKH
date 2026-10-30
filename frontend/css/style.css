@@ -1280,224 +1280,7 @@ label select {
 
 .terminal-panel[open] .terminal-toggle,
 .drawing-section[open] > .drawing-section-summary .drawing-section-chevron {
-    transform: rotate(180deg);
-}
-
-/* ==================== 9. TAB TAO BAN VE ==================== */
-.workflow-steps {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 12px;
-    margin: 14px 0 0;
-    padding: 0;
-    list-style: none;
-}
-
-.workflow-step {
-    display: grid;
-    justify-items: center;
-    gap: 6px;
-    padding: 12px 6px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-button);
-    color: var(--text-muted);
-    text-align: center;
-}
-
-.step-number {
-    display: grid;
-    width: 28px;
-    height: 28px;
-    place-items: center;
-    border-radius: 50%;
-    background: var(--bg-elevated);
-}
-
-.workflow-step.is-current {
-    border-color: var(--accent-text);
-    color: var(--text-main);
-}
-
-.workflow-step.is-current .step-number {
-    background: var(--accent);
-    color: var(--accent-text);
-    box-shadow: inset 0 0 0 1px var(--accent-text);
-}
-
-.step-title {
-    font-size: 12px;
-}
-
-.drawing-layout {
-    display: grid;
-    grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.5fr);
-    align-items: start;
-    gap: var(--layout-gap);
-    margin-top: var(--layout-gap);
-}
-
-#drawing-file {
-    width: 100%;
-    margin-top: 12px;
-    color: var(--text-muted);
-}
-
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.form-grid-spaced {
-    margin-bottom: 12px;
-}
-
-.drawing-section-body > :first-child {
-    margin-top: 14px;
-}
-
-.checkbox-list {
-    display: grid;
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.checkbox-list label {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    color: var(--text-main);
-}
-
-.checkbox-list input {
-    width: auto;
-}
-
-.drawing-preview-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.drawing-preview-box {
-    min-width: 0;
-}
-
-.drawing-preview-box h3 {
-    margin-bottom: 8px;
-}
-
-.drawing-image-stage {
-    display: grid;
-    min-height: 220px;
-    overflow: hidden;
-    place-items: center;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-button);
-    background: var(--bg-main);
-    color: var(--text-muted);
-    text-align: center;
-}
-
-.drawing-image-stage img {
-    display: block;
-    max-width: 100%;
-    max-height: 360px;
-    object-fit: contain;
-}
-
-.drawing-preview-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 16px;
-}
-
-.drawing-warnings {
-    margin-top: 16px;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--warning);
-    border-radius: var(--radius-button);
-    background: var(--bg-main);
-    font-size: 12px;
-}
-
-.drawing-warnings ul {
-    margin: 6px 0 0;
-    padding-left: 18px;
-}
-
-.drawing-confirm {
-    display: grid;
-    gap: 12px;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-}
-
-.drawing-confirm .drawing-preview-actions {
-    margin-top: 0;
-}
-
-/* Khoi thu gon doc lap (HTML details, khong can JS) */
-.drawing-section {
-    padding: 0;
-    overflow: hidden;
-}
-
-.drawing-section-summary {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px 14px;
-    min-height: 50px;
-    padding: 12px var(--panel-padding);
-    cursor: pointer;
-    list-style: none;
-    user-select: none;
-    transition: background-color 0.2s ease;
-}
-
-.drawing-section-summary::-webkit-details-marker {
-    display: none;
-}
-
-.drawing-section-summary::marker {
-    content: "";
-}
-
-.drawing-section-summary:hover {
-    background: var(--bg-elevated);
-}
-
-.drawing-section-summary:focus-visible {
-    outline-offset: -3px;
-}
-
-.drawing-section-title {
-    color: var(--text-main);
-    font-weight: 700;
-}
-
-.drawing-section-description {
-    flex: 1 1 180px;
-    color: var(--text-muted);
-    font-size: 12px;
-}
-
-.drawing-section-badge,
-.drawing-section-chevron {
-    margin-left: auto;
-}
-
-.drawing-section-chevron {
-    font-size: 18px;
-}
-
-.drawing-section-body {
-    padding: 0 var(--panel-padding) var(--panel-padding);
-    border-top: 1px solid var(--border);
+    transform: rotate(360deg);
 }
 
 /* ==================== 10. TAB CAI DAT ==================== */
@@ -2078,8 +1861,7 @@ body::after {
         justify-content: flex-start;
     }
 
-    .control-layout,
-    .drawing-layout {
+    .control-layout {
         grid-template-columns: 1fr;
     }
 
@@ -2179,27 +1961,11 @@ body::after {
         border-bottom: 1px solid var(--border);
     }
 
-    .workflow-steps {
-        grid-template-columns: repeat(5, minmax(76px, 1fr));
-        overflow-x: auto;
-    }
 
     .drawing-preview-grid {
         grid-template-columns: 1fr;
     }
 
-    .drawing-image-stage {
-        min-height: 180px;
-    }
-
-    .drawing-section-description {
-        flex-basis: 100%;
-        order: 3;
-    }
-
-    .detail-list > div {
-        gap: 10px;
-    }
 }
 
 @media (max-width: 520px) {

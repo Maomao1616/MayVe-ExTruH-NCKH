@@ -14,6 +14,7 @@ Giai đoạn sau thêm: loader ảnh, preprocess, vectorize/.
 from .errors import DrawError
 from .service import make_gcode
 from .spec import describe
+from . import demo, drafts, preview, service, tasks
 from .svg_in import import_svg
 
 __all__ = ["DrawError", "make_gcode", "describe", "import_svg"]

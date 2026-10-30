@@ -521,9 +521,16 @@ function initGcodePanel() {
             ? "outOfRange" : null;
     }
 
+    let seenFile = null;         // tệp đã xem trước/xác nhận là của tệp NÀY; tệp mới (kể cả từ bản thảo) làm lại từ đầu
+
     function render() {
         const snapshot = lastSnapshot;
         const file = store.file;
+        if (file !== seenFile) {
+            seenFile = file;
+            previewed = false;
+            confirmBox.checked = false;
+        }
         const job = jobOf(snapshot);
         const active = isActive(job);
         const problem = fileProblem(snapshot);

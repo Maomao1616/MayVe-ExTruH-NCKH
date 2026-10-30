@@ -48,6 +48,7 @@ LAYOUT = (
     Param("flip_x", "bool", False),
     Param("flip_y", "bool", False),
     Param("reverse", "bool", False),                               # đảo thứ tự các nét
+    Param("rotate", "choice", 0, choices=(0, 90, 180, 270), unit="°"),  # xoay thuận chiều kim đồng hồ
 )
 
 # Thông số vẽ (khớp các ô trong tab).
@@ -78,6 +79,8 @@ OPTIMIZE = (
     Param("simplify_tolerance_mm", "float", 0.05, 0, 10, unit="mm"),  # đơn giản hóa (bỏ điểm thừa)
     Param("min_length_mm", "float", 0.5, 0, 100, unit="mm"),          # bỏ nét ngắn hơn mức này
     Param("sort", "bool", True),                                      # sắp xếp để giảm quãng bút nâng
+    Param("two_opt", "bool", True),                                   # 2-opt: giảm thêm ~25% quãng nhấc bút (chậm hơn)
+    Param("passes", "int", 50, 10, 2000),                             # số lượt 2-opt; 50 là đủ (200 gần như không hơn)
 )
 
 # Nạp SVG.
@@ -86,7 +89,43 @@ SVG = (
     Param("frame", "choice", "content", choices=("content", "page")), # co theo hộp bao nét hay theo trang SVG
 )
 
-GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG}
+# Ảnh raster (độ phân giải xử lý tự tính từ khung vẽ ÷ độ rộng bút; max_side_px chỉ để ghi đè).
+RASTER = (
+    Param("pen_width_mm", "float", 0.4, 0.1, 2, unit="mm"),           # bút dựng sẵn: 0,2 / 0,4 (xem PENS)
+    Param("max_side_px", "int", None, 400, 4000, unit="px"),          # None = tự tính
+    Param("quality", "choice", "final", choices=("draft", "final")),  # nháp (nhỏ, nhanh) hay chính thức
+    Param("crop_x", "float", 0.0, 0, 1), Param("crop_y", "float", 0.0, 0, 1),   # cắt ảnh: tỷ lệ 0..1 của ảnh gốc
+    Param("crop_w", "float", 1.0, 0.01, 1), Param("crop_h", "float", 1.0, 0.01, 1),
+    Param("gamma", "float", 1.0, 0.3, 3.0),
+    Param("black_point", "int", 0, 0, 254),
+    Param("white_point", "int", 255, 1, 255),
+    Param("clahe", "bool", False),                                    # cân bằng sáng cục bộ (ảnh tối/sáng lệch)
+    Param("denoise", "bool", False),                                  # khử nhiễu NLM: chậm, chỉ cho ảnh thiếu sáng
+)
+
+# Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
+STYLE = (
+    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral")),
+    Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
+    Param("levels", "int", 4, 3, 5),                                  # số mức sáng tối
+    Param("angle", "float", 45.0, 0, 179, unit="°"),
+    Param("spacing_mm", "float", None, 0.1, 20, unit="mm"),
+    Param("amplitude_mm", "float", None, 0.05, 10, unit="mm"),
+    Param("invert", "bool", False),                                   # đảo sáng/tối
+)
+
+# Đa màu: tối đa 2-4 màu, chỉ để thử mô hình.
+PALETTE = (
+    Param("mode", "choice", "mono", choices=("mono", "multi")),
+    Param("colors", "int", 3, 2, 4),
+    Param("skip_background", "bool", True),
+)
+
+PENS = (0.2, 0.4)
+STYLES = ("outline", "zigzag", "wave", "spiral")
+
+GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
+          "raster": RASTER, "style": STYLE, "palette": PALETTE}
 
 
 class Params:
@@ -117,7 +156,7 @@ def _coerce(group: str, p: Param, v: Any) -> Any:
         return v
     if p.kind == "choice":
         if v not in p.choices:
-            raise DrawError("bad_param", f"{where}: chỉ nhận {', '.join(p.choices)}")
+            raise DrawError("bad_param", f"{where}: chỉ nhận {', '.join(map(str, p.choices))}")
         return v
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         raise DrawError("bad_param", f"{where}: phải là số")
@@ -163,6 +202,8 @@ def describe() -> dict:
 
     return {
         "papers": {k: {"w": w, "h": h} for k, (w, h) in PAPERS.items()},
+        "pens": list(PENS),
+        "styles": list(STYLES),
         "params": {g: [row(p) for p in specs] for g, specs in GROUPS.items()},
         "vectorizers": VECTORIZERS.names(),
         "limits": {"max_lines": MAX_LINES, "max_points": MAX_POINTS},

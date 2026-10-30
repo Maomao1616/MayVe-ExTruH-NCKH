@@ -8,6 +8,7 @@
   <title data-i18n="header.documentTitle">ExtruXY | Plotter Control</title>
   <link href="./assets/css/tokens.css" rel="stylesheet"/>
   <link href="./css/style.css" rel="stylesheet"/>
+  <link href="./css/drawing.css" rel="stylesheet"/>
   <script src="./js/app.js" type="module"></script>
 </head>
 <body>
@@ -518,21 +519,20 @@
             </details>
 
   
-        <!-- Hàng đợi công việc: ẩn tạm, làm sau khi xong tab Tạo bản vẽ -->
-        <article class="panel" hidden="">
+        <!-- Hàng đợi công việc: bản thảo đã tạo ở tab Tạo bản vẽ (GET /api/draw/drafts) -->
+        <article class="panel" id="draft-queue-panel">
           <div class="panel-heading">
             <div>
               <h2 data-i18n="jobs.queue.title">Hàng đợi công việc</h2>
-              <p data-i18n="jobs.queue.desc">Danh sách sẽ được kết nối khi backend hỗ trợ.</p>
+              <p data-i18n="jobs.queue.desc">Các bản thảo đã tạo ở tab Tạo bản vẽ; bản ghim ở trên cùng.</p>
             </div>
-            <span class="panel-tag" data-i18n="common.status.noApi">Chưa có API</span>
+            <button class="secondary-button" data-i18n="common.action.refresh" id="draft-queue-refresh-btn" type="button">Làm mới</button>
           </div>
           <div class="empty-state" id="jobs-empty-state">
             <span aria-hidden="true" class="empty-icon">▤</span>
-            <strong data-i18n="jobs.queue.empty">Chưa có dữ liệu hàng đợi</strong>
+            <strong data-i18n="jobs.queue.empty">Chưa có bản thảo</strong>
             <p data-i18n="jobs.queue.help">
-              Backend hiện tại cần cung cấp API quản lý và lịch sử
-              công việc trước khi chức năng này hoạt động.
+              Tạo bản vẽ ở tab Tạo bản vẽ rồi bấm Lưu bản thảo để thấy ở đây.
             </p>
           </div>
           <div class="table-scroll" hidden="" id="jobs-table-container">
@@ -540,9 +540,8 @@
               <thead>
                 <tr>
                   <th data-i18n="jobs.queue.colName">Tên công việc</th>
-                  <th data-i18n="jobs.queue.colStatus">Trạng thái</th>
-                  <th data-i18n="jobs.queue.colProgress">Tiến trình</th>
                   <th data-i18n="jobs.queue.colTime">Thời gian</th>
+                  <th data-i18n="jobs.queue.colStats">Số liệu</th>
                   <th data-i18n="jobs.queue.colActions">Thao tác</th>
                 </tr>
               </thead>
@@ -571,37 +570,52 @@
           </div>
         </div>
 
-        <details class="panel drawing-section drawing-workflow-panel" open="">
-          <summary class="drawing-section-summary">
-            <span class="drawing-section-title" data-i18n="drawing.workflow.title">Quy trình xử lý bản vẽ</span>
-            <span class="drawing-section-description" data-i18n="drawing.workflow.desc">Các bước được thiết kế theo thứ tự thực hiện.</span>
-            <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
-          </summary>
-          <div class="drawing-section-body">
-            <ol class="workflow-steps">
-              <li class="workflow-step is-current" data-step="1">
-                <span class="step-number">1</span>
-                <span class="step-title" data-i18n="drawing.workflow.step1">Nạp ảnh</span>
-              </li>
-              <li class="workflow-step" data-step="2">
-                <span class="step-number" data-i18n="drawing.workflow.num2">2</span>
-                <span class="step-title" data-i18n="drawing.workflow.step2">Tiền xử lý</span>
-              </li>
-              <li class="workflow-step" data-step="3">
-                <span class="step-number" data-i18n="drawing.workflow.num3">3</span>
-                <span class="step-title" data-i18n="drawing.workflow.step3">Vector hóa</span>
-              </li>
-              <li class="workflow-step" data-step="4">
-                <span class="step-number" data-i18n="drawing.workflow.num4">4</span>
-                <span class="step-title" data-i18n="drawing.workflow.step4">Tạo G-code</span>
-              </li>
-              <li class="workflow-step" data-step="5">
-                <span class="step-number">5</span>
-                <span class="step-title" data-i18n="common.action.preview">Xem trước</span>
-              </li>
-            </ol>
-          </div>
-        </details>
+        <details class="panel drawing-section drawing-info" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="drawing.info.title">Thông tin bản vẽ</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <dl class="detail-list">
+                  <div>
+                    <dt data-i18n="drawing.info.source">Tệp nguồn</dt>
+                    <dd id="drawing-source-info">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.dimensions">Kích thước đường vẽ</dt>
+                    <dd id="drawing-size-info">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.pathCount">Số đường nét</dt>
+                    <dd id="drawing-path-count">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.gcode">G-code</dt>
+                    <dd data-i18n="drawing.info.notGenerated" id="drawing-gcode-status">Chưa tạo</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.bounds">Vùng bao (X × Y)</dt>
+                    <dd id="drawing-bounds-info">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.length">Độ dài nét vẽ · di chuyển</dt>
+                    <dd id="drawing-length-info">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.lifts">Số lần nhấc bút</dt>
+                    <dd id="drawing-lifts-info">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.eta">Thời gian ước tính</dt>
+                    <dd id="drawing-eta-info">—</dd>
+                  </div>
+                  <div>
+                    <dt data-i18n="drawing.info.inBounds">Trong vùng làm việc?</dt>
+                    <dd id="drawing-in-bounds">—</dd>
+                  </div>
+                </dl>
+              </div>
+            </details>
 
         <div class="drawing-layout">
           <div class="drawing-sidebar">
@@ -637,16 +651,29 @@
                     <select id="drawing-paper">
                       <option data-i18n="drawing.layout.a4" selected="" value="a4">A4 (210 × 297 mm)</option>
                       <option data-i18n="drawing.layout.a5" value="a5">A5 (148 × 210 mm)</option>
+                      <option data-i18n="drawing.layout.a6" value="a6">A6 (105 × 148 mm)</option>
                       <option data-i18n="drawing.layout.letter" value="letter">Letter (216 × 279 mm)</option>
                       <option data-i18n="drawing.layout.custom" value="custom">Tùy chọn</option>
                     </select>
                   </label>
-                  <label for="drawing-origin">
-                    <span data-i18n="drawing.layout.origin">Gốc đặt hình</span>
-                    <select id="drawing-origin">
-                      <option data-i18n="drawing.layout.originWork" selected="" value="work">Theo gốc làm việc (G54)</option>
-                      <option data-i18n="drawing.layout.originMachine" value="machine">Theo gốc máy (sau Home)</option>
+                  <label for="drawing-rotate">
+                    <span data-i18n="drawing.layout.rotate">Xoay (theo chiều kim đồng hồ)</span>
+                    <select id="drawing-rotate">
+                      <option selected="" value="0">0°</option>
+                      <option value="90">90°</option>
+                      <option value="180">180°</option>
+                      <option value="270">270°</option>
                     </select>
+                  </label>
+                </div>
+                <div class="form-grid" hidden="" id="drawing-paper-custom">
+                  <label for="drawing-paper-width">
+                    <span data-i18n="drawing.layout.paperWidth">Giấy rộng (mm)</span>
+                    <input id="drawing-paper-width" type="number" min="1" step="1" value="210"/>
+                  </label>
+                  <label for="drawing-paper-height">
+                    <span data-i18n="drawing.layout.paperHeight">Giấy cao (mm)</span>
+                    <input id="drawing-paper-height" type="number" min="1" step="1" value="297"/>
                   </label>
                 </div>
                 <div class="form-grid">
@@ -668,6 +695,16 @@
                       <option data-i18n="drawing.layout.fitContain" value="contain">Giữ tỷ lệ</option>
                       <option data-i18n="drawing.layout.fitStretch" value="stretch">Kéo giãn</option>
                     </select>
+                  </label>
+                </div>
+                <div class="form-grid" hidden="" id="drawing-offset-row">
+                  <label for="drawing-offset-x">
+                    <span data-i18n="drawing.layout.offsetX">Cách lề trái (mm)</span>
+                    <input id="drawing-offset-x" min="0" step="0.1" type="number" value="0"/>
+                  </label>
+                  <label for="drawing-offset-y">
+                    <span data-i18n="drawing.layout.offsetY">Cách lề trên (mm)</span>
+                    <input id="drawing-offset-y" min="0" step="0.1" type="number" value="0"/>
                   </label>
                 </div>
                 <div class="checkbox-list">
@@ -695,85 +732,135 @@
               </div>
             </details>
 
-            <details class="panel drawing-section" open="">
+                        <details class="panel drawing-section" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.preprocess.title">Tiền xử lý ảnh</span>
-                <span class="panel-tag drawing-section-badge" data-i18n="common.status.unavailable">Chưa khả dụng</span>
+                <span class="panel-tag drawing-section-badge" data-i18n="drawing.stub.badge">Dữ liệu mẫu</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
-                <fieldset disabled="">
-                  <label for="image-threshold">
-                    <span data-i18n="drawing.preprocess.threshold">Ngưỡng đen trắng</span>
-                    <input id="image-threshold" max="255" min="0" type="range" value="128"/>
+                <div class="form-grid form-grid-spaced">
+                  <label for="image-black-point" data-i18n="[title]drawing.hint.blackPoint">
+                    <span data-i18n="drawing.preprocess.blackPoint">Mức đen</span>
+                    <input id="image-black-point" type="number" min="0" max="254" step="1" value="0"/>
                   </label>
-                  <label for="image-contrast">
-                    <span data-i18n="drawing.preprocess.contrast">Độ tương phản</span>
-                    <input id="image-contrast" max="200" min="0" type="range" value="100"/>
+                  <label for="image-white-point" data-i18n="[title]drawing.hint.whitePoint">
+                    <span data-i18n="drawing.preprocess.whitePoint">Mức trắng</span>
+                    <input id="image-white-point" type="number" min="1" max="255" step="1" value="255"/>
                   </label>
-                  <label for="image-noise">
-                    <span data-i18n="drawing.preprocess.noise">Khử nhiễu</span>
-                    <select id="image-noise">
-                      <option data-i18n="common.level.off" value="off">Tắt</option>
-                      <option data-i18n="common.level.low" value="low">Nhẹ</option>
-                      <option data-i18n="common.level.medium" value="medium">Vừa</option>
-                      <option data-i18n="common.level.high" value="high">Mạnh</option>
-                    </select>
+                  <label for="image-gamma" data-i18n="[title]drawing.hint.gamma">
+                    <span data-i18n="drawing.preprocess.gamma">Gamma (sáng/tối giữa)</span>
+                    <input id="image-gamma" type="number" min="0.3" max="3" step="0.05" value="1"/>
                   </label>
-                </fieldset>
+                  <label for="image-max-side" data-i18n="[title]drawing.hint.maxSide">
+                    <span data-i18n="drawing.preprocess.maxSide">Độ phân giải xử lý (px, trống = tự tính)</span>
+                    <input id="image-max-side" type="number" min="400" max="4000" step="50" placeholder="auto"/>
+                  </label>
+                </div>
+                <div class="checkbox-list">
+                  <label data-i18n="[title]drawing.hint.clahe">
+                    <input id="image-clahe" type="checkbox"/>
+                    <span data-i18n="drawing.preprocess.clahe">Cân bằng sáng cục bộ (ảnh tối/sáng lệch)</span>
+                  </label>
+                  <label data-i18n="[title]drawing.hint.denoise">
+                    <input id="image-denoise" type="checkbox"/>
+                    <span data-i18n="drawing.preprocess.denoise">Khử nhiễu (chậm, chỉ cho ảnh thiếu sáng)</span>
+                  </label>
+                </div>
                 <p class="help-text" data-i18n="drawing.preprocess.help">
-                  Chức năng xử lý và vector hóa cần được triển khai
-                  trước khi có thể sử dụng.
+                  Độ phân giải tự tính từ cỡ khung vẽ và độ rộng bút.
                 </p>
               </div>
             </details>
 
-            <details class="panel drawing-section" open="">
+                        <details class="panel drawing-section" open="">
               <summary class="drawing-section-summary">
-                <span class="drawing-section-title" data-i18n="drawing.vectorize.title">Vector hóa</span>
+                <span class="drawing-section-title" data-i18n="drawing.vectorize.title">Kiểu nét và tối ưu</span>
                 <span class="drawing-section-description" data-i18n="drawing.vectorize.desc">Chọn kiểu nét phù hợp với bút vẽ.</span>
-                <span class="panel-tag drawing-section-badge" data-i18n="common.status.unavailable">Chưa khả dụng</span>
+                <span class="panel-tag drawing-section-badge" data-i18n="drawing.stub.badge">Dữ liệu mẫu</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
-                <fieldset disabled="">
-                  <label for="vector-mode">
+                <div class="form-grid form-grid-spaced">
+                  <label for="style-kind" data-i18n="[title]drawing.hint.kind">
                     <span data-i18n="drawing.vectorize.mode">Kiểu nét vẽ</span>
-                    <select id="vector-mode">
-                      <option data-i18n="drawing.vectorize.outline" value="outline">Viền (outline)</option>
-                      <option data-i18n="drawing.vectorize.centerline" value="centerline">Đường giữa nét (centerline)</option>
-                      <option data-i18n="drawing.vectorize.hatch" value="hatch">Tô bóng bằng nét (hatch)</option>
+                    <select id="style-kind">
+                      <option data-i18n="drawing.style.zigzag" selected="" value="zigzag">Zigzag (gạch nối liền)</option>
+                      <option data-i18n="drawing.style.wave" value="wave">Sóng</option>
+                      <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
+                      <option data-i18n="drawing.style.outline" value="outline">Nét viền (đường giữa nét)</option>
                     </select>
                   </label>
-                  <div class="form-grid form-grid-spaced">
-                    <label for="simplify-tolerance">
-                      <span data-i18n="drawing.vectorize.simplify">Đơn giản hóa (mm)</span>
-                      <input id="simplify-tolerance" min="0" step="0.01" type="number" value="0.1"/>
-                    </label>
-                    <label for="merge-tolerance">
-                      <span data-i18n="drawing.vectorize.merge">Gộp nét gần nhau (mm)</span>
-                      <input id="merge-tolerance" min="0" step="0.05" type="number" value="0.3"/>
-                    </label>
-                    <label for="min-path-length">
-                      <span data-i18n="drawing.vectorize.minPath">Bỏ nét ngắn hơn (mm)</span>
-                      <input id="min-path-length" min="0" step="0.1" type="number" value="0.5"/>
-                    </label>
-                    <label for="hatch-spacing">
-                      <span data-i18n="drawing.vectorize.hatchSpacing">Khoảng cách nét tô (mm)</span>
-                      <input id="hatch-spacing" min="0.1" step="0.1" type="number" value="1"/>
-                    </label>
-                  </div>
-                  <div class="checkbox-list">
-                    <label>
-                      <input checked="" id="optimize-order" type="checkbox"/>
-                      <span data-i18n="drawing.vectorize.optimize">Sắp xếp đường đi để giảm quãng di chuyển</span>
-                    </label>
-                  </div>
-                </fieldset>
+                  <label for="palette-mode" data-i18n="[title]drawing.hint.paletteMode">
+                    <span data-i18n="drawing.palette.mode">Màu</span>
+                    <select id="palette-mode">
+                      <option data-i18n="drawing.palette.mono" selected="" value="mono">Đơn sắc</option>
+                      <option data-i18n="drawing.palette.multi" value="multi">Đa màu (2–4)</option>
+                    </select>
+                  </label>
+                  <label for="palette-colors" data-i18n="[title]drawing.hint.paletteColors">
+                    <span data-i18n="drawing.palette.colors">Số màu</span>
+                    <input id="palette-colors" type="number" min="2" max="4" step="1" value="3"/>
+                  </label>
+                  <label for="style-levels" data-i18n="[title]drawing.hint.levels">
+                    <span data-i18n="drawing.style.levels">Số mức đậm nhạt</span>
+                    <input id="style-levels" type="number" min="3" max="5" step="1" value="4"/>
+                  </label>
+                  <label for="style-angle" data-i18n="[title]drawing.hint.angle">
+                    <span data-i18n="drawing.style.angle">Góc gạch (°)</span>
+                    <input id="style-angle" type="number" min="0" max="179" step="1" value="45"/>
+                  </label>
+                  <label for="style-spacing" data-i18n="[title]drawing.hint.spacing">
+                    <span data-i18n="drawing.style.spacing">Khoảng cách gạch (mm, trống = tự tính)</span>
+                    <input id="style-spacing" type="number" min="0.1" max="20" step="0.05" placeholder="auto"/>
+                  </label>
+                  <label for="style-amplitude" data-i18n="[title]drawing.hint.amplitude">
+                    <span data-i18n="drawing.style.amplitude">Biên độ sóng (mm, trống = tự tính)</span>
+                    <input id="style-amplitude" type="number" min="0.05" max="10" step="0.05" placeholder="auto"/>
+                  </label>
+                </div>
+                <div class="checkbox-list">
+                  <label data-i18n="[title]drawing.hint.outlineOverlay">
+                    <input id="style-outline" type="checkbox"/>
+                    <span data-i18n="drawing.style.outlineOverlay">Thêm lớp viền phác họa lên kiểu tô</span>
+                  </label>
+                  <label data-i18n="[title]drawing.hint.invert">
+                    <input id="style-invert" type="checkbox"/>
+                    <span data-i18n="drawing.style.invert">Đảo sáng/tối</span>
+                  </label>
+                </div>
+                <div class="form-grid form-grid-spaced">
+                  <label for="simplify-tolerance" data-i18n="[title]drawing.hint.simplify">
+                    <span data-i18n="drawing.vectorize.simplify">Đơn giản hóa (mm)</span>
+                    <input id="simplify-tolerance" type="number" min="0" step="0.01" value="0.05"/>
+                  </label>
+                  <label for="merge-tolerance" data-i18n="[title]drawing.hint.merge">
+                    <span data-i18n="drawing.vectorize.merge">Gộp nét gần nhau (mm)</span>
+                    <input id="merge-tolerance" type="number" min="0" step="0.05" value="0.1"/>
+                  </label>
+                  <label for="min-path-length" data-i18n="[title]drawing.hint.minPath">
+                    <span data-i18n="drawing.vectorize.minPath">Bỏ nét ngắn hơn (mm)</span>
+                    <input id="min-path-length" type="number" min="0" step="0.1" value="0.5"/>
+                  </label>
+                  <label for="optimize-passes" data-i18n="[title]drawing.hint.passes">
+                    <span data-i18n="drawing.vectorize.passes">Số lượt 2-opt</span>
+                    <input id="optimize-passes" type="number" min="10" max="2000" step="10" value="50"/>
+                  </label>
+                </div>
+                <div class="checkbox-list">
+                  <label data-i18n="[title]drawing.hint.order">
+                    <input checked="" id="optimize-order" type="checkbox"/>
+                    <span data-i18n="drawing.vectorize.optimize">Sắp xếp đường đi để giảm quãng di chuyển</span>
+                  </label>
+                  <label data-i18n="[title]drawing.hint.twoOpt">
+                    <input checked="" id="optimize-two-opt" type="checkbox"/>
+                    <span data-i18n="drawing.vectorize.twoOpt">Sắp xếp kỹ (2-opt, chậm hơn, ít nhấc bút hơn)</span>
+                  </label>
+                </div>
               </div>
             </details>
 
-            <details class="panel drawing-section" open="">
+                        <details class="panel drawing-section" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.params.title">Thông số vẽ</span>
                 <span class="drawing-section-description" data-i18n="drawing.params.desc">Dùng khi tạo G-code.</span>
@@ -783,32 +870,43 @@
                 <div class="form-grid">
                   <label for="draw-feed">
                     <span data-i18n="drawing.params.drawFeed">Tốc độ vẽ (mm/phút)</span>
-                    <input id="draw-feed" max="6000" min="50" step="50" type="number" value="3000"/>
+                    <input id="draw-feed" type="number" min="10" step="50" value="3000"/>
                   </label>
                   <label for="travel-feed">
                     <span data-i18n="drawing.params.travelFeed">Tốc độ di chuyển không vẽ (mm/phút)</span>
-                    <input id="travel-feed" max="6000" min="50" step="50" type="number" value="6000"/>
+                    <input id="travel-feed" type="number" min="10" step="50" value="6000"/>
                   </label>
-                  <label for="pen-up-z">
+                  <label for="draw-pen-up-z">
                     <span data-i18n="drawing.params.penUp">Z khi nâng bút</span>
-                    <input id="pen-up-z" max="5" min="0" step="0.1" type="number" value="5"/>
+                    <input id="draw-pen-up-z" type="number" min="0" step="0.1" value="5"/>
                   </label>
-                  <label for="pen-down-z">
+                  <label for="draw-pen-down-z">
                     <span data-i18n="drawing.params.penDown">Z khi hạ bút</span>
-                    <input id="pen-down-z" max="5" min="0" step="0.1" type="number" value="0"/>
+                    <input id="draw-pen-down-z" type="number" min="0" step="0.1" value="0"/>
                   </label>
                   <label for="pen-delay-down">
                     <span data-i18n="drawing.params.delayDown">Chờ sau khi hạ bút (giây)</span>
-                    <input id="pen-delay-down" min="0" step="0.05" type="number" value="0.2"/>
+                    <input id="pen-delay-down" type="number" min="0" step="0.05" value="0.2"/>
                   </label>
                   <label for="pen-delay-up">
                     <span data-i18n="drawing.params.delayUp">Chờ sau khi nâng bút (giây)</span>
-                    <input id="pen-delay-up" min="0" step="0.05" type="number" value="0.2"/>
+                    <input id="pen-delay-up" type="number" min="0" step="0.05" value="0.2"/>
+                  </label>
+                  <label for="draw-pen-width">
+                    <span data-i18n="drawing.params.penWidth">Bút vẽ (độ rộng nét)</span>
+                    <select id="draw-pen-width">
+                      <option value="0.2">0,2 mm</option>
+                      <option selected="" value="0.4">0,4 mm</option>
+                      <option data-i18n="drawing.params.penCustom" value="custom">Tùy chọn</option>
+                    </select>
+                  </label>
+                  <label for="draw-pen-width-custom" hidden="">
+                    <span data-i18n="drawing.params.penWidthCustom">Độ rộng bút tùy chọn (mm)</span>
+                    <input id="draw-pen-width-custom" type="number" min="0.1" max="2" step="0.05" value="0.3"/>
                   </label>
                 </div>
                 <p class="help-text" data-i18n="drawing.params.help">
-                  Theo cấu hình hiện tại Z0 là bút xuống, Z5 là bút lên. Thời gian chờ
-                  để servo kịp nâng hoặc chạm giấy trước khi máy di chuyển tiếp.
+                  Z lấy theo hồ sơ máy (Z0 bút xuống, Z5 bút lên).
                 </p>
               </div>
             </details>
@@ -817,30 +915,34 @@
 
           <div class="drawing-workspace">
             
-            <details class="panel drawing-section drawing-preview-panel" open="">
+                        <details class="panel drawing-section drawing-preview-panel" open="">
               <summary class="drawing-section-summary">
-                <span class="drawing-section-title" data-i18n="drawing.preview.title">Xem trước bản vẽ</span>
-                <span class="drawing-section-description" data-i18n="drawing.preview.desc">So sánh hình gốc và đường nét dự kiến.</span>
+                <span class="drawing-section-title" data-i18n="drawing.preview.title">Khung vẽ trên giấy</span>
+                <span class="drawing-section-description" data-i18n="drawing.preview.desc">Kéo, co giãn, xoay nét ngay trên tờ giấy; số liệu bên dưới.</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
-                <div class="drawing-preview-grid">
-                  <div class="drawing-preview-box">
-                    <h3 data-i18n="drawing.preview.original">Ảnh gốc</h3>
-                    <div class="drawing-image-stage" id="original-image-stage">
-                      <span data-i18n="drawing.preview.noImage">Chưa có ảnh</span>
-                    </div>
-                  </div>
-                  <div class="drawing-preview-box">
-                    <h3 data-i18n="drawing.preview.paths">Đường nét</h3>
-                    <div class="drawing-image-stage" id="vector-image-stage">
-                      <span data-i18n="drawing.preview.notVectorized">Chưa vector hóa</span>
-                    </div>
-                  </div>
+                <div class="drawing-canvas-toolbar">
+                  <button data-i18n="drawing.canvas.fit" disabled="" id="drawing-fit-btn" type="button">Xem toàn bộ</button>
+                  <button data-i18n="drawing.canvas.rotate" disabled="" id="drawing-rotate-btn" type="button">Xoay 90°</button>
+                  <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Giữ Shift + cuộn để thu phóng</span>
+                  <span class="muted-text" id="drawing-canvas-zoom">—</span>
+                </div>
+                <div class="drawing-canvas-stage" id="drawing-canvas-stage">
+                  <canvas aria-label="Khung vẽ" id="drawing-canvas" height="600" width="520"></canvas>
+                  <span class="drawing-canvas-empty" data-i18n="drawing.canvas.empty" id="drawing-canvas-empty">Chưa có bản vẽ. Nạp tệp để bắt đầu.</span>
+                </div>
+                <div class="drawing-image-stage drawing-original" id="original-image-stage">
+                  <span data-i18n="drawing.preview.noImage">Chưa có ảnh</span>
+                </div>
+                <div aria-live="polite" class="drawing-progress" id="drawing-progress">
+                  <progress id="drawing-progress-bar" max="1" value="0"></progress>
+                  <span class="muted-text" data-i18n="drawing.progress.idle" id="drawing-progress-text">Chưa có tác vụ</span>
+                  <button class="danger-button" data-i18n="drawing.progress.cancel" disabled="" id="drawing-cancel-btn" type="button">Hủy</button>
                 </div>
                 <div class="drawing-preview-actions">
-                  <button data-i18n="drawing.workflow.step2" disabled="" id="preprocess-image-btn" type="button">Tiền xử lý</button>
-                  <button data-i18n="drawing.workflow.step3" disabled="" id="vectorize-image-btn" type="button">Vector hóa</button>
+                  <button data-i18n="drawing.action.draft" disabled="" id="draft-run-btn" type="button">Tạo nháp (nhanh)</button>
+                  <button data-i18n="drawing.action.final" disabled="" id="final-run-btn" type="button">Tạo chính thức</button>
                   <button data-i18n="drawing.workflow.step4" disabled="" id="generate-gcode-btn" type="button">Tạo G-code</button>
                 </div>
                 <div aria-live="polite" class="drawing-warnings" id="drawing-warnings">
@@ -858,60 +960,27 @@
                   </label>
                   <div class="drawing-preview-actions">
                     <button data-i18n="common.action.regenerate" disabled="" id="regenerate-gcode-btn" type="button">Tạo lại</button>
-                    <button data-i18n="common.action.saveGcode" disabled="" id="save-gcode-btn" type="button">Lưu G-code</button>
+                    <button data-i18n="drawing.action.saveDraft" disabled="" id="save-draft-btn" type="button">Lưu bản thảo</button>
                     <button class="primary-button" data-i18n="common.action.sendToControl" disabled="" id="send-to-control-btn" type="button">Chuyển sang Điều khiển</button>
                   </div>
                 </div>
-                <p class="help-text" data-i18n="drawing.preview.lockedHelp">
-                  Chưa có API xử lý ảnh/G-code được nối tại bước này.
-                  Các thao tác trên đang bị khóa.
+                <p class="help-text" data-i18n="drawing.preview.sendHelp">
+                  Chuyển sang Điều khiển sẽ lưu bản thảo và đưa vào Hàng đợi công việc.
                 </p>
               </div>
             </details>
 
             <details class="panel drawing-section" open="">
               <summary class="drawing-section-summary">
-                <span class="drawing-section-title" data-i18n="drawing.info.title">Thông tin bản vẽ</span>
+                <span class="drawing-section-title" data-i18n="drawing.drafts.title">Bản thảo đã lưu</span>
+                <span class="drawing-section-description" data-i18n="drawing.drafts.desc">Mới nhất trước; ghim để giữ lại và đưa lên đầu.</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
-                <dl class="detail-list">
-                  <div>
-                    <dt data-i18n="drawing.info.source">Tệp nguồn</dt>
-                    <dd id="drawing-source-info">—</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.dimensions">Kích thước đường vẽ</dt>
-                    <dd id="drawing-size-info">—</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.pathCount">Số đường nét</dt>
-                    <dd id="drawing-path-count">—</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.gcode">G-code</dt>
-                    <dd data-i18n="drawing.info.notGenerated" id="drawing-gcode-status">Chưa tạo</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.bounds">Vùng bao (X × Y)</dt>
-                    <dd id="drawing-bounds-info">—</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.length">Độ dài nét vẽ · di chuyển</dt>
-                    <dd id="drawing-length-info">—</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.eta">Thời gian ước tính</dt>
-                    <dd id="drawing-eta-info">—</dd>
-                  </div>
-                  <div>
-                    <dt data-i18n="drawing.info.inBounds">Trong vùng làm việc?</dt>
-                    <dd id="drawing-in-bounds">—</dd>
-                  </div>
-                </dl>
+                <p class="muted-text" data-i18n="drawing.drafts.empty" id="drawing-draft-empty">Chưa có bản thảo.</p>
+                <ul class="draft-list" id="drawing-draft-list"></ul>
               </div>
             </details>
-
           </div>
         </div>
       </section>
@@ -1006,6 +1075,77 @@
           </article>
 
 
+          <article class="panel" id="draft-settings-panel">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="settings.drafts.title">Bản thảo</h2>
+                <p data-i18n="settings.drafts.desc">Nơi lưu G-code, ảnh minh họa và thông số của các bản vẽ đã tạo.</p>
+              </div>
+              <span class="panel-tag" id="draft-settings-folder" title="Thư mục đang dùng">—</span>
+            </div>
+            <div class="form-grid form-grid-spaced">
+              <label for="draft-dir">
+                <span data-i18n="settings.drafts.dir">Thư mục bản thảo (trống = mặc định)</span>
+                <input id="draft-dir" placeholder="D:/ExtruXY/ban-thao" type="text"/>
+              </label>
+              <label for="draft-max-count">
+                    <span data-i18n="settings.drafts.maxCount">Số bản tối đa</span>
+                    <input id="draft-max-count" type="number" min="1" max="1000" step="1" value="50"/>
+                  </label>
+              <label for="draft-max-mb">
+                    <span data-i18n="settings.drafts.maxMb">Dung lượng tối đa (MB)</span>
+                    <input id="draft-max-mb" type="number" min="10" max="100000" step="10" value="500"/>
+                  </label>
+            </div>
+            <div class="mc-actions">
+              <button class="primary-button" data-i18n="common.action.save" id="draft-settings-save-btn" type="button">Lưu</button>
+              <span class="mc-status" id="draft-settings-status" role="status"></span>
+            </div>
+            <p class="help-text" data-i18n="settings.drafts.help">
+              Bản đã ghim không tính vào hạn mức. Vượt hạn mức thì xóa bản cũ nhất chưa ghim.
+            </p>
+          </article>
+
+          <article class="panel">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="settings.behavior.title">Hoạt động</h2>
+                <p data-i18n="settings.behavior.desc">Cách giao diện cập nhật và xác nhận thao tác.</p>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div>
+                <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật trạng thái</strong>
+                <p data-i18n="settings.behavior.pollDesc">Khoảng thời gian giữa hai lần đọc trạng thái máy.</p>
+              </div>
+              <select id="poll-interval">
+                <option data-i18n="settings.behavior.ms300" value="300">300 ms</option>
+                <option data-i18n="settings.behavior.ms500" selected="" value="500">500 ms</option>
+                <option data-i18n="settings.behavior.s1" value="1000">1 giây</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <strong data-i18n="settings.behavior.confirmHome">Xác nhận trước khi Home</strong>
+                <p data-i18n="settings.behavior.confirmHomeDesc">Hỏi lại trước khi máy tự chạy về công tắc hành trình.</p>
+              </div>
+              <select id="confirm-home">
+                <option data-i18n="common.status.on" selected="" value="on">Bật</option>
+                <option data-i18n="common.status.off" value="off">Tắt</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <div>
+                <strong data-i18n="settings.behavior.shortcuts">Phím tắt bàn phím</strong>
+                <p data-i18n="settings.behavior.shortcutsDesc">Jog bằng phím mũi tên. Mặc định tắt để tránh bấm nhầm.</p>
+              </div>
+              <select id="shortcuts-enabled">
+                <option data-i18n="common.status.off" selected="" value="off">Tắt</option>
+                <option data-i18n="common.status.on" value="on">Bật</option>
+              </select>
+            </div>
+          </article>
+
           <article class="panel machine-config-panel" id="machine-config-panel">
             <div class="panel-heading">
               <div>
@@ -1058,53 +1198,24 @@
               tệp YAML để lần bật sau vẫn còn; bản gốc được sao lưu về máy tính trước.
             </p>
           </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.behavior.title">Hoạt động</h2>
-                <p data-i18n="settings.behavior.desc">Cách giao diện cập nhật và xác nhận thao tác.</p>
-              </div>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật trạng thái</strong>
-                <p data-i18n="settings.behavior.pollDesc">Khoảng thời gian giữa hai lần đọc trạng thái máy.</p>
-              </div>
-              <select id="poll-interval">
-                <option data-i18n="settings.behavior.ms300" value="300">300 ms</option>
-                <option data-i18n="settings.behavior.ms500" selected="" value="500">500 ms</option>
-                <option data-i18n="settings.behavior.s1" value="1000">1 giây</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.behavior.confirmHome">Xác nhận trước khi Home</strong>
-                <p data-i18n="settings.behavior.confirmHomeDesc">Hỏi lại trước khi máy tự chạy về công tắc hành trình.</p>
-              </div>
-              <select id="confirm-home">
-                <option data-i18n="common.status.on" selected="" value="on">Bật</option>
-                <option data-i18n="common.status.off" value="off">Tắt</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.behavior.shortcuts">Phím tắt bàn phím</strong>
-                <p data-i18n="settings.behavior.shortcutsDesc">Jog bằng phím mũi tên. Mặc định tắt để tránh bấm nhầm.</p>
-              </div>
-              <select id="shortcuts-enabled">
-                <option data-i18n="common.status.off" selected="" value="off">Tắt</option>
-                <option data-i18n="common.status.on" value="on">Bật</option>
-              </select>
-            </div>
-          </article>
-
         </div>
       </section>
 
     </main>
   </div>
 
+
+<!-- Xem ảnh nháp của một bản thảo (views/drafts.js) -->
+<div class="glass-modal-overlay" id="custom-draft-modal" hidden>
+  <div class="glass-modal-box draft-modal-box" role="dialog" aria-modal="true" aria-labelledby="draft-modal-title">
+    <h3 id="draft-modal-title">—</h3>
+    <p class="muted-text" id="draft-modal-meta">—</p>
+    <div class="draft-modal-stage"><img alt="" id="draft-modal-img"/></div>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="drawing.drafts.close" id="draft-modal-close-btn" type="button">Đóng</button>
+    </div>
+  </div>
+</div>
 
 <!-- Bảng thông báo Reset (Glassmorphism Modal) -->
 <div class="glass-modal-overlay" id="custom-reset-modal" hidden>
