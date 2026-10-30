@@ -14,6 +14,8 @@ import re
 import threading
 import time
 
+from . import resume
+
 MAX_LINES = 200_000
 MAX_LINE_LEN = 200
 RESPONSE_TIMEOUT_S = 120.0     # chờ `ok` tối đa (không tính lúc máy đang Hold)
@@ -67,6 +69,8 @@ class JobRunner:
         self._cancel = False
         self._awaiting = False
         self._response: tuple[str, dict] | None = None
+        self._lines: list[str] | None = None       # dòng của tác vụ hiện tại (để ghi điểm dừng)
+        self._origin: dict | None = None           # tác vụ tiếp tục: {lines, base, prefix}
 
     # --- trạng thái ------------------------------------------------------------
     @property
@@ -95,7 +99,8 @@ class JobRunner:
         return info
 
     # --- điều khiển ------------------------------------------------------------
-    def start(self, name: str, raw_lines: list[str], pre_cleaned: bool = False) -> dict:
+    def start(self, name: str, raw_lines: list[str], pre_cleaned: bool = False,
+              origin: dict | None = None) -> dict:
         lines = raw_lines if pre_cleaned else clean_gcode(raw_lines)
         if not lines:
             raise JobError("empty_job", "Tệp không có dòng lệnh nào.")
@@ -106,6 +111,7 @@ class JobRunner:
             self._cancel = False
             self._awaiting = False
             self._response = None
+            self._lines, self._origin = lines, origin
             self._info = {"id": self._counter, "name": name, "mode": "stream",
                           "state": "running", "total": len(lines), "sent": 0, "acked": 0,
                           "started_at": time.time(), "finished_at": None, "error": None}
@@ -156,6 +162,34 @@ class JobRunner:
         self._info["finished_at"] = time.time()
         self._awaiting = False
         self._response = None
+        self._record_stop(state)
+
+    def _record_stop(self, state: str) -> None:
+        """Xong trọn vẹn: xóa điểm dừng. Hủy / lỗi / mất kết nối: ghi điểm dừng (xem services/resume.py)."""
+        if state == "done":
+            resume.clear()
+            return
+        if state not in ("cancelled", "failed") or self._lines is None:
+            return
+        info, error = self._info, self._info["error"]
+        acked = info["acked"] - (1 if error and error.get("code") == "device_error" else 0)
+        lines, origin = self._lines, self._origin
+        if origin is not None:
+            done = origin["base"] + max(0, acked - origin["prefix"])
+            lines = origin["lines"]
+        else:
+            done = max(0, acked)
+        name = origin["name"] if origin is not None else info["name"]
+        # Ghi tệp ở luồng riêng: đang giữ khóa của tác vụ, không để ổ đĩa chậm làm kẹt việc dừng máy.
+        threading.Thread(target=self._persist_stop, args=(name, lines, done, state, error),
+                         name="resume-save", daemon=True).start()
+
+    def _persist_stop(self, name, lines, done, state, error) -> None:
+        wco = None
+        getter = getattr(self._svc, "work_offset", None)
+        if getter is not None:
+            wco = getter()
+        resume.save(name, lines, done, state, error, wco)
 
     def _fail(self, code: str, text: str, line: int | None = None,
               device_code: int | None = None) -> None:

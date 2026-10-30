@@ -41,7 +41,8 @@ Vì khách tải ảnh không cần đăng nhập, trang này nằm trên intern
 - Chạy bằng dịch vụ systemd (`Restart=always`), tài khoản riêng không có quyền root.
 - Cổng USB: tài khoản dịch vụ thuộc nhóm `dialout`; thêm quy tắc udev để mạch MKS luôn có một tên cố định (ví dụ `/dev/ttyMKS`) dù cắm lại.
 - Nhật ký: ghi ra tệp, giữ 3 ngày, xoay vòng (hiện chỉ nằm trong bộ nhớ).
-- Giữ nguyên thư mục `data/` khi cập nhật (bản thảo, cài đặt, PIN băm).
+- Giữ nguyên thư mục `data/` khi cập nhật (bản thảo, macro, sao lưu cấu hình, cài đặt, PIN băm). Đặt `EXTRUXY_DATA_DIR` (vd `/var/lib/extruxy`) để dữ liệu nằm ngoài thư mục mã.
+- `/api/storage*`, `/api/macros`, `/api/jobs/resume` cũng phải vào bảng phân quyền: khách không được xem/tải dữ liệu hệ thống hay tiếp tục tác vụ.
 - ⚠ Cần thử riêng trên Ubuntu: giới hạn RAM của tiến trình xử lý ảnh (`RLIMIT_AS`), cài `opencv-python-headless` và `scikit-image`, quyền ghi thư mục bản thảo.
 
 - ⚠ Nếu sau này đóng gói thành file exe: `isolated.py` khởi động tiến trình con bằng `python -m ...` nên bản exe phải đổi cách khởi động (hoặc đặt `EXTRUXY_DRAW_INPROC=1`). Trên Ubuntu chạy từ mã nguồn thì không vướng.

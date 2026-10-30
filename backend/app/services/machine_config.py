@@ -20,11 +20,11 @@ import math
 import re
 import time
 from dataclasses import dataclass
-from pathlib import Path
 
 import yaml
 
-BACKUP_DIR = Path(__file__).resolve().parents[2] / "data" / "config_backups"
+from .. import paths
+
 FILE_TIMEOUT_S = 10.0           # $CD / $LocalFS/Show trả ~200 dòng qua 115200 baud
 VALUE_TOL = 1e-3
 
@@ -202,9 +202,10 @@ _BACKUP_NAME = re.compile(r"\d{8}-\d{6}_[\w.\-]+\.ya?ml")
 
 def list_backups() -> list[dict]:
     """Bản sao lưu trên máy tính, mới nhất trước."""
-    if not BACKUP_DIR.is_dir():
+    folder = paths.backups_dir()
+    if not folder.is_dir():
         return []
-    items = [p for p in BACKUP_DIR.iterdir() if p.is_file() and _BACKUP_NAME.fullmatch(p.name)]
+    items = [p for p in folder.iterdir() if p.is_file() and _BACKUP_NAME.fullmatch(p.name)]
     items.sort(key=lambda p: p.name, reverse=True)       # tên bắt đầu bằng ngày giờ
     return [{"name": p.name, "size": p.stat().st_size} for p in items]
 
@@ -217,7 +218,7 @@ def read_backup(name: str) -> dict:
     """
     if not _BACKUP_NAME.fullmatch(name or ""):
         raise ConfigError("bad_param", "Tên bản sao lưu không hợp lệ.")
-    path = BACKUP_DIR / name
+    path = paths.backups_dir() / name
     if not path.is_file():
         raise ConfigError("not_found", f"Không có bản sao lưu {name}.", 404)
     values = extract(parse_yaml(path.read_text(encoding="utf-8").splitlines()))
@@ -231,8 +232,9 @@ def save_to_board(svc) -> dict:
     original = svc.query(f"$LocalFS/Show=/{name}", timeout=FILE_TIMEOUT_S)
     if not original:
         raise ConfigError("bad_config", f"Không đọc được tệp {name} để sao lưu.", 502)
-    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-    backup = BACKUP_DIR / f"{time.strftime('%Y%m%d-%H%M%S')}_{name}"
+    folder = paths.backups_dir()
+    folder.mkdir(parents=True, exist_ok=True)
+    backup = folder / f"{time.strftime('%Y%m%d-%H%M%S')}_{name}"
     backup.write_text("\n".join(original) + "\n", encoding="utf-8")
     svc.log_system(f"Config: original {name} backed up to {backup}")
 

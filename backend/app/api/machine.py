@@ -28,6 +28,10 @@ class JobStartRequest(BaseModel):
     lines: list[Annotated[str, Field(max_length=4096)]] = Field(min_length=1, max_length=200_000)
 
 
+class ResumeRequest(BaseModel):
+    accept_wco_change: bool = False
+
+
 class RealtimeRequest(BaseModel):
     action: Literal["status", "hold", "resume", "reset", "jog_cancel",
                     "feed_reset", "feed_plus10", "feed_minus10", "feed_plus1", "feed_minus1"]
@@ -103,6 +107,21 @@ def log(since: int = 0):
 @router.post("/jobs")
 def start_job(req: JobStartRequest):
     return machine.start_job(req.name, req.lines)
+
+
+@router.get("/jobs/resume")
+def resume_info():
+    return machine.resume_info()
+
+
+@router.post("/jobs/resume")
+def resume_job(req: ResumeRequest = ResumeRequest()):
+    return machine.resume_job(req.accept_wco_change)
+
+
+@router.delete("/jobs/resume")
+def resume_discard():
+    return machine.discard_resume()
 
 
 @router.post("/jobs/cancel")

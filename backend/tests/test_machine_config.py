@@ -32,7 +32,6 @@ junction_deviation_mm: 0.010000
 
 @pytest.fixture
 def svc(tmp_path, monkeypatch):
-    monkeypatch.setattr(mc, "BACKUP_DIR", tmp_path / "backups")
     s = MachineService(allow_motion=True)
     s.connect("sim", sim_speed=50)
     assert wait_for(lambda: s._status is not None, 3.0)
@@ -84,7 +83,7 @@ def test_apply_changes_ram_and_marks_unsaved_then_save_clears_it(svc, tmp_path):
 
     result = mc.save_to_board(svc)
     assert result["verified"] is True
-    backups = list((tmp_path / "backups").iterdir())
+    backups = list((tmp_path / "data" / "config_backups").iterdir())
     assert len(backups) == 1 and "6000" in backups[0].read_text(encoding="utf-8")  # bản GỐC
     assert mc.read_config(svc)["unsaved"] == []
 
@@ -121,7 +120,6 @@ def test_device_error_is_reported(svc):
 # --- API ---------------------------------------------------------------------------
 @pytest.fixture
 def client(tmp_path, monkeypatch):
-    monkeypatch.setattr(profile, "PROFILE_PATH", tmp_path / "profile.json")
     machine.disconnect()
     yield TestClient(app)
     machine.disconnect()
@@ -135,7 +133,6 @@ def test_config_route_needs_connection(client):
 
 
 def test_config_routes_with_sim(client, tmp_path, monkeypatch):
-    monkeypatch.setattr(mc, "BACKUP_DIR", tmp_path / "backups")
     client.post("/api/connect", json={"mode": "sim", "sim_speed": 50})
     assert wait_for(lambda: client.get("/api/status").json()["machine"] is not None)
     assert client.get("/api/machine/config").json()["file"] == "ConfigNCKH-16.yaml"
@@ -176,7 +173,6 @@ def test_backups_list_and_read(svc, tmp_path):
 
 
 def test_backup_routes(client, tmp_path, monkeypatch):
-    monkeypatch.setattr(mc, "BACKUP_DIR", tmp_path / "backups")
     assert client.get("/api/machine/config/backups").json() == {"backups": []}
     r = client.get("/api/machine/config/backups/20261029-120000_ConfigNCKH-16.yaml")
     assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"

@@ -101,11 +101,16 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 | Khung nhìn 2D | Phóng/thu, toàn cảnh, xóa vết, phát lại | Chỉ xem trước **một** G-code đang được chọn |
 | Hàng đợi công việc | Làm mới, Nạp, Ghim, Đẩy ưu tiên, Mở xem | Đọc thẳng các bản thảo đã lưu |
 | Terminal | Gửi, Xóa log hiển thị | Gửi lệnh tay |
-| Dock bên trái | Macro | Lệnh lưu sẵn (thêm/sửa/xóa) |
+| Dock bên trái | Macro | Lệnh lưu sẵn (thêm/sửa/xóa), lưu ở máy chủ |
+| Dock bên trái | Tệp nhanh | Các bản thảo đã ghim; bấm để nạp sang Điều khiển (vẫn phải Xem trước + xác nhận) |
+| Tệp G-code | Lưu vào bản thảo | Lưu tệp đang nạp thành một bản thảo (một tệp một bản) để ghim, chạy nhanh, nằm trong Hàng đợi |
+| Tệp G-code | Tiếp tục / Bỏ điểm dừng | Chỉ hiện khi có tác vụ đã dừng giữa chừng (hủy, lỗi, mất kết nối). Tiếp tục = lùi một đoạn, nâng bút, chạy tới đầu nét rồi vẽ tiếp; đừng đặt lại Zero hay dịch giấy |
+| Tạo bản vẽ → Bản thảo | Tạo tờ mẫu hiệu chỉnh bút | Bản thảo A5: chữ F, thước 100 mm, 8 dải tô để chọn khoảng cách dòng |
 
 ## 5. Cài đặt
 - **Kết nối:** chọn cổng, Kết nối / Ngắt kết nối. **Giao diện chung:** ngôn ngữ. **Hoạt động:** tùy chọn hành vi.
-- **Bản thảo:** thư mục lưu (mặc định `data/drafts`, có thể đổi sang ổ khác), số bản tối đa, dung lượng tối đa. Vượt hạn mức thì xóa bản **cũ nhất không ghim**.
+- **Bản thảo:** số bản tối đa, dung lượng tối đa (thư mục cố định). Vượt hạn mức thì xóa bản **cũ nhất không ghim**.
+- **Lưu trữ dữ liệu:** xem (không sửa) và tải về nội dung 3 thư mục: bản thảo, sao lưu cấu hình, macro, cùng các tệp lẻ (hồ sơ máy, điểm dừng).
 - **Hồ sơ máy:** vùng làm việc, Z bút. **Cấu hình máy:** đọc/ghi YAML trên mạch (có sao lưu, hoàn tác).
 
 ## 6. Chưa kiểm chứng / còn lại

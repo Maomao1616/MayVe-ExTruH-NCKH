@@ -2,7 +2,7 @@
 
 Phần mềm điều khiển máy vẽ CoreXY (vùng làm việc 285 × 318 mm, giấy A6/A5/A4), chạy trên laptop và nối với bo mạch **MKS DLC32 V2.1** chạy firmware **FluidNC v4.1.1** qua cáp USB (CH340). Không sửa firmware; dùng giao thức có sẵn của FluidNC.
 
-- **Tab Điều khiển:** kết nối, trạng thái, jog, Home/Zero, bút lên xuống, nạp + xem trước + chạy G-code, hủy an toàn, terminal, macro, hàng đợi công việc.
+- **Tab Điều khiển:** kết nối, trạng thái, jog, Home/Zero, bút lên xuống, nạp + xem trước + chạy G-code, hủy an toàn, tiếp tục tác vụ đã dừng, terminal, macro, tệp nhanh (bản thảo ghim), hàng đợi công việc.
 - **Tab Tạo bản vẽ:** nạp SVG hoặc ảnh → tạo nét (zigzag, sóng, xoắn ốc, viền; đơn sắc hoặc 2–4 màu) → bố trí lên giấy → G-code → lưu bản thảo → chuyển sang Điều khiển.
 - **Tab Cài đặt:** kết nối, hoạt động, thư mục bản thảo, cấu hình máy (đọc/ghi YAML trên mạch), hồ sơ phần mềm.
 
@@ -31,8 +31,8 @@ Mở `http://127.0.0.1:8000/`. Hàng ngày: bấm đúp **`Bat Khien EXTRUH.bat`
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~270 test) | trong `backend`, đã bật venv: `python -m pytest` |
-| Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs` |
+| Test backend (~326 test) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 
 ## Máy thật: dùng thế nào cho an toàn
@@ -65,7 +65,7 @@ tools/export_context.py            Xuất mã gọn cho AI + sinh docs/CODEMAP.m
 docs/                              Tài liệu (bảng trên)
 samples/                           G-code mẫu
 ```
-Dữ liệu riêng của từng máy (hồ sơ, sao lưu cấu hình, bản thảo) nằm ở `backend/data/`, không lên Git.
+Dữ liệu riêng của từng máy nằm ở `backend/data/`, không lên Git, tự tạo khi cần: `drafts/` (bản thảo), `config_backups/` (sao lưu cấu hình), `macros/`, cùng `profile.json`, `resume.json`. Xem được trong Cài đặt → Lưu trữ dữ liệu; đổi gốc bằng biến môi trường `EXTRUXY_DATA_DIR`.
 
 ## Làm việc với Git
 Trước khi làm: `git pull`. Xong một việc nhỏ: `git add .`, `git commit -m "mô tả ngắn"`, `git push`. Mỗi commit một việc; không đẩy mật khẩu, token, `.venv`, `backend/data/`.

@@ -12,6 +12,7 @@ import { MACHINE, PREFS } from "../core/config.js";
 import { subscribe, isConnected, isStale, firmwareLabel } from "../core/state.js";
 import { parseGcode, outOfRange, formatDuration } from "../lib/gcode.js";
 import { store, setFile, requestPreview, subscribeStore } from "../stores/jobstore.js";
+import { refreshDrafts } from "../stores/draftstore.js";
 import { initPreview } from "./preview.js";
 
 const $ = (id) => document.getElementById(id);
@@ -431,6 +432,11 @@ function initGcodePanel() {
     const cancelButton = $("cancel-job-btn");
     if ( !fileInput || !previewButton || !confirmBox || !runButton) return;
 
+    const saveDraftButton = $("save-gcode-draft-btn");
+    const resumeBox = $("resume-box");
+    const resumeRun = $("resume-run-btn");
+    const resumeDiscard = $("resume-discard-btn");
+    let resume = { available: false };   // điểm dừng đang lưu ở backend (GET /api/jobs/resume)
     let previewed = false;       // đã bấm Xem trước cho tệp hiện tại
     let lastSnapshot = null;
     let lastJob = { id: null, state: null };
@@ -460,6 +466,21 @@ function initGcodePanel() {
         }
     });
 
+    // Một tệp = một bản thảo: gửi các dòng đã làm sạch lên máy chủ (nó kiểm lại, dựng ảnh minh họa, lưu).
+    saveDraftButton?.addEventListener("click", async () => {
+        const file = store.file;
+        if (!file) return;
+        saveDraftButton.disabled = true;
+        try {
+            const { draft } = await api.drawGcodeImport(file.name, file.parsed.lines, MACHINE.travelX, MACHINE.travelY);
+            await refreshDrafts();
+            message({ text: `Saved to drafts: ${draft.name}` });
+        } catch (error) {
+            message({ error });
+        }
+        render();
+    });
+
     previewButton.addEventListener("click", () => {
         if (!store.file) return;
         previewed = true;
@@ -481,6 +502,99 @@ function initGcodePanel() {
         }
         render();
     });
+
+    /* --- tiếp tục từ điểm dừng (hủy / lỗi / mất kết nối) --- */
+    async function refreshResume() {
+        try { resume = await api.jobResumeInfo(); } catch { return; }      // lỗi mạng: giữ bản đang có
+        render();
+    }
+
+    // Hộp xác nhận (thay cho window.confirm): tóm tắt điểm dừng, nhắc 3 việc cần kiểm, phải tick mới bấm được.
+    const modal = $("resume-modal");
+    const ack = $("resume-modal-ack");
+    const modalConfirm = $("resume-modal-confirm");
+    const fill = (template, vars) => Object.entries(vars).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), template);
+
+    function closeResumeModal() {
+        modal?.setAttribute("hidden", "");
+        if (ack) ack.checked = false;
+        if (modalConfirm) modalConfirm.disabled = true;
+    }
+
+    function openResumeModal() {
+        if (!modal || !resume.resumable) return;
+        setText("resume-modal-name", resume.name);
+        setText("resume-modal-done", fill(t("control.resume.factDone"), { done: resume.done, total: resume.total }));
+        setText("resume-modal-line", String(resume.resume_line));
+        setText("resume-modal-back", fill(t("control.resume.factBack"), { n: resume.rewound }));
+        const wco = $("resume-modal-wco");
+        if (wco) wco.hidden = !resume.wco_changed;
+        if (ack) ack.checked = false;
+        if (modalConfirm) modalConfirm.disabled = true;
+        modal.removeAttribute("hidden");
+        ack?.focus();
+    }
+
+    resumeRun?.addEventListener("click", openResumeModal);
+    ack?.addEventListener("change", () => { if (modalConfirm) modalConfirm.disabled = !ack.checked; });
+    $("resume-modal-cancel")?.addEventListener("click", closeResumeModal);
+    modal?.addEventListener("click", (event) => { if (event.target === modal) closeResumeModal(); });
+    window.addEventListener("keydown", (event) => { if (event.key === "Escape" && modal && !modal.hidden) closeResumeModal(); });
+
+    modalConfirm?.addEventListener("click", async () => {
+        if (!ack?.checked) return;
+        const acceptChange = resume.wco_changed === true;          // đã thấy cảnh báo trong hộp và vẫn tick
+        closeResumeModal();
+        resumeRun.disabled = true;
+        try {
+            await api.jobResume(acceptChange);
+        } catch (error) {
+            message({ error });
+        }
+        refreshResume();
+    });
+
+    // Hộp xác nhận bỏ điểm dừng (thay cho window.confirm)
+    const discardModal = $("discard-modal");
+    const closeDiscardModal = () => discardModal?.setAttribute("hidden", "");
+
+    resumeDiscard?.addEventListener("click", () => {
+        if (!discardModal) return;
+        setText("discard-modal-name", resume.name ?? "—");
+        setText("discard-modal-done", fill(t("control.resume.factDone"), { done: resume.done ?? 0, total: resume.total ?? 0 }));
+        discardModal.removeAttribute("hidden");
+        $("discard-modal-cancel")?.focus();            // mặc định là "Giữ lại": bấm Enter nhầm cũng an toàn
+    });
+    $("discard-modal-cancel")?.addEventListener("click", closeDiscardModal);
+    discardModal?.addEventListener("click", (event) => { if (event.target === discardModal) closeDiscardModal(); });
+    window.addEventListener("keydown", (event) => { if (event.key === "Escape" && discardModal && !discardModal.hidden) closeDiscardModal(); });
+    $("discard-modal-confirm")?.addEventListener("click", async () => {
+        closeDiscardModal();
+        try { await api.jobResumeDiscard(); } catch (error) { message({ error }); }
+        refreshResume();
+    });
+
+    function renderResume(job, snapshot) {
+        if (!resumeBox) return;
+        const active = isActive(job) || snapshot?.status?.stopping;
+        resumeBox.hidden = !resume.available || Boolean(active);
+        if (resumeBox.hidden) return;
+        const state = t(`control.resume.state.${resume.state}`);
+        let text;
+        if (resume.resumable) {
+            text = t("control.resume.text").replace("{name}", resume.name).replace("{state}", state)
+                .replace("{done}", String(resume.done)).replace("{total}", String(resume.total))
+                .replace("{line}", String(resume.resume_line));
+        } else {
+            text = `${resume.name} (${state}): ${resume.message ?? t("control.resume.notResumable")}`;
+        }
+        setText("resume-text", text);
+        const connection = snapshot?.status?.connection;
+        const ready = isConnected() && !isStale() && connection?.motion_unlocked !== false &&
+            snapshot?.status?.machine?.state === "Idle";
+        resumeRun.disabled = !(resume.resumable && ready);
+        resumeRun.title = resume.resumable && !ready ? t("control.resume.needIdle") : "";
+    }
 
     // --- XỬ LÝ NÚT VÀ HỘP THOẠI HỦY TÁC VỤ (Đặt trong initPreview) ---
     const cancelJobBtn = document.getElementById("cancel-job-btn");
@@ -556,6 +670,7 @@ function initGcodePanel() {
         const connection = snapshot?.status?.connection;
         const machineState = snapshot?.status?.machine?.state;
         previewButton.disabled = !file;
+        if (saveDraftButton) saveDraftButton.disabled = !file;
         confirmBox.disabled = !file || !previewed || active;
         if (confirmBox.disabled && !active) confirmBox.checked = false;
 
@@ -576,6 +691,7 @@ function initGcodePanel() {
         }
 
         renderProgress(job);
+        renderResume(job, snapshot);
         reportJobTransitions(job);
     }
 
@@ -623,6 +739,9 @@ function initGcodePanel() {
         const first = job.id !== lastJob.id;
         lastJob = { id: job.id, state: job.state };
         if (first && job.state === "running") return;   // đã có dòng "Job started" từ backend
+        if (job.state === "done" || job.state === "failed" || job.state === "cancelled") {
+            setTimeout(refreshResume, 600);       // backend ghi/xóa điểm dừng ở luồng riêng, chờ một chút
+        }
         if (job.state === "done") {
             message({ text: `Job finished: ${job.name} (${formatDuration(job.elapsed_s)}).` });
         } else if (job.state === "failed") {
@@ -636,4 +755,5 @@ function initGcodePanel() {
 
     subscribeStore(() => render());
     subscribe((snapshot) => { lastSnapshot = snapshot; render(); });
+    refreshResume();
 }

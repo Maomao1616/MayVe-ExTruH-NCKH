@@ -148,7 +148,8 @@
 
         <section class="dock-section">
           <h3 data-i18n="dock.files">Tệp nhanh</h3>
-          <p class="help-text" data-i18n="dock.files.soon">Chạy nhanh tệp từ thẻ SD / flash sẽ có khi phần lưu trữ sẵn sàng.</p>
+          <p class="help-text" data-i18n="dock.files.empty" id="dock-files-empty">Chưa có bản thảo nào được ghim. Ghim bản thảo ở tab Tạo bản vẽ để chạy nhanh tại đây.</p>
+          <div class="dock-list" id="dock-files-list"></div>
         </section>
       </div>
       <button aria-controls="dock-panel" aria-expanded="false" class="dock-handle" data-i18n="[title]dock.toggle; [aria-label]dock.toggle" id="dock-toggle" title="Truy cập nhanh" aria-label="Truy cập nhanh" type="button">⚡</button>
@@ -383,6 +384,16 @@
               <div class="gcode-actions">
                 <button data-i18n="common.action.preview" disabled="" id="preview-gcode-btn" type="button">Xem trước</button>
                 <button class="primary-button" data-i18n="common.action.run" disabled="" id="run-job-btn" type="button">▶ Chạy</button>
+              </div>
+              <button class="secondary-button" data-i18n="control.gcode.saveDraft; [title]control.gcode.saveDraftHelp" disabled="" id="save-gcode-draft-btn" type="button">Lưu vào bản thảo</button>
+              <div class="resume-box" hidden="" id="resume-box" role="status">
+                <strong data-i18n="control.resume.title">Tác vụ đã dừng giữa chừng</strong>
+                <p id="resume-text"></p>
+                <p class="help-text" data-i18n="control.resume.help">Sau khi Home, đừng đặt lại Zero và đừng dịch giấy. Bút sẽ nâng lên, chạy tới đầu nét rồi vẽ tiếp.</p>
+                <div class="gcode-actions">
+                  <button class="primary-button" data-i18n="control.resume.run" disabled="" id="resume-run-btn" type="button">▶ Tiếp tục</button>
+                  <button data-i18n="control.resume.discard" id="resume-discard-btn" type="button">Bỏ điểm dừng</button>
+                </div>
               </div>
               <div class="feed-override" role="group" aria-labelledby="feed-override-label">
                 <div class="feed-override-head">
@@ -993,6 +1004,10 @@
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
+                <div class="draft-tools">
+                  <button class="secondary-button" data-i18n="drawing.calibration.button" id="calibration-btn" type="button">Tạo tờ mẫu hiệu chỉnh bút</button>
+                  <p class="help-text" data-i18n="drawing.calibration.help">Tờ A5 gồm chữ F (kiểm hướng trục), thước 100 mm (kiểm kích thước) và 8 dải tô thưa dần (chọn khoảng cách dòng đẹp nhất cho bút).</p>
+                </div>
                 <p class="muted-text" data-i18n="drawing.drafts.empty" id="drawing-draft-empty">Chưa có bản thảo.</p>
                 <ul class="draft-list" id="drawing-draft-list"></ul>
               </div>
@@ -1017,150 +1032,175 @@
         </div>
 
         <div class="settings-layout">
-          
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.general.title">Giao diện chung</h2>
-                <p data-i18n="settings.general.desc">Tùy chỉnh hiển thị ứng dụng.</p>
-              </div>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.general.language">Ngôn ngữ</strong>
-                <p data-i18n="settings.general.languageDesc">Ngôn ngữ hiển thị của ứng dụng</p>
-              </div>
-              <select id="language-select">
-                <option data-i18n="language.vi" value="vi">Tiếng Việt</option>
-                <option data-i18n="language.en" value="en">English</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.general.theme">Giao diện</strong>
-                <p data-i18n="settings.general.themeDesc">Chế độ sáng hoặc tối.</p>
-              </div>
-              <select id="theme-select">
-                <option data-i18n="theme.dark" value="dark">Tối</option>
-                <option data-i18n="theme.light" value="light">Sáng</option>
-              </select>
-            </div>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.connection.title">Kết nối máy</h2>
-                <p data-i18n="settings.connection.desc">Thiết lập chế độ kết nối backend.</p>
-              </div>
-            </div>
-            <form id="connection-form">
-              <label for="connection-mode">
-                <span data-i18n="settings.connection.mode">Chế độ kết nối</span>
-                <select id="connection-mode" name="mode">
-                  <option data-i18n="settings.connection.sim" value="sim">Máy giả lập (SimLink)</option>
-                  <option data-i18n="settings.connection.serial" value="serial">Máy thật (Serial)</option>
-                </select>
-              </label>
-              <label for="serial-port">
-                <span data-i18n="settings.connection.port">Cổng COM</span>
-                <div class="input-with-action">
-                  <select disabled="" id="serial-port" name="port">
-                    <option data-i18n="settings.connection.noPort" value="">Chưa tải danh sách cổng</option>
-                  </select>
-                  <button class="secondary-button" data-i18n="common.action.refresh" disabled="" id="refresh-ports-btn" type="button">Làm mới</button>
+          <div class="settings-col">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2 data-i18n="settings.general.title">Giao diện chung</h2>
+                  <p data-i18n="settings.general.desc">Tùy chỉnh hiển thị ứng dụng.</p>
                 </div>
-              </label>
-              <label for="serial-baud">
-                <span data-i18n="settings.connection.baud">Baud rate</span>
-                <select disabled="" id="serial-baud" name="baudrate">
-                  <option selected="" value="115200">115200</option>
-                  <option value="230400">230400</option>
-                  <option value="250000">250000</option>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong data-i18n="settings.general.language">Ngôn ngữ</strong>
+                  <p data-i18n="settings.general.languageDesc">Ngôn ngữ hiển thị của ứng dụng</p>
+                </div>
+                <select id="language-select">
+                  <option data-i18n="language.vi" value="vi">Tiếng Việt</option>
+                  <option data-i18n="language.en" value="en">English</option>
                 </select>
-              </label>
-              <div class="connection-actions">
-                <button class="primary-button" data-i18n="common.action.connect" id="connect-btn" type="submit">Kết nối</button>
-                <button class="secondary-button" data-i18n="common.action.disconnect" disabled="" id="disconnect-btn" type="button">Ngắt kết nối</button>
               </div>
-              <p class="help-text" data-i18n="settings.connection.help" id="connection-help">
-                Hãy kiểm tra chế độ và cổng kết nối trước khi
-                điều khiển máy thật.
+              <div class="setting-row">
+                <div>
+                  <strong data-i18n="settings.general.theme">Giao diện</strong>
+                  <p data-i18n="settings.general.themeDesc">Chế độ sáng hoặc tối.</p>
+                </div>
+                <select id="theme-select">
+                  <option data-i18n="theme.dark" value="dark">Tối</option>
+                  <option data-i18n="theme.light" value="light">Sáng</option>
+                </select>
+              </div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2 data-i18n="settings.connection.title">Kết nối máy</h2>
+                  <p data-i18n="settings.connection.desc">Thiết lập chế độ kết nối backend.</p>
+                </div>
+              </div>
+              <form id="connection-form">
+                <label for="connection-mode">
+                  <span data-i18n="settings.connection.mode">Chế độ kết nối</span>
+                  <select id="connection-mode" name="mode">
+                    <option data-i18n="settings.connection.sim" value="sim">Máy giả lập (SimLink)</option>
+                    <option data-i18n="settings.connection.serial" value="serial">Máy thật (Serial)</option>
+                  </select>
+                </label>
+                <label for="serial-port">
+                  <span data-i18n="settings.connection.port">Cổng COM</span>
+                  <div class="input-with-action">
+                    <select disabled="" id="serial-port" name="port">
+                      <option data-i18n="settings.connection.noPort" value="">Chưa tải danh sách cổng</option>
+                    </select>
+                    <button class="secondary-button" data-i18n="common.action.refresh" disabled="" id="refresh-ports-btn" type="button">Làm mới</button>
+                  </div>
+                </label>
+                <label for="serial-baud">
+                  <span data-i18n="settings.connection.baud">Baud rate</span>
+                  <select disabled="" id="serial-baud" name="baudrate">
+                    <option selected="" value="115200">115200</option>
+                    <option value="230400">230400</option>
+                    <option value="250000">250000</option>
+                  </select>
+                </label>
+                <div class="connection-actions">
+                  <button class="primary-button" data-i18n="common.action.connect" id="connect-btn" type="submit">Kết nối</button>
+                  <button class="secondary-button" data-i18n="common.action.disconnect" disabled="" id="disconnect-btn" type="button">Ngắt kết nối</button>
+                </div>
+                <p class="help-text" data-i18n="settings.connection.help" id="connection-help">
+                  Hãy kiểm tra chế độ và cổng kết nối trước khi
+                  điều khiển máy thật.
+                </p>
+              </form>
+            </article>
+
+            <article class="panel" id="draft-settings-panel">
+              <div class="panel-heading">
+                <div>
+                  <h2 data-i18n="settings.drafts.title">Bản thảo</h2>
+                  <p data-i18n="settings.drafts.desc">Nơi lưu G-code, ảnh minh họa và thông số của các bản vẽ đã tạo.</p>
+                </div>
+                <span class="panel-tag" id="draft-settings-folder" title="Thư mục đang dùng">—</span>
+              </div>
+              <div class="form-grid form-grid-spaced">
+                <label for="draft-max-count">
+                      <span data-i18n="settings.drafts.maxCount">Số bản tối đa</span>
+                      <input id="draft-max-count" type="number" min="1" max="1000" step="1" value="50"/>
+                    </label>
+                <label for="draft-max-mb">
+                      <span data-i18n="settings.drafts.maxMb">Dung lượng tối đa (MB)</span>
+                      <input id="draft-max-mb" type="number" min="10" max="100000" step="10" value="500"/>
+                    </label>
+              </div>
+              <div class="mc-actions">
+                <button class="primary-button" data-i18n="common.action.save" id="draft-settings-save-btn" type="button">Lưu</button>
+                <span class="mc-status" id="draft-settings-status" role="status"></span>
+              </div>
+              <p class="help-text" data-i18n="settings.drafts.help">
+                Bản đã ghim không tính vào hạn mức. Vượt hạn mức thì xóa bản cũ nhất chưa ghim.
               </p>
-            </form>
-          </article>
+            </article>
+          </div>
 
+          <div class="settings-col">
+            <article class="panel">
+              <div class="panel-heading">
+                <div>
+                  <h2 data-i18n="settings.behavior.title">Hoạt động</h2>
+                  <p data-i18n="settings.behavior.desc">Cách giao diện cập nhật và xác nhận thao tác.</p>
+                </div>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật trạng thái</strong>
+                  <p data-i18n="settings.behavior.pollDesc">Khoảng thời gian giữa hai lần đọc trạng thái máy.</p>
+                </div>
+                <select id="poll-interval">
+                  <option data-i18n="settings.behavior.ms300" value="300">300 ms</option>
+                  <option data-i18n="settings.behavior.ms500" selected="" value="500">500 ms</option>
+                  <option data-i18n="settings.behavior.s1" value="1000">1 giây</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong data-i18n="settings.behavior.confirmHome">Xác nhận trước khi Home</strong>
+                  <p data-i18n="settings.behavior.confirmHomeDesc">Hỏi lại trước khi máy tự chạy về công tắc hành trình.</p>
+                </div>
+                <select id="confirm-home">
+                  <option data-i18n="common.status.on" selected="" value="on">Bật</option>
+                  <option data-i18n="common.status.off" value="off">Tắt</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong data-i18n="settings.behavior.shortcuts">Phím tắt bàn phím</strong>
+                  <p data-i18n="settings.behavior.shortcutsDesc">Jog bằng phím mũi tên. Mặc định tắt để tránh bấm nhầm.</p>
+                </div>
+                <select id="shortcuts-enabled">
+                  <option data-i18n="common.status.off" selected="" value="off">Tắt</option>
+                  <option data-i18n="common.status.on" value="on">Bật</option>
+                </select>
+              </div>
+            </article>
 
-          <article class="panel" id="draft-settings-panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.drafts.title">Bản thảo</h2>
-                <p data-i18n="settings.drafts.desc">Nơi lưu G-code, ảnh minh họa và thông số của các bản vẽ đã tạo.</p>
+            <details class="panel drawing-section storage-panel" id="storage-panel" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="settings.storage.title">Lưu trữ dữ liệu</span>
+                <span class="drawing-section-description" data-i18n="settings.storage.desc">Xem máy chủ đang lưu những gì: bản thảo, sao lưu cấu hình, macro. Chỉ xem và tải về.</span>
+                <span class="drawing-section-badge" id="storage-total">—</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="storage-toolbar">
+                  <p class="help-text"><span data-i18n="settings.storage.root">Thư mục gốc</span>: <code id="storage-root">—</code></p>
+                  <button class="secondary-button" data-i18n="common.action.refresh" id="storage-refresh-btn" type="button">Làm mới</button>
+                </div>
+                <div class="storage-areas" id="storage-areas"></div>
+                <details class="storage-folder storage-area" hidden="" id="storage-loose">
+                  <summary class="storage-summary">
+                    <span class="storage-name" data-i18n="settings.storage.loose">Tệp hệ thống</span>
+                    <small class="storage-note"></small>
+                    <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+                  </summary>
+                  <div class="storage-body">
+                    <ul class="storage-list" id="storage-loose-list"></ul>
+                  </div>
+                </details>
+                <p class="mc-status" id="storage-status" role="status"></p>
               </div>
-              <span class="panel-tag" id="draft-settings-folder" title="Thư mục đang dùng">—</span>
-            </div>
-            <div class="form-grid form-grid-spaced">
-              <label for="draft-dir">
-                <span data-i18n="settings.drafts.dir">Thư mục bản thảo (trống = mặc định)</span>
-                <input id="draft-dir" placeholder="D:/ExtruXY/ban-thao" type="text"/>
-              </label>
-              <label for="draft-max-count">
-                    <span data-i18n="settings.drafts.maxCount">Số bản tối đa</span>
-                    <input id="draft-max-count" type="number" min="1" max="1000" step="1" value="50"/>
-                  </label>
-              <label for="draft-max-mb">
-                    <span data-i18n="settings.drafts.maxMb">Dung lượng tối đa (MB)</span>
-                    <input id="draft-max-mb" type="number" min="10" max="100000" step="10" value="500"/>
-                  </label>
-            </div>
-            <div class="mc-actions">
-              <button class="primary-button" data-i18n="common.action.save" id="draft-settings-save-btn" type="button">Lưu</button>
-              <span class="mc-status" id="draft-settings-status" role="status"></span>
-            </div>
-            <p class="help-text" data-i18n="settings.drafts.help">
-              Bản đã ghim không tính vào hạn mức. Vượt hạn mức thì xóa bản cũ nhất chưa ghim.
-            </p>
-          </article>
-
-          <article class="panel">
-            <div class="panel-heading">
-              <div>
-                <h2 data-i18n="settings.behavior.title">Hoạt động</h2>
-                <p data-i18n="settings.behavior.desc">Cách giao diện cập nhật và xác nhận thao tác.</p>
-              </div>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật trạng thái</strong>
-                <p data-i18n="settings.behavior.pollDesc">Khoảng thời gian giữa hai lần đọc trạng thái máy.</p>
-              </div>
-              <select id="poll-interval">
-                <option data-i18n="settings.behavior.ms300" value="300">300 ms</option>
-                <option data-i18n="settings.behavior.ms500" selected="" value="500">500 ms</option>
-                <option data-i18n="settings.behavior.s1" value="1000">1 giây</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.behavior.confirmHome">Xác nhận trước khi Home</strong>
-                <p data-i18n="settings.behavior.confirmHomeDesc">Hỏi lại trước khi máy tự chạy về công tắc hành trình.</p>
-              </div>
-              <select id="confirm-home">
-                <option data-i18n="common.status.on" selected="" value="on">Bật</option>
-                <option data-i18n="common.status.off" value="off">Tắt</option>
-              </select>
-            </div>
-            <div class="setting-row">
-              <div>
-                <strong data-i18n="settings.behavior.shortcuts">Phím tắt bàn phím</strong>
-                <p data-i18n="settings.behavior.shortcutsDesc">Jog bằng phím mũi tên. Mặc định tắt để tránh bấm nhầm.</p>
-              </div>
-              <select id="shortcuts-enabled">
-                <option data-i18n="common.status.off" selected="" value="off">Tắt</option>
-                <option data-i18n="common.status.on" value="on">Bật</option>
-              </select>
-            </div>
-          </article>
+            </details>
+          </div>
 
           <article class="panel machine-config-panel" id="machine-config-panel">
             <div class="panel-heading">
@@ -1271,6 +1311,54 @@
     <div class="glass-modal-actions">
       <button class="secondary-button" data-i18n="modal.home.cancel" id="modal-home-cancel-btn" type="button">Hủy bỏ</button>
       <button class="primary-button" data-i18n="modal.home.confirm" id="modal-home-confirm-btn" type="button">Home</button>
+    </div>
+  </div>
+</div>
+
+<!-- Xác nhận tiếp tục vẽ từ điểm dừng (views/control.js) -->
+<div class="glass-modal-overlay" id="resume-modal" hidden>
+  <div class="glass-modal-box resume-modal-box" role="dialog" aria-modal="true" aria-labelledby="resume-modal-title">
+    <div class="glass-modal-icon">▶</div>
+    <h3 data-i18n="control.resume.modalTitle" id="resume-modal-title">Xác nhận tiếp tục vẽ</h3>
+    <dl class="resume-facts">
+      <div class="resume-fact-wide"><dt data-i18n="control.resume.fact.name">Tệp</dt><dd id="resume-modal-name">—</dd></div>
+      <div><dt data-i18n="control.resume.fact.done">Máy đã nhận</dt><dd id="resume-modal-done">—</dd></div>
+      <div><dt data-i18n="control.resume.fact.line">Tiếp từ dòng</dt><dd id="resume-modal-line">—</dd></div>
+      <div class="resume-fact-wide"><dt data-i18n="control.resume.fact.back">Lùi lại cho chắc</dt><dd id="resume-modal-back">—</dd></div>
+    </dl>
+    <ol class="resume-steps">
+      <li data-i18n="control.resume.step1">Bút nâng lên, chạy tới đầu nét rồi vẽ tiếp.</li>
+      <li data-i18n="control.resume.step2">Giấy phải còn nằm đúng chỗ lúc dừng.</li>
+      <li data-i18n="control.resume.step3">Không đặt lại Zero từ lúc dừng.</li>
+    </ol>
+    <p class="inline-warning" hidden="" id="resume-modal-wco" role="alert">
+      <span aria-hidden="true">⚠</span>
+      <span data-i18n="control.resume.wcoChanged">Gốc làm việc (Zero) khác với lúc dừng, bản vẽ có thể bị lệch.</span>
+    </p>
+    <label class="checkbox-inline resume-ack" for="resume-modal-ack">
+      <input id="resume-modal-ack" type="checkbox"/>
+      <span data-i18n="control.resume.ack">Tôi đã kiểm tra giấy và gốc Zero, sẵn sàng tiếp tục</span>
+    </label>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="control.resume.modalCancel" id="resume-modal-cancel" type="button">Để sau</button>
+      <button class="primary-button" data-i18n="control.resume.modalConfirm" disabled="" id="resume-modal-confirm" type="button">▶ Tiếp tục vẽ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Xác nhận bỏ điểm dừng (views/control.js) -->
+<div class="glass-modal-overlay" id="discard-modal" hidden>
+  <div class="glass-modal-box resume-modal-box discard-modal-box" role="alertdialog" aria-modal="true" aria-labelledby="discard-modal-title">
+    <div class="glass-modal-icon">🗑️</div>
+    <h3 data-i18n="control.resume.discardTitle" id="discard-modal-title">Bỏ điểm dừng?</h3>
+    <dl class="resume-facts">
+      <div class="resume-fact-wide"><dt data-i18n="control.resume.fact.name">Tệp</dt><dd id="discard-modal-name">—</dd></div>
+      <div class="resume-fact-wide"><dt data-i18n="control.resume.fact.done">Máy đã nhận</dt><dd id="discard-modal-done">—</dd></div>
+    </dl>
+    <p data-i18n="control.resume.discardText">Sau khi bỏ, không thể tiếp tục tác vụ này nữa; muốn vẽ lại phải chạy từ đầu. Việc này không đụng tới máy hay tệp bản thảo.</p>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="control.resume.discardKeep" id="discard-modal-cancel" type="button">Giữ lại</button>
+      <button class="primary-button danger-button" data-i18n="control.resume.discardConfirmBtn" id="discard-modal-confirm" type="button">Bỏ điểm dừng</button>
     </div>
   </div>
 </div>

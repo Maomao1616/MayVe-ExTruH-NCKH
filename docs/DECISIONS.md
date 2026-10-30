@@ -49,6 +49,14 @@
 | P8 | Trình duyệt thu nhỏ ảnh trước khi gửi và xem trước độ sáng ngay; **backend luôn tự làm được và kiểm lại** | Gửi nhẹ, MiniPC khỏi giải mã ảnh lớn; không tin dữ liệu từ trình duyệt | ✅ |
 | P9 | Giao diện gọn: bỏ "Tạo nháp" và "Tạo G-code" (G-code tự tính lại); có "Tạo lại nét"; 3 preset (Chân dung, Phong cảnh, Mạch điện/Bản vẽ) | Bản nháp không nhanh hơn đáng kể; ít nút thừa | ✅ |
 | P10 | Không làm giao diện cắt ảnh (backend vẫn nhận `crop_*`) | Người dùng chỉnh vùng cần vẽ trước khi gửi | ❌ |
+| P11 | **Tiếp tục từ điểm dừng** (`services/resume.py`): khi hủy / lỗi / mất kết nối, lưu tệp G-code đã làm sạch + số dòng máy đã nhận vào `data/resume.json` (một chỗ, chạy trọn thì xóa). Bấm Tiếp tục: lùi 64 dòng, rồi lùi tiếp tới dòng gần nhất mà **bút đang nhấc**; dựng lại `G90 G21`, nâng bút, `G0` tới đầu nét, `G1 F...`. Từ chối nếu phần đã chạy dùng G91/G92/G10/G28/G30/G53/G55-59/M3/M4. Lưu WCO lúc dừng; đổi gốc Zero thì hỏi lại | `ok` chỉ là "đã vào hàng đợi", hủy cứng làm mất phần đang chờ; vẽ chồng một đoạn thì vô hại, bỏ sót thì mất nét | ✅ (máy giả) ⚠ máy thật |
+| P12 | Tờ mẫu hiệu chỉnh bút tạo bằng **backend** (`drawing/calibration.py`) thành bản thảo thường; A5, tỷ lệ 1:1 | thử máy thật cần chữ F, thước 100 mm, dải tô nhiều khoảng cách; đi cùng đường xem trước/xác nhận như mọi bản vẽ | ✅ |
+| S1 | **Một thư mục dữ liệu, ba thư mục con cố định** (`app/paths.py`): `drafts/`, `config_backups/`, `macros/` + tệp lẻ. Gốc = `backend/data/`, đổi bằng `EXTRUXY_DATA_DIR`. **Không có ô nhập đường dẫn trên giao diện** (bản cũ có `draft_dir`, nay bị bỏ qua) | người lạ vào web không được trỏ máy chủ ghi ra chỗ khác; giải nén zip ở máy mới là chạy (thư mục tự tạo) | ✅ |
+| S2 | **Macro lưu ở máy chủ** (`data/macros/<id>.json`, `services/macros.py`), trình duyệt giữ bản sao; macro cũ trong `localStorage` tự chuyển lên một lần | mọi trình duyệt thấy cùng bộ, xem được trong Lưu trữ, sao lưu cùng thư mục dữ liệu | ✅ |
+| S3 | **Xem thư mục dữ liệu qua giao diện, chỉ đọc + tải về** (`GET /api/storage`, `/api/storage/file`; đường dẫn kiểm regex, tối đa 2 cấp, nằm trong thư mục con cố định) | MiniPC không màn hình để mở thư mục | ✅ |
+| S4 | **Tệp nhanh (dock) = bản thảo đã ghim**; bấm là nạp sang Điều khiển (vẫn phải Xem trước + xác nhận) | ghim sẵn việc hay dùng thì dễ chọn hơn danh sách tệp | ✅ |
+| S6 | **Nhập G-code có sẵn = một tệp một bản thảo** (`drawing/gcode_import.py`, nút "Lưu vào bản thảo" ở Điều khiển → `POST /api/draw/drafts/import-gcode`). Làm sạch bằng `clean_gcode`, ảnh minh họa và số liệu đọc từ G-code (cung G2/G3 chỉ vẽ thành đoạn thẳng trong ảnh, G-code lưu nguyên) | chạy lại, ghim, chạy nhanh tệp từ phần mềm khác mà không phải chọn lại | ✅ |
+| S5 | **Không ghi nhật ký hệ thống ra tệp**; terminal giữ log trong bộ nhớ | log dài, khó đọc lại; điểm dừng + bản sao lưu đã đủ để phục hồi | ❌ |
 
 ## Triển khai (theo `PLAN_ONLINE.md`)
 | # | Quyết định | Vì sao | Chắc |

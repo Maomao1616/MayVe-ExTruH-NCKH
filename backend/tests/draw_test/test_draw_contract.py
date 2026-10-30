@@ -19,9 +19,7 @@ SVG = (b'<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" vi
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
-    monkeypatch.setattr(drafts, "SETTINGS_PATH", tmp_path / "draw_settings.json")
-    monkeypatch.setattr(drafts, "DEFAULT_DIR", tmp_path / "drafts")
-    return TestClient(app)
+    return TestClient(app)          # dữ liệu đã được conftest.py đưa vào thư mục tạm
 
 
 def png_bytes(w=300, h=200):
@@ -170,7 +168,7 @@ def test_pinned_and_priority_come_first_and_pruning_keeps_pinned(client):
     assert [x["id"] for x in client.get("/api/draw/drafts").json()["drafts"]] == [b["id"], a["id"]]
     client.patch(f"/api/draw/drafts/{a['id']}", json={"pinned": True})
     assert client.get("/api/draw/drafts").json()["drafts"][0]["id"] == a["id"]
-    r = client.put("/api/draw/settings", json={"draft_dir": "", "max_count": 1, "max_mb": 100})
+    r = client.put("/api/draw/settings", json={"max_count": 1, "max_mb": 100})
     assert r.status_code == 200
     time.sleep(1.1)
     c = make_draft(client, "c")
@@ -178,18 +176,16 @@ def test_pinned_and_priority_come_first_and_pruning_keeps_pinned(client):
     assert a["id"] in ids and c["id"] in ids and b["id"] not in ids      # bản ghim ở lại, bản cũ không ghim bị dọn
 
 
-def test_settings_validation_and_custom_folder(client, tmp_path):
-    for bad in ({"draft_dir": "relative/path", "max_count": 5, "max_mb": 100},
-                {"draft_dir": str(tmp_path / ".." / "x"), "max_count": 5, "max_mb": 100},
-                {"draft_dir": "", "max_count": 0, "max_mb": 100},
-                {"draft_dir": "", "max_count": 5, "max_mb": 1}):
+def test_settings_validation_and_fixed_folder(client, tmp_path):
+    for bad in ({"max_count": 0, "max_mb": 100}, {"max_count": 5, "max_mb": 1}):
         assert client.put("/api/draw/settings", json=bad).status_code == 400
-    folder = tmp_path / "ban-thao"
-    r = client.put("/api/draw/settings", json={"draft_dir": str(folder), "max_count": 5, "max_mb": 100})
-    assert r.status_code == 200 and folder.is_dir()
+    # `draft_dir` của bản cũ bị bỏ qua: thư mục bản thảo luôn là <dữ liệu>/drafts
+    r = client.put("/api/draw/settings", json={"draft_dir": str(tmp_path / "khac"), "max_count": 5, "max_mb": 100})
+    assert r.status_code == 200 and "draft_dir" not in r.json()["settings"]
     d = make_draft(client)
-    assert (folder / d["id"] / "meta.json").is_file()
-    assert client.get("/api/draw/settings").json()["settings"]["draft_dir"] == str(folder)
+    assert (tmp_path / "data" / "drafts" / d["id"] / "meta.json").is_file()
+    assert not (tmp_path / "khac").exists()
+    assert client.get("/api/draw/settings").json()["folder"] == str(tmp_path / "data" / "drafts")
 
 
 # --- xoay ----------------------------------------------------------------------------------

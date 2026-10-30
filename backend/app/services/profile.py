@@ -1,6 +1,6 @@
 """Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch).
 
-Lưu ở backend/data/profile.json để mọi trình duyệt (laptop, mini PC) dùng chung.
+Lưu ở <thư mục dữ liệu>/profile.json (app/paths.py) để mọi trình duyệt (laptop, mini PC) dùng chung.
 Z bút là tọa độ làm việc (G90 Z..); hành trình Z thật do firmware giới hạn (soft limit).
 """
 from __future__ import annotations
@@ -8,9 +8,8 @@ from __future__ import annotations
 import json
 import math
 import threading
-from pathlib import Path
 
-PROFILE_PATH = Path(__file__).resolve().parents[2] / "data" / "profile.json"
+from .. import paths
 
 DEFAULTS = {
     "pen_up_z": 5.0,        # đã khớp WebUI FluidNC trên máy thật
@@ -51,7 +50,7 @@ def validate(data: dict) -> dict:
 def load() -> dict:
     with _lock:
         try:
-            data = json.loads(PROFILE_PATH.read_text(encoding="utf-8"))
+            data = json.loads(paths.data_file("profile.json").read_text(encoding="utf-8"))
             return validate(data if isinstance(data, dict) else {})
         except (OSError, ValueError, ProfileError):
             return dict(DEFAULTS)
@@ -60,8 +59,9 @@ def load() -> dict:
 def save(data: dict) -> dict:
     clean = validate(data)
     with _lock:
-        PROFILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        tmp = PROFILE_PATH.with_suffix(".tmp")
+        target = paths.data_file("profile.json")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_suffix(".tmp")
         tmp.write_text(json.dumps(clean, indent=2), encoding="utf-8")
-        tmp.replace(PROFILE_PATH)              # ghi nguyên tử: không bao giờ để tệp dở dang
+        tmp.replace(target)              # ghi nguyên tử: không bao giờ để tệp dở dang
     return clean

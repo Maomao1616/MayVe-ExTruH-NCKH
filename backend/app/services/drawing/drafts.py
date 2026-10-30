@@ -3,7 +3,7 @@
     <thư mục bản thảo>/<yyyymmdd-hhmmss>-<tên>/
         meta.json   draw[-<lớp>].gcode   preview.svg
 
-Thư mục gốc đặt ở Cài đặt (draw_settings.json). Tên thư mục và tên tệp kiểm bằng regex, đường dẫn không
+Thư mục gốc cố định: <thư mục dữ liệu>/drafts (app/paths.py); Cài đặt chỉ đặt hạn mức (draw_settings.json). Tên thư mục và tên tệp kiểm bằng regex, đường dẫn không
 bao giờ ghép từ chuỗi người dùng gửi lên. Ghi nguyên tử (thư mục tạm rồi đổi tên). Vượt hạn mức thì xóa
 bản CŨ NHẤT không ghim.
 """
@@ -18,15 +18,12 @@ import unicodedata
 from datetime import datetime
 from pathlib import Path
 
+from ... import paths
 from .errors import DrawError
 from .preview import build as build_preview
 from .shapes import Layer
 
-DATA_DIR = Path(__file__).resolve().parents[3] / "data"
-SETTINGS_PATH = DATA_DIR / "draw_settings.json"
-DEFAULT_DIR = DATA_DIR / "drafts"
-
-DEFAULTS = {"draft_dir": "", "max_count": 50, "max_mb": 500}
+DEFAULTS = {"max_count": 50, "max_mb": 500}
 LIMITS = {"max_count": (1, 1000), "max_mb": (10, 100000)}
 
 ID_RE = re.compile(r"^\d{8}-\d{6}-[a-z0-9-]{1,40}$")
@@ -38,16 +35,7 @@ _lock = threading.RLock()
 
 # --- cài đặt -------------------------------------------------------------------------
 def validate_settings(data: dict) -> dict:
-    out: dict = {}
-    folder = data.get("draft_dir", DEFAULTS["draft_dir"])
-    if not isinstance(folder, str) or len(folder) > 500 or "\x00" in folder:
-        raise DrawError("bad_param", "draft_dir: phải là đường dẫn thư mục.")
-    folder = folder.strip()
-    if folder:
-        path = Path(folder)
-        if not path.is_absolute() or ".." in path.parts:
-            raise DrawError("bad_param", "draft_dir: phải là đường dẫn tuyệt đối, không chứa '..'.")
-    out["draft_dir"] = folder
+    out: dict = {}          # khóa `draft_dir` của bản cũ bị bỏ qua: thư mục giờ cố định
     for key, (lo, hi) in LIMITS.items():
         v = data.get(key, DEFAULTS[key])
         if isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v != int(v):
@@ -61,7 +49,7 @@ def validate_settings(data: dict) -> dict:
 def load_settings() -> dict:
     with _lock:
         try:
-            data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+            data = json.loads(paths.data_file("draw_settings.json").read_text(encoding="utf-8"))
             return validate_settings(data if isinstance(data, dict) else {})
         except (OSError, ValueError, DrawError):
             return dict(DEFAULTS)
@@ -69,22 +57,17 @@ def load_settings() -> dict:
 
 def save_settings(data: dict) -> dict:
     clean = validate_settings(data)
-    root = Path(clean["draft_dir"]) if clean["draft_dir"] else DEFAULT_DIR
-    try:
-        root.mkdir(parents=True, exist_ok=True)
-    except OSError as exc:
-        raise DrawError("bad_param", f"draft_dir: không tạo/ghi được thư mục ({exc.strerror}).") from exc
+    target = paths.data_file("draw_settings.json")
     with _lock:
-        SETTINGS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        tmp = SETTINGS_PATH.with_suffix(".tmp")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tmp = target.with_suffix(".tmp")
         tmp.write_text(json.dumps(clean, indent=2), encoding="utf-8")
-        tmp.replace(SETTINGS_PATH)
+        tmp.replace(target)
     return clean
 
 
 def root_dir() -> Path:
-    s = load_settings()
-    return Path(s["draft_dir"]) if s["draft_dir"] else DEFAULT_DIR
+    return paths.drafts_dir()
 
 
 # --- tên / đường dẫn an toàn ---------------------------------------------------------

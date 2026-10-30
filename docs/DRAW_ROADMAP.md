@@ -38,7 +38,9 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 | `GET /api/draw/drafts/{id}` · `/gcode/{layer}` · `/preview.svg` | meta · G-code · ảnh minh họa | |
 | `PATCH /api/draw/drafts/{id}` | `{name?, pinned?, priority?}` | `{draft}` |
 | `DELETE /api/draw/drafts/{id}` | xóa | `{ok}` |
-| `GET/PUT /api/draw/settings` | thư mục bản thảo + hạn mức | `{settings, limits, folder}` |
+| `GET/PUT /api/draw/settings` | hạn mức bản thảo (`max_count`, `max_mb`); `folder` chỉ để xem, cố định | `{settings, limits, folder}` |
+| `POST /api/draw/drafts/import-gcode` | multipart `file` (G-code) + `work_w`, `work_h` → một bản thảo (không qua ảnh/SVG) | `{draft, warnings}` |
+| `POST /api/draw/calibration` | `{machine, gcode, pen_width_mm, paper_x_mm?, paper_y_mm?}` → tờ mẫu hiệu chỉnh bút thành bản thảo | `{draft, warnings}` |
 
 - **`options` của `/import`:** khóa `svg`, `optimize`, `raster`, `style`, `palette`, `layout`. Với ảnh, `layout` chỉ là **hộp tham chiếu**: `paper`/`margin_mm` cho phần trong lề, hoặc `width_mm`/`height_mm` (kích thước khung thật, theo hướng ảnh gốc) để khoảng cách gạch tính đúng theo mm. Kết quả `source.timings` = giây từng bước; `source.layers[].color` = mã màu (đa màu); id lớp đa màu dạng `<số>-<mãmàu>`.
 - **Nhóm tham số** (trong `schema.params`): `layout` (thêm `rotate` 0/90/180/270), `gcode`, `machine`, `optimize` (thêm `two_opt`, `passes`), `svg`, `raster` (bút, tự độ phân giải, cắt ảnh, gamma/mức đen trắng, CLAHE, khử nhiễu — tắt mặc định), `style` (kiểu tô), `palette` (đơn sắc / 2–4 màu).
@@ -51,7 +53,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 - **Tiến trình:** thanh theo bước (đọc ảnh → tô → tối ưu → G-code), nút Hủy, cảnh báo. Chỉ một tác vụ chạy một lúc.
 - **Hai lớp xem:** *Nháp* (ảnh ≤ 600 px, sắp xếp thường, ~1–3 s, chạy lại mỗi lần đổi kiểu/thông số) và *Chính thức* (độ phân giải theo bút, two-opt). Đổi vị trí/khổ giấy không chạy lại.
 - **Bản thảo:** nút Lưu bản thảo, Mở xem nháp, Gửi sang Điều khiển (= lưu bản thảo rồi vào Hàng đợi).
-- **Cài đặt:** khối "Bản thảo" (thư mục + hạn mức số bản / MB), lưu bằng `GET/PUT /api/draw/settings` (tệp `backend/data/draw_settings.json`, tách khỏi hồ sơ bút để tab Điều khiển không phải gửi lại).
+- **Cài đặt:** khối "Bản thảo" (hạn mức số bản / MB; thư mục cố định), lưu bằng `GET/PUT /api/draw/settings` (tệp `backend/data/draw_settings.json`, tách khỏi hồ sơ bút để tab Điều khiển không phải gửi lại).
 - **Tab Điều khiển:** bật lại **Hàng đợi công việc**, đọc `GET /drafts` (theo thời gian tạo, ghim lên đầu), mỗi mục có "Xem trước" (chỉ mục được chọn) và "Chạy". Gộp luôn việc "Tệp nhanh" (trước là mục 6).
 - **Tên tệp / khóa:** giữ khóa ngôn ngữ `drawing.*` (không đổi sang `draw.*`); mã mới: `views/drawing.js` (điều phối) + `views/drawing/` (canvas, params, upload, bảng số liệu), `stores/drawstore.js`, phần vẽ nền dùng chung đưa vào `lib/`. Các view không import lẫn nhau.
 - Sửa HTML hiện có: thêm A6; bỏ `drawing-origin`; Z bút lấy từ hồ sơ (Z5/Z0), tốc độ trần lấy từ schema + `max_rate` cấu hình máy; thay "chưa khả dụng" bằng dữ liệu thật.

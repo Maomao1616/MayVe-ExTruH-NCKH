@@ -429,6 +429,7 @@ function initButtons() {
     $("drawing-confirm")?.addEventListener("change", setButtons);
     $("save-draft-btn")?.addEventListener("click", () => run(saveDraft));
     $("send-to-control-btn")?.addEventListener("click", () => run(sendToControl));
+    $("calibration-btn")?.addEventListener("click", () => run(createCalibration));
 }
 
 function generateNow() {
@@ -466,6 +467,17 @@ async function saveDraft() {
     if (!S.result) return;
     await ensureDraft();
     setStatus("drawing.drafts.saved");
+}
+
+// Tờ mẫu hiệu chỉnh bút: backend tự dựng nét, ở đây chỉ gửi thông số máy / bút hiện tại.
+async function createCalibration() {
+    const layout = params.layoutPayload();
+    await api.drawCalibration({
+        machine: params.machinePayload(), gcode: params.gcodePayload(), pen_width_mm: params.penWidthMm(),
+        paper_x_mm: layout.paper_x_mm ?? 0, paper_y_mm: layout.paper_y_mm ?? 0
+    });
+    await refreshDrafts();
+    setStatus("drawing.calibration.done");
 }
 
 async function sendToControl() {

@@ -1,13 +1,18 @@
 // macros.js — dữ liệu macro dùng chung (Dock đọc/ghi, không import view nào).
-// Hàm thuần + kho localStorage. Muốn đổi nơi lưu (backend, flash) chỉ sửa readAll/writeAll.
+// Macro nằm ở MÁY CHỦ (backend/data/macros, mỗi macro một tệp) để mọi trình duyệt thấy cùng một bộ.
+// Ở đây giữ một bản sao trong bộ nhớ: `loadMacros()` đọc đồng bộ, `refreshMacros()` tải lại từ máy chủ.
+// `validateMacro` là hàm thuần (kiểm nhanh ở trình duyệt); máy chủ vẫn là lớp chặn cuối cùng.
+import { api, ApiError } from "../core/api.js";
 import { cleanLine } from "../lib/gcode.js";
 
 export const LIMITS = { name: 40, lines: 50, lineLen: 200, count: 30 };
-const STORAGE_KEY = "extruxy-macros-v1";
+const LEGACY_KEY = "extruxy-macros-v1";      // bản cũ lưu trong trình duyệt: tự chuyển lên máy chủ một lần
 const REALTIME = /[?!~\x18]/;
 
+let cache = [];
+
 /* ---------- kiểm tra hợp lệ (thuần) ---------- */
-// Trả { ok, errors: [mã], macro: bản đã làm sạch }. Backend vẫn là lớp chặn cuối.
+// Trả { ok, errors: [mã], macro: bản đã làm sạch }.
 export function validateMacro(input) {
     const errors = [];
     const name = String(input?.name ?? "").trim();
@@ -35,61 +40,63 @@ export function validateMacro(input) {
     };
 }
 
-export function newId() {
-    return `m_${Math.random().toString(36).slice(2, 8)}`;
+/* ---------- kho ---------- */
+function changed() {
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("extruxy:macros-changed"));
 }
 
-/* ---------- kho lưu (localStorage) ---------- */
-function readAll() {
+export const loadMacros = () => cache;
+
+// Tải lại từ máy chủ (lỗi mạng: giữ nguyên bản đang có).
+export async function refreshMacros() {
     try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return [];
-        const data = JSON.parse(raw);
-        if (data?.version !== 1 || !Array.isArray(data.macros)) return [];
-        return data.macros
-            .map(validateMacro)
-            .filter((result) => result.ok)
-            .map((result) => ({ ...result.macro, id: result.macro.id ?? newId() }));
+        cache = (await api.macros()).macros;
+        if (await migrateLegacy()) cache = (await api.macros()).macros;
     } catch {
-        return [];   // dữ liệu hỏng hoặc bị chặn: coi như chưa có macro
+        return;
+    }
+    changed();
+}
+
+// Macro cũ trong localStorage -> máy chủ, chỉ khi máy chủ chưa có macro nào. Trả true nếu đã chuyển.
+async function migrateLegacy() {
+    let legacy = [];
+    try {
+        const data = JSON.parse(localStorage.getItem(LEGACY_KEY) ?? "null");
+        if (data?.version === 1 && Array.isArray(data.macros)) legacy = data.macros;
+    } catch { return false; }
+    if (legacy.length === 0) return false;
+    if (cache.length === 0) {
+        for (const item of legacy) {
+            const result = validateMacro(item);
+            if (result.ok) await api.macroCreate({ ...result.macro, id: undefined });
+        }
+    }
+    try { localStorage.removeItem(LEGACY_KEY); } catch { /* bỏ qua */ }
+    return cache.length === 0;
+}
+
+// Thêm mới (macro.id rỗng) hoặc cập nhật. Trả Promise<{ ok, errors, macro }>.
+export async function saveMacro(input) {
+    const result = validateMacro(input);
+    if (!result.ok) return { ok: false, errors: result.errors, macro: result.macro };
+    const { id, ...body } = result.macro;
+    try {
+        const saved = id ? await api.macroUpdate(id, body) : await api.macroCreate(body);
+        await refreshMacros();
+        return { ok: true, errors: [], macro: saved.macro };
+    } catch (error) {
+        const code = error instanceof ApiError && error.status !== 0 ? error.code : "storage";
+        return { ok: false, errors: [code], macro: result.macro };
     }
 }
 
-function writeAll(list) {
+export async function deleteMacro(id) {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, macros: list }));
+        await api.macroDelete(id);
     } catch {
         return false;
     }
-    if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("extruxy:macros-changed"));
-    }
+    await refreshMacros();
     return true;
-}
-
-export const loadMacros = readAll;
-
-// Thêm mới (macro.id rỗng) hoặc cập nhật (theo id). Trả { ok, errors, macro }.
-export function saveMacro(input) {
-    const result = validateMacro(input);
-    const list = readAll();
-    const errors = [...result.errors];
-    const id = result.macro.id;
-
-    const taken = list.some(
-        (item) => item.id !== id && item.name.toLowerCase() === result.macro.name.toLowerCase()
-    );
-    if (taken) errors.push("name_taken");
-    if (!id && list.length >= LIMITS.count) errors.push("too_many");
-    if (errors.length) return { ok: false, errors, macro: result.macro };
-
-    const macro = { ...result.macro, id: id ?? newId() };
-    const index = list.findIndex((item) => item.id === macro.id);
-    if (index >= 0) list[index] = macro; else list.push(macro);
-    if (!writeAll(list)) return { ok: false, errors: ["storage"], macro };
-    return { ok: true, errors: [], macro };
-}
-
-export function deleteMacro(id) {
-    return writeAll(readAll().filter((item) => item.id !== id));
 }

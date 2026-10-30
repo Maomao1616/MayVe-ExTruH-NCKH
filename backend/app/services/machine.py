@@ -22,6 +22,7 @@ from collections import deque
 
 from ..links.base import BaseLink, LinkError
 from ..links.sim_link import SimLink
+from . import profile, resume
 from .job import JobError, JobRunner, clean_gcode
 from ..links.protocol import (CYCLE_START, FEED_HOLD, FEED_OV_MINUS_1, FEED_OV_MINUS_10,
                               FEED_OV_PLUS_1, FEED_OV_PLUS_10, FEED_OV_RESET, JOG_CANCEL,
@@ -531,6 +532,51 @@ class MachineService:
             except JobError as exc:
                 raise ServiceError(exc.code, exc.message, exc.status) from exc
 
+    def resume_info(self) -> dict:
+        return resume.describe(self.work_offset(), profile.load()["pen_feed"])
+
+    def resume_job(self, accept_wco_change: bool = False) -> dict:
+        """Chạy tiếp tác vụ đã dừng từ dòng an toàn gần điểm dừng (xem services/resume.py)."""
+        record = resume.load()
+        if record is None:
+            raise ServiceError("no_resume", "Không có điểm dừng nào để tiếp tục.", 404)
+        if resume._wco_changed(record.get("wco"), self.work_offset()) and not accept_wco_change:
+            raise ServiceError("wco_changed", "Gốc làm việc (Zero) đã đổi từ lúc dừng; bản vẽ sẽ lệch.", 409)
+        try:
+            p = resume.plan(record["lines"], record["done"], profile.load()["pen_feed"])
+        except resume.ResumeError as exc:
+            raise ServiceError(exc.code, exc.message, exc.status) from exc
+        lines = record["lines"]
+        run = p["prefix"] + lines[p["start"]:]
+        try:
+            cleaned = clean_gcode(run)
+        except JobError as exc:
+            raise ServiceError(exc.code, exc.message, exc.status) from exc
+        with self._lock:
+            self._require_link()
+            self._guard_stop(None)
+            if self._capture is not None:
+                raise ServiceError("busy", "Đang đọc/ghi cấu hình máy, thử lại sau giây lát.", 409)
+            if self._info["mode"] == "serial" and not self.allow_motion:
+                raise ServiceError("motion_locked", "Máy thật đang ở chế độ chỉ đọc.", 403)
+            state = self._status["state"] if self._status else None
+            if state != "Idle":
+                raise ServiceError("not_idle", f"Máy phải ở trạng thái Idle (hiện tại: {state}).", 409)
+            try:
+                self._touch_motion()
+                origin = {"lines": lines, "base": p["start"], "prefix": len(p["prefix"]),
+                          "name": record["name"]}
+                label = f"{record['name']} (tiếp từ dòng {p['start'] + 1})"
+                self.log_system(f"Resume: {record['name']} from line {p['start'] + 1} of {record['total']} "
+                                f"({len(p['prefix'])} setup lines first).")
+                return self._job.start(label, cleaned, pre_cleaned=True, origin=origin)
+            except JobError as exc:
+                raise ServiceError(exc.code, exc.message, exc.status) from exc
+
+    def discard_resume(self) -> dict:
+        resume.clear()
+        return {"ok": True}
+
     def cancel_job(self, mode: str = "reset", lift_z: float | None = None,
                    lift_feed: float = 1000.0) -> dict:
         """Hủy job.
@@ -905,6 +951,11 @@ class MachineService:
             self.log_system("Job: Feed Hold sent but stop is NOT confirmed (no fresh status).")
         else:
             self.log_system("Job: Feed Hold confirmed.")
+
+    def work_offset(self) -> list[float] | None:
+        """Gốc làm việc (WCO) mới nhất máy báo, hoặc None nếu chưa biết."""
+        with self._lock:
+            return list(self._wco) if self._wco else None
 
     def machine_state(self) -> tuple[str | None, int, float | None]:
         """(trạng thái, seq báo cáo, số giây từ báo cáo gần nhất)."""

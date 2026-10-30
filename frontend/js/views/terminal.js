@@ -45,6 +45,11 @@ const API_ERRORS = {
     busy: "Busy reading/writing the machine configuration. Try again in a moment.",
     device_error: "The controller rejected the command.",
     timeout: "The controller did not answer in time.",
+    no_resume: "There is no stopped job to resume.",
+    empty_drawing: "The file has no drawing moves.",
+    file_too_large: "The file is too large.",
+    wco_changed: "The work origin (Zero) changed since the job stopped.",
+    not_resumable: "This job cannot be resumed safely; start it from the beginning.",
 };
 
 export function initTerminal() {

@@ -51,6 +51,9 @@ export const api = {
     motion: (on, pin = null) => request("POST", "/motion", { on, pin }),
     jobCancel: (mode = "reset", liftZ = null, liftFeed = 1000) =>
         request("POST", "/jobs/cancel", { mode, lift_z: liftZ, lift_feed: liftFeed }),
+    jobResumeInfo: () => request("GET", "/jobs/resume"),
+    jobResume: (acceptWcoChange = false) => request("POST", "/jobs/resume", { accept_wco_change: acceptWcoChange }),
+    jobResumeDiscard: () => request("DELETE", "/jobs/resume"),
     machineConfig: () => request("GET", "/machine/config"),
     machineConfigApply: (values) => request("POST", "/machine/config", { values }),
     machineConfigSave: () => request("POST", "/machine/config/save"),
@@ -58,6 +61,13 @@ export const api = {
     machineConfigBackup: (name) => request("GET", `/machine/config/backups/${encodeURIComponent(name)}`),
     profile: () => request("GET", "/profile"),
     profileSave: (profile) => request("PUT", "/profile", profile),
+
+    // --- lưu trữ trên máy chủ: macro, xem thư mục dữ liệu ---
+    macros: () => request("GET", "/macros"),
+    macroCreate: (macro) => request("POST", "/macros", macro),
+    macroUpdate: (id, macro) => request("PUT", `/macros/${id}`, macro),
+    macroDelete: (id) => request("DELETE", `/macros/${id}`),
+    storage: () => request("GET", "/storage"),
 
     // --- tab Tạo bản vẽ (docs/DRAW_ROADMAP.md mục 3) ---
     drawSchema: () => request("GET", "/draw/schema"),
@@ -78,6 +88,14 @@ export const api = {
     drawDraftPreview: (id) => request("GET", `/draw/drafts/${id}/preview.svg`, null, { text: true }),
     drawDraftUpdate: (id, patch) => request("PATCH", `/draw/drafts/${id}`, patch),
     drawDraftDelete: (id) => request("DELETE", `/draw/drafts/${id}`),
+    drawGcodeImport: (name, lines, workW, workH) => {
+        const form = new FormData();
+        form.append("file", new File([lines.join("\n") + "\n"], name, { type: "text/plain" }));
+        form.append("work_w", String(workW));
+        form.append("work_h", String(workH));
+        return request("POST", "/draw/drafts/import-gcode", form);
+    },
+    drawCalibration: (payload) => request("POST", "/draw/calibration", payload),
     drawSettings: () => request("GET", "/draw/settings"),
     drawSettingsSave: (settings) => request("PUT", "/draw/settings", settings),
 };

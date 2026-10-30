@@ -568,3 +568,489 @@ button:not(.nav-tab):active:not(:disabled) {
         stroke-dashoffset: 0;
     }
 }
+
+
+/* ---- Tiep tuc tac vu da dung ---- */
+.resume-box {
+    margin-top: 12px;
+    padding: 12px 14px;
+    display: grid;
+    gap: 6px;
+    border: 1px solid var(--highlight);
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--highlight) 9%, transparent);
+}
+
+.resume-box[hidden] {
+    display: none;
+}
+
+.resume-box strong {
+    color: var(--highlight);
+}
+
+.resume-box p {
+    margin: 0;
+}
+
+/* ---- Ban thao: nut tao to mau ---- */
+.draft-tools {
+    display: grid;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.draft-tools p {
+    margin: 0;
+}
+
+/* ---- Tab Cai dat: hai cot xep khit (khong con cac o song song tung hang) ---- */
+.settings-col {
+    display: grid;
+    gap: var(--layout-gap);
+    align-content: start;
+    min-width: 0;
+}
+
+/* ---- Terminal: khung co dinh, log cuon rieng ben trong, khong keo dai ca trang ---- */
+.terminal-panel .terminal-output {
+    flex: 1 1 0;
+    height: 0;
+    min-height: 240px;
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-text) transparent;
+}
+
+.terminal-output::-webkit-scrollbar {
+    width: 10px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: var(--accent-text);
+    background-clip: content-box;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+    background: var(--highlight);
+    background-clip: content-box;
+}
+
+
+/* ---- Danh sach dai (Luu tru, Ban thao da luu, Hang doi): khung co dinh, cuon rieng ben trong ---- */
+.draft-list,
+#jobs-table-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-text) transparent;
+}
+
+.draft-list {
+    max-height: 440px;
+    padding-right: 6px;
+}
+
+#jobs-table-container {
+    max-height: 380px;
+    overflow-x: auto;
+}
+
+#jobs-table-container thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-panel);
+}
+
+.draft-list::-webkit-scrollbar,
+#jobs-table-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.draft-list::-webkit-scrollbar-thumb,
+#jobs-table-container::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 6px;
+    background: var(--accent-text);
+    background-clip: content-box;
+}
+
+
+/* ---- Hop xac nhan tiep tuc ve ---- */
+.resume-modal-box {
+    max-width: 480px;
+    text-align: left;
+    border-color: color-mix(in srgb, var(--highlight) 55%, var(--border));
+}
+
+.resume-modal-box h3 {
+    text-align: center;
+}
+
+.resume-modal-box .glass-modal-icon {
+    text-align: center;
+    color: var(--highlight);
+}
+
+.resume-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0 0 14px;
+}
+
+.resume-facts > div {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.resume-facts .resume-fact-wide {
+    grid-column: 1 / -1;
+}
+
+.resume-facts dt {
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.resume-facts dd {
+    margin: 2px 0 0;
+    color: var(--text-main);
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+}
+
+.resume-steps {
+    margin: 0 0 12px;
+    padding-left: 22px;
+    display: grid;
+    gap: 4px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.resume-steps li::marker {
+    color: var(--highlight);
+    font-weight: 700;
+}
+
+.resume-modal-box .inline-warning {
+    margin: 0 0 12px;
+}
+
+.resume-modal-box .inline-warning[hidden] {
+    display: none;
+}
+
+.resume-ack {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px dashed var(--highlight);
+    border-radius: var(--radius-button);
+    cursor: pointer;
+}
+
+.resume-ack input {
+    margin-top: 2px;
+    accent-color: var(--highlight);
+}
+
+.resume-modal-box .glass-modal-actions .primary-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+
+/* ==================== Hieu ung mo / thu gon (details) ====================
+   Chrome moi: chieu cao truot mem qua ::details-content. Trinh duyet cu: chi con hieu ung mo dan (fold-in). */
+:root {
+    interpolate-size: allow-keywords;
+}
+
+@keyframes fold-in {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+}
+
+@supports selector(::details-content) {
+    .drawing-section::details-content,
+    .storage-folder::details-content {
+        block-size: 0;
+        overflow: clip;
+        transition: block-size 0.34s cubic-bezier(0.4, 0, 0.2, 1),
+            content-visibility 0.34s allow-discrete;
+    }
+
+    .drawing-section[open]::details-content,
+    .storage-folder[open]::details-content {
+        block-size: auto;
+    }
+}
+
+.drawing-section[open] > .drawing-section-body,
+.storage-folder[open] > .storage-body,
+.terminal-panel[open] > .terminal-content {
+    animation: fold-in 0.3s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .drawing-section::details-content,
+    .storage-folder::details-content {
+        transition: none !important;
+    }
+
+    .drawing-section[open] > .drawing-section-body,
+    .storage-folder[open] > .storage-body,
+    .terminal-panel[open] > .terminal-content {
+        animation: none !important;
+    }
+}
+
+/* ==================== Luu tru du lieu: cay thu muc thu gon ==================== */
+.storage-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin: 12px 0;
+}
+
+.storage-toolbar p {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.storage-areas {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.storage-folder {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--accent) 45%, transparent);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.storage-folder[hidden] {
+    display: none;
+}
+
+.storage-folder[open] {
+    border-color: color-mix(in srgb, var(--accent-text) 55%, var(--border));
+}
+
+.storage-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px 12px;
+    min-height: 42px;
+    padding: 8px 12px;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    border-radius: inherit;
+    transition: background-color 0.2s ease;
+}
+
+.storage-summary::-webkit-details-marker {
+    display: none;
+}
+
+.storage-summary::marker {
+    content: "";
+}
+
+.storage-summary:hover {
+    background: var(--bg-elevated);
+}
+
+.storage-summary:focus-visible {
+    outline-offset: -3px;
+}
+
+/* bieu tuong thu muc: dong -> mo */
+.storage-summary::before {
+    content: "📁";
+    flex: 0 0 auto;
+    font-size: 17px;
+    transition: transform 0.25s ease;
+}
+
+.storage-folder[open] > .storage-summary::before {
+    content: "📂";
+    transform: scale(1.12);
+}
+
+.storage-name {
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.storage-area > .storage-summary .storage-name {
+    color: var(--text-main);
+    font-size: 14.5px;
+}
+
+.storage-note {
+    margin-left: auto;
+    color: var(--text-muted);
+    font-size: 12px;
+    text-align: right;
+}
+
+.storage-note:empty {
+    display: none;
+}
+
+/* chevron cua thu muc: dong nhu mac dinh cua du an, mo thi xoay ve huong cu */
+.storage-summary .drawing-section-chevron {
+    margin-left: 0;
+    font-size: 18px;
+}
+
+.storage-folder[open] > .storage-summary .drawing-section-chevron {
+    transform: rotate(0deg);
+}
+
+.storage-body {
+    padding: 0 12px 12px;
+    border-top: 1px solid var(--border);
+}
+
+.storage-body > .help-text {
+    margin: 10px 0 2px;
+}
+
+.storage-path {
+    margin: 0 0 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    overflow-wrap: anywhere;
+}
+
+.storage-list,
+.storage-files {
+    display: grid;
+    gap: 6px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* thu muc con (ban thao): lui vao, dung tong mau nhe hon thu muc cha */
+.storage-subfolder {
+    background: transparent;
+}
+
+.storage-subfolder > .storage-summary {
+    min-height: 38px;
+    padding: 6px 10px;
+}
+
+.storage-subfolder .storage-name {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.storage-files {
+    margin: 6px 0 0 6px;
+    padding-left: 12px;
+    border-left: 2px solid color-mix(in srgb, var(--highlight) 45%, transparent);
+}
+
+/* dong tep */
+.storage-file {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 2px 14px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: background-color 0.15s ease;
+}
+
+.storage-file::before {
+    content: "📄";
+    font-size: 13px;
+}
+
+.storage-file:hover {
+    background: var(--bg-elevated);
+}
+
+.storage-file-name {
+    flex: 1 1 160px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.storage-meta {
+    color: var(--text-muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.storage-download {
+    color: var(--accent-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.storage-download:hover {
+    color: var(--highlight);
+    text-decoration: underline;
+}
+
+/* danh sach thu muc dai: cuon rieng */
+.storage-body > .storage-list {
+    max-height: 360px;
+    padding-right: 6px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-text) transparent;
+}
+
+
+/* ---- Hop xac nhan bo diem dung ---- */
+.discard-modal-box {
+    border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+}
+
+.discard-modal-box .glass-modal-icon {
+    color: var(--danger);
+}
+
+.discard-modal-box .resume-facts {
+    grid-template-columns: 1fr;
+}

@@ -24,7 +24,7 @@ ExtruXY/
 │  │  ├─ api/                Router HTTP (mỏng). Thêm router: 1 file + 1 dòng trong api/__init__.py
 │  │  ├─ services/           Logic: máy, tác vụ, cấu hình mạch, hồ sơ, tab vẽ (drawing/)
 │  │  └─ links/              Kết nối máy: serial thật, SimLink, giao thức FluidNC
-│  ├─ data/                  (tự tạo, không lên Git) hồ sơ phần mềm + bản sao lưu YAML
+│  ├─ data/                  (tự tạo, không lên Git) drafts/ · config_backups/ · macros/ + profile.json, draw_settings.json, resume.json
 │  ├─ tests/                 pytest (draw_test/ của tab vẽ)
 │  └─ tools/                 Script thử nghiệm (probe_vpype.py)
 └─ frontend/
@@ -51,6 +51,11 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `services/job.py` | Chạy G-code: làm sạch dòng, gửi từng dòng chờ `ok`, lỗi/alarm/timeout kèm Feed Hold, hủy |
 | `services/machine_config.py` | Đọc/sửa/lưu YAML trên mạch (`$CD`, `$/axes/...`, `$CD=/localfs/...`), sao lưu bản gốc về `data/config_backups/` |
 | `services/profile.py` | Hồ sơ phần mềm (`data/profile.json`): Z bút 3 nấc, tốc độ bút, bước jog tối đa |
+| `paths.py` | **Một chỗ** quy định thư mục dữ liệu và 3 thư mục con cố định (`EXTRUXY_DATA_DIR`) |
+| `services/resume.py` | Điểm dừng của tác vụ: lưu, tính dòng bắt đầu lại an toàn, kiểm WCO (`/api/jobs/resume`) |
+| `services/macros.py` · `services/storage.py` · `api/storage.py` | Macro CRUD trên đĩa · xem/tải nội dung thư mục dữ liệu (chỉ đọc) |
+| `services/drawing/calibration.py` | Tờ mẫu hiệu chỉnh bút (`POST /api/draw/calibration`) |
+| `js/views/storage.js` | Cài đặt → Lưu trữ dữ liệu (chỉ xem + tải) |
 | `services/drawing/` | Tab Tạo bản vẽ: SVG hoặc ảnh → nét → bố trí → G-code (xem `DRAW_ROADMAP.md`). Ảnh (chạy ở tiến trình riêng, `isolated.py`): `raster_in` (đọc, cắt, cỡ làm việc) → `tone` (sắc độ) → `styles` + `hatch` (zigzag/sóng/xoắn ốc) hoặc `edges` + `trace` (viền) → `palette` (2–4 màu) → `optimize`; ghép ở `raster.py` |
 | `links/protocol.py` | Đọc từng dòng máy gửi (trạng thái, `ok`, `error`, `ALARM`); lệnh chỉ đọc theo `$CMD` thật; tên mã theo `$E`/`$A` |
 | `links/serial_link.py`, `sim_link.py`, `base.py` | Cổng COM thật / máy giả (hiệu chỉnh theo log board thật) / khuôn chung |
@@ -68,7 +73,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/core/i18n.js` | Dịch chữ |
 | `js/lib/gcode.js` | Đọc G-code (thuần tính toán; có `cleanLine`) |
 | `js/stores/jobstore.js` | Tệp G-code đang nạp (Điều khiển ghi, khung 2D đọc; tab vẽ giao tệp qua `setFile`) |
-| `js/stores/macros.js` | Macro: kiểm tra hợp lệ + kho `localStorage` |
+| `js/stores/macros.js` | Macro: kiểm tra nhanh + bản sao trong bộ nhớ, lưu thật ở máy chủ (`/api/macros`) |
 | `js/lib/imageprep.js` | Thu nhỏ ảnh trước khi gửi + công thức xem trước độ sáng (khớp `raster_in.py`/`tone.py`, có test) |
 | `js/stores/draftstore.js` | Danh sách bản thảo (`/api/draw/drafts`) dùng chung cho tab Tạo bản vẽ và Hàng đợi; ghim, đẩy ưu tiên, xóa, nạp vào Điều khiển |
 | `js/lib/paper.js` | Bố trí tờ giấy / khung vẽ / xoay (bản JS của `layout.py`, test đối chiếu backend: `node --test frontend/tests/paper.test.mjs`) |
@@ -78,7 +83,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/views/control.js` | Tab Điều khiển: trạng thái, mở khóa chuyển động, jog, **thanh bút 3 nấc**, Zero, Home (hỏi lại), tệp G-code (cảnh báo gốc vị trí khi chưa Home), **ghi đè tốc độ**, tiến trình, hủy tác vụ. Hàng đợi công việc do `drafts.js` lo |
 | `js/views/preview.js` | Khung 2D (khối con của Điều khiển). Đang chạy đúng tệp đã nạp: vết vẽ theo đường của tệp (`trackProgress`), cung tròn không bị gãy theo nhịp hỏi vị trí |
 | `js/views/settings.js` | Tab Cài đặt: kết nối (nhớ cổng lần trước) · Hoạt động · **Cấu hình máy** (YAML trên mạch + hồ sơ phần mềm + nạp bản sao lưu) |
-| `js/views/dock.js` | Dock bên trái: macro |
+| `js/views/dock.js` | Dock bên trái: macro + Tệp nhanh (bản thảo đã ghim) |
 | `js/views/drawing.js` | Tab Tạo bản vẽ: nạp tệp → tác vụ nền (tiến trình, hủy) → nét nháp → bố trí → G-code → bản thảo / sang Điều khiển. Phần con: `views/drawing/params.js` (các ô ⇄ dữ liệu gửi backend), `views/drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề), `views/drawing/presets.js` (bộ thông số dựng sẵn: dữ liệu), `views/drawing/tonepreview.js` (xem trước ảnh sau chỉnh sáng) |
 | `js/views/drafts.js` | Danh sách bản thảo (tab vẽ) + Hàng đợi công việc (tab Điều khiển) + hộp xem ảnh nháp |
 
@@ -120,15 +125,22 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 ## 7. Dữ liệu trên đĩa và biến môi trường
 | Thứ | Ở đâu | Ghi chú |
 |---|---|---|
-| Hồ sơ phần mềm | `backend/data/profile.json` | Z bút, tốc độ bút, bước jog tối đa |
-| Sao lưu YAML mạch | `backend/data/config_backups/` | tạo trước mỗi lần "Lưu vào mạch" |
-| Cài đặt bản thảo | `backend/data/draw_settings.json` | thư mục, số bản tối đa, dung lượng tối đa |
-| Bản thảo | `backend/data/drafts/` (đổi được ở Cài đặt) | mỗi bản một thư mục: `meta.json`, `draw[-<n>-<màu>].gcode`, `preview.svg` |
-| Nhật ký hệ thống | bộ nhớ | chưa ghi tệp (xem `STATUS.md`) |
+Gốc dữ liệu = `backend/data/` (tự tạo khi cần, không lên Git); đổi bằng `EXTRUXY_DATA_DIR`. Giao diện không cho đổi đường dẫn.
 
-`backend/data/` không lên Git. Biến môi trường (đều tùy chọn):
+| Thứ | Ở đâu (trong gốc) | Ghi chú |
+|---|---|---|
+| Hồ sơ phần mềm | `profile.json` | Z bút, tốc độ bút, bước jog tối đa |
+| Sao lưu YAML mạch | `config_backups/` | tạo trước mỗi lần "Lưu vào mạch" |
+| Cài đặt bản thảo | `draw_settings.json` | số bản tối đa, dung lượng tối đa |
+| Bản thảo | `drafts/` | mỗi bản một thư mục: `meta.json`, `draw[-<n>-<màu>].gcode`, `preview.svg` |
+| Macro | `macros/` | mỗi macro một tệp `m_<mã>.json` |
+| Điểm dừng tác vụ | `resume.json` | G-code đã làm sạch + số dòng đã nhận; xóa khi tác vụ chạy trọn |
+| Nhật ký hệ thống | bộ nhớ | **không ghi tệp** (đã quyết định bỏ, xem DECISIONS S5) |
+
+Biến môi trường (đều tùy chọn):
 | Biến | Tác dụng |
 |---|---|
+| `EXTRUXY_DATA_DIR` | thư mục gốc dữ liệu (mặc định `backend/data`) |
 | `EXTRUXY_ALLOW_MOTION=1` | mở khóa chuyển động cố định (máy thật mặc định chỉ đọc) |
 | `EXTRUXY_UNLOCK_MINUTES` | tự khóa lại sau chừng này phút (mặc định 15; 0 = tắt) |
 | `EXTRUXY_UNLOCK_PIN` | đòi PIN khi mở khóa chuyển động |

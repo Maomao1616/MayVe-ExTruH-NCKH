@@ -3,7 +3,7 @@
 //   2. initBehavior       Hoạt động: nhịp cập nhật, xác nhận Home, phím tắt (trình duyệt -> PREFS)
 //   3. initFirmwareInfo   Cấu hình máy: dòng Firmware
 //      initMachineConfig  Cấu hình máy: YAML trên mạch + hồ sơ phần mềm (backend -> MACHINE)
-//   4. initDraftSettings  Bản thảo: thư mục lưu + hạn mức (GET/PUT /api/draw/settings)
+//   4. initDraftSettings  Bản thảo: hạn mức (GET/PUT /api/draw/settings); thư mục cố định, xem ở views/storage.js
 // Các view khác KHÔNG import file này: chúng đọc MACHINE / PREFS trong core/config.js.
 // (Ngôn ngữ và sáng/tối ở khối "Giao diện chung" do app.js lo vì phải chạy trước mọi view.)
 import { api, ApiError } from "../core/api.js";
@@ -814,16 +814,14 @@ function initMachineConfig() {
 
 /* ==================== 4. BẢN THẢO (thư mục lưu + hạn mức) ==================== */
 function initDraftSettings() {
-    const dir = document.getElementById("draft-dir");
     const count = document.getElementById("draft-max-count");
     const size = document.getElementById("draft-max-mb");
     const save = document.getElementById("draft-settings-save-btn");
     const status = document.getElementById("draft-settings-status");
     const folder = document.getElementById("draft-settings-folder");
-    if (!dir || !count || !size || !save || !status) return;
+    if (!count || !size || !save || !status) return;
 
     const show = (result) => {
-        dir.value = result.settings.draft_dir;
         count.value = String(result.settings.max_count);
         size.value = String(result.settings.max_mb);
         if (folder) { folder.textContent = result.folder; folder.title = result.folder; }
@@ -844,7 +842,7 @@ function initDraftSettings() {
         save.disabled = true;
         try {
             show(await api.drawSettingsSave({
-                draft_dir: dir.value.trim(), max_count: Number(count.value), max_mb: Number(size.value)
+                max_count: Number(count.value), max_mb: Number(size.value)
             }));
             say("settings.drafts.saved", "success");
             refreshDrafts();                          // đổi thư mục: danh sách bản thảo ở hai tab đọc lại

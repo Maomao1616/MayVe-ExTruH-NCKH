@@ -14,6 +14,7 @@ import { initHeader } from "./views/header.js";
 import { initDock } from "./views/dock.js";
 import { initDrawing } from "./views/drawing.js";
 import { initDrafts } from "./views/drafts.js";
+import { initStorage } from "./views/storage.js";
 async function initApp() {
     try {
         initTabs();
@@ -26,6 +27,7 @@ async function initApp() {
         initDrafts();
         initTerminal();
         initSettings();
+        initStorage();
         initHeader();
         initDock();
         keepScrollSpace()

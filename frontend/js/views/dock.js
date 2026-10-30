@@ -1,13 +1,15 @@
 // views/dock.js — khối tiện ích bên trái, luôn có mặt ở mọi tab.
 //  - Macro: nút chạy nhanh + thêm/sửa/xóa ngay tại đây (lưu qua macros.js).
-//  - Tệp nhanh: chỗ để sẵn, chờ lớp lưu trữ (thẻ SD/flash).
+//  - Tệp nhanh: các bản thảo đã GHIM (ghim ở tab Tạo bản vẽ); bấm để nạp sang tab Điều khiển.
+//    Nạp xong vẫn phải Xem trước + xác nhận mới chạy được.
 // Chạy macro đi qua api.js: loại gcode = tác vụ (có tiến trình ở tab Điều khiển),
 // loại command = một lệnh đơn. Backend vẫn là lớp chặn cuối cùng.
 
 import { api } from "../core/api.js";
 import { t } from "../core/i18n.js";
 import { subscribe, isConnected, isStale } from "../core/state.js";
-import { loadMacros, saveMacro, deleteMacro } from "../stores/macros.js";
+import { loadMacros, saveMacro, deleteMacro, refreshMacros } from "../stores/macros.js";
+import { drafts, loadIntoControl, subscribeDrafts } from "../stores/draftstore.js";
 
 const $ = (id) => document.getElementById(id);
 const OPEN_KEY = "extruxy-dock-open";
@@ -24,6 +26,10 @@ export function initDock() {
     initMacroForm();
     renderMacros();
     window.addEventListener("extruxy:macros-changed", renderMacros);
+    window.addEventListener("focus", refreshMacros);
+    window.addEventListener("extruxy:language-changed", renderQuickFiles);
+    refreshMacros();
+    subscribeDrafts(renderQuickFiles);
     subscribe((state) => {
         lastState = state;
         updateMacroButtons();
@@ -135,16 +141,16 @@ function initMacroForm() {
     addButton.addEventListener("click", () => openForm(null));
     $("macro-cancel-btn")?.addEventListener("click", closeForm);
 
-    $("macro-delete-btn")?.addEventListener("click", () => {
+    $("macro-delete-btn")?.addEventListener("click", async () => {
         if (!editingId) return;
         if (!window.confirm(t("dock.macro.deleteConfirm"))) return;
-        deleteMacro(editingId);
-        closeForm();
+        if (await deleteMacro(editingId)) closeForm();
+        else setError(t("dock.macro.err.storage"));
     });
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
         event.preventDefault();
-        const result = saveMacro({
+        const result = await saveMacro({
             id: editingId,
             name: $("macro-name").value,
             type: $("macro-type").value,
@@ -158,6 +164,40 @@ function initMacroForm() {
         }
         closeForm();
     });
+}
+
+/* ---------- Tệp nhanh = bản thảo đã ghim ---------- */
+function renderQuickFiles() {
+    const list = $("dock-files-list");
+    const empty = $("dock-files-empty");
+    if (!list) return;
+    const pinned = drafts.list.filter((draft) => draft.pinned);
+    if (empty) empty.hidden = pinned.length > 0;
+    list.replaceChildren();
+    for (const draft of pinned) {
+        const files = draft.files ?? [];
+        for (const file of files) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "secondary-button dock-run";
+            const color = /^(\d+)-([0-9a-f]{6})$/i.exec(file.layer ?? "");
+            button.textContent = files.length > 1 ? `${draft.name} · ${color ? color[1] : file.layer}` : draft.name;
+            button.title = t("dock.files.loadHelp");
+            if (color) button.style.borderLeft = `6px solid #${color[2]}`;
+            button.addEventListener("click", () => loadQuickFile(draft, file));
+            list.append(button);
+        }
+    }
+}
+
+async function loadQuickFile(draft, file) {
+    try {
+        await loadIntoControl(draft, file);
+        message({ text: `${t("drawing.sent")} ${draft.name}` });
+        $("tab-control")?.click();
+    } catch (error) {
+        message({ error });
+    }
 }
 
 function setError(text) {

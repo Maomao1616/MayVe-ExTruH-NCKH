@@ -14,6 +14,7 @@ Hợp đồng (docs/DRAW_ROADMAP.md mục 3):
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from fastapi import APIRouter, File, Form, UploadFile
@@ -21,7 +22,7 @@ from fastapi.responses import PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from ..services.drawing import DrawError, describe, drafts, import_svg, make_gcode, spec
-from ..services.drawing import isolated, preview, raster, service
+from ..services.drawing import calibration, gcode_import, isolated, preview, raster, service
 from ..services.drawing.shapes import Layer
 from ..services.drawing.store import TASKS
 from ..services.drawing.svg_in import MAX_SVG_BYTES
@@ -59,8 +60,15 @@ class DraftPatch(BaseModel):
     priority: int | None = None
 
 
+class CalibrationRequest(BaseModel):
+    machine: dict[str, Any]
+    gcode: dict[str, Any] = {}
+    pen_width_mm: float = Field(0.4, allow_inf_nan=False)
+    paper_x_mm: float = Field(0.0, ge=0, le=5000, allow_inf_nan=False)
+    paper_y_mm: float = Field(0.0, ge=0, le=5000, allow_inf_nan=False)
+
+
 class SettingsRequest(BaseModel):
-    draft_dir: str = ""
     max_count: int
     max_mb: int
 
@@ -189,6 +197,30 @@ def draft_create(req: DraftRequest):
             params["source"] = {k: v for k, v in TASKS.get(req.task).info.items() if k in ("mode", "name")}
         return {"draft": drafts.create(req.name, result, placed, machine, params), "warnings": result["warnings"]}
     return _wrap(run)
+
+
+MAX_GCODE_BYTES = 20 * 1024 * 1024
+
+
+@router.post("/drafts/import-gcode", status_code=201)
+def draft_import_gcode(file: UploadFile = File(...), work_w: float = Form(285.0), work_h: float = Form(318.0)):
+    """Một tệp G-code có sẵn = một bản thảo (làm sạch bằng bộ kiểm tra của tác vụ). Xem drawing/gcode_import.py."""
+    def run():
+        if not (1 <= work_w <= 5000 and 1 <= work_h <= 5000):
+            raise DrawError("bad_param", "work_w/work_h: ngoài khoảng 1–5000 mm.")
+        data = file.file.read(MAX_GCODE_BYTES + 1)
+        if len(data) > MAX_GCODE_BYTES:
+            raise DrawError("file_too_large", f"Tệp lớn hơn {MAX_GCODE_BYTES // (1024 * 1024)} MB.", 413)
+        name = re.sub(r"\.[^.]*$", "", (file.filename or "G-code").strip()) or "G-code"
+        return gcode_import.import_gcode(name, data.decode("utf-8", errors="replace"), work_w, work_h)
+    return _wrap(run)
+
+
+@router.post("/calibration", status_code=201)
+def calibration_create(req: CalibrationRequest):
+    """Tạo bản thảo tờ mẫu hiệu chỉnh bút (chữ F, thước 100 mm, 8 dải tô). Xem services/drawing/calibration.py."""
+    return _wrap(calibration.make_draft, "Mẫu hiệu chỉnh bút", req.machine, req.gcode,
+                 req.pen_width_mm, req.paper_x_mm, req.paper_y_mm)
 
 
 @router.get("/drafts")
