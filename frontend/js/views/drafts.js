@@ -59,8 +59,12 @@ function actionsOf(draft, { goToControl }) {
     out.push(button(t("drawing.drafts.open"), () => openModal(draft)));
     const files = draft.files ?? [];
     for (const file of files) {
-        const text = files.length > 1 ? `${t("drawing.drafts.load")} ${file.layer}` : t("drawing.drafts.load");
-        out.push(button(text, () => load(draft, file, goToControl), { title: t("drawing.drafts.loadHelp") }));
+        // Tên lớp dạng "2-31254d" = số lớp + mã màu; hiện số lớp và vệt màu để chọn đúng bút.
+        const m = /^(\d+)-([0-9a-f]{6})$/i.exec(file.layer ?? "");
+        const text = files.length > 1 ? `${t("drawing.drafts.load")} ${m ? `${m[1]} · #${m[2]}` : file.layer}` : t("drawing.drafts.load");
+        const el = button(text, () => load(draft, file, goToControl), { title: t("drawing.drafts.loadHelp") });
+        if (m) el.style.borderLeft = `6px solid #${m[2]}`;
+        out.push(el);
     }
     out.push(button(draft.pinned ? t("drawing.drafts.unpin") : t("drawing.drafts.pin"),
         () => act(() => pinDraft(draft.id, !draft.pinned))));

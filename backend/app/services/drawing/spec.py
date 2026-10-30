@@ -99,6 +99,7 @@ RASTER = (
     Param("gamma", "float", 1.0, 0.3, 3.0),
     Param("black_point", "int", 0, 0, 254),
     Param("white_point", "int", 255, 1, 255),
+    Param("auto_levels", "bool", True),                               # kéo giãn 1–99% độ sáng: ảnh chụp thiếu tương phản vẫn ra nét
     Param("clahe", "bool", False),                                    # cân bằng sáng cục bộ (ảnh tối/sáng lệch)
     Param("denoise", "bool", False),                                  # khử nhiễu NLM: chậm, chỉ cho ảnh thiếu sáng
 )

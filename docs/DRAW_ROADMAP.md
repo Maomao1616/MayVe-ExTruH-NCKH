@@ -19,7 +19,7 @@ Frontend chỉ biết API; thuật toán đổi bên trong không làm đổi gi
 ## 2. Khung chuẩn và bút
 - Khung thật (do nhóm vẽ trên mặt bàn): vùng máy **285×318 mm**, gốc O(0,0) góc trên trái, Y xuống; **A6 ⊂ A5 ⊂ A4 cùng neo ở O**. Khớp quy ước `layout.py` (tờ giấy neo ở O, dịch bằng `paper_x/y_mm`).
 - `margin_mm` tính từ mép tờ giấy. Khung vẽ nằm trong phần trong lề; ra ngoài → lỗi `box_out_of_paper` (không tự cắt).
-- **Bút: 0,2 và 0,4 mm** (`pen_width_mm`: 0.2 / 0.4 / tùy chọn). Độ phân giải xử lý **tự tính** = cạnh dài khung vẽ ÷ độ rộng bút × 1,3 (A4: ~900 px với bút 0,4; ~1500 px với bút 0,2), có ô ghi đè (`max_side_px`, trần 2500). Khoảng gạch nhỏ nhất = độ rộng bút; các mức nhạt hơn là bội số của nó.
+- **Bút: 0,2 và 0,4 mm** (`pen_width_mm`: 0.2 / 0.4 / tùy chọn). Độ phân giải xử lý **tự tính** = cạnh dài khung vẽ ÷ độ rộng bút × 1,3 (cạnh dài trong lề A4 = 287 mm: ~930 px với bút 0,4; ~1870 px với bút 0,2), có ô ghi đè (`max_side_px`, trần 2500). Khoảng gạch nhỏ nhất = độ rộng bút; các mức nhạt hơn là bội số của nó.
 - `origin` (G54/máy) không vào backend: frontend kiểm lại kể cả WCO khi Chạy.
 
 ## 3. Hợp đồng API (CHỐT TRƯỚC KHI LÀM FRONTEND)
@@ -60,7 +60,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 ```
 <thư mục bản thảo>/<yyyymmdd-hhmmss>-<tên>/
     meta.json        # tham số đã dùng, số liệu, pinned, priority, tên
-    draw[-<lớp>].gcode
+    draw[-<n>-<mãmàu>].gcode   # nhiều màu: draw-1-181b1b.gcode, draw-2-3231a7.gcode ...
     preview.svg      # ảnh minh họa
 ```
 - Tên thư mục kiểm bằng regex; thư mục gốc kiểm đường dẫn (chặn `..`, chỉ ghi trong thư mục đã cấu hình). Ghi nguyên tử.
@@ -84,6 +84,25 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 - **Kiểu tô — thứ tự ưu tiên:** (1) zigzag nhiều mức, (2) sóng, (3) xoắn ốc, (4) nét viền XDoG + skeleton, nhập vào chân dung bằng `outline_overlay`. **Bỏ:** stipple (mỗi chấm một lần nhấc bút), TSP art. **Để sau:** hatch theo hướng khối (flow field), preset ảnh, đường đồng mức.
 - Docker (nếu dùng): image ~0,7–1 GB. **Rủi ro là cổng USB**, không phải dung lượng: Linux dùng `--device=/dev/ttyUSB0`; Windows cần `usbipd` → trên Windows chạy trực tiếp.
 
+### Thứ tự xử lý ảnh (đã chốt)
+EXIF + `Image.draft` → **crop** → **thu nhỏ** về độ phân giải làm việc (không phóng to) → xám → khử nhiễu → mức đen/trắng/gamma → CLAHE → làm nét → ngưỡng / XDoG → skeleton (đi nét). Các bước lọc làm SAU thu nhỏ (chi phí tỉ lệ số điểm ảnh; làm nét trước thu nhỏ bị mất và khuếch đại nhiễu); crop và EXIF mới làm trước. Hệ số × 1,3 (`oversample`) chỉ tốn thời gian XỬ LÝ; thời gian VẼ do khoảng cách gạch (mm), số mức, số lần nhấc bút quyết định.
+
+### Độ phân giải và phóng to / thu nhỏ khung (đã làm)
+- Khung vẽ thật (frontend gửi `layout.width_mm/height_mm`, theo hướng ảnh gốc) là hộp tham chiếu; thiếu thì lấy phần trong lề của tờ giấy. Khoảng cách gạch tính theo mm trên khung đó nên mật độ mực đúng theo bút ở kích thước thật.
+- Cỡ làm việc (cạnh dài) = khung ÷ bút × 1,3, kẹp 400–4000 px, nháp = một nửa. Ảnh lớn thì thu nhỏ; ảnh nhỏ chỉ phóng nhẹ (bicubic) tới tối đa `UPSCALE_TO_PX = 720` để viền vùng đậm nhạt mịn, không phóng hơn (thêm điểm ảnh không thêm chi tiết).
+- Kéo khung lệch quá 12% so với cỡ lúc tạo nét → frontend tự tạo lại nét sau 0,8 s (`scheduleRetrace` trong `views/drawing.js`), giữ nguyên khung đã kéo. Nếu không, chỉ phóng hình học sẽ làm gạch thưa ra / dày đặc so với bề rộng bút. Đổi dưới 12% chỉ phóng hình học. SVG không bị ảnh hưởng.
+- Kích thước đo thử (ảnh 1200×1600, A4 trong lề, i5 máy dev): zigzag ~0,1–0,7 s, sóng ~0,4–1,5 s, xoắn ốc ~0,4–1,6 s. Thời gian trên MiniPC i5-3210M chưa đo.
+- Viền (DoG + skeleton): nét mảnh cho một đường giữa; nét dày hơn tỷ lệ bắt nét cho hai đường biên song song. Đa màu bỏ qua khi kiểu là viền (cảnh báo `palette_ignored`).
+
+### Quyết định sau lần thử đầu với ảnh thật (30/10/2026)
+- **Giao diện gọn:** bỏ nút "Tạo nháp" và "Tạo G-code". Nạp tệp là tạo nét ngay ở độ phân giải đủ dùng; G-code tự tính lại sau mỗi lần đổi thông số (debounce 0,4 s). Còn nút **Tạo lại nét** (khi đổi thông số tạo nét) và **Tạo lại** (tính lại G-code).
+- **Bộ thông số dựng sẵn** (`views/drawing/presets.js`, chỉ là dữ liệu): Chân dung (zigzag 5 mức + viền + khử nhiễu), Phong cảnh (sóng + CLAHE), Mạch điện / Bản vẽ (chỉ viền, cắt mức đen/trắng 60–200). Chỉnh tay bất kỳ ô nào thì quay về "Tùy chỉnh". Chỉnh số trong file preset khi đã thử ảnh thật.
+- **Đa màu:** `palette.split` phân cụm 2–4 màu trên Lab (nhấn sắc độ, lặp pixel rực để màu nhỏ như đèn màu vẫn có cụm). Mỗi màu một lớp, một tệp G-code, tên lớp = `<số>-<mãmàu hex>` nên tên tệp tự mang mã màu; đổi bút giữa các tệp. Màu chiếm diện tích rất nhỏ vẫn có thể bị gộp (ảnh đêm toàn nền tối).
+- **Sóng bị vượt 200 000 dòng:** sóng lấy mẫu 5 điểm/chu kỳ, bước sóng tự dài ra nếu tổng nét làm vượt `WAVE_POINT_BUDGET` (100 000 điểm) → ảnh đậm vẫn ra G-code hợp lệ, sóng thưa hơn.
+- **Xoắn ốc nhiều lần nhấc bút:** khe trắng ngắn hơn `BRIDGE_MM` (3 mm) trên đường xoắn ốc được vẽ liền (đỡ ~50% số nét ở ảnh thử).
+- **Chớp "thông số không hợp lệ":** gõ "4" trên đường tới "4000" nhỏ hơn mức tối thiểu 10 nên backend báo lỗi; frontend nay bỏ qua giá trị ngoài khoảng đang gõ dở (`views/drawing.js`, `onParamChange`).
+- **Không làm:** giao diện cắt ảnh (backend vẫn nhận `crop_*`); người dùng đã chỉnh vùng cần vẽ trước khi gửi ảnh.
+
 ## 7. Lộ trình
 | GĐ | Nội dung | Tình trạng |
 |---|---|---|
@@ -91,8 +110,8 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 | 3 | **Chốt hợp đồng API + sửa HTML/CSS/i18n theo mục 3–4.** Backend: `tasks.py` (một luồng, tiến trình, hủy), `/import` (SVG thật, ảnh = dữ liệu giả `demo.py`), `preview.py`, `drafts.py`, `rotate`, two-opt có ngưỡng, 95 test. Frontend: HTML/CSS (`drawing.css` tách riêng)/i18n/`api.js` xong; **chưa có JS gắn dữ liệu** | ✅ |
 | 4 | Frontend JS: `views/drawing.js` + `drawing/params.js` + `drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề – xoay, bảng số liệu, tiến trình/hủy, nháp, bản thảo, gửi sang Điều khiển), `lib/paper.js` (+ test đối chiếu backend) | ✅ (kiểm bằng trình duyệt thật với SVG; raster vẫn là dữ liệu mẫu) |
 | 5 | Bản thảo (`drafts`) + Hàng đợi ở tab Điều khiển + thư mục ở Cài đặt | ✅ (làm cùng GĐ4) |
-| 6 | Worker + nạp ảnh + `tone` + zigzag/sóng/xoắn ốc + viền (mục 6) | ⏳ |
-| 7 | Đa màu 2–4, two-opt có ngưỡng, ước tính thời gian có gia tốc (D7) | ⏳ |
+| 6 | Nạp ảnh (`raster_in`) + `tone` (có tự cân sáng) + zigzag/sóng/xoắn ốc (`hatch.py`, `styles.py`) + viền (`edges.py`, `trace.py`) + tự tạo lại nét khi kéo khung (frontend) | ✅ |
+| 7 | Đa màu 2–4 (`palette.py`) ✅, two-opt có ngưỡng ✅; ước tính thời gian có gia tốc (D7) ⏳ | ⏳ |
 | 8 | Sau: hatch theo hướng khối, preset, xuất SVG | ⏳ |
 
 ## 8. Việc chưa kiểm chứng

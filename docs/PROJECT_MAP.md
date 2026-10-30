@@ -50,7 +50,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `services/job.py` | Chạy G-code: làm sạch dòng, gửi từng dòng chờ `ok`, lỗi/alarm/timeout kèm Feed Hold, hủy |
 | `services/machine_config.py` | Đọc/sửa/lưu YAML trên mạch (`$CD`, `$/axes/...`, `$CD=/localfs/...`), sao lưu bản gốc về `data/config_backups/` |
 | `services/profile.py` | Hồ sơ phần mềm (`data/profile.json`): Z bút 3 nấc, tốc độ bút, bước jog tối đa |
-| `services/drawing/` | Tab Tạo bản vẽ: SVG → nét → bố trí → G-code (xem `DRAW_ROADMAP.md`) |
+| `services/drawing/` | Tab Tạo bản vẽ: SVG hoặc ảnh → nét → bố trí → G-code (xem `DRAW_ROADMAP.md`). Ảnh: `raster_in` (đọc, cắt, cỡ làm việc) → `tone` (sắc độ) → `styles` + `hatch` (zigzag/sóng/xoắn ốc) hoặc `edges` + `trace` (viền) → `palette` (2–4 màu) → `optimize`; ghép ở `raster.py` |
 | `links/protocol.py` | Đọc từng dòng máy gửi (trạng thái, `ok`, `error`, `ALARM`); lệnh chỉ đọc theo `$CMD` thật; tên mã theo `$E`/`$A` |
 | `links/serial_link.py`, `sim_link.py`, `base.py` | Cổng COM thật / máy giả (hiệu chỉnh theo log board thật) / khuôn chung |
 
@@ -76,7 +76,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/views/preview.js` | Khung 2D (khối con của Điều khiển). Đang chạy đúng tệp đã nạp: vết vẽ theo đường của tệp (`trackProgress`), cung tròn không bị gãy theo nhịp hỏi vị trí |
 | `js/views/settings.js` | Tab Cài đặt: kết nối (nhớ cổng lần trước) · Hoạt động · **Cấu hình máy** (YAML trên mạch + hồ sơ phần mềm + nạp bản sao lưu) |
 | `js/views/dock.js` | Dock bên trái: macro |
-| `js/views/drawing.js` | Tab Tạo bản vẽ: nạp tệp → tác vụ nền (tiến trình, hủy) → nét nháp → bố trí → G-code → bản thảo / sang Điều khiển. Phần con: `views/drawing/params.js` (các ô ⇄ dữ liệu gửi backend), `views/drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề) |
+| `js/views/drawing.js` | Tab Tạo bản vẽ: nạp tệp → tác vụ nền (tiến trình, hủy) → nét nháp → bố trí → G-code → bản thảo / sang Điều khiển. Phần con: `views/drawing/params.js` (các ô ⇄ dữ liệu gửi backend), `views/drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề), `views/drawing/presets.js` (bộ thông số dựng sẵn: dữ liệu) |
 | `js/views/drafts.js` | Danh sách bản thảo (tab vẽ) + Hàng đợi công việc (tab Điều khiển) + hộp xem ảnh nháp |
 
 **Quy ước:** mỗi tab một file view với một hàm vào cửa; mỗi khối là một hàm riêng bên trong. **Một phần tử HTML chỉ một chủ ghi** (kiểm: `grep -rn "<id>" frontend/js`). Báo ra terminal bằng sự kiện `extruxy:message` (terminal giữ tiếng Anh).
@@ -113,16 +113,16 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | 2 | Tab Điều khiển: trạng thái, jog, bút, Zero, Home | ✅ |
 | 3 | G-code và khung 2D: nạp, xem trước/phát lại, chạy từng dòng, tiến trình, hủy | ✅ |
 | 4 | Sửa 4 lỗi backend + nút mở khóa chuyển động (hướng C) | ✅ |
-| 5 | Dock + macro + chỉ báo đầu trang (`macros.js`, `dock.js`, `header.js`) | 📦 (chờ áp dụng, rồi dọn khối thừa) |
-| 6 | Timeout Feed Hold, poller, Reset xóa lỗi cũ, test hồi quy | 📦 |
-| 7 | Hủy tác vụ an toàn (Dừng êm / Dừng gấp): backend + hộp thoại | 📦 (backend mới chỉ ở bản sao của Claude) |
-| 8 | **Hồ sơ máy trong Cài đặt** (F7) | ⏳ kế tiếp |
-| 9 | **Làm đẹp giao diện:** nút ↻, thanh cảnh báo, trạng thái chờ/rỗng/lỗi, màn hình hẹp | ⏳ kế tiếp |
-| 10 | Hàng chờ công việc: thiết kế backend (F6) | ⏳ |
+| 5 | Dock + macro + chỉ báo đầu trang (`macros.js`, `dock.js`, `header.js`) | ✅ |
+| 6 | Timeout Feed Hold, poller, Reset xóa lỗi cũ, test hồi quy | ✅ |
+| 7 | Hủy tác vụ an toàn (Dừng êm / Dừng gấp): backend + hộp thoại | ✅ (có `test_safe_stop.py`) |
+| 8 | Hồ sơ máy + cấu hình máy trong Cài đặt | ✅ |
+| 9 | Làm đẹp giao diện: nút ↻, thanh cảnh báo, trạng thái chờ/rỗng/lỗi | ✅ (màn hình hẹp: kiểm lại khi cần) |
+| 10 | Hàng chờ công việc = danh sách bản thảo (ghim, đẩy ưu tiên, mở xem) | ✅ |
 | 11 | Việc backend ghi nhận: log rotation 3 ngày, dòng `sys` tiếng Anh, `homed_axes` | ⏳ |
 | 12 | **Thử máy thật** (Phần B `handover-prompt.md`), chỉnh Z/hướng trục/`VIEW` | Khi có motor/servo |
 | 13 | Hoàn thiện SimLink theo dữ liệu thật | Sau 12 |
-| 14 | **Tab Tạo bản vẽ** (AI khác, song song): theo `DRAW_ROADMAP.md` | ⏳ chạy song song |
+| 14 | **Tab Tạo bản vẽ:** SVG + ảnh (3 kiểu tô, viền, 2–4 màu, preset), bản thảo, hàng đợi — xem `DRAW_ROADMAP.md`, `BRIEF.md` | ✅ (chờ thử ảnh thật và máy thật) |
 | 15 | Mini PC: xác thực + PIN thật, WiFi/USB, gửi trước nhiều dòng (D10), Tiếp tục từ dòng N, thư viện G-code (D11), PWA | Chỉ khi cần |
 | — | ~~Thẻ SD/Flash, tab Công việc~~ | **Đã bỏ** (D9, F8) |
 

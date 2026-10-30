@@ -3,15 +3,15 @@
 Chào bạn, tôi là người phát triển dự án **ExtruXY** (Máy vẽ CNC/Plotter dùng MKS DLC32 + FluidNC). Tôi không phải dân chuyên code, nên tôi cần bạn giải thích bằng lời thường trước khi đưa code, và chỉ đưa các đoạn code nhỏ để tôi dán vào file (không tạo lại toàn bộ file trừ khi tôi yêu cầu).
 
 ## 1. TÌNH TRẠNG HIỆN TẠI (Đã xong)
-- **Backend & Frontend Core**: Đã ổn định, test pass. 
-- **Đã dọn dẹp**: Bỏ hoàn toàn tính năng Thẻ SD/Flash và tab Jobs (gộp vào Control).
-- **An toàn**: Đã làm xong tính năng Hủy tác vụ 3 chế độ (Reset / Dừng êm / Dừng gấp). Nút Tạm dừng (Run) và Hủy Jog đã được tách riêng.
-- **Máy thật**: Đã test các lệnh cơ bản (Home, Jog, Streaming) thành công trên MKS DLC32 (không motor). Xem file `MACHINE.md` để biết chi tiết.
+- **Backend & Frontend Core**: ổn định, test pass (xem `BRIEF.md` mục "Chạy và kiểm tra").
+- **An toàn**: Hủy tác vụ 3 chế độ (Reset / Dừng êm / Dừng gấp), Tạm dừng và Hủy Jog tách riêng.
+- **Máy thật**: đã thử Home, Jog, Streaming trên MKS DLC32 (không motor). Xem `MACHINE.md`.
+- **Tab Tạo bản vẽ**: nạp SVG hoặc ảnh (PNG/JPG/WEBP) → nét (zigzag, sóng, xoắn ốc, viền; đơn sắc hoặc 2–4 màu; preset) → bố trí trên giấy A6/A5/A4 → G-code → bản thảo → Hàng đợi ở tab Điều khiển. Giải thích khối chức năng và nút bấm ở `BRIEF.md`.
 
-## 2. BƯỚC TIẾP THEO (Giai đoạn B: Tab Tạo Bản Vẽ)
-- **Mục tiêu**: Nạp file ảnh (SVG trước, PNG/JPG sau) -> Xử lý -> Sinh G-code -> Đẩy sang tab Control để chạy.
-- **Backend**: Đã có skeleton trong `services/drawing/`. Đã có API `/api/draw/gcode`. 
-- **Cần làm ngay**: Viết `loader.py` để đọc file SVG, thêm endpoint nhận file, và làm frontend `views/drawing.js`.
+## 2. VIỆC CÒN LẠI
+- Thử ảnh thật trên máy thật: hiệu chỉnh khoảng cách gạch theo bút 0,2 / 0,4, ngưỡng viền, preset (`views/drawing/presets.js`).
+- Chưa kiểm chứng trên máy thật: hướng trục, Z bút, thời gian ước tính (chưa tính gia tốc), `G4 P` tính bằng giây.
+- Ghi nhận chưa làm: nhật ký ghi ra tệp (giữ 3 ngày), tiếp tục từ dòng N, test cho `lib/gcode.js`. Danh sách đầy đủ ở `BRIEF.md`.
 
 ## 3. QUY TẮC CỐT LÕI
 - **Code**: Vanilla JS (ES6), Python (FastAPI). Không dùng framework nặng.
@@ -23,6 +23,7 @@ Chào bạn, tôi là người phát triển dự án **ExtruXY** (Máy vẽ CNC
 - `MACHINE.md`: Sự thật về phần cứng.
 - `PROJECT_MAP.md`: Bản đồ file.
 - `DRAW_ROADMAP.md`: Lộ trình làm tab Vẽ.
+- `BRIEF.md`: Tóm tắt cấu trúc và nút chức năng (đọc đầu tiên).
 
 ---
-*(Hết phần bàn giao. Bạn hãy chào tôi và xác nhận đã hiểu, sau đó chúng ta sẽ bắt tay vào việc tạo `loader.py` cho SVG)*
+*(Hết phần bàn giao. Bạn hãy chào tôi, xác nhận đã hiểu, rồi hỏi tôi muốn làm việc nào trong mục 2.)*

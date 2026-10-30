@@ -13,12 +13,17 @@ import { plan as planLayout, fitBox, innerArea, rotatedSize } from "../lib/paper
 import { loadIntoControl, refreshDrafts } from "../stores/draftstore.js";
 import { buildPath, createCanvas } from "./drawing/canvas.js";
 import * as params from "./drawing/params.js";
+import { presetValues } from "./drawing/presets.js";
 
 const $ = (id) => document.getElementById(id);
 const EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".webp"];
 const MAX_BYTES = { svg: 20 * 1024 * 1024, raster: 40 * 1024 * 1024 };
 const POLL_MS = 350;
 const GCODE_DEBOUNCE_MS = 400;
+// Kéo khung to / nhỏ hơn ngần này so với lúc tạo nét thì tạo lại nét: khoảng cách gạch tính theo mm,
+// nếu chỉ phóng hình học thì gạch thưa ra (hoặc dày đặc lại) so với bề rộng bút.
+const RETRACE_TOLERANCE = 0.12;
+const RETRACE_DELAY_MS = 800;
 
 const floor2 = (v) => Math.floor(v * 100 + 1e-9) / 100;
 const round2 = (v) => Math.round(v * 100) / 100;
@@ -30,6 +35,7 @@ const S = {
     preview: null, src: null, layers: [], source: null, importWarnings: [],
     plan: null, result: null, resultError: null, generating: false, genSeq: 0, genTimer: 0,
     savedDraft: null, savedKey: null, importDirty: false,
+    importKeep: false, lastQuality: "final", applyingPreset: false, retraceTimer: 0,
     status: { key: "drawing.progress.idle", extra: "", error: false }
 };
 
@@ -108,7 +114,7 @@ function acceptFile(file) {
     $("drawing-file-name").removeAttribute("data-i18n");
     $("drawing-file-name").textContent = `${file.name} · ${file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + " KB" : (file.size / 1048576).toFixed(1) + " MB"}`;
     showOriginal(file);
-    startImport("draft");
+    startImport("final", { fresh: true });
 }
 
 function showOriginal(file) {
@@ -121,9 +127,14 @@ function showOriginal(file) {
 }
 
 /* ==================== tác vụ nền: nạp + tiến trình ==================== */
-async function startImport(quality) {
+// fresh = tệp mới (khung = phần trong lề); ngược lại giữ khung hiện tại và nạp theo đúng cỡ đang vẽ.
+async function startImport(quality, { fresh = false, box = null } = {}) {
     if (!S.file) return;
     clearTimeout(S.pollTimer);
+    clearTimeout(S.retraceTimer);
+    if (!fresh && !box && S.plan?.ok) box = currentSourceBox();
+    S.importKeep = !fresh && Boolean(S.plan?.ok);
+    S.lastQuality = quality;
     const seq = ++S.importSeq;
     S.importDirty = false;
     S.busy = true;
@@ -132,7 +143,7 @@ async function startImport(quality) {
     setButtons();
     let job;
     try {
-        job = await api.drawImport(S.file, params.importOptions(quality));
+        job = await api.drawImport(S.file, params.importOptions(quality, box ?? params.innerBox()));
     } catch (error) {
         return failImport(seq, error);
     }
@@ -169,6 +180,7 @@ function poll(task, seq) {
 function failImport(seq, error) {
     if (seq !== S.importSeq) return;
     S.busy = false;
+    S.importKeep = false;
     setProgress(0);
     setStatus(errorKey(error), errorDetail(error), true);
     setButtons();
@@ -192,12 +204,13 @@ async function finishImport(view, seq) {
     S.savedDraft = null;
     S.savedKey = null;
     S.busy = false;
-    refit();
+    if (!S.importKeep) refit();
     setProgress(1);
     setStatus("drawing.progress.done");
     refreshScene();
     invalidateResult();
     scheduleGcode(0);
+    scheduleRetrace();
     if (previous && previous !== view.task) api.drawTaskDrop(previous).catch(() => {});
 }
 
@@ -232,7 +245,40 @@ function keepRatio(changed) {
     params.setLayoutFields({ width: w * k, height: h * k });
 }
 
+// Cỡ ảnh đang vẽ trên giấy, theo hướng ảnh gốc (kích thước nét lúc tạo × tỉ lệ bố trí hiện tại).
+function currentSourceBox() {
+    return { w: S.src.w * S.plan.sx, h: S.src.h * S.plan.sy };
+}
+
+// Ảnh raster: kéo khung lệch quá RETRACE_TOLERANCE so với cỡ lúc tạo nét thì tự tạo lại nét theo cỡ mới.
+function scheduleRetrace() {
+    clearTimeout(S.retraceTimer);
+    if (!S.file || S.source?.mode !== "raster" || S.busy || !S.plan?.ok || S.importDirty) return;
+    S.retraceTimer = setTimeout(() => {
+        if (S.busy || !S.plan?.ok) return;
+        const off = Math.max(Math.abs(S.plan.sx - 1), Math.abs(S.plan.sy - 1));
+        if (off > RETRACE_TOLERANCE) startImport(S.lastQuality);
+    }, RETRACE_DELAY_MS);
+}
+
+// Chọn bộ thông số dựng sẵn: điền các ô rồi tạo lại nét nếu đã có ảnh.
+function onPreset() {
+    const values = presetValues($("draw-preset").value);
+    if (!values) return;
+    S.applyingPreset = true;
+    params.setValues(values);
+    S.applyingPreset = false;
+    if (S.file) startImport("final");
+    else setStatus("drawing.progress.stale");
+}
+
 function onParamChange(kind, id) {
+    // Ô số đang gõ dở hoặc ngoài khoảng (vd. gõ "4" trên đường tới "4000"): chờ giá trị hợp lệ, không báo lỗi chớp.
+    const el = id ? $(id) : null;
+    if (el?.type === "number" && (el.validity.badInput || el.validity.rangeUnderflow || el.validity.rangeOverflow)) return;
+    if (kind === "import" && !S.applyingPreset && /^(image|style|palette)-/.test(id ?? "") && $("draw-preset")) {
+        $("draw-preset").value = "custom";
+    }
     if (kind === "import") {
         if (id?.startsWith("draw-pen-width")) refreshScene();            // bề dày nét vẽ trên canvas
         if (S.taskId) {
@@ -259,6 +305,7 @@ function onParamChange(kind, id) {
     refreshScene();
     invalidateResult();
     scheduleGcode();
+    scheduleRetrace();
 }
 
 // Canvas báo khung mới (mm). rect = null chỉ để báo "xong thao tác".
@@ -281,6 +328,7 @@ function onBox(rect, { final }) {
         invalidateResult();
         scheduleGcode();
         renderInfo();
+        scheduleRetrace();
     }
 }
 
@@ -354,11 +402,9 @@ async function generate() {
 
 /* ==================== nút bấm ==================== */
 function initButtons() {
-    $("draft-run-btn")?.addEventListener("click", () => startImport("draft"));
     $("final-run-btn")?.addEventListener("click", () => startImport("final"));
-    const regenerate = () => { invalidateResult(); generateNow(); };
-    $("generate-gcode-btn")?.addEventListener("click", regenerate);
-    $("regenerate-gcode-btn")?.addEventListener("click", regenerate);
+    $("regenerate-gcode-btn")?.addEventListener("click", () => { invalidateResult(); generateNow(); });
+    $("draw-preset")?.addEventListener("change", onPreset);
     $("drawing-cancel-btn")?.addEventListener("click", async () => {
         if (!S.jobId) return;
         try { await api.drawTaskCancel(S.jobId); } catch { /* tác vụ đã xong */ }
@@ -485,7 +531,7 @@ function renderWarnings() {
 function renderInfo() {
     const set = (id, text) => { const el = $(id); if (el) { el.removeAttribute("data-i18n"); el.textContent = text; } };
     const dash = "—";
-    set("drawing-source-info", S.fileName ? `${S.fileName}${S.source?.stub ? ` · ${t("drawing.stub.badge")}` : ""}` : dash);
+    set("drawing-source-info", S.fileName || dash);
 
     const plan = S.plan?.ok ? S.plan : null;
     set("drawing-size-info", plan ? `${(plan.rs.w * plan.sx).toFixed(1)} × ${(plan.rs.h * plan.sy).toFixed(1)} mm` : dash);
@@ -515,9 +561,7 @@ function renderInfo() {
 function setButtons() {
     const has = (id, disabled) => { const el = $(id); if (el) el.disabled = disabled; };
     const planOk = Boolean(S.plan?.ok);
-    has("draft-run-btn", !S.file || S.busy);
     has("final-run-btn", !S.file || S.busy);
-    has("generate-gcode-btn", !S.taskId || S.busy || !planOk);
     has("regenerate-gcode-btn", !S.taskId || S.busy || !planOk);
     has("drawing-cancel-btn", !S.busy);
     has("drawing-rotate-btn", !S.src);

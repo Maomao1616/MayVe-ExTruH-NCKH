@@ -1,11 +1,14 @@
 """Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay."""
+import io
 import time
 
+import numpy as np
 import pytest
+from PIL import Image
 from fastapi.testclient import TestClient
 
 from app.main import app
-from app.services.drawing import demo, drafts, layout as lo, spec
+from app.services.drawing import drafts, layout as lo, raster, spec
 from app.services.drawing.shapes import Box, Layer
 
 MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000}
@@ -18,8 +21,23 @@ SVG = (b'<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" vi
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(drafts, "SETTINGS_PATH", tmp_path / "draw_settings.json")
     monkeypatch.setattr(drafts, "DEFAULT_DIR", tmp_path / "drafts")
-    monkeypatch.setattr(demo, "STUB_STEP_S", 0)
     return TestClient(app)
+
+
+def png_bytes(w=300, h=200):
+    arr = np.tile(np.linspace(255, 0, w, dtype=np.uint8), (h, 1))
+    b = io.BytesIO(); Image.fromarray(arr, "L").save(b, "PNG")
+    return b.getvalue()
+
+
+def slow_import(monkeypatch):
+    """Thay dây chuyền ảnh bằng tác vụ chậm có điểm hủy, để thử hủy / thay thế tác vụ."""
+    def slow(data, name, opts, token=None, ctx=None):
+        for i in range(30):
+            ctx.step("style", i / 30, "chậm")
+            time.sleep(0.02)
+        return {"task": token, "source": {}, "warnings": []}
+    monkeypatch.setattr(raster, "import_raster", slow)
 
 
 def wait_state(client, token, states=("done", "failed", "cancelled"), timeout=10):
@@ -57,11 +75,26 @@ def test_import_svg_runs_in_background_and_feeds_preview_and_gcode(client):
     assert r.status_code == 200 and r.json()["files"][0]["stats"]["strokes"] >= 1
 
 
-def test_import_image_returns_demo_data_with_a_warning(client):
-    r = client.post("/api/draw/import", files={"file": ("p.png", b"\x89PNG")},
-                    data={"options": '{"raster": {"pen_width_mm": 0.2}, "style": {"kind": "wave"}}'})
+def test_import_image_traces_strokes_and_feeds_preview_and_gcode(client):
+    r = client.post("/api/draw/import", files={"file": ("p.png", png_bytes())},
+                    data={"options": '{"raster": {"pen_width_mm": 0.4, "quality": "draft"}, "style": {"kind": "wave"},'
+                                     ' "layout": {"paper": "a5", "margin_mm": 5}}'})
     done = wait_state(client, r.json()["task"])
-    assert done["state"] == "done" and done["warnings"][0]["code"] == "demo_data"
+    assert done["state"] == "done" and done["warnings"] == []
+    src = done["source"]
+    assert src["mode"] == "raster" and src["layers"][0]["strokes"] > 0
+    assert src["page_mm"]["w"] <= 138 + 1e-6 and src["page_mm"]["h"] <= 200 + 1e-6   # gọn trong A5 trừ lề
+    pv = client.get(f"/api/draw/tasks/{r.json()['task']}/preview").json()
+    assert pv["frame"]["w"] == pytest.approx(src["page_mm"]["w"], abs=0.01)
+    g = client.post("/api/draw/gcode", json={"task": r.json()["task"], "machine": MACHINE, "gcode": GCODE,
+                                             "layout": {"paper": "a5"}})
+    assert g.status_code == 200
+
+
+def test_import_image_bad_data_fails_with_bad_image(client):
+    r = client.post("/api/draw/import", files={"file": ("p.png", b"not a png")})
+    done = wait_state(client, r.json()["task"])
+    assert done["state"] == "failed" and done["error"]["code"] == "bad_image"
 
 
 def test_import_rejects_bad_input(client):
@@ -80,7 +113,7 @@ def test_failed_job_reports_the_error_code(client):
 
 
 def test_new_request_cancels_the_running_one(client, monkeypatch):
-    monkeypatch.setattr(demo, "STUB_STEP_S", 0.2)
+    slow_import(monkeypatch)
     first = client.post("/api/draw/import", files={"file": ("a.png", b"x")}).json()["task"]
     second = client.post("/api/draw/import", files={"file": ("b.png", b"x")}).json()["task"]
     assert wait_state(client, first)["state"] == "cancelled"
@@ -88,7 +121,7 @@ def test_new_request_cancels_the_running_one(client, monkeypatch):
 
 
 def test_cancel_route_and_unknown_task(client, monkeypatch):
-    monkeypatch.setattr(demo, "STUB_STEP_S", 0.2)
+    slow_import(monkeypatch)
     token = client.post("/api/draw/import", files={"file": ("a.png", b"x")}).json()["task"]
     assert client.post(f"/api/draw/tasks/{token}/cancel").json() == {"ok": True}
     assert wait_state(client, token)["state"] == "cancelled"

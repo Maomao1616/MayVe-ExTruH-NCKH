@@ -38,6 +38,7 @@ const FIELDS = [
     ["image-white-point", "raster", "white_point", "int"],
     ["image-gamma", "raster", "gamma", "num"],
     ["image-max-side", "raster", "max_side_px", "optint"],
+    ["image-auto-levels", "raster", "auto_levels", "bool"],
     ["image-clahe", "raster", "clahe", "bool"],
     ["image-denoise", "raster", "denoise", "bool"],
     ["style-kind", "style", "kind", "str"],
@@ -148,12 +149,32 @@ export function machinePayload() {
     };
 }
 
-export function importOptions(quality) {
+function referenceLayout(box) {
+    const full = layoutPayload();
+    const out = { paper: full.paper };
+    for (const key of ["paper_width_mm", "paper_height_mm", "margin_mm"]) if (full[key] !== undefined) out[key] = full[key];
+    if (box) {
+        out.width_mm = Math.max(1, round2(box.w));
+        out.height_mm = Math.max(1, round2(box.h));
+    }
+    return out;
+}
+
+// Khung vừa phần trong lề, theo hướng của ẢNH GỐC (đã trừ xoay 90/270): kích thước tham chiếu khi nạp mới.
+export function innerBox() {
+    const L = layoutInput();
+    const w = L.paperW - 2 * L.margin;
+    const h = L.paperH - 2 * L.margin;
+    return L.rotate === 90 || L.rotate === 270 ? { w: h, h: w } : { w, h };
+}
+
+export function importOptions(quality, box) {
     return {
         optimize: group("optimize"),
         raster: { ...group("raster"), pen_width_mm: penWidthMm(), quality },
         style: group("style"),
-        palette: group("palette")
+        palette: group("palette"),
+        layout: referenceLayout(box)
     };
 }
 
@@ -194,6 +215,18 @@ export function syncVisibility() {
     if (colors) colors.hidden = !multi;
     const lock = $("drawing-lock-ratio")?.checked;
     document.body.classList.toggle("draw-lock-ratio", Boolean(lock));
+}
+
+// Ghi nhiều ô cùng lúc (bộ thông số dựng sẵn). Không phát sự kiện: drawing.js tự tạo lại nét sau đó.
+export function setValues(values) {
+    for (const [id, v] of Object.entries(values)) {
+        const el = $(id);
+        if (!el) continue;
+        if (el.type === "checkbox") el.checked = Boolean(v);
+        else if (el.tagName !== "SELECT" || [...el.options].some((o) => o.value === String(v))) el.value = String(v);
+    }
+    syncVisibility();
+    saveForm();
 }
 
 /* ---------- schema, nhớ giá trị ---------- */

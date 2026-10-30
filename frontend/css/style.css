@@ -1278,11 +1278,16 @@ label select {
     font-size: 22px;
 }
 
-.terminal-panel[open] .terminal-toggle,
-.drawing-section[open] > .drawing-section-summary .drawing-section-chevron {
-    transform: rotate(360deg);
+.terminal-toggle,
+.drawing-section-chevron {
+    /* Các thuộc tính cũ... */
+    transform: rotate(540deg); /* Mặc định mũi tên xoay ngược lên */
 }
 
+.terminal-panel[open] .terminal-toggle,
+.drawing-section[open] > .drawing-section-summary .drawing-section-chevron {
+    transform: rotate(0deg); /* Khi mở thì quay về hướng gốc (cắm xuống) */
+}
 /* ==================== 10. TAB CAI DAT ==================== */
 .settings-layout {
     display: grid;

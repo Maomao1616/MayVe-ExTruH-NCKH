@@ -9,7 +9,6 @@ Hợp đồng (docs/DRAW_ROADMAP.md mục 3):
   POST /gcode                       tính G-code + số liệu (không lưu)
   GET/POST /drafts, GET /drafts/{id}[/gcode/{file}|/preview.svg], PATCH/DELETE /drafts/{id}
   GET/PUT /settings                 thư mục bản thảo + hạn mức
-Ảnh raster hiện trả DỮ LIỆU GIẢ (services/drawing/demo.py) cho tới khi có dây chuyền thật.
 Được gắn vào app trong api/__init__.py (danh sách ROUTERS).
 """
 from __future__ import annotations
@@ -22,7 +21,7 @@ from fastapi.responses import PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from ..services.drawing import DrawError, describe, drafts, import_svg, make_gcode, spec
-from ..services.drawing import demo, preview, service
+from ..services.drawing import preview, raster, service
 from ..services.drawing.shapes import Layer
 from ..services.drawing.store import TASKS
 from ..services.drawing.svg_in import MAX_SVG_BYTES
@@ -33,7 +32,7 @@ router = APIRouter(prefix="/api/draw")
 
 MAX_RASTER_BYTES = 40 * 1024 * 1024
 RASTER_EXT = (".png", ".jpg", ".jpeg", ".webp")
-IMPORT_KEYS = {"svg", "optimize", "raster", "style", "palette"}
+IMPORT_KEYS = {"svg", "optimize", "raster", "style", "palette", "layout"}
 
 
 class LayerIn(BaseModel):
@@ -106,7 +105,7 @@ def schema():
 # --- nạp tệp (tác vụ nền) -----------------------------------------------------------
 @router.post("/import", status_code=202)
 def import_file(file: UploadFile = File(...), options: str = Form("{}")):
-    """SVG -> import_svg thật; ảnh -> dữ liệu giả (chưa có dây chuyền). Trả mã tác vụ ngay."""
+    """SVG -> import_svg; ảnh -> raster.import_raster (tô nét). Trả mã tác vụ ngay."""
     def run():
         opts = _options(options, IMPORT_KEYS)
         name = (file.filename or "ban-ve")[:80]
@@ -122,7 +121,8 @@ def import_file(file: UploadFile = File(...), options: str = Form("{}")):
                 raise DrawError("file_too_large", f"Ảnh lớn hơn {MAX_RASTER_BYTES // (1024 * 1024)} MB.", 413)
             for group in ("raster", "style", "palette", "optimize"):
                 spec.parse(group, opts.get(group))        # lỗi tham số báo ngay, không đợi tác vụ
-            work = lambda ctx, token: demo.import_demo(ctx, token, name)
+            raster.reference_box(opts.get("layout"))
+            work = lambda ctx, token: raster.import_raster(data, name, opts, token, ctx)
         return JOBS.submit(work).view()
     return _wrap(run)
 
@@ -186,7 +186,7 @@ def draft_create(req: DraftRequest):
         machine = spec.parse("machine", req.machine).as_dict()
         params = {"machine": req.machine, "layout": req.layout, "gcode": req.gcode}
         if req.task:
-            params["source"] = {k: v for k, v in TASKS.get(req.task).info.items() if k in ("mode", "name", "stub")}
+            params["source"] = {k: v for k, v in TASKS.get(req.task).info.items() if k in ("mode", "name")}
         return {"draft": drafts.create(req.name, result, placed, machine, params), "warnings": result["warnings"]}
     return _wrap(run)
 

@@ -35,3 +35,4 @@ class Registry:
 
 
 VECTORIZERS = Registry("kiểu vector hóa")
+FILLERS = Registry("kiểu tô")          # zigzag / wave / spiral (styles.py): ảnh độ đậm -> đường nét

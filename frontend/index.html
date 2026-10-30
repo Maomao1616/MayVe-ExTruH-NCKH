@@ -735,11 +735,19 @@
                         <details class="panel drawing-section" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.preprocess.title">Tiền xử lý ảnh</span>
-                <span class="panel-tag drawing-section-badge" data-i18n="drawing.stub.badge">Dữ liệu mẫu</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
                 <div class="form-grid form-grid-spaced">
+                  <label for="draw-preset" data-i18n="[title]drawing.hint.preset">
+                    <span data-i18n="drawing.preset.label">Bộ thông số dựng sẵn</span>
+                    <select id="draw-preset">
+                      <option value="custom" data-i18n="drawing.preset.custom">Tùy chỉnh</option>
+                      <option value="portrait" data-i18n="drawing.preset.portrait">Chân dung</option>
+                      <option value="landscape" data-i18n="drawing.preset.landscape">Phong cảnh</option>
+                      <option value="circuit" data-i18n="drawing.preset.circuit">Mạch điện / Bản vẽ</option>
+                    </select>
+                  </label>
                   <label for="image-black-point" data-i18n="[title]drawing.hint.blackPoint">
                     <span data-i18n="drawing.preprocess.blackPoint">Mức đen</span>
                     <input id="image-black-point" type="number" min="0" max="254" step="1" value="0"/>
@@ -758,6 +766,10 @@
                   </label>
                 </div>
                 <div class="checkbox-list">
+                  <label data-i18n="[title]drawing.hint.auto_levels">
+                    <input id="image-auto-levels" type="checkbox" checked=""/>
+                    <span data-i18n="drawing.preprocess.auto_levels">Tự cân sáng (kéo giãn độ sáng)</span>
+                  </label>
                   <label data-i18n="[title]drawing.hint.clahe">
                     <input id="image-clahe" type="checkbox"/>
                     <span data-i18n="drawing.preprocess.clahe">Cân bằng sáng cục bộ (ảnh tối/sáng lệch)</span>
@@ -777,7 +789,6 @@
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.vectorize.title">Kiểu nét và tối ưu</span>
                 <span class="drawing-section-description" data-i18n="drawing.vectorize.desc">Chọn kiểu nét phù hợp với bút vẽ.</span>
-                <span class="panel-tag drawing-section-badge" data-i18n="drawing.stub.badge">Dữ liệu mẫu</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
@@ -941,9 +952,7 @@
                   <button class="danger-button" data-i18n="drawing.progress.cancel" disabled="" id="drawing-cancel-btn" type="button">Hủy</button>
                 </div>
                 <div class="drawing-preview-actions">
-                  <button data-i18n="drawing.action.draft" disabled="" id="draft-run-btn" type="button">Tạo nháp (nhanh)</button>
-                  <button data-i18n="drawing.action.final" disabled="" id="final-run-btn" type="button">Tạo chính thức</button>
-                  <button data-i18n="drawing.workflow.step4" disabled="" id="generate-gcode-btn" type="button">Tạo G-code</button>
+                  <button data-i18n="drawing.action.final" disabled="" id="final-run-btn" type="button">Tạo lại nét</button>
                 </div>
                 <div aria-live="polite" class="drawing-warnings" id="drawing-warnings">
                   <strong data-i18n="drawing.preview.warnings">Cảnh báo</strong>

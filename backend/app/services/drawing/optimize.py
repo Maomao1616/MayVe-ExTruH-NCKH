@@ -38,3 +38,18 @@ def run(document, p: Params):
         return vpype_cli.execute(pipeline, document)
     except Exception as exc:        # vpype báo lỗi bằng nhiều kiểu khác nhau
         raise DrawError("optimize_failed", f"vpype không chạy được '{pipeline}': {exc}", 500) from exc
+
+
+def layers_to_document(layers):
+    """Lớp (mm) -> vpype Document (px), để chạy cùng dây chuyền tối ưu như SVG."""
+    import numpy as np
+    import vpype
+    from .svg_in import PX_PER_MM
+    doc = vpype.Document()
+    for i, layer in enumerate(layers, start=1):
+        lc = vpype.LineCollection()
+        for s in layer.strokes:
+            a = np.asarray(s, dtype=float) * PX_PER_MM
+            lc.append(a[:, 0] + 1j * a[:, 1])
+        doc.add(lc, i)
+    return doc
