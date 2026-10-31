@@ -87,6 +87,7 @@ export const api = {
     drawDraftGcode: (id, file) => request("GET", `/draw/drafts/${id}/gcode/${file}`, null, { text: true }),
     drawDraftPreview: (id) => request("GET", `/draw/drafts/${id}/preview.svg`, null, { text: true }),
     drawDraftUpdate: (id, patch) => request("PATCH", `/draw/drafts/${id}`, patch),
+    drawDraftReorder: (ids) => request("POST", "/draw/drafts/reorder", { ids }),
     drawDraftDelete: (id) => request("DELETE", `/draw/drafts/${id}`),
     drawGcodeImport: (name, lines, workW, workH) => {
         const form = new FormData();
@@ -95,7 +96,6 @@ export const api = {
         form.append("work_h", String(workH));
         return request("POST", "/draw/drafts/import-gcode", form);
     },
-    drawCalibration: (payload) => request("POST", "/draw/calibration", payload),
     drawSettings: () => request("GET", "/draw/settings"),
     drawSettingsSave: (settings) => request("PUT", "/draw/settings", settings),
 };

@@ -9,7 +9,6 @@ import math
 
 import cv2
 import numpy as np
-from skimage.morphology import remove_small_objects, skeletonize
 
 OFFSETS = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
 SMOOTH_PASSES = 2
@@ -17,6 +16,8 @@ SIMPLIFY_PX = 0.6
 
 
 def skeleton(mask: np.ndarray, min_pixels: int) -> np.ndarray:
+    # nạp scikit-image lúc cần (~0,65 s): server chính không xử lý ảnh (tiến trình con làm), bật nhanh hơn
+    from skimage.morphology import remove_small_objects, skeletonize
     if min_pixels > 1:
         mask = remove_small_objects(mask, max_size=min_pixels - 1, connectivity=2)
     return skeletonize(mask)

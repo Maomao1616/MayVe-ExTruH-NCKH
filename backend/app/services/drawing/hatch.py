@@ -23,6 +23,7 @@ class Field:
     dark: np.ndarray             # float32 (h, w), 0..1
     width_mm: float
     height_mm: float
+    rgb: np.ndarray | None = None   # uint8 (h, w, 3) cùng cỡ, chỉ có khi vẽ viền (ranh giới mảng màu)
 
     @property
     def h(self) -> int:

@@ -108,6 +108,7 @@ RASTER = (
 STYLE = (
     Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral")),
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
+    Param("outline_detail", "choice", "medium", choices=("low", "medium", "high")),  # viền: ít = khối chính, nhiều = cả nét nhạt
     Param("levels", "int", 4, 3, 5),                                  # số mức sáng tối
     Param("angle", "float", 45.0, 0, 179, unit="°"),
     Param("spacing_mm", "float", None, 0.1, 20, unit="mm"),

@@ -1553,3 +1553,76 @@ button:not(.nav-tab):active:not(:disabled) {
         order: -1;
     }
 }
+
+
+/* ==================== Bản thảo: tay kéo đổi thứ tự + đổi tên tại chỗ ==================== */
+.draft-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.draft-title .draft-item-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.drag-handle {
+    flex: 0 0 auto;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1;
+    cursor: grab;
+    touch-action: none;                 /* cảm ứng: kéo dòng chứ không cuộn trang */
+    user-select: none;
+}
+
+.drag-handle:hover {
+    background: var(--bg-elevated);
+    color: var(--accent-text);
+}
+
+body.is-reordering,
+body.is-reordering * {
+    cursor: grabbing !important;
+    user-select: none;
+}
+
+.draft-item.is-dragging,
+#jobs-table-body tr.is-dragging {
+    position: relative;
+    z-index: 2;
+    outline: 2px dashed var(--accent-text);
+    outline-offset: -2px;
+    background: color-mix(in srgb, var(--accent) 55%, var(--bg-panel));
+    box-shadow: 0 6px 18px rgb(0 0 0 / 30%);
+}
+
+.draft-rename-btn {
+    flex: 0 0 auto;
+    min-height: 0 !important;
+    padding: 2px 7px !important;
+    border-color: transparent !important;
+    background: transparent !important;
+    color: var(--text-muted);
+    font-size: 14px;
+    line-height: 1.2;
+    opacity: 0.7;
+}
+
+.draft-rename-btn:hover {
+    color: var(--accent-text);
+    opacity: 1;
+}
+
+.draft-rename-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 4px 8px;
+    font-weight: 600;
+}

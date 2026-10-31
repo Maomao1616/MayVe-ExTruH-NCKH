@@ -78,7 +78,7 @@ SVG  ── svg_in ────────────────────�
 | **Tạo lại** (cạnh ô xác nhận) | Tính lại G-code ngay |
 | **Lưu bản thảo** | Ghi G-code + ảnh minh họa + meta vào thư mục bản thảo. Không chuyển tab |
 | **Chuyển sang Điều khiển** | Cần tích "Tôi đã kiểm tra…". **Tự lưu bản thảo** (nếu chưa lưu cùng thông số thì không tạo trùng) rồi nạp vào tab Điều khiển và chuyển sang đó. Không tự chạy |
-| Danh sách bản thảo | Mở xem, Nạp (theo lớp màu), Ghim, Đẩy lên đầu, Xóa (bấm hai lần) |
+| Danh sách bản thảo | ☰ giữ kéo để đổi thứ tự (chuột và cảm ứng; chỉ trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ (Enter lưu, Esc bỏ), Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
 
 Dòng trạng thái sau khi tạo nét ghi tổng thời gian; rê chuột vào để xem thời gian từng bước. Ô "Ảnh gốc" dưới canvas có hộp tích **Xem ảnh sau chỉnh sáng** (xem trước độ sáng/gamma/đảo ngay khi chỉnh).
 
@@ -105,7 +105,7 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 | Dock bên trái | Tệp nhanh | Các bản thảo đã ghim; bấm để nạp sang Điều khiển (vẫn phải Xem trước + xác nhận) |
 | Tệp G-code | Lưu vào bản thảo | Lưu tệp đang nạp thành một bản thảo (một tệp một bản) để ghim, chạy nhanh, nằm trong Hàng đợi |
 | Tệp G-code | Tiếp tục / Bỏ điểm dừng | Chỉ hiện khi có tác vụ đã dừng giữa chừng (hủy, lỗi, mất kết nối). Tiếp tục = lùi một đoạn, nâng bút, chạy tới đầu nét rồi vẽ tiếp; đừng đặt lại Zero hay dịch giấy |
-| Tạo bản vẽ → Bản thảo | Tạo tờ mẫu hiệu chỉnh bút | Bản thảo A5: chữ F, thước 100 mm, 8 dải tô để chọn khoảng cách dòng |
+| Tạo bản vẽ → Bản thảo | Ảnh thử preset (thang xám) | Nạp ảnh 11 bậc trắng → đen; chọn preset rồi Lưu bản thảo (tên tự kèm preset) để in thử từng preset |
 
 ## 5. Cài đặt
 - **Kết nối:** chọn cổng, Kết nối / Ngắt kết nối. **Giao diện chung:** ngôn ngữ. **Hoạt động:** tùy chọn hành vi.

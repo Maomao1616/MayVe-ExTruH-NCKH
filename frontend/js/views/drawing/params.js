@@ -48,6 +48,7 @@ const FIELDS = [
     ["style-angle", "style", "angle", "num"],
     ["style-spacing", "style", "spacing_mm", "optnum"],
     ["style-amplitude", "style", "amplitude_mm", "optnum"],
+    ["style-outline-detail", "style", "outline_detail", "str"],
     ["palette-mode", "palette", "mode", "str"],
     ["palette-colors", "palette", "colors", "int"]
 ];
@@ -210,6 +211,14 @@ export function syncVisibility() {
     const kind = $("style-kind")?.value;
     const amp = $("style-amplitude")?.closest("label");
     if (amp) amp.hidden = kind !== "wave";                        // biên độ chỉ dùng cho kiểu Sóng
+    // Nét viền không gạch tô: ẩn số mức / góc / khoảng cách; ô chi tiết viền chỉ hiện khi có viền
+    const outlineOnly = kind === "outline";
+    for (const id of ["style-levels", "style-angle", "style-spacing"]) {
+        const label = $(id)?.closest("label");
+        if (label) label.hidden = outlineOnly;
+    }
+    const detail = $("style-outline-detail")?.closest("label");
+    if (detail) detail.hidden = !(outlineOnly || $("style-outline")?.checked);
     const multi = $("palette-mode")?.value === "multi";
     const colors = $("palette-colors")?.closest("label");
     if (colors) colors.hidden = !multi;
@@ -303,7 +312,7 @@ export function initParams(onChange) {
     };
     for (const [id, g, , type] of FIELDS) {
         const kind = g === "layout" ? "layout" : g === "gcode" ? "gcode" : "import";
-        watch(id, kind, type === "bool" || id.endsWith("kind") || id.endsWith("mode") || id === "drawing-rotate"
+        watch(id, kind, type === "bool" || id.endsWith("kind") || id.endsWith("mode") || id.endsWith("detail") || id === "drawing-rotate"
             ? "change" : "input");
     }
     for (const id of ["drawing-paper", "drawing-paper-width", "drawing-paper-height"]) {

@@ -40,11 +40,12 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 | `DELETE /api/draw/drafts/{id}` | xóa | `{ok}` |
 | `GET/PUT /api/draw/settings` | hạn mức bản thảo (`max_count`, `max_mb`); `folder` chỉ để xem, cố định | `{settings, limits, folder}` |
 | `POST /api/draw/drafts/import-gcode` | multipart `file` (G-code) + `work_w`, `work_h` → một bản thảo (không qua ảnh/SVG) | `{draft, warnings}` |
-| `POST /api/draw/calibration` | `{machine, gcode, pen_width_mm, paper_x_mm?, paper_y_mm?}` → tờ mẫu hiệu chỉnh bút thành bản thảo | `{draft, warnings}` |
+| `POST /api/draw/calibration` | `{machine, gcode, pen_width_mm, paper_x_mm?, paper_y_mm?}` → tờ mẫu hiệu chỉnh bút thành bản thảo (giao diện không còn nút) | `{draft, warnings}` |
+| `POST /api/draw/drafts/reorder` | `{ids: [...]}` thứ tự mới (một nhóm ghim / không ghim); bản đầu ưu tiên cao nhất | `{drafts}` |
 
 - **`options` của `/import`:** khóa `svg`, `optimize`, `raster`, `style`, `palette`, `layout`. Với ảnh, `layout` chỉ là **hộp tham chiếu**: `paper`/`margin_mm` cho phần trong lề, hoặc `width_mm`/`height_mm` (kích thước khung thật, theo hướng ảnh gốc) để khoảng cách gạch tính đúng theo mm. Kết quả `source.timings` = giây từng bước; `source.layers[].color` = mã màu (đa màu); id lớp đa màu dạng `<số>-<mãmàu>`.
 - **Nhóm tham số** (trong `schema.params`): `layout` (thêm `rotate` 0/90/180/270), `gcode`, `machine`, `optimize` (thêm `two_opt`, `passes`), `svg`, `raster` (bút, tự độ phân giải, cắt ảnh, gamma/mức đen trắng, CLAHE, khử nhiễu — tắt mặc định), `style` (kiểu tô), `palette` (đơn sắc / 2–4 màu).
-- **Kiểu tô `style.kind`:** `outline` (đường giữa nét) · `zigzag` · `wave` · `spiral`; `style.outline_overlay` (bật thêm lớp viền); `levels` 3–5 mức sáng; `angle`; `spacing_mm`; `amplitude_mm`.
+- **Kiểu tô `style.kind`:** `outline` (viền khối + nét mực) · `zigzag` · `wave` · `spiral`; `style.outline_overlay` (bật thêm lớp viền); `style.outline_detail` `low`/`medium`/`high` (mức chi tiết viền); `levels` 3–5 mức sáng; `angle`; `spacing_mm`; `amplitude_mm`.
 - **Frontend tự biến đổi nét nháp** (di chuyển / co giãn / xoay / lật) bằng đúng công thức `layout.plan`, để kéo thả mượt không gọi mạng. Backend vẫn là nơi quyết định: `/gcode` trả `box`/`paper`, frontend so lại. ⚠ giữ công thức ở một hàm nhỏ trong `lib/`, có test đối chiếu với backend.
 
 ## 4. Giao diện tab Tạo bản vẽ
@@ -75,7 +76,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 | `worker.py` | một luồng, hàng 1, tiến trình, hủy hợp tác | stdlib |
 | `raster_in.py` | đọc, `Image.draft`, EXIF, thu nhỏ theo bút, xám | Pillow |
 | `tone.py` | gamma, mức đen trắng, CLAHE, khử nhiễu (tùy chọn) | OpenCV |
-| `edges.py` | XDoG chuẩn `S=(1+p)G_σ−p·G_kσ`, ngưỡng | OpenCV |
+| `edges.py` | Viền: top-hat (nét mực ≤ 4 mm, vạch sáng ≤ 1,2 mm → đường giữa) + Canny trên ảnh bilateral (xám + kênh màu a/b Lab) cho ranh giới mảng + vòng viền chấm đậm + nối khe hở ≤ 1,5 mm theo hướng đầu mút | OpenCV, scipy (cKDTree), scikit-image (skeletonize) |
 | `trace.py` | skeletonize → đồ thị → nét; làm mượt 1–2 vòng sau khi `approxPolyDP` | scikit-image + numpy |
 | `styles/` | `zigzag`, `wave`, `spiral`, `outline` (đăng ký trong `VECTORIZERS`) | numpy, OpenCV (`findContours` cho viền mảng đặc) |
 | `palette.py` | 2–4 màu: `cv2.kmeans` trên Lab, ảnh ~300 px; mỗi màu một lớp, mỗi lớp một góc hatch | OpenCV |
@@ -83,7 +84,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 | `drafts.py` | lưu/đọc/dọn bản thảo | stdlib |
 
 - **Thêm 3 gói:** Pillow, opencv-python-headless, scikit-image (≈ +100–130 MB ước tính ⚠). **Bỏ:** scikit-learn, potrace, sknw, numba (potrace dò biên mảng đặc → bút vẽ hai đường song song; skeleton cho đường giữa nét, một lượt bút).
-- **Kiểu tô — thứ tự ưu tiên:** (1) zigzag nhiều mức, (2) sóng, (3) xoắn ốc, (4) nét viền XDoG + skeleton, nhập vào chân dung bằng `outline_overlay`. **Bỏ:** stipple (mỗi chấm một lần nhấc bút), TSP art. **Để sau:** hatch theo hướng khối (flow field), preset ảnh, đường đồng mức.
+- **Kiểu tô — thứ tự ưu tiên:** (1) zigzag nhiều mức, (2) sóng, (3) xoắn ốc, (4) nét viền (`edges.py`), nhập vào chân dung bằng `outline_overlay`. **Bỏ:** stipple (mỗi chấm một lần nhấc bút), TSP art. **Để sau:** hatch theo hướng khối (flow field), đường đồng mức (khác hẳn zigzag/sóng/xoắn ốc nhưng tốn công; chỉ làm khi viền + 4 kiểu hiện có không đủ).
 - Docker (nếu dùng): image ~0,7–1 GB. **Rủi ro là cổng USB**, không phải dung lượng: Linux dùng `--device=/dev/ttyUSB0`; Windows cần `usbipd` → trên Windows chạy trực tiếp.
 
 ### Thứ tự xử lý ảnh (đã chốt)
@@ -94,11 +95,11 @@ EXIF + `Image.draft` → **crop** → **thu nhỏ** về độ phân giải làm
 - Cỡ làm việc (cạnh dài) = khung ÷ bút × 1,3, kẹp 400–4000 px, nháp = một nửa. Ảnh lớn thì thu nhỏ; ảnh nhỏ chỉ phóng nhẹ (bicubic) tới tối đa `UPSCALE_TO_PX = 720` để viền vùng đậm nhạt mịn, không phóng hơn (thêm điểm ảnh không thêm chi tiết).
 - Kéo khung lệch quá 12% so với cỡ lúc tạo nét → frontend tự tạo lại nét sau 0,8 s (`scheduleRetrace` trong `views/drawing.js`), giữ nguyên khung đã kéo. Nếu không, chỉ phóng hình học sẽ làm gạch thưa ra / dày đặc so với bề rộng bút. Đổi dưới 12% chỉ phóng hình học. SVG không bị ảnh hưởng.
 - Kích thước đo thử (ảnh 1200×1600, A4 trong lề, i5 máy dev): zigzag ~0,1–0,7 s, sóng ~0,4–1,5 s, xoắn ốc ~0,4–1,6 s. Thời gian trên MiniPC i5-3210M chưa đo.
-- Viền (DoG + skeleton): nét mảnh cho một đường giữa; nét dày hơn tỷ lệ bắt nét cho hai đường biên song song. Đa màu bỏ qua khi kiểu là viền (cảnh báo `palette_ignored`).
+- Viền (`edges.py`, đổi 31/10/2026 thay DoG): nét mực dày tới 4 mm (viền hoạt hình, chữ) → **một** đường giữa; mảng đậm rộng hơn → viền hai phía; chấm đậm (mắt) → vòng viền; ranh giới hai mảng khác sáng tối hoặc **khác màu cùng độ sáng** cũng có viền (cần ảnh màu: `raster.py` nạp màu khi có viền, `Field.rgb`); khe hở ≤ 1,5 mm được nối. `outline_detail`: `low` cho ảnh chụp (bỏ kết cấu lông, vân gỗ), `high` cho hình vẽ nét nhạt. Đa màu bỏ qua khi kiểu là viền (cảnh báo `palette_ignored`). Thử trên ảnh mẫu (gấu hoạt hình dán ảnh giường bệnh, sticker mảng màu, chân dung, cốc cà phê, mèo); 🧪 chưa in giấy.
 
 ### Quyết định sau lần thử đầu với ảnh thật (30/10/2026)
 - **Giao diện gọn:** bỏ nút "Tạo nháp" và "Tạo G-code". Nạp tệp là tạo nét ngay ở độ phân giải đủ dùng; G-code tự tính lại sau mỗi lần đổi thông số (debounce 0,4 s). Còn nút **Tạo lại nét** (khi đổi thông số tạo nét) và **Tạo lại** (tính lại G-code).
-- **Bộ thông số dựng sẵn** (`views/drawing/presets.js`, chỉ là dữ liệu): Chân dung (zigzag 5 mức + viền + khử nhiễu), Phong cảnh (sóng + CLAHE), Mạch điện / Bản vẽ (chỉ viền, cắt mức đen/trắng 60–200). Chỉnh tay bất kỳ ô nào thì quay về "Tùy chỉnh". Chỉnh số trong file preset khi đã thử ảnh thật.
+- **Bộ thông số dựng sẵn** (`views/drawing/presets.js`, chỉ là dữ liệu, chung một `BASE`): Chân dung (zigzag 5 mức + khử nhiễu + viền Ít), Phong cảnh (sóng + CLAHE + viền Ít; dùng cả cho cảnh đêm, hoàng hôn), Cận cảnh / Đồ vật (xoắn ốc + viền Ít), Ảnh 2D / Hình vẽ (viền Vừa), Schematic / Bản vẽ kỹ thuật (viền, mức 60–200). Bỏ các preset trùng thông số (đêm, hoàng hôn, sân khấu, truyện tranh). Cách thử và chỉnh: `KIEM_TRA_VE.md`. 🧪 chưa in giấy. Chỉnh tay bất kỳ ô nào thì quay về "Tùy chỉnh". Chỉnh số trong file preset khi đã thử ảnh thật.
 - **Đa màu:** `palette.split` phân cụm 2–4 màu trên Lab (nhấn sắc độ, lặp pixel rực để màu nhỏ như đèn màu vẫn có cụm). Mỗi màu một lớp, một tệp G-code, tên lớp = `<số>-<mãmàu hex>` nên tên tệp tự mang mã màu; đổi bút giữa các tệp. Màu chiếm diện tích rất nhỏ vẫn có thể bị gộp (ảnh đêm toàn nền tối).
 - **Sóng bị vượt 200 000 dòng:** sóng lấy mẫu 5 điểm/chu kỳ, bước sóng tự dài ra nếu tổng nét làm vượt `WAVE_POINT_BUDGET` (100 000 điểm) → ảnh đậm vẫn ra G-code hợp lệ, sóng thưa hơn.
 - **Xoắn ốc nhiều lần nhấc bút:** khe trắng ngắn hơn `BRIDGE_MM` (3 mm) trên đường xoắn ốc được vẽ liền (đỡ ~50% số nét ở ảnh thử).

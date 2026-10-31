@@ -176,6 +176,29 @@ def test_pinned_and_priority_come_first_and_pruning_keeps_pinned(client):
     assert a["id"] in ids and c["id"] in ids and b["id"] not in ids      # bản ghim ở lại, bản cũ không ghim bị dọn
 
 
+def test_reorder_sets_the_dragged_order_in_one_call(client):
+    a = make_draft(client, "a")
+    time.sleep(1.1)
+    b = make_draft(client, "b")
+    time.sleep(1.1)
+    c = make_draft(client, "c")
+    r = client.post("/api/draw/drafts/reorder", json={"ids": [a["id"], c["id"], b["id"]]})
+    assert r.status_code == 200
+    assert [x["id"] for x in r.json()["drafts"]] == [a["id"], c["id"], b["id"]]
+    assert [x["id"] for x in client.get("/api/draw/drafts").json()["drafts"]] == [a["id"], c["id"], b["id"]]
+    # mã lạ hoặc trùng: từ chối, không sửa bản nào
+    assert client.post("/api/draw/drafts/reorder", json={"ids": [b["id"], b["id"]]}).status_code == 400
+    assert client.post("/api/draw/drafts/reorder", json={"ids": [b["id"], "20260101-000000-khong-co"]}).status_code == 404
+    assert [x["id"] for x in client.get("/api/draw/drafts").json()["drafts"]] == [a["id"], c["id"], b["id"]]
+
+
+def test_rename_validates_length(client):
+    d = make_draft(client)
+    assert client.patch(f"/api/draw/drafts/{d['id']}", json={"name": "  "}).status_code == 400
+    assert client.patch(f"/api/draw/drafts/{d['id']}", json={"name": "x" * 81}).status_code == 400
+    assert client.patch(f"/api/draw/drafts/{d['id']}", json={"name": "  Thang xám · Chân dung "}).json()["draft"]["name"] == "Thang xám · Chân dung"
+
+
 def test_settings_validation_and_fixed_folder(client, tmp_path):
     for bad in ({"max_count": 0, "max_mb": 100}, {"max_count": 5, "max_mb": 1}):
         assert client.put("/api/draw/settings", json=bad).status_code == 400

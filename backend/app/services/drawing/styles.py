@@ -85,8 +85,8 @@ def spiral(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None)
 
 @FILLERS.register("outline")
 def outline(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    """Nét viền phác họa: DoG -> skeleton -> nét liền theo đường giữa."""
-    skel = trace.skeleton(edges.ink_mask(f.dark), min_pixels=8)
+    """Nét viền phác họa (edges.py): nét mực + ranh giới mảng sáng tối / màu + nối khe hở -> nét liền."""
+    skel = edges.outline_mask(f.dark, f.rgb, f.width_mm / f.w, style.outline_detail, ctx)
     if ctx:
         ctx.check()
     return trace.to_strokes(skel, f.width_mm / f.w, f.height_mm / f.h, min_len_mm=max(1.0, 3.0 * pen_mm))

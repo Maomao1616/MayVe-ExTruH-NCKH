@@ -547,7 +547,7 @@
           <div class="panel-heading">
             <div>
               <h2 data-i18n="jobs.queue.title">Hàng đợi công việc</h2>
-              <p data-i18n="jobs.queue.desc">Các bản thảo đã tạo ở tab Tạo bản vẽ; bản ghim ở trên cùng.</p>
+              <p data-i18n="jobs.queue.desc">Các bản thảo đã tạo ở tab Tạo bản vẽ; bản ghim ở trên cùng. Giữ ☰ kéo để đổi thứ tự, ✎ để đổi tên.</p>
             </div>
             <button class="secondary-button" data-i18n="common.action.refresh" id="draft-queue-refresh-btn" type="button">Làm mới</button>
           </div>
@@ -765,7 +765,9 @@
                       <option value="custom" data-i18n="drawing.preset.custom">Tùy chỉnh</option>
                       <option value="portrait" data-i18n="drawing.preset.portrait">Chân dung</option>
                       <option value="landscape" data-i18n="drawing.preset.landscape">Phong cảnh</option>
-                      <option value="circuit" data-i18n="drawing.preset.circuit">Mạch điện / Bản vẽ</option>
+                      <option value="closeup" data-i18n="drawing.preset.closeup">Cận cảnh / Đồ vật</option>
+                      <option value="flat2d" data-i18n="drawing.preset.flat2d">Ảnh 2D / Hình vẽ</option>
+                      <option value="schematic" data-i18n="drawing.preset.schematic">Schematic / Bản vẽ kỹ thuật</option>
                     </select>
                   </label>
                   <label for="image-black-point" data-i18n="[title]drawing.hint.blackPoint">
@@ -819,7 +821,7 @@
                       <option data-i18n="drawing.style.zigzag" selected="" value="zigzag">Zigzag (gạch nối liền)</option>
                       <option data-i18n="drawing.style.wave" value="wave">Sóng</option>
                       <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
-                      <option data-i18n="drawing.style.outline" value="outline">Nét viền (đường giữa nét)</option>
+                      <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
                     </select>
                   </label>
                   <label for="palette-mode" data-i18n="[title]drawing.hint.paletteMode">
@@ -848,6 +850,14 @@
                   <label for="style-amplitude" data-i18n="[title]drawing.hint.amplitude">
                     <span data-i18n="drawing.style.amplitude">Biên độ sóng (mm, trống = tự tính)</span>
                     <input id="style-amplitude" type="number" min="0.05" max="10" step="0.05" placeholder="auto"/>
+                  </label>
+                  <label for="style-outline-detail" data-i18n="[title]drawing.hint.outlineDetail">
+                    <span data-i18n="drawing.style.outlineDetail">Chi tiết viền</span>
+                    <select id="style-outline-detail">
+                      <option data-i18n="drawing.style.detailLow" value="low">Ít (khối chính, ảnh chụp)</option>
+                      <option data-i18n="drawing.style.detailMedium" selected="" value="medium">Vừa</option>
+                      <option data-i18n="drawing.style.detailHigh" value="high">Nhiều (hình vẽ, nét nhạt)</option>
+                    </select>
                   </label>
                 </div>
                 <div class="checkbox-list">
@@ -1042,13 +1052,13 @@
             <details class="panel drawing-section" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.drafts.title">Bản thảo đã lưu</span>
-                <span class="drawing-section-description" data-i18n="drawing.drafts.desc">Mới nhất trước; ghim để giữ lại và đưa lên đầu.</span>
+                <span class="drawing-section-description" data-i18n="drawing.drafts.desc">Mới nhất trước; ghim để giữ lại. Giữ ☰ kéo để đổi thứ tự, ✎ để đổi tên.</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
                 <div class="draft-tools">
-                  <button class="secondary-button" data-i18n="drawing.calibration.button" id="calibration-btn" type="button">Tạo tờ mẫu hiệu chỉnh bút</button>
-                  <p class="help-text" data-i18n="drawing.calibration.help">Tờ A5 gồm chữ F (kiểm hướng trục), thước 100 mm (kiểm kích thước) và 8 dải tô thưa dần (chọn khoảng cách dòng đẹp nhất cho bút).</p>
+                  <button class="secondary-button" data-i18n="drawing.toneRamp.button" id="tone-ramp-btn" type="button">Ảnh thử preset (thang xám)</button>
+                  <p class="help-text" data-i18n="drawing.toneRamp.help">Nạp ảnh thang xám 11 bậc trắng → đen. Chọn preset, Lưu bản thảo rồi vẽ: mỗi preset một tờ, xem các bậc có tách rõ không rồi chỉnh preset (docs/KIEM_TRA_VE.md).</p>
                 </div>
                 <p class="muted-text" data-i18n="drawing.drafts.empty" id="drawing-draft-empty">Chưa có bản thảo.</p>
                 <ul class="draft-list" id="drawing-draft-list"></ul>

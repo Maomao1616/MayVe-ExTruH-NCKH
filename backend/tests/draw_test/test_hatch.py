@@ -1,5 +1,6 @@
 import math
 
+import cv2
 import numpy as np
 import pytest
 
@@ -76,7 +77,7 @@ def test_unknown_style_is_error():
         FILLERS.get("nope")
 
 
-# --- viền (DoG + skeleton) ------------------------------------------------------------
+# --- viền (edges.py: nét mực + ranh giới mảng + nối khe hở) ------------------------------
 def ring_field(size=300, w=60.0, h=60.0, band=(92.5, 95.5)):
     yy, xx = np.mgrid[0:size, 0:size]
     r = np.hypot(xx - size / 2, yy - size / 2)
@@ -96,11 +97,48 @@ def test_outline_traces_one_centerline_per_ring():
             assert 17 < math.hypot(x - cx, y - cy) < 21
 
 
-def test_outline_of_a_thick_band_follows_both_edges():
-    f = ring_field(band=(86, 102))                          # nét dày: bắt biên hai phía, không tô giữa
+def test_outline_of_a_thick_ink_line_is_one_centerline():
+    f = ring_field(band=(86, 102))                          # nét mực dày 3,2 mm (viền hoạt hình): MỘT đường giữa
     strokes = styles.fill(f, style(kind="outline"), 0.4)
     radii = [math.hypot(x - 30, y - 30) for s in strokes for x, y in s]
-    assert min(radii) < 17.6 and max(radii) > 19.6 and length(strokes) > 200
+    assert 17.6 < min(radii) and max(radii) < 20.4 and 100 < length(strokes) < 140
+
+
+def test_outline_of_a_wide_band_follows_both_edges():
+    f = ring_field(band=(70, 110))                          # mảng đậm 8 mm (rộng hơn INK_MAX_MM): viền hai phía
+    strokes = styles.fill(f, style(kind="outline"), 0.4)
+    radii = [math.hypot(x - 30, y - 30) for s in strokes for x, y in s]
+    assert min(radii) < 14.6 and max(radii) > 21.4 and length(strokes) > 170
+
+
+def test_outline_finds_boundary_between_colours_of_equal_brightness():
+    rgb = np.zeros((200, 200, 3), np.uint8)
+    rgb[:] = (200, 60, 60)                                  # đỏ
+    rgb[:, 100:] = (60, 130, 60)                            # xanh lá, gần cùng độ sáng
+    gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+    d = 1.0 - gray.astype(np.float32) / 255.0
+    plain = styles.fill(Field(d, 40.0, 40.0), style(kind="outline"), 0.4)
+    coloured = styles.fill(Field(d, 40.0, 40.0, rgb), style(kind="outline"), 0.4)
+    near_seam = [s for s in coloured if all(abs(x - 20.0) < 1.0 for x, _ in s)]
+    assert not [s for s in plain if all(abs(x - 20.0) < 1.0 for x, _ in s)]
+    assert near_seam and max(abs(s[0][1] - s[-1][1]) for s in near_seam) > 30
+
+
+def test_outline_bridges_small_gaps():
+    d = np.zeros((200, 300), np.float32)
+    d[98:102, 20:140] = 1.0                                 # nét mực bị đứt khe 0,6 mm (3 px) ở giữa
+    d[98:102, 143:280] = 1.0
+    strokes = styles.fill(Field(d, 60.0, 40.0), style(kind="outline"), 0.4)
+    assert len(strokes) == 1 and length(strokes) > 50
+
+
+def test_outline_detail_low_keeps_fewer_strokes():
+    rng = np.random.default_rng(3)
+    d = np.clip(rng.normal(0.5, 0.3, (300, 300)), 0, 1).astype(np.float32)
+    d = cv2.normalize(cv2.GaussianBlur(d, (0, 0), 1.2), None, 0, 1, cv2.NORM_MINMAX)   # kết cấu như lông / vân gỗ
+    low = styles.fill(Field(d, 60.0, 60.0), style(kind="outline", outline_detail="low"), 0.4)
+    high = styles.fill(Field(d, 60.0, 60.0), style(kind="outline", outline_detail="high"), 0.4)
+    assert len(low) < len(high)
 
 
 def test_outline_on_blank_is_empty():

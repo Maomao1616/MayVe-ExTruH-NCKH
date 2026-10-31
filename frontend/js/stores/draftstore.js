@@ -47,10 +47,17 @@ async function change(action) {
 export const pinDraft = (id, pinned) => change(() => api.drawDraftUpdate(id, { pinned }));
 export const removeDraft = (id) => change(() => api.drawDraftDelete(id));
 
-// "Đẩy ưu tiên": cao hơn mọi bản đang có.
-export function bringToTop(id) {
-    const top = Math.max(0, ...drafts.list.map((d) => d.priority ?? 0));
-    return change(() => api.drawDraftUpdate(id, { priority: top + 1 }));
+export const renameDraft = (id, name) => change(() => api.drawDraftUpdate(id, { name }));
+
+// Kéo thả đổi thứ tự: `ids` là một nhóm (bản ghim, hoặc bản không ghim) theo thứ tự mới, lưu trong một lần gọi.
+// Đổi ngay danh sách đang giữ để hai nơi hiển thị không nhảy về thứ tự cũ trong lúc chờ máy chủ.
+export function reorderDrafts(ids) {
+    const rank = new Map(ids.map((id, i) => [id, i]));
+    const moved = drafts.list.filter((d) => rank.has(d.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id));
+    let k = 0;
+    drafts.list = drafts.list.map((d) => (rank.has(d.id) ? moved[k++] : d));
+    notify();
+    return change(() => api.drawDraftReorder(ids));
 }
 
 // Nạp G-code của một lớp trong bản thảo vào tab Điều khiển (còn phải Xem trước + xác nhận mới chạy được).

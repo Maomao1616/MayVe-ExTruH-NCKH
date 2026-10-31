@@ -442,7 +442,7 @@ function initButtons() {
     $("drawing-confirm")?.addEventListener("change", setButtons);
     $("save-draft-btn")?.addEventListener("click", () => run(saveDraft));
     $("send-to-control-btn")?.addEventListener("click", () => run(sendToControl));
-    $("calibration-btn")?.addEventListener("click", () => run(createCalibration));
+    $("tone-ramp-btn")?.addEventListener("click", () => run(loadToneRamp));
 }
 
 function generateNow() {
@@ -460,7 +460,41 @@ async function run(action) {
     setButtons();
 }
 
-const baseName = () => S.fileName.replace(/\.[^.]+$/, "") || "Bản vẽ";
+// Ảnh thử preset: tên bản thảo ghi kèm preset đang chọn để tờ in ra biết là của preset nào.
+const baseName = () => {
+    if (S.fileName === RAMP_NAME) {
+        const preset = $("draw-preset")?.value ?? "custom";
+        return `${t("drawing.toneRamp.draftName")} · ${t(`drawing.preset.${preset}`)}`;
+    }
+    return S.fileName.replace(/\.[^.]+$/, "") || "Bản vẽ";
+};
+
+// Ảnh thang xám 11 bậc (0, 10 … 100 % đen) + dải chuyển liền bên dưới, vẽ ngay trong trình duyệt
+// rồi nạp như tệp người dùng chọn. Dùng để thử từng preset trên cùng một ảnh (docs/KIEM_TRA_VE.md mục 2).
+const RAMP_NAME = "thang-xam.png";
+async function loadToneRamp() {
+    const W = 1400, H = 560, M = 20, STEPS = 11, STEP_H = 300;
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const g = canvas.getContext("2d");
+    g.fillStyle = "#fff";
+    g.fillRect(0, 0, W, H);
+    const cell = (W - 2 * M) / STEPS;
+    for (let i = 0; i < STEPS; i++) {
+        const v = Math.round(255 * (1 - i / (STEPS - 1)));
+        g.fillStyle = `rgb(${v},${v},${v})`;
+        g.fillRect(Math.round(M + i * cell), M, Math.ceil(cell), STEP_H);
+    }
+    const ramp = g.createLinearGradient(M, 0, W - M, 0);
+    ramp.addColorStop(0, "#fff");
+    ramp.addColorStop(1, "#000");
+    g.fillStyle = ramp;
+    g.fillRect(M, M + STEP_H + 30, W - 2 * M, H - STEP_H - 30 - 2 * M);
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) throw new Error("canvas");
+    acceptFile(new File([blob], RAMP_NAME, { type: "image/png" }));
+}
 
 async function ensureDraft() {
     const layout = params.layoutPayload();
@@ -480,17 +514,6 @@ async function saveDraft() {
     if (!S.result) return;
     await ensureDraft();
     setStatus("drawing.drafts.saved");
-}
-
-// Tờ mẫu hiệu chỉnh bút: backend tự dựng nét, ở đây chỉ gửi thông số máy / bút hiện tại.
-async function createCalibration() {
-    const layout = params.layoutPayload();
-    await api.drawCalibration({
-        machine: params.machinePayload(), gcode: params.gcodePayload(), pen_width_mm: params.penWidthMm(),
-        paper_x_mm: layout.paper_x_mm ?? 0, paper_y_mm: layout.paper_y_mm ?? 0
-    });
-    await refreshDrafts();
-    setStatus("drawing.calibration.done");
 }
 
 async function sendToControl() {

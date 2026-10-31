@@ -216,6 +216,21 @@ def update(draft_id: str, name: str | None, pinned: bool | None, priority: int |
     return meta
 
 
+def reorder(ids: list[str]) -> list[dict]:
+    """Kéo thả đổi thứ tự: `ids` theo thứ tự mới (thường là một nhóm: các bản ghim, hoặc các bản không ghim).
+    Bản đứng đầu nhận ưu tiên cao nhất; list_drafts sắp theo (ghim, ưu tiên) nên thứ tự giữ đúng như kéo."""
+    if len(ids) != len(set(ids)):
+        raise DrawError("bad_param", "ids: có mã trùng.")
+    if len(ids) > 1000:
+        raise DrawError("bad_param", "ids: tối đa 1000 bản.")
+    with _lock:
+        metas = [(_dir(i), get(i)) for i in ids]             # kiểm hết trước: mã lạ thì không sửa bản nào
+        for rank, (path, meta) in enumerate(metas):
+            meta["priority"] = len(metas) - rank
+            _write_meta(path, meta)
+    return [m for _, m in metas]
+
+
 def delete(draft_id: str) -> None:
     with _lock:
         shutil.rmtree(_dir(draft_id), ignore_errors=True)

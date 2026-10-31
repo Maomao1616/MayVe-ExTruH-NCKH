@@ -7,7 +7,7 @@ Hợp đồng (docs/DRAW_ROADMAP.md mục 3):
   GET  /tasks/{id}                  tiến trình; POST /tasks/{id}/cancel; DELETE /tasks/{id}
   GET  /tasks/{id}/preview          nét rút gọn để vẽ nháp (tọa độ nguồn)
   POST /gcode                       tính G-code + số liệu (không lưu)
-  GET/POST /drafts, GET /drafts/{id}[/gcode/{file}|/preview.svg], PATCH/DELETE /drafts/{id}
+  GET/POST /drafts, POST /drafts/reorder, GET /drafts/{id}[/gcode/{file}|/preview.svg], PATCH/DELETE /drafts/{id}
   GET/PUT /settings                 thư mục bản thảo + hạn mức
 Được gắn vào app trong api/__init__.py (danh sách ROUTERS).
 """
@@ -52,6 +52,10 @@ class GcodeRequest(BaseModel):
 
 class DraftRequest(GcodeRequest):
     name: str = Field(default="Bản vẽ", max_length=80)
+
+
+class DraftOrder(BaseModel):
+    ids: list[str] = Field(max_length=1000)
 
 
 class DraftPatch(BaseModel):
@@ -241,6 +245,12 @@ def draft_gcode(draft_id: str, layer_file: str):
 @router.get("/drafts/{draft_id}/preview.svg")
 def draft_preview(draft_id: str):
     return Response(_wrap(drafts.read_preview, draft_id), media_type="image/svg+xml")
+
+
+@router.post("/drafts/reorder")
+def drafts_reorder(req: DraftOrder):
+    _wrap(drafts.reorder, req.ids)
+    return {"drafts": drafts.list_drafts()}
 
 
 @router.patch("/drafts/{draft_id}")
