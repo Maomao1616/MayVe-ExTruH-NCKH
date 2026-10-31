@@ -1,7 +1,7 @@
-# STATUS — tình trạng và việc còn lại (cập nhật 30/10/2026, sau đợt "Tiếp tục từ dòng N" + Lưu trữ)
+# STATUS — tình trạng và việc còn lại (cập nhật 31/10/2026, sau đợt giao diện điện thoại, cắt ảnh, lọc G-code, bản mang đi)
 
 Một nơi duy nhất cho "cái gì xong / chưa / chưa kiểm chứng". Ký hiệu: ✅ xong và có test · 🧪 xong nhưng **chưa kiểm chứng trên máy/môi trường thật** · ⏳ chưa làm · ❌ đã bỏ.
-Mục tiêu hiện tại: **một trình điều khiển máy vẽ chạy trên laptop**. Docker, AI nhận diện ngôn ngữ tự nhiên: ngoài phạm vi.
+Mục tiêu hiện tại: **một trình điều khiển máy vẽ chạy trên laptop**, mang sang máy Windows khác bằng bản mang đi (`DONG_GOI.md`). MiniPC Ubuntu (Docker, IP cố định, Cloudflare Tunnel): kế hoạch ở `PLAN_ONLINE.md`, chưa làm. AI nhận diện ngôn ngữ tự nhiên: ngoài phạm vi.
 
 ## 1. Tổng quan
 | Khối | Tính năng | Kiểm chứng ngoài máy giả |
@@ -11,7 +11,7 @@ Mục tiêu hiện tại: **một trình điều khiển máy vẽ chạy trên 
 | Cài đặt, hồ sơ máy, cấu hình YAML | ~90% | ~70% |
 | Tài liệu, test | ~90% | |
 
-Tổng: khoảng 88–90% tính năng, 60–65% kiểm chứng. Thiếu chủ yếu là thử máy thật và thử nhiều ảnh thật. Test tự động: backend 326 (`python -m pytest`), frontend 29 (`node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`).
+Tổng: khoảng 88–90% tính năng, 60–65% kiểm chứng. Thiếu chủ yếu là thử máy thật và thử nhiều ảnh thật. Test tự động: backend 357 (`python -m pytest`), frontend 32 (`node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`).
 
 ## 2. Đã xong
 **Điều khiển:** kết nối SimLink/Serial, trạng thái 0,5 s, jog (`$J`), Home, Zero, thanh bút 3 nấc, nạp + xem trước + chạy G-code từng dòng chờ `ok` (**kiểm tệp lúc nạp**: dòng bị chặn hiện đỏ kèm số dòng và lý do, khóa nút Chạy; lưu ý hiện vàng), ghi đè tốc độ, hủy 3 chế độ (reset/soft/hard) với xác nhận nâng bút, **tiếp tục từ điểm dừng** (hủy / lỗi / mất kết nối; 🧪 chưa thử máy thật), terminal, dock (macro lưu ở máy chủ + Tệp nhanh = bản thảo đã ghim), mở khóa chuyển động có hẹn giờ + PIN tùy chọn, hàng đợi công việc.
@@ -43,4 +43,4 @@ Tổng: khoảng 88–90% tính năng, 60–65% kiểm chứng. Thiếu chủ y�
 
 **Để mở cho nhiều người dùng (MiniPC Ubuntu):** xem bảng giai đoạn trong `PLAN_ONLINE.md` — phân quyền khách/vận hành bằng PIN (backend chặn thật), giới hạn cho người lạ, triển khai systemd + udev, Cloudflare Tunnel. **Chưa có đăng nhập**: không mở ra internet trước khi làm xong phân quyền và giới hạn.
 
-**Đóng gói:** bản mang đi = `Python/` embeddable + `launcher/` + `Cap nhat.bat` (README mục *Bản mang đi*). Đã thử trong thư mục tạm có dấu cách: bật ẩn, lấy đúng IP LAN, máy khác gọi được, nạp ảnh (tiến trình con) chạy, tự tắt khi không có trang, `stop.ps1`, đóng gói + cập nhật (giữ data, cất bản cũ). 🧪 **Chưa thử:** `Python/` embeddable thật (hiện mới giải nén, chưa sửa `_pth`, chưa có pip/thư viện; lúc thử dùng Python của venv), `tao_bieu_tuong.vbs`, máy sạch không cài gì (thư viện Visual C++ của OpenCV), nhánh `pip install` khi `requirements.txt` đổi.
+**Đóng gói:** ✅ bản mang đi = `Python/` embeddable + `launcher/` + `Cap nhat.bat`, hướng dẫn đầy đủ ở `DONG_GOI.md`. Đã thử `Python/` embeddable thật (server + nạp ảnh qua tiến trình con). Đã thử trong thư mục tạm có dấu cách: bật ẩn, lấy đúng IP LAN, máy khác gọi được, nạp ảnh (tiến trình con) chạy, tự tắt khi không có trang, `stop.ps1`, đóng gói + cập nhật (giữ data, cất bản cũ). 🧪 **Chưa thử:** máy sạch không cài gì (thư viện Visual C++ của OpenCV), nhánh `pip install` của `Cap nhat.bat` khi `requirements.txt` đổi.

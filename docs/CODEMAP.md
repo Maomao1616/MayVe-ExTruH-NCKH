@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~280,483 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~321,864 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -24,6 +24,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | GET | `/api/draw/tasks/{token}/preview` | draw.py |
 | POST | `/api/draw/gcode` | draw.py |
 | POST | `/api/draw/drafts` | draw.py |
+| POST | `/api/draw/drafts/import-gcode` | draw.py |
 | POST | `/api/draw/calibration` | draw.py |
 | GET | `/api/draw/drafts` | draw.py |
 | GET | `/api/draw/drafts/{draft_id}` | draw.py |
@@ -61,13 +62,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `README.md` | ~1,549 |  |
+| `README.md` | ~1,847 |  |
 
 ### `backend/app/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `main.py` | ~1,007 |  |
+| `idle.py` | ~524 | Tự tắt server khi không còn trang web nào mở (bản đóng gói chạy ẩn, không có cửa sổ để đóng). |
+| `main.py` | ~1,047 |  |
+| `paths.py` | ~428 | Thư mục dữ liệu của phần mềm: MỘT gốc, ba thư mục con cố định. |
 
 ### `backend/app/api/`
 
@@ -75,8 +78,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `__init__.py` | ~103 | Các router HTTP. Thêm router mới: tạo file trong api/ rồi thêm vào ROUTERS. |
 | `config.py` | ~654 | API cấu hình máy (YAML trên mạch, services/machine_config.py) và hồ sơ phần mềm |
-| `draw.py` | ~2,963 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
+| `draw.py` | ~3,249 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
 | `machine.py` | ~1,044 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
+| `storage.py` | ~481 | API lưu trữ: macro (CRUD) và xem/tải nội dung thư mục dữ liệu (chỉ đọc). Mỏng: logic ở services. |
 
 ### `backend/app/links/`
 
@@ -91,20 +95,25 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `job.py` | ~4,135 | JobRunner: chạy một tệp G-code bằng cách gửi TỪNG DÒNG và chờ `ok`/`error` của firmware. |
-| `machine.py` | ~14,143 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
+| `job.py` | ~4,727 | JobRunner: chạy một tệp G-code bằng cách gửi TỪNG DÒNG và chờ `ok`/`error` của firmware. |
+| `machine.py` | ~14,190 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
 | `machine_config.py` | ~3,292 | Đọc / sửa / lưu cấu hình FluidNC qua cổng serial. |
+| `macros.py` | ~1,709 | Macro (nút chạy nhanh) lưu trên máy chủ: mỗi macro một tệp `<thư mục dữ liệu>/macros/<id>.json`. |
 | `profile.py` | ~716 | Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch). |
+| `resume.py` | ~2,419 | Điểm dừng của tác vụ G-code, để "Tiếp tục từ dòng N" sau khi hủy / lỗi / mất kết nối. |
+| `storage.py` | ~1,093 | Xem nội dung thư mục dữ liệu qua giao diện (MiniPC không có màn hình để mở thư mục). |
 
 ### `backend/app/services/drawing/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `__init__.py` | ~319 | Tab Tạo bản vẽ: ảnh/SVG -> đường nét -> G-code. Không gọi máy. |
+| `calibration.py` | ~1,016 | Tờ mẫu hiệu chỉnh bút: tạo thành một BẢN THẢO như mọi bản khác (xem trước, nạp sang Điều khiển, chạy). |
 | `drafts.py` | ~2,922 | Bản thảo trên đĩa: G-code từng lớp + ảnh minh họa + meta.json, mỗi bản một thư mục con. |
 | `edges.py` | ~268 | Bắt nét viền bằng hiệu hai Gaussian (DoG, lõi của XDoG): nét đen nơi vùng tối hơn xung quanh. |
 | `errors.py` | ~108 | Lỗi của tab Tạo bản vẽ. `code` ổn định để frontend dịch (quy ước E3), `message` chỉ để tra cứu. |
 | `gcode.py` | ~1,455 | Đường nét (mm, đã bố trí) -> dòng G-code + thống kê. Không gọi máy. |
+| `gcode_import.py` | ~1,699 | Nhập một tệp G-code có sẵn (từ phần mềm khác) thành MỘT BẢN THẢO: một tệp = một bản. |
 | `hatch.py` | ~2,408 | Lõi tô bằng nét: bản đồ độ đậm -> mặt nạ từng mức -> đường quét song song / xoắn ốc -> các nét (mm). |
 | `isolated.py` | ~2,204 | Chạy việc nặng (ảnh -> nét) trong TIẾN TRÌNH RIÊNG, ưu tiên thấp. |
 | `layout.py` | ~1,620 | Bố trí: đặt đường nét vào KHUNG VẼ nằm trong TỜ GIẤY, tờ giấy nằm trong vùng làm việc của máy. |
@@ -128,23 +137,27 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `conftest.py` | ~196 |  |
+| `conftest.py` | ~194 |  |
 | `test_board_paths.py` | ~2,038 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
 | `test_docs_tools.py` | ~643 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
-| `test_job.py` | ~1,682 | Tác vụ G-code: làm sạch dòng, chạy từng dòng chờ ok, lỗi, hủy, chặn lệnh khác. |
+| `test_idle.py` | ~489 | app/idle.py: tự tắt server khi đóng hết trang (chỉ khi đặt EXTRUXY_IDLE_EXIT_MIN). |
+| `test_job.py` | ~2,064 | Tác vụ G-code: làm sạch dòng, chạy từng dòng chờ ok, lỗi, hủy, chặn lệnh khác. |
 | `test_machine_config.py` | ~2,329 | Đọc / sửa / lưu cấu hình FluidNC (machine_config.py) và hồ sơ phần mềm (profile.py). |
 | `test_machine_service.py` | ~1,413 |  |
 | `test_motion_unlock.py` | ~855 |  |
 | `test_protocol.py` | ~562 |  |
 | `test_regressions.py` | ~2,227 | Hồi quy cho các lỗi đã gặp ở Giai đoạn "xác thực" (28/10/2026). |
+| `test_resume.py` | ~2,118 | Tiếp tục từ dòng N: chọn dòng bắt đầu lại an toàn (hàm thuần) + ghi điểm dừng khi hủy/lỗi (máy giả). |
 | `test_routes.py` | ~1,723 | Kiểm tra lớp HTTP: đường dẫn, mã trạng thái, hình dạng JSON mà frontend dựa vào. |
 | `test_safe_stop.py` | ~2,897 | Hồi quy cho đợt tối ưu backend 29/10/2026 (cac_van_de_can_toi_uu_backend.txt). |
 | `test_sim_link.py` | ~3,718 | SimLink phải khớp hành vi đã thấy trên board thật (MACHINE.md, 29/10/2026). |
+| `test_storage_macros.py` | ~1,818 | Macro lưu ở máy chủ + xem/tải nội dung thư mục dữ liệu qua API. |
 
 ### `backend/tests/draw_test/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
+| `test_calibration.py` | ~608 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
 | `test_draw_contract.py` | ~3,292 | Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay. |
 | `test_draw_gcode.py` | ~1,424 |  |
 | `test_draw_layout.py` | ~1,439 |  |
@@ -155,6 +168,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_draw_spec.py` | ~822 |  |
 | `test_draw_store.py` | ~332 |  |
 | `test_draw_svg_in.py` | ~1,556 |  |
+| `test_gcode_import.py` | ~958 | Nhập một tệp G-code có sẵn thành một bản thảo. |
 | `test_hatch.py` | ~1,562 |  |
 | `test_isolated.py` | ~1,131 | Xử lý ảnh trong tiến trình riêng: kết quả như chạy thẳng, hủy / quá giờ / sập đều gọn. |
 | `test_palette.py` | ~743 |  |
@@ -170,22 +184,22 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `AI_START.md` | ~1,615 |  |
-| `ARCHITECTURE.md` | ~4,624 |  |
-| `BRIEF.md` | ~2,802 |  |
-| `CODEMAP.md` | ~3,675 |  |
-| `DECISIONS.md` | ~2,677 |  |
-| `DRAW_ROADMAP.md` | ~4,562 |  |
-| `EXPORT_FOR_AI.md` | ~1,600 |  |
-| `MACHINE.md` | ~1,189 |  |
-| `PLAN_ONLINE.md` | ~1,572 |  |
-| `STATUS.md` | ~1,649 |  |
+| `AI_START.md` | ~1,805 |  |
+| `ARCHITECTURE.md` | ~4,857 |  |
+| `BRIEF.md` | ~2,842 |  |
+| `CODEMAP.md` | ~3,966 |  |
+| `DECISIONS.md` | ~3,434 |  |
+| `DRAW_ROADMAP.md` | ~4,603 |  |
+| `EXPORT_FOR_AI.md` | ~1,605 |  |
+| `MACHINE.md` | ~1,187 |  |
+| `PLAN_ONLINE.md` | ~3,649 |  |
+| `STATUS.md` | ~1,870 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~24,402 |  |
+| `index.html` | ~26,883 |  |
 
 ### `frontend/assets/css/`
 
@@ -198,7 +212,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `drawing.css` | ~2,556 | 9. TAB TAO BAN VE |
-| `polish.css` | ~4,698 | POLISH: lop tinh chinh giao dien |
+| `polish.css` | ~10,877 | POLISH: lop tinh chinh giao dien |
 | `style.css` | ~13,036 |  |
 
 ### `frontend/js/`
@@ -211,18 +225,18 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `api.js` | ~1,516 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
+| `api.js` | ~1,626 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
 | `config.js` | ~466 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
 | `i18n.js` | ~439 |  |
-| `state.js` | ~1,778 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
+| `state.js` | ~1,948 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
 
 ### `frontend/js/lib/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `drafts.js` | ~424 | định dạng thông tin bản thảo (meta.json do backend trả). THUẦN (không DOM, không mạng). |
-| `gcode.js` | ~3,413 | đọc G-code thành các đoạn đường để xem trước. THUẦN (không DOM, không mạng). |
-| `imageprep.js` | ~2,045 | chuẩn bị ảnh ngay trong trình duyệt TRƯỚC khi gửi, và xem trước độ sáng. |
+| `gcode.js` | ~3,776 | đọc G-code thành các đoạn đường để xem trước. THUẦN (không DOM, không mạng). |
+| `imageprep.js` | ~2,271 | chuẩn bị ảnh ngay trong trình duyệt TRƯỚC khi gửi, và xem trước độ sáng. |
 | `paper.js` | ~1,502 | bố trí bản vẽ trên tờ giấy. THUẦN (không DOM, không mạng). |
 
 ### `frontend/js/stores/`
@@ -231,26 +245,28 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `draftstore.js` | ~681 | danh sách bản thảo (GET /api/draw/drafts), dùng chung cho tab Tạo bản vẽ và Hàng đợi |
 | `jobstore.js` | ~253 | tệp G-code đang nạp ở trình duyệt. control.js ghi, preview.js đọc. |
-| `macros.js` | ~1,255 | dữ liệu macro dùng chung (Dock đọc/ghi, không import view nào). |
+| `macros.js` | ~1,253 | dữ liệu macro dùng chung (Dock đọc/ghi, không import view nào). |
 
 ### `frontend/js/views/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `control.js` | ~8,941 | Tab Điều khiển. |
+| `control.js` | ~10,476 | Tab Điều khiển. |
 | `dock.js` | ~2,482 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~2,145 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
-| `drawing.js` | ~7,627 | Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4): |
+| `drawing.js` | ~7,842 | Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
 | `preview.js` | ~5,907 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
-| `settings.js` | ~10,226 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
-| `terminal.js` | ~3,764 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |
+| `settings.js` | ~10,223 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
+| `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
+| `terminal.js` | ~3,882 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |
 
 ### `frontend/js/views/drawing/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `canvas.js` | ~5,385 | canvas khung vẽ: tờ giấy (A6/A5/A4 như khung dán thật trên bàn), lề, nét xem nháp |
+| `crop.js` | ~2,871 | cắt ảnh ngay trên khung "ảnh gốc" của tab Tạo bản vẽ. |
 | `params.js` | ~4,195 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
 | `presets.js` | ~533 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
 | `tonepreview.js` | ~943 | khung "ảnh gốc" của tab Tạo bản vẽ: xem ảnh gốc hoặc ảnh SAU chỉnh sáng |
@@ -259,14 +275,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~12,292 |  |
-| `vi.json` | ~11,926 |  |
+| `en.json` | ~13,342 |  |
+| `vi.json` | ~12,859 |  |
 
 ### `frontend/tests/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `imageprep.test.mjs` | ~752 | Đối chiếu lib/imageprep.js với backend: node --test frontend/tests/imageprep.test.mjs |
+| `gcode.test.mjs` | ~2,054 | Kiểm lib/gcode.js (bộ đọc G-code quyết định xem trước + cảnh báo). Chạy: node --test frontend/tests/gcode.test |
+| `imageprep.test.mjs` | ~1,082 | Đối chiếu lib/imageprep.js với backend: node --test frontend/tests/imageprep.test.mjs |
 | `paper.test.mjs` | ~1,895 | Đối chiếu lib/paper.js với backend (layout.py). Sinh bởi script từ chính backend — chạy: node --test frontend/ |
 
 ### `tools/`

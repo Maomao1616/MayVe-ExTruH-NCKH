@@ -1,4 +1,4 @@
-# VMU PlotterPen (ExtruXY) – Sổ quyết định (Cập nhật 30/10/2026)
+# VMU PlotterPen (ExtruXY) – Sổ quyết định (Cập nhật 31/10/2026)
 
 **Chọn gì – vì sao / đổi ở đâu – mức chắc.** ⚠ = giả định, **chưa kiểm chứng**. ✅ = đã làm và kiểm (máy thật không motor hoặc test tự động). ⏳ = đã quyết, chưa làm. ❌ = đã bỏ. Tình trạng chi tiết: `STATUS.md`.
 
@@ -57,6 +57,7 @@
 | S4 | **Tệp nhanh (dock) = bản thảo đã ghim**; bấm là nạp sang Điều khiển (vẫn phải Xem trước + xác nhận) | ghim sẵn việc hay dùng thì dễ chọn hơn danh sách tệp | ✅ |
 | S6 | **Nhập G-code có sẵn = một tệp một bản thảo** (`drawing/gcode_import.py`, nút "Lưu vào bản thảo" ở Điều khiển → `POST /api/draw/drafts/import-gcode`). Làm sạch bằng `clean_gcode`, ảnh minh họa và số liệu đọc từ G-code (cung G2/G3 chỉ vẽ thành đoạn thẳng trong ảnh, G-code lưu nguyên) | chạy lại, ghim, chạy nhanh tệp từ phần mềm khác mà không phải chọn lại | ✅ |
 | S7 | **`clean_gcode` chặn thêm G10, G28, G30, G38, G53, G55–G59, G92** (tính phần nguyên: G28.1, G59.3…) ngoài `$` và ký tự realtime; đi hết tệp rồi báo một lần tối đa 5 dòng kèm số dòng gốc. `lib/gcode.js` giữ cùng danh sách (`BLOCKED_G`) để báo ngay lúc nạp và khóa nút Chạy. G54, G91, G20, M0, M3/M5, lệnh lạ: **không chặn**, chỉ lưu ý | các lệnh trên đổi gốc/hệ tọa độ hoặc chạy tới chỗ máy tự chọn → bản vẽ lệch khỏi giấy; danh sách ngắn để tệp thường không bị từ chối oan | ✅ |
+| S8 | **Thư mục `data/` nằm ở gốc dự án** (cùng cấp `backend/`, `frontend/`; `paths.py` `parents[2]`), không còn trong `backend/` | cập nhật chỉ thay `backend/` + `frontend/` mà không đụng bản thảo | ✅ |
 | S5 | **Không ghi nhật ký hệ thống ra tệp**; terminal giữ log trong bộ nhớ | log dài, khó đọc lại; điểm dừng + bản sao lưu đã đủ để phục hồi | ❌ |
 
 ## Triển khai (theo `PLAN_ONLINE.md`)
@@ -64,6 +65,9 @@
 |---|---|---|---|
 | O1 | MiniPC Ubuntu không màn hình chạy cả backend và giao diện; Python làm hết việc nặng; **không dùng host chia sẻ**, một địa chỉ qua Cloudflare Tunnel | Host chỉ chứa tệp tĩnh, không giảm tải, thêm CORS/cookie chéo tên miền; USB phải ở MiniPC | ⏳ |
 | O2 | Khách (không đăng nhập) chỉ tải ảnh/dùng tab vẽ/lưu bản thảo; người vận hành nhập PIN ở Cài đặt mới dùng được phần còn lại; **backend chặn thật** | Ai biết địa chỉ cũng gửi được ảnh nhưng không điều khiển được máy | ⏳ |
+| O4 | **Bản mang đi Windows** = Python 3.12 embeddable (`Python/`, `_pth` có `..\backend`) + `launcher/` (server chạy ẩn `--host 0.0.0.0`, tự đặt `EXTRUXY_ALLOWED_HOSTS` theo IP LAN). **Một icon bật, không có icon tắt**: server tự tắt sau 10 phút không có trang nào mở (`app/idle.py`, `EXTRUXY_IDLE_EXIT_MIN`), đang chạy G-code thì không tắt; trang ẩn vẫn gửi `/api/health` mỗi 30 s. Chi tiết `DONG_GOI.md` | bạn bè chạy được không cần cài Python; người dùng không phải nhớ tắt server | ✅ |
+| O5 | **Cập nhật = zip chỉ `backend/`, `frontend/`, `launcher/`** (`tools/dong_goi.ps1`) + `Cap nhat.bat`: tắt server, thay mã (robocopy /MIR, bỏ qua `.venv`), giữ `Python/` + `data/`, cất bản cũ vào `_ban_cu/`, `requirements.txt` đổi thì `pip install` bằng pip trong `Python/` | lần sau chỉ gửi ~0,3 MB thay vì ~450 MB | ✅ |
+| O6 | **MiniPC chạy bằng Docker** (đề xuất; venv + systemd là phương án dự phòng), không dùng `Python/` của Windows; IP cố định bằng giữ chỗ DHCP trên router; Cloudflare Tunnel thay cho mở cổng. Chi tiết `PLAN_ONLINE.md` 5c–5d | image gói sẵn thư viện hệ thống của OpenCV, cập nhật bằng build lại; không lộ IP nhà | ⏳ |
 | O3 | JS chỉ nhận việc nhẹ khi kết quả giống và nhanh hơn/ngang Python; sắp xếp nét 2-opt trong Web Worker chỉ làm nếu đo trên MiniPC thấy cần | Không viết lại tô nét/skeleton bằng JS (không nhanh hơn, thêm lỗi) | ⏳ |
 
 ## Giao diện, tài liệu

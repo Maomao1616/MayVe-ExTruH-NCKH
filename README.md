@@ -29,29 +29,12 @@ Mở `http://127.0.0.1:8000/`. Máy dùng hằng ngày không cần venv: xem **
 - Sau khi cập nhật mã có thêm thư viện: chạy lại `pip install -r requirements.txt`.
 
 ## Bản mang đi (máy không cài Python)
-```
-ExtruXY/
-├─ Python/          Python 3.12 embeddable 64-bit + thư viện (chuẩn bị một lần, không lên Git)
-├─ backend/  frontend/
-├─ launcher/        start.vbs · start.ps1 · stop.vbs · stop.ps1 · tao_bieu_tuong.vbs · cap_nhat.ps1 · icon.ico
-├─ data/            bản thảo, macro, sao lưu (tự tạo; cập nhật không đụng tới)
-└─ Cap nhat.bat
-```
-**Chuẩn bị `Python/` (một lần, trên máy của bạn):**
-1. Tải *Windows embeddable package (64-bit)* Python 3.12.x ở python.org, giải nén vào `Python/`.
-2. Sửa `Python/python312._pth` thành 4 dòng: `python312.zip`, `.`, `..\backend`, `import site`. Dòng `..\backend` bắt buộc: bản embeddable bỏ qua thư mục hiện hành và `PYTHONPATH`, thiếu nó thì tiến trình con xử lý ảnh (`python -m app.services.drawing.isolated`) không chạy.
-3. Tải `get-pip.py`, chạy `Python\python.exe get-pip.py`, rồi `Python\python.exe -m pip install -r backend\requirements.txt`.
-4. Đóng gói: `powershell -ExecutionPolicy Bypass -File tools\dong_goi.ps1 -Kieu daydu` → `export\VMU_PlotterPen_daydu-<ngày>.zip`.
-
-**Máy dùng:** giải nén → bấm đúp `launcher\tao_bieu_tuong.vbs` (một lần, tạo icon *VMU PlotterPen* ngoài Desktop) → bấm icon. Server chạy ẩn, trình duyệt mở `http://<IP LAN>:8000`. **Không cần icon tắt:** đóng hết trang 10 phút thì server tự tắt (đang vẽ thì không); muốn tắt ngay: `launcher\stop.vbs`. Lần đầu Windows hỏi tường lửa cho `python.exe`: chọn *Mạng riêng tư*. Server không lên: xem `data\server-loi.txt`.
-- Mở cho máy khác cùng mạng (`0.0.0.0`) mà **chưa có đăng nhập**: chỉ dùng mạng tin cậy và đặt PIN (bỏ `#` dòng `EXTRUXY_UNLOCK_PIN` trong `launcher\start.ps1`).
-
-**Cập nhật (chỉ thay `backend/`, `frontend/`, `launcher/`):** trên máy bạn `powershell -ExecutionPolicy Bypass -File tools\dong_goi.ps1` → `export\VMU_PlotterPen_capnhat-<ngày>.zip` (vài trăm KB). Ở máy dùng: chép file zip vào cạnh `Cap nhat.bat` → bấm đúp. Nó tắt server, thay mã, giữ `Python/` + `data/`, cất bản cũ và file zip vào `_ban_cu/`; `requirements.txt` đổi thì tự `pip install` (cần Internet).
+Máy Windows khác chạy được mà không cài Python: thư mục `Python/` (Python 3.12 embeddable + thư viện, không lên Git) + `launcher/`. Người dùng giải nén → bấm `launcher\tao_bieu_tuong.vbs` một lần → bấm icon **VMU PlotterPen** (server chạy ẩn, tự tắt khi đóng hết trang 10 phút). Cập nhật: chép zip bản mới cạnh `Cap nhat.bat` rồi bấm đúp (giữ `Python/` và `data/`). **Hướng dẫn đầy đủ (chuẩn bị Python, chuyển máy, GitHub Releases, cập nhật, xử lý lỗi): [docs/DONG_GOI.md](docs/DONG_GOI.md).** MiniPC Ubuntu (Docker, IP, Cloudflare Tunnel): [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md).
 
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~326 test) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test backend (~357 test) | trong `backend`, đã bật venv: `python -m pytest` |
 | Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 
@@ -59,7 +42,7 @@ ExtruXY/
 - Cắm USB, chọn cổng ở Cài đặt → Kết nối. Ở chế độ chỉ đọc bạn chỉ xem được trạng thái và gửi lệnh đọc thông tin.
 - Muốn máy chuyển động: bấm **Mở khóa chuyển động** (tự khóa lại sau 15 phút; có thể đặt PIN). Chỉ mở khi có người đứng cạnh, tay gần công tắc nguồn.
 - Nút Reset/Dừng trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V ở máy.
-- Backend chỉ nhận yêu cầu từ máy chạy nó (`localhost`) và **chưa có đăng nhập**. Đừng mở ra mạng trước khi làm xong phân quyền (`docs/PLAN_ONLINE.md`).
+- Chạy tay `uvicorn` thì backend chỉ nhận yêu cầu từ chính máy đó (`localhost`); bản mang đi mở cho mạng LAN. **Chưa có đăng nhập**: chỉ dùng mạng tin cậy, đặt PIN mở khóa chuyển động. Đừng mở ra mạng trước khi làm xong phân quyền (`docs/PLAN_ONLINE.md`).
 
 ## Tài liệu
 | Tệp | Để làm gì |
@@ -72,7 +55,8 @@ ExtruXY/
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Sổ quyết định (chọn gì, vì sao, mức chắc) |
 | [docs/MACHINE.md](docs/MACHINE.md) | Sự thật máy thật đã xác nhận |
 | [docs/DRAW_ROADMAP.md](docs/DRAW_ROADMAP.md) | Hợp đồng API và quyết định thiết kế tab Tạo bản vẽ |
-| [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md) | Kế hoạch MiniPC Ubuntu, phân quyền PIN, giới hạn, tunnel |
+| [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md) | Kế hoạch MiniPC Ubuntu (Docker, IP cố định, Cloudflare Tunnel), phân quyền PIN, giới hạn |
+| [docs/DONG_GOI.md](docs/DONG_GOI.md) | Bản mang đi Windows, chuyển máy, `Cap nhat.bat`, xử lý lỗi khi bật |
 | [docs/EXPORT_FOR_AI.md](docs/EXPORT_FOR_AI.md) | Cách xuất mã cho AI tiết kiệm token (`tools/export_context.py`) |
 
 ## Cấu trúc thư mục
@@ -85,7 +69,6 @@ launcher/                          Bật/tắt server chạy ẩn, tạo icon De
 tools/export_context.py            Xuất mã gọn cho AI + sinh docs/CODEMAP.md
 tools/dong_goi.ps1                 Đóng gói zip bản cập nhật / bản đầy đủ (vào export/)
 docs/                              Tài liệu (bảng trên)
-samples/                           G-code mẫu
 ```
 Dữ liệu riêng của từng máy nằm ở `data/`, không lên Git, tự tạo khi cần: `drafts/` (bản thảo), `config_backups/` (sao lưu cấu hình), `macros/`, cùng `profile.json`, `resume.json`. Xem được trong Cài đặt → Lưu trữ dữ liệu; đổi gốc bằng biến môi trường `EXTRUXY_DATA_DIR`.
 

@@ -18,9 +18,8 @@ ExtruXY/
 ├─ launcher/                start.vbs/.ps1 (server chạy ẩn + mở trình duyệt) · stop · tao_bieu_tuong.vbs · cap_nhat.ps1 · icon.ico
 ├─ Python/                  (không lên Git) Python 3.12 embeddable + thư viện; _pth có ..\backend
 ├─ data/                    (tự tạo, không lên Git) drafts/ · config_backups/ · macros/ + profile.json, draw_settings.json, resume.json
-├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE(+RAW) · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · EXPORT_FOR_AI
+├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE(+RAW) · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · DONG_GOI · EXPORT_FOR_AI
 ├─ tools/                   export_context.py (xuất mã cho AI + CODEMAP) · dong_goi.ps1 (zip bản cập nhật / đầy đủ)
-├─ samples/                  Tệp G-code mẫu để thử
 ├─ backend/
 │  ├─ app/
 │  │  ├─ main.py             Khởi động, chặn Host/Origin lạ, phục vụ frontend

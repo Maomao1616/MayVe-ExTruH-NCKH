@@ -41,7 +41,7 @@ Con số thật xem `--list` (gói thay đổi theo mã). Một việc nhỏ (s�
 6. **Chia việc nhỏ, mỗi phiên một khối** (một tab, một lớp). Đừng gom nhiều khối không liên quan vào một phiên.
 7. **Đặt tài liệu ổn định ở đầu** (`docs` trước), phần thay đổi ở cuối: nhiều dịch vụ tính rẻ hơn khi phần đầu lặp lại giữa các lần hỏi.
 8. `--no-comments` bỏ các dòng chú thích nguyên dòng, giảm 5–10% nhưng **mất lý do vì sao** (dự án này ghi rất nhiều "vì sao" trong chú thích). Chỉ dùng khi thiếu token.
-9. Tránh gửi: `.vscode/project-export.json` (tệp sinh bởi tiện ích, ~90 000 token toàn đường dẫn loại trừ), `backend/.venv`, `backend/data`, `export/`, ảnh.
+9. Tránh gửi: `.vscode/project-export.json` (tệp sinh bởi tiện ích, ~90 000 token toàn đường dẫn loại trừ), `backend/.venv`, `data/`, `Python/`, `_ban_cu/`, `export/`, ảnh.
 
 ## 4. Mẫu tin nhắn mở đầu cho AI mới
 ```

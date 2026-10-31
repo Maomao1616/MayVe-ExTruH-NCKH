@@ -1,4 +1,4 @@
-# VMU PlotterPen - dong goi tren may phat trien (chay: powershell -ExecutionPolicy Bypass -File tools\dong_goi.ps1).
+# VMU PlotterPen - dong goi tren may phat trien (chay: powershell -tools\dong_goi.ps1 -Kieu daydu).
 #   -Kieu capnhat : backend + frontend + launcher (vai tram KB) -> dua cho may dung, chay "Cap nhat.bat"
 #   -Kieu daydu   : them Python\ (da cai thu vien), "Cap nhat.bat", README (~300-500 MB)
 # Bo qua .venv, __pycache__, .pytest_cache, tests. File zip nam trong export\ (khong len Git).
