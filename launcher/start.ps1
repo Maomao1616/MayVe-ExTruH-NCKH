@@ -2,7 +2,9 @@
 # Goi tu start.vbs (chay an). Server tu tat khi dong het trang 10 phut (backend/app/idle.py), dang ve thi khong tat.
 $root = Split-Path $PSScriptRoot -Parent
 $port = 8000
+# Python mang theo (Python\, ban embeddable) neu co; khong thi dung venv cua may da cai Python (backend\.venv)
 $python = Join-Path $root "Python\python.exe"
+if (-not (Test-Path $python)) { $python = Join-Path $root "backend\.venv\Scripts\python.exe" }
 
 # IP LAN cua card mang dang ra router (tranh nham VPN, vEthernet). Uu tien = RouteMetric + InterfaceMetric
 # (giong Windows chon). Bo qua 169.254.x.x (card khong nhan duoc IP tu router). Khong co mang: dung localhost.
@@ -20,7 +22,7 @@ if (-not $ip) { $ip = "localhost" }
 if (-not (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue)) {
   if (-not (Test-Path $python)) {
     $sh = New-Object -ComObject WScript.Shell
-    $sh.Popup("Khong tim thay $python", 0, "VMU PlotterPen", 16) | Out-Null
+    $sh.Popup("Khong tim thay Python.`n`nCach 1: giai nen thu muc Python\ canh backend\.`nCach 2 (may da cai Python 3.12): trong backend\ chay`n  py -3.12 -m venv .venv`n  .venv\Scripts\python.exe -m pip install -r requirements.txt", 0, "VMU PlotterPen", 16) | Out-Null
     exit 1
   }
   $env:EXTRUXY_ALLOWED_HOSTS = "localhost,127.0.0.1,$ip"

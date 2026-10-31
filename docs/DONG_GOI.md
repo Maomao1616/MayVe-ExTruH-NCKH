@@ -13,7 +13,7 @@ ExtruXY/                    (tải từ GitHub sẽ tên là ExtruXY-main/)
 ├─ Cap nhat.bat             cập nhật mã, giữ nguyên Python/ và data/
 └─ tools/dong_goi.ps1       (máy phát triển) tạo zip bản cập nhật / bản đầy đủ vào export/
 ```
-Máy dùng **không cần cài Python**, không cần venv, không cần Git. Chỉ chạy trên **Windows 64-bit**.
+Máy dùng **không cần cài Python**, không cần venv, không cần Git. Thứ tự tìm Python của `start.ps1` / `cap_nhat.ps1`: `Python\python.exe` → `backend\.venv\Scripts\python.exe`. Chỉ chạy trên **Windows 64-bit**.
 
 ## 2. Chuẩn bị `Python/` (một lần, trên máy của bạn) ✅
 1. Tải *Windows embeddable package (64-bit)* Python **3.12.x** ở python.org, giải nén vào `Python/` (cạnh `backend/`).
@@ -58,6 +58,8 @@ Người nhận làm:
 | Tắt | **Không cần**: đóng hết trang 10 phút thì server tự tắt; đang vẽ thì chờ vẽ xong. Chuyển tab / thu nhỏ trình duyệt không làm tắt (trang vẫn báo "còn mở" mỗi 30 s) |
 | Tắt ngay | Bấm đúp `launcher\stop.vbs` |
 | Máy khác cùng mạng | Mở địa chỉ trình duyệt đang hiện (vd `http://192.168.1.11:8000`). Chỉ dùng ở mạng tin cậy: **chưa có đăng nhập** |
+| Đổi ảnh icon | `launcher\icon.ico` phải là **tệp .ico thật**; đổi đuôi ảnh `.png`/`.jpg` thành `.ico` thì Windows **không hiện**. Chuyển ảnh bằng: `.\Python\python.exe -c "from PIL import Image; im=Image.open('anh.png').convert('RGBA'); s=min(im.size); im=im.crop(((im.width-s)//2,(im.height-s)//2,(im.width+s)//2,(im.height+s)//2)).resize((256,256)); im.save('launcher/icon.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])"` rồi bấm lại `tao_bieu_tuong.vbs` |
+| Máy đã có Python 3.12, không muốn tải zip `Python/` | Trong `backend\` chạy `py -3.12 -m venv .venv` rồi `.venv\Scripts\python.exe -m pip install -r requirements.txt`. Icon và `Cap nhat.bat` tự dùng `backend\.venv` khi không thấy `Python\` |
 | Đặt PIN mở khóa chuyển động | Mở `launcher\start.ps1`, bỏ `#` ở dòng `$env:EXTRUXY_UNLOCK_PIN = "1234"`, đổi số, lưu; tắt server rồi bật lại |
 
 Cách `start.ps1` chọn IP: card mạng có tuyến ra router ưu tiên cao nhất (giống Windows chọn), bỏ qua `169.254.x.x`; không có mạng thì dùng `localhost`. IP đổi trong lúc server đang chạy → tự mở `localhost`.
