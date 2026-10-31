@@ -373,6 +373,12 @@
                   <dd id="gcode-selected-info">—</dd>
                 </div>
               </dl>
+              <!-- Kiểm tra tệp lúc nạp (lib/gcode.js): lỗi đỏ = máy chủ sẽ từ chối, khóa nút Chạy; lưu ý vàng = vẫn chạy được -->
+              <div class="gcode-check" hidden="" id="gcode-check" role="status">
+                <strong id="gcode-check-title"></strong>
+                <ul id="gcode-check-list"></ul>
+                <p class="help-text" hidden="" id="gcode-check-help" data-i18n="control.gcheck.blockedHelp">Mở tệp bằng trình soạn thảo, sửa hoặc xóa các dòng trên rồi nạp lại. Máy chủ cũng chặn các lệnh này nên tệp không thể chạy nhầm.</p>
+              </div>
               <p class="inline-warning" hidden="" id="gcode-origin-warning" role="status">
                 <span aria-hidden="true">⚠</span>
                 <span data-i18n="control.gcode.originWarning">Máy chưa Home: gốc vị trí (X0 Y0) có thể không đúng chỗ trên giấy. Kiểm tra gốc làm việc trước khi chạy.</span>
@@ -961,8 +967,44 @@
                   <input checked="" id="preview-tone-toggle" type="checkbox"/>
                   <span data-i18n="drawing.preview.toneToggle">Xem ảnh sau chỉnh sáng (xem trước)</span>
                 </label>
+                <!-- Cắt ảnh (views/drawing/crop.js): khung kéo thả đè lên ảnh gốc; ảnh do tonepreview.js vẽ vào #original-image-holder -->
+                <div class="crop-toolbar">
+                  <button class="secondary-button" data-i18n="drawing.crop.edit; [title]drawing.crop.editTitle" disabled="" id="crop-edit-btn" title="Chọn phần ảnh muốn vẽ" type="button">✂ Cắt ảnh</button>
+                  <span class="muted-text" data-i18n="drawing.crop.none" id="crop-info">Dùng toàn bộ ảnh</span>
+                </div>
                 <div class="drawing-image-stage drawing-original" id="original-image-stage">
-                  <span data-i18n="drawing.preview.noImage">Chưa có ảnh</span>
+                  <div class="crop-wrap">
+                    <div class="crop-media" id="original-image-holder">
+                      <span data-i18n="drawing.preview.noImage">Chưa có ảnh</span>
+                    </div>
+                    <div class="crop-overlay" hidden="" id="crop-overlay">
+                      <div class="crop-rect" id="crop-rect">
+                        <span class="crop-handle" data-handle="nw"></span><span class="crop-handle" data-handle="n"></span>
+                        <span class="crop-handle" data-handle="ne"></span><span class="crop-handle" data-handle="e"></span>
+                        <span class="crop-handle" data-handle="se"></span><span class="crop-handle" data-handle="s"></span>
+                        <span class="crop-handle" data-handle="sw"></span><span class="crop-handle" data-handle="w"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="crop-panel" hidden="" id="crop-panel">
+                  <label for="crop-aspect">
+                    <span data-i18n="drawing.crop.aspect">Tỷ lệ</span>
+                    <select id="crop-aspect">
+                      <option data-i18n="drawing.crop.free" value="free">Tự do</option>
+                      <option data-i18n="drawing.crop.paper" value="paper">Theo khung giấy</option>
+                      <option value="1">1 : 1</option>
+                      <option value="1.3333">4 : 3</option>
+                      <option value="0.75">3 : 4</option>
+                      <option value="1.7778">16 : 9</option>
+                    </select>
+                  </label>
+                  <div class="crop-actions">
+                    <button data-i18n="drawing.crop.reset" id="crop-reset-btn" type="button">Cả ảnh</button>
+                    <button data-i18n="drawing.crop.cancel" id="crop-cancel-btn" type="button">Hủy</button>
+                    <button class="primary-button" data-i18n="drawing.crop.apply" id="crop-apply-btn" type="button">Áp dụng cắt</button>
+                  </div>
+                  <p class="help-text" data-i18n="drawing.crop.help">Kéo trong ảnh để chọn vùng mới, kéo khung để dời, kéo góc hoặc cạnh để co giãn. Áp dụng sẽ tạo lại nét theo phần đã cắt.</p>
                 </div>
                 <div aria-live="polite" class="drawing-progress" id="drawing-progress">
                   <progress id="drawing-progress-bar" max="1" value="0"></progress>
@@ -1292,7 +1334,7 @@
     <div class="glass-modal-icon">💾</div>
     <h3 id="modal-config-title" data-i18n="modal.config.title">Lưu cấu hình vào mạch</h3>
     <p><span data-i18n="modal.config.desc">Tệp sẽ bị ghi đè:</span> <b id="modal-config-file">—</b></p>
-    <p data-i18n="modal.config.format">FluidNC viết lại tệp theo dạng chuẩn: mất các dòng chú thích (#) và có thêm các mục mặc định. Bản gốc nguyên văn được sao lưu vào backend/data/config_backups trên máy tính.</p>
+    <p data-i18n="modal.config.format">FluidNC viết lại tệp theo dạng chuẩn: mất các dòng chú thích (#) và có thêm các mục mặc định. Bản gốc nguyên văn được sao lưu vào data/config_backups trên máy tính.</p>
     <p><span data-i18n="modal.config.changes">Mục sẽ được lưu:</span> <b id="modal-config-changes">—</b></p>
     <div class="glass-modal-actions">
       <button class="secondary-button" data-i18n="modal.home.cancel" id="modal-config-cancel-btn" type="button">Hủy bỏ</button>

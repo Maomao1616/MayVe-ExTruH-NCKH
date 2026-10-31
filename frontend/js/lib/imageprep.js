@@ -23,6 +23,18 @@ export function scaledSize(width, height, side) {
     return { width: Math.max(2, Math.round(width * k)), height: Math.max(2, Math.round(height * k)) };
 }
 
+// Cỡ ảnh (cả ảnh, chưa cắt) để gửi đi, hoặc null nếu giữ nguyên tệp gốc. crop = { w, h } tỷ lệ 0..1 của vùng cắt:
+// backend cắt TRÊN ảnh nhận được rồi mới tính độ phân giải theo phần còn lại, nên thu nhỏ cả ảnh theo đúng
+// hệ số mà vùng cắt cần (cắt càng nhỏ thì càng giữ nhiều điểm ảnh). Không cắt: giống scaledSize(…, workSidePx).
+export function uploadTarget(width, height, { box, pen, override = null, crop = null }) {
+    const cw = Math.max(2, width * (crop?.w ?? 1));
+    const ch = Math.max(2, height * (crop?.h ?? 1));
+    const side = workSidePx({ refW: box.w, refH: box.h, width: cw, height: ch, pen, override });
+    const k = side / Math.max(cw, ch);
+    if (k >= 1) return null;
+    return { width: Math.max(2, Math.round(width * k)), height: Math.max(2, Math.round(height * k)) };
+}
+
 // Các bước thu nhỏ: mỗi bước tối đa còn một nửa (tránh răng cưa), bước cuối ra đúng kích thước đích.
 export function halvingSteps(width, height, target) {
     const steps = [];
@@ -71,16 +83,15 @@ export async function imageSize(file) {
 
 // Trả về tệp để gửi: ảnh đã thu nhỏ (PNG) nếu cần, ngược lại chính tệp gốc.
 // Chỉ thu nhỏ, không bao giờ phóng to; mọi lỗi → trả tệp gốc để backend tự lo.
-export async function prepareForUpload(file, { box, pen, override = null }) {
+export async function prepareForUpload(file, { box, pen, override = null, crop = null }) {
     try {
         const image = await decode(file);
         const width = image.naturalWidth;
         const height = image.naturalHeight;
         if (!width || !height || width * height > MAX_PIXELS) return { file, scaled: false };
-        const side = workSidePx({ refW: box.w, refH: box.h, width, height, pen, override });
-        if (Math.max(width, height) <= side) return { file, scaled: false };
+        const target = uploadTarget(width, height, { box, pen, override, crop });
+        if (!target) return { file, scaled: false };
 
-        const target = scaledSize(width, height, side);
         let source = image;
         for (const step of halvingSteps(width, height, target)) {
             const canvas = document.createElement("canvas");

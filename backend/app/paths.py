@@ -5,7 +5,7 @@
     <gốc>/macros/          mỗi macro một tệp .json
     <gốc>/profile.json, draw_settings.json, resume.json   tệp lẻ
 
-Gốc mặc định là `backend/data/`; MiniPC đặt khác bằng biến môi trường EXTRUXY_DATA_DIR.
+Gốc mặc định là `data/` ở thư mục gốc dự án (cùng cấp backend/ và frontend/); MiniPC đặt khác bằng biến môi trường EXTRUXY_DATA_DIR.
 Không có ô nhập đường dẫn trên giao diện (người lạ không được trỏ máy chủ ghi ra chỗ khác).
 Thư mục tự được tạo khi cần, nên giải nén zip ở máy mới là chạy được, không phải cài đặt gì.
 Test đặt lại `DATA_DIR` (tests/conftest.py) để không đụng dữ liệu thật.
@@ -15,7 +15,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-DATA_DIR = Path(os.environ.get("EXTRUXY_DATA_DIR") or Path(__file__).resolve().parents[1] / "data")
+DATA_DIR = Path(os.environ.get("EXTRUXY_DATA_DIR") or Path(__file__).resolve().parents[2] / "data")   # ExtruXY/data
 
 # khóa -> tên thư mục con (thứ tự hiện trên giao diện)
 AREAS = {"drafts": "drafts", "config_backups": "config_backups", "macros": "macros"}

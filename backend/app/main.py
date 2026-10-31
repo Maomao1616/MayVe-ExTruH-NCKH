@@ -8,6 +8,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import idle
 from .api import ROUTERS
 from .services.machine import ServiceError, machine
 
@@ -22,6 +23,7 @@ _SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    idle.start(machine)  # bản đóng gói: tự tắt khi đóng hết trang (EXTRUXY_IDLE_EXIT_MIN)
     yield
     machine.disconnect()  # đóng cổng serial gọn gàng khi tắt server
 
@@ -45,6 +47,7 @@ def _host_name(host: str) -> str:
 @app.middleware("http")
 async def local_guard(request: Request, call_next):
     """Chặn DNS rebinding (Host lạ) và trang web khác gửi lệnh tới máy (Origin lạ)."""
+    idle.touch()
     host = (request.headers.get("host") or "").lower()
     if "*" not in ALLOWED_HOSTS and _host_name(host) not in ALLOWED_HOSTS:
         return _error(403, "bad_host", f"Host không được phép: {host or '(trống)'}")

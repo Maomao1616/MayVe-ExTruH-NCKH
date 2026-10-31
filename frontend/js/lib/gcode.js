@@ -5,6 +5,14 @@
 const WORD = /([A-Z])\s*([-+]?(?:\d+\.?\d*|\.\d+))/g;
 const PAREN = /\([^)]*\)/g;
 const MM_PER_INCH = 25.4;
+const MAX_LINE_LEN = 200;                 // = services/job.py MAX_LINE_LEN
+
+// Lệnh G backend từ chối (services/job.py BLOCKED_G): đổi gốc / hệ tọa độ hoặc chạy tới chỗ máy tự chọn.
+// Tính theo phần nguyên: G28.1, G38.2, G59.3 cũng bị chặn.
+export const BLOCKED_G = new Set([10, 28, 30, 38, 53, 55, 56, 57, 58, 59, 92]);
+
+// Cảnh báo loại này = backend sẽ không chạy tệp (nút Chạy bị khóa). Các loại khác chỉ là lưu ý.
+export const BLOCKING = new Set(["blocked_g", "blocked_dollar", "bad_char", "not_gcode", "line_too_long"]);
 
 export const DEFAULT_OPTIONS = {
     penUpZ: 5,           // Z bút lên (giả định, xem config.js)
@@ -97,6 +105,11 @@ export function parseGcode(text, options = {}) {
         const lineNo = index + 1;
         const line = cleanLine(raw);
         if (!line || ended) return;     // sau M2/M30 chương trình đã kết thúc: không gửi, không vẽ
+        // Các lỗi backend sẽ từ chối cả tệp: báo ở đây để biết ngay lúc nạp, khỏi chờ bấm Chạy.
+        if (/[^\x20-\x7e]|[?!~]/.test(line)) { warn(lineNo, "bad_char"); return; }
+        if (line.startsWith("$")) { warn(lineNo, "blocked_dollar", line.slice(0, 20)); return; }
+        if (!/^[A-Za-z]/.test(line)) { warn(lineNo, "not_gcode", line.slice(0, 20)); return; }
+        if (line.length > MAX_LINE_LEN) { warn(lineNo, "line_too_long"); return; }
         lines.push(line);
         seq = lines.length;
 
@@ -115,6 +128,7 @@ export function parseGcode(text, options = {}) {
                 else if (g === 90) absolute = true;
                 else if (g === 91) absolute = false;
                 else if (g === 17 || g === 54 || g === 94) { /* chấp nhận, không ảnh hưởng */ }
+                else if (BLOCKED_G.has(Math.trunc(g))) { warn(lineNo, "blocked_g", `G${g}`); skipMotion = true; }
                 else { warn(lineNo, "unsupported_g", `G${g}`); skipMotion = true; }
             } else if (letter === "M") {
                 const m = Math.round(num);
@@ -204,6 +218,7 @@ export function parseGcode(text, options = {}) {
     return {
         lines, lineCount: lines.length, segments, seconds: time,
         drawLength, travelLength, warnings, features,
+        blocked: warnings.filter((w) => BLOCKING.has(w.key)),
         bbox: finishBox(bboxDraw), bboxAll: finishBox(bboxAll)
     };
 }

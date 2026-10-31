@@ -1,5 +1,5 @@
 // macros.js — dữ liệu macro dùng chung (Dock đọc/ghi, không import view nào).
-// Macro nằm ở MÁY CHỦ (backend/data/macros, mỗi macro một tệp) để mọi trình duyệt thấy cùng một bộ.
+// Macro nằm ở MÁY CHỦ (data/macros, mỗi macro một tệp) để mọi trình duyệt thấy cùng một bộ.
 // Ở đây giữ một bản sao trong bộ nhớ: `loadMacros()` đọc đồng bộ, `refreshMacros()` tải lại từ máy chủ.
 // `validateMacro` là hàm thuần (kiểm nhanh ở trình duyệt); máy chủ vẫn là lớp chặn cuối cùng.
 import { api, ApiError } from "../core/api.js";

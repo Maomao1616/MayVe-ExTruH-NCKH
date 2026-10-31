@@ -22,11 +22,31 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest
 uvicorn app.main:app --reload
 ```
-Mở `http://127.0.0.1:8000/`. Hàng ngày: bấm đúp **`Bat Khien EXTRUH.bat`** (bật venv, mở trình duyệt, chạy server, không `--reload`).
+Mở `http://127.0.0.1:8000/`. Máy dùng hằng ngày không cần venv: xem **Bản mang đi** bên dưới.
 - PowerShell báo "running scripts is disabled": `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` rồi bật lại venv.
 - Linux (Ubuntu): `python3.12 -m venv .venv && source .venv/bin/activate`, các lệnh còn lại giống nhau (**chưa thử trên Ubuntu thật**; xem `docs/PLAN_ONLINE.md`).
 - Chưa có board? Chọn chế độ `sim` ở Cài đặt → Kết nối (máy giả bắt chước FluidNC theo log board thật).
 - Sau khi cập nhật mã có thêm thư viện: chạy lại `pip install -r requirements.txt`.
+
+## Bản mang đi (máy không cài Python)
+```
+ExtruXY/
+├─ Python/          Python 3.12 embeddable 64-bit + thư viện (chuẩn bị một lần, không lên Git)
+├─ backend/  frontend/
+├─ launcher/        start.vbs · start.ps1 · stop.vbs · stop.ps1 · tao_bieu_tuong.vbs · cap_nhat.ps1 · icon.ico
+├─ data/            bản thảo, macro, sao lưu (tự tạo; cập nhật không đụng tới)
+└─ Cap nhat.bat
+```
+**Chuẩn bị `Python/` (một lần, trên máy của bạn):**
+1. Tải *Windows embeddable package (64-bit)* Python 3.12.x ở python.org, giải nén vào `Python/`.
+2. Sửa `Python/python312._pth` thành 4 dòng: `python312.zip`, `.`, `..\backend`, `import site`. Dòng `..\backend` bắt buộc: bản embeddable bỏ qua thư mục hiện hành và `PYTHONPATH`, thiếu nó thì tiến trình con xử lý ảnh (`python -m app.services.drawing.isolated`) không chạy.
+3. Tải `get-pip.py`, chạy `Python\python.exe get-pip.py`, rồi `Python\python.exe -m pip install -r backend\requirements.txt`.
+4. Đóng gói: `powershell -ExecutionPolicy Bypass -File tools\dong_goi.ps1 -Kieu daydu` → `export\VMU_PlotterPen_daydu-<ngày>.zip`.
+
+**Máy dùng:** giải nén → bấm đúp `launcher\tao_bieu_tuong.vbs` (một lần, tạo icon *VMU PlotterPen* ngoài Desktop) → bấm icon. Server chạy ẩn, trình duyệt mở `http://<IP LAN>:8000`. **Không cần icon tắt:** đóng hết trang 10 phút thì server tự tắt (đang vẽ thì không); muốn tắt ngay: `launcher\stop.vbs`. Lần đầu Windows hỏi tường lửa cho `python.exe`: chọn *Mạng riêng tư*. Server không lên: xem `data\server-loi.txt`.
+- Mở cho máy khác cùng mạng (`0.0.0.0`) mà **chưa có đăng nhập**: chỉ dùng mạng tin cậy và đặt PIN (bỏ `#` dòng `EXTRUXY_UNLOCK_PIN` trong `launcher\start.ps1`).
+
+**Cập nhật (chỉ thay `backend/`, `frontend/`, `launcher/`):** trên máy bạn `powershell -ExecutionPolicy Bypass -File tools\dong_goi.ps1` → `export\VMU_PlotterPen_capnhat-<ngày>.zip` (vài trăm KB). Ở máy dùng: chép file zip vào cạnh `Cap nhat.bat` → bấm đúp. Nó tắt server, thay mã, giữ `Python/` + `data/`, cất bản cũ và file zip vào `_ban_cu/`; `requirements.txt` đổi thì tự `pip install` (cần Internet).
 
 ## Kiểm tra
 | Việc | Lệnh |
@@ -61,11 +81,13 @@ backend/app/{api,services,links}   HTTP mỏng → logic → kết nối máy (s
 backend/app/services/drawing/      Dây chuyền tab Tạo bản vẽ (ảnh/SVG → nét → G-code → bản thảo)
 backend/tests/                     pytest (draw_test/ cho tab vẽ)
 frontend/{index.html,css,js,locales,assets/css/tokens.css,tests}
+launcher/                          Bật/tắt server chạy ẩn, tạo icon Desktop, cập nhật (bản mang đi)
 tools/export_context.py            Xuất mã gọn cho AI + sinh docs/CODEMAP.md
+tools/dong_goi.ps1                 Đóng gói zip bản cập nhật / bản đầy đủ (vào export/)
 docs/                              Tài liệu (bảng trên)
 samples/                           G-code mẫu
 ```
-Dữ liệu riêng của từng máy nằm ở `backend/data/`, không lên Git, tự tạo khi cần: `drafts/` (bản thảo), `config_backups/` (sao lưu cấu hình), `macros/`, cùng `profile.json`, `resume.json`. Xem được trong Cài đặt → Lưu trữ dữ liệu; đổi gốc bằng biến môi trường `EXTRUXY_DATA_DIR`.
+Dữ liệu riêng của từng máy nằm ở `data/`, không lên Git, tự tạo khi cần: `drafts/` (bản thảo), `config_backups/` (sao lưu cấu hình), `macros/`, cùng `profile.json`, `resume.json`. Xem được trong Cài đặt → Lưu trữ dữ liệu; đổi gốc bằng biến môi trường `EXTRUXY_DATA_DIR`.
 
 ## Làm việc với Git
-Trước khi làm: `git pull`. Xong một việc nhỏ: `git add .`, `git commit -m "mô tả ngắn"`, `git push`. Mỗi commit một việc; không đẩy mật khẩu, token, `.venv`, `backend/data/`.
+Trước khi làm: `git pull`. Xong một việc nhỏ: `git add .`, `git commit -m "mô tả ngắn"`, `git push`. Mỗi commit một việc; không đẩy mật khẩu, token, `.venv`, `data/`.

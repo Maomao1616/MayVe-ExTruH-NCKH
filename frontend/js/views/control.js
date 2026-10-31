@@ -628,6 +628,7 @@ function initGcodePanel() {
     const isActive = (job) => job && (job.state === "running" || job.state === "finishing");
 
     function fileProblem(snapshot) {
+        if (store.file?.parsed.blocked?.length) return "blocked";
         const machine = snapshot?.status?.machine;
         const offset = Array.isArray(machine?.wco) ? machine.wco : [0, 0, 0];
         return store.file &&
@@ -654,23 +655,23 @@ function initGcodePanel() {
             const p = file.parsed;
             const size = p.bbox ? `${p.bbox.width.toFixed(1)} × ${p.bbox.height.toFixed(1)} mm` : "—";
             const parts = [`${p.lineCount} ${t("control.gcode.lines")}`, size, `~${formatDuration(p.seconds)}`];
-            if (p.warnings.length) parts.push(`⚠ ${p.warnings.length}`);
-            if (problem) parts.push(t("control.gcode.outOfRange"));
+            const notes = p.warnings.length - (p.blocked?.length ?? 0);
+            if (notes > 0) parts.push(`⚠ ${notes}`);
+            if (problem === "outOfRange") parts.push(t("control.gcode.outOfRange"));
+            if (p.blocked?.length) parts.push(`⛔ ${p.blocked.length}`);
             setText("gcode-selected-name", file.name);
             setText("gcode-selected-info", parts.join(" · "));
-            const info = $("gcode-selected-info");
-            if (info) info.title = p.warnings.slice(0, 8)
-                .map((w) => `${w.line}: ${w.key}${w.detail ? ` (${w.detail})` : ""}`).join("\n");
         } else {
             setText("gcode-selected-name", "—");
             setText("gcode-selected-info", "—");
         }
+        renderCheck(file);
 
         // nút
         const connection = snapshot?.status?.connection;
         const machineState = snapshot?.status?.machine?.state;
         previewButton.disabled = !file;
-        if (saveDraftButton) saveDraftButton.disabled = !file;
+        if (saveDraftButton) saveDraftButton.disabled = !file || problem === "blocked";
         confirmBox.disabled = !file || !previewed || active;
         if (confirmBox.disabled && !active) confirmBox.checked = false;
 
@@ -693,6 +694,39 @@ function initGcodePanel() {
         renderProgress(job);
         renderResume(job, snapshot);
         reportJobTransitions(job);
+    }
+
+    // Khung kiểm tra tệp: liệt kê dòng lỗi (đỏ, máy chủ sẽ từ chối) hoặc lưu ý (vàng), mỗi loại tối đa CHECK_MAX dòng.
+    const CHECK_MAX = 6;
+    function renderCheck(file) {
+        const box = $("gcode-check");
+        if (!box) return;
+        const all = file?.parsed.warnings ?? [];
+        const blocked = file?.parsed.blocked ?? [];
+        const shown = blocked.length ? blocked : all;
+        box.hidden = shown.length === 0;
+        if (box.hidden) return;
+        box.classList.toggle("is-error", blocked.length > 0);
+        setText("gcode-check-title", fill(t(blocked.length ? "control.gcheck.blockedTitle" : "control.gcheck.noteTitle"),
+            { n: shown.length }));
+        const items = shown.slice(0, CHECK_MAX).map((w) => {
+            const li = document.createElement("li");
+            const where = document.createElement("b");
+            where.textContent = fill(t("control.gcheck.line"), { line: w.line });
+            const key = `control.gcheck.${w.key}`;
+            const text = t(key) === key ? w.key : fill(t(key), { detail: w.detail ?? "" });
+            li.append(where, ` ${text}`);
+            return li;
+        });
+        if (shown.length > CHECK_MAX) {
+            const li = document.createElement("li");
+            li.className = "muted-text";
+            li.textContent = fill(t("control.gcheck.more"), { n: shown.length - CHECK_MAX });
+            items.push(li);
+        }
+        $("gcode-check-list")?.replaceChildren(...items);
+        const help = $("gcode-check-help");
+        if (help) help.hidden = blocked.length === 0;
     }
 
     function renderProgress(job) {

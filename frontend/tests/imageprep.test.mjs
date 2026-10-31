@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { grayFromRgba, halvingSteps, scaledSize, toneMap, workSidePx } from "../js/lib/imageprep.js";
+import { grayFromRgba, halvingSteps, scaledSize, toneMap, uploadTarget, workSidePx } from "../js/lib/imageprep.js";
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8"));
 
@@ -46,4 +46,19 @@ test("thu nhỏ từng bước, mỗi bước tối đa một nửa, bước cu�
 test("xám như Pillow, nền trong suốt thành trắng", () => {
     const px = Uint8ClampedArray.from([255, 0, 0, 255, 0, 0, 0, 0, 10, 20, 30, 255]);
     assert.deepEqual([...grayFromRgba(px)], [76, 255, 18]);      // đỏ -> 76; trong suốt -> 255
+});
+
+test("uploadTarget: không cắt thì giống scaledSize(workSidePx); cắt thì giữ đủ điểm ảnh cho phần còn lại", () => {
+    const opts = { box: { w: 200, h: 287 }, pen: 0.4 };
+    const side = workSidePx({ refW: 200, refH: 287, width: 6000, height: 4000, pen: 0.4 });
+    assert.deepEqual(uploadTarget(6000, 4000, opts), scaledSize(6000, 4000, side));
+    assert.equal(uploadTarget(600, 400, opts), null);                       // ảnh nhỏ: gửi nguyên tệp
+    // cắt lấy 1/4 bề ngang: vùng cắt sau khi thu nhỏ phải có cạnh dài ≈ side của chính vùng đó
+    const crop = { w: 0.25, h: 1 };
+    const cropSide = workSidePx({ refW: 200, refH: 287, width: 1500, height: 4000, pen: 0.4 });
+    const t = uploadTarget(6000, 4000, { ...opts, crop });
+    assert.ok(Math.abs(t.height - cropSide) <= 1, JSON.stringify({ t, cropSide }));
+    assert.ok(t.width > scaledSize(6000, 4000, side).width);
+    // cắt nhỏ tới mức cần nhiều điểm hơn ảnh gốc: gửi nguyên tệp
+    assert.equal(uploadTarget(6000, 4000, { ...opts, crop: { w: 0.05, h: 0.05 } }), null);
 });

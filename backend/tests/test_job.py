@@ -38,7 +38,33 @@ def test_clean_rejects_dangerous_or_invalid(bad):
     with pytest.raises(JobError) as info:
         clean_gcode(["G21", bad])
     assert info.value.code == "bad_gcode"
-    assert "Dòng 2" in info.value.message
+    assert "dòng 2" in info.value.message
+
+
+@pytest.mark.parametrize("bad", ["G92 X0 Y0", "G10 L20 P1 X0", "G28", "G28.1", "G30", "G53 G0 X0",
+                                 "G55", "G59.1", "G38.2 Z-5 F100", "g92x0", "G0 X1 G92 Y0"])
+def test_clean_blocks_coordinate_changes(bad):
+    with pytest.raises(JobError) as info:
+        clean_gcode(["G21", "G1 X1 F100", bad])
+    assert info.value.code == "bad_gcode"
+    assert "dòng 3" in info.value.message
+
+
+@pytest.mark.parametrize("ok", ["G54", "G90 G21", "G91", "G20", "G17 G94", "G4 P0.2", "M3 S1000", "M5",
+                                "M0", "G2 X1 Y1 I0.5 J0", "G1 X10 ; G92 trong chu thich",
+                                "(G28 trong ngoac) G0 X1", "G0 X92", "G1 X10 F2800", "N10 G1 X1"])
+def test_clean_keeps_normal_commands(ok):
+    assert len(clean_gcode(["G21", ok])) == 2
+
+
+def test_clean_reports_all_problems_with_line_numbers():
+    raw = ["G21", "G28", "G1 X1 F100", "$H", "G92 X0"] + ["G10 L20 P1 X0"] * 4
+    with pytest.raises(JobError) as info:
+        clean_gcode(raw)
+    msg = info.value.message
+    assert "Tệp có 7 dòng" in msg
+    assert "dòng 2: G28" in msg and "dòng 4:" in msg and "dòng 5: G92" in msg
+    assert "và 2 dòng khác" in msg
 
 
 # --- chạy -----------------------------------------------------------------------
@@ -67,11 +93,11 @@ def test_job_reports_soft_limit_alarm(svc):
 
 def test_job_stops_on_device_error_and_reports_line(svc):
     homed(svc)
-    svc.start_job("bad", ["G21", "G1 F6000", "G10 L2 P1 X0", "G1 X5"])
+    svc.start_job("bad", ["G21", "G1 F6000", "G2 X50 Y0 R1", "G1 X5"])   # R không với tới: firmware báo error:33
     assert wait_for(lambda: job_state(svc) == "failed")
     job = svc.snapshot()["job"]
     assert job["error"]["code"] == "device_error" and job["error"]["line"] == 3
-    assert job["error"]["device_code"] == 20 and job["acked"] == 3
+    assert job["error"]["device_code"] == 33 and job["acked"] == 3
 
 
 def test_arcs_are_accepted_by_sim(svc):

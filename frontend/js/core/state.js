@@ -5,6 +5,8 @@ import { api } from "./api.js";
 import { POLL } from "./config.js";
 
 const MAX_LOGS = 500;
+// Tab bị ẩn thì ngừng thăm dò, nhưng vẫn báo "trang còn mở" để bản đóng gói không tự tắt server (backend/app/idle.py).
+const HIDDEN_PING_MS = 30000;
 
 export const state = {
     backendOnline: false,   // gọi được backend ở lần thăm dò gần nhất
@@ -22,6 +24,7 @@ const listeners = new Set();
 let polling = false;
 let timerId = null;
 let requestInProgress = false;
+let pingId = null;
 let lastBackendStamp = null;   // status.updated_at của lần trước
 
 /* ---------- hàm tiện ích dùng chung (để các view không tự tính lại) ---------- */
@@ -147,11 +150,22 @@ function handleVisibilityChange() {
             window.clearTimeout(timerId);
             timerId = null;
         }
+        if (polling && pingId === null) {
+            pingId = window.setInterval(() => api.health().catch(() => {}), HIDDEN_PING_MS);
+        }
         return;
     }
+    stopPing();
 
     if (polling && timerId === null && !requestInProgress) {
         pollOnce();
+    }
+}
+
+function stopPing() {
+    if (pingId !== null) {
+        window.clearInterval(pingId);
+        pingId = null;
     }
 }
 
@@ -161,7 +175,8 @@ export function startPolling() {
     polling = true;
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    if (!document.hidden) pollOnce();
+    if (document.hidden) handleVisibilityChange();   // mở trang ở tab nền: chỉ báo "còn mở"
+    else pollOnce();
 }
 
 // Đổi nhịp thăm dò (Cài đặt → Hoạt động). Áp dụng từ lần hỏi kế tiếp.
@@ -182,6 +197,7 @@ export async function refreshNow() {
 
 export function stopPolling() {
     polling = false;
+    stopPing();
 
     if (timerId !== null) {
         window.clearTimeout(timerId);

@@ -59,7 +59,7 @@ Gửi `g0 x1000` → firmware trả `ok` **trước**, `ALARM:2` **sau**. Backen
   `$/axes/x/max_rate_mm_per_min[=v]` đọc/ghi (ghi chỉ trong RAM); `$LocalFS/List`, `$LocalFS/Show=/<tệp>`;
   `$CD=/localfs/<tệp>` ghi YAML đang chạy ra tệp. Bộ nhớ trống ~60 KB.
 - Đọc từ máy: giá trị khớp ConfigNCKH-16. Áp dụng (X 5500): máy đổi tạm, hàng hiện dấu ●.
-- Lưu vào mạch: ghi đè YAML thành công, bản gốc được sao lưu về `backend/data/config_backups/`.
+- Lưu vào mạch: ghi đè YAML thành công, bản gốc được sao lưu về `data/config_backups/`.
 - Tắt nguồn, bật lại: giá trị đã lưu vẫn còn.
 - `$CD=` viết lại tệp theo dạng chuẩn (mất chú thích `#`, `engine: I2S_STREAM` thành `engine: I2S`); máy vẫn khởi động và chạy bình thường.
 - Thanh bút 3 nấc (Z5 / Z2.5 / Z0): chạy đúng, nấc sáng khớp vị trí.

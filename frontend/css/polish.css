@@ -1054,3 +1054,502 @@ button:not(.nav-tab):active:not(:disabled) {
 .discard-modal-box .resume-facts {
     grid-template-columns: 1fr;
 }
+
+
+/* ---- Kiem tra tep G-code luc nap: do = bi chan, vang = luu y ---- */
+.gcode-check {
+    display: grid;
+    gap: 6px;
+    margin: 10px 0;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in srgb, var(--warning) 55%, var(--border));
+    border-left-width: 4px;
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--warning) 9%, transparent);
+    font-size: 13px;
+}
+
+.gcode-check[hidden] {
+    display: none;
+}
+
+.gcode-check > strong {
+    color: var(--warning);
+}
+
+.gcode-check.is-error {
+    border-color: color-mix(in srgb, var(--danger) 60%, var(--border));
+    background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+.gcode-check.is-error > strong {
+    color: var(--danger);
+}
+
+.gcode-check ul {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+    padding-left: 18px;
+}
+
+.gcode-check li {
+    overflow-wrap: anywhere;
+}
+
+.gcode-check li b {
+    font-variant-numeric: tabular-nums;
+}
+
+.gcode-check .help-text {
+    margin: 0;
+}
+
+
+/* ==================== Tab Dieu khien tren may tinh bang / dien thoai ====================
+   Chi nam trong @media nen man hinh lon (> 1100px) giu nguyen bo cuc 2/5 - 3/5.
+   Luat "hai cot 2/5 - 3/5" o tren nam SAU style.css nen da de mat luat 1 cot cua style.css: dat lai o day. */
+@media (max-width: 1100px) {
+    .control-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .control-workspace {
+        grid-template-rows: auto;
+    }
+
+    .control-heading .controller-panel {
+        flex: 1 1 100%;
+    }
+
+    /* May tinh bang: Vi tri | Jog tren mot hang, Tep G-code trai het be ngang (khong de o trong ben canh) */
+    .control-sidebar > .gcode-panel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 760px) {
+    /* Tieu de xep doc: flex-basis 640px cua khoi trang thai bi hieu thanh CHIEU CAO -> khoang trong lon */
+    .control-heading .controller-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    .control-heading .controller-panel .panel-heading {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .control-heading .controller-panel .detail-list-compact {
+        column-gap: 10px;
+    }
+
+    /* Thu tu khoi tren dien thoai: khung 2D + tien trinh -> tep G-code -> vi tri -> jog -> terminal.
+       display: contents bo hai cot trai/phai, cac khoi xep chung mot cot va doi cho bang `order`.
+       Chi doi thu tu HIEN THI; HTML va man hinh lon khong doi. */
+    .control-layout {
+        display: flex;
+        flex-direction: column;
+        gap: var(--layout-gap);
+    }
+
+    .control-sidebar,
+    .control-workspace {
+        display: contents;
+    }
+
+    .control-layout .preview-panel { order: 1; }
+    .control-layout .gcode-panel { order: 2; }
+    .control-layout .coordinates-panel { order: 3; }
+    .control-layout .jog-panel { order: 4; }
+    .control-layout .terminal-panel { order: 5; }
+
+    .control-workspace > .panel + .panel::before {
+        display: none;
+    }
+
+    /* Khung 2D: nut thu phong / xoa vet xuong dong rieng, chu thich gon */
+    .preview-heading {
+        gap: 8px;
+    }
+
+    .preview-actions {
+        width: 100%;
+    }
+
+    .preview-actions button {
+        flex: 1 1 auto;
+        padding-inline: 10px;
+    }
+
+    .preview-toolbar {
+        gap: 6px 12px;
+        font-size: 12px;
+    }
+
+    .preview-playback {
+        flex-wrap: wrap;
+    }
+
+    .preview-playback input[type="range"] {
+        flex: 1 1 100%;
+        order: 5;
+    }
+
+    /* Vi tri: so nho lai cho vua be ngang dien thoai */
+    .coordinates-panel .coordinate-header,
+    .coordinates-panel .coordinate-row {
+        grid-template-columns: 22px 34px minmax(0, 1.3fr) minmax(0, 1fr) 34px;
+        gap: 6px;
+    }
+
+    .coordinates-panel .coordinate-header span {
+        min-width: 0;
+        overflow: hidden;
+        font-size: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .coordinates-panel .coordinate-row .icon-action {
+        width: 34px;
+        height: 34px;
+    }
+
+    .coordinates-panel .coord-workspace {
+        padding: 6px 8px;
+        font-size: 1.3rem;
+    }
+
+    .coordinates-panel .coord-machine {
+        padding: 6px 8px;
+        font-size: 0.95rem;
+    }
+
+    .coordinates-panel .axis-label {
+        font-size: 1.2rem;
+    }
+
+    .coordinate-actions button {
+        padding-inline: 6px;
+    }
+
+    /* Jog: ban phim XY va thanh but dung canh nhau, nut du to de bam bang ngon tay */
+    .jog-layout {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 12px;
+        padding: 0;
+    }
+
+    .jog-pad {
+        grid-auto-rows: 58px;
+        gap: 8px;
+        max-width: 230px;
+    }
+
+    .pen-bar {
+        grid-template-rows: repeat(3, 58px);
+        width: 84px;
+    }
+
+    .jog-settings select,
+    .jog-settings input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    /* Tep G-code: nut Luu vao ban thao rong het be ngang */
+    .gcode-panel > .secondary-button {
+        width: 100%;
+    }
+
+    /* Terminal: khung log thap hon, van cuon rieng */
+    .terminal-panel .terminal-output {
+        min-height: 200px;
+    }
+
+    .terminal-input-row input {
+        min-width: 0;
+    }
+
+    /* Hang doi cong viec: bang cuon ngang thay vi tran ra ngoai */
+    #draft-queue-panel .panel-heading {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    #jobs-table-container {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Hop xac nhan (tiep tuc / bo diem dung / huy tac vu): vua man hinh, cuon duoc neu dai */
+    .glass-modal-overlay {
+        padding: 12px;
+    }
+
+    .glass-modal-box {
+        max-height: calc(100dvh - 24px);
+        padding: 18px 16px;
+        overflow-y: auto;
+    }
+
+    .glass-modal-actions {
+        flex-wrap: wrap;
+    }
+
+    .glass-modal-actions button {
+        flex: 1 1 140px;
+    }
+}
+
+@media (max-width: 420px) {
+    .jog-pad {
+        grid-auto-rows: 52px;
+        gap: 6px;
+    }
+
+    .pen-bar {
+        grid-template-rows: repeat(3, 52px);
+        width: 76px;
+    }
+
+    .coordinates-panel .coord-workspace {
+        font-size: 1.15rem;
+    }
+}
+
+
+/* ==================== Cat anh (tab Tao ban ve) ==================== */
+.crop-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    margin-top: 12px;
+}
+
+.crop-toolbar .is-active {
+    border-color: var(--accent-text);
+    color: var(--accent-text);
+}
+
+#crop-info {
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+.drawing-original {
+    margin-top: 8px;
+}
+
+.crop-wrap {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    line-height: 0;
+}
+
+.crop-media {
+    line-height: normal;
+}
+
+.crop-media img,
+.crop-media canvas {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 300px;
+}
+
+.crop-overlay {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    touch-action: none;
+}
+
+.crop-overlay[hidden] {
+    display: none;
+}
+
+.crop-overlay.is-editing {
+    cursor: crosshair;
+    pointer-events: auto;
+}
+
+.crop-rect {
+    position: absolute;
+    box-sizing: border-box;
+    border: 2px solid var(--accent-text);
+    /* lam toi phan bi cat bo */
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 50%);
+}
+
+.crop-overlay:not(.is-editing) .crop-rect {
+    border-style: dashed;
+    box-shadow: 0 0 0 9999px rgb(0 0 0 / 35%);
+}
+
+.crop-overlay.is-editing .crop-rect {
+    cursor: move;
+    background-image:
+        linear-gradient(to right, transparent calc(33.33% - 0.5px), rgb(255 255 255 / 35%) 33.33%, transparent calc(33.33% + 0.5px),
+            transparent calc(66.66% - 0.5px), rgb(255 255 255 / 35%) 66.66%, transparent calc(66.66% + 0.5px)),
+        linear-gradient(to bottom, transparent calc(33.33% - 0.5px), rgb(255 255 255 / 35%) 33.33%, transparent calc(33.33% + 0.5px),
+            transparent calc(66.66% - 0.5px), rgb(255 255 255 / 35%) 66.66%, transparent calc(66.66% + 0.5px));
+}
+
+.crop-handle {
+    position: absolute;
+    display: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--bg-main);
+    border-radius: 3px;
+    background: var(--accent-text);
+}
+
+/* vung bam rong hon o vuong nhin thay: de cham bang ngon tay */
+.crop-handle::after {
+    content: "";
+    position: absolute;
+    inset: -9px;
+}
+
+.crop-overlay.is-editing .crop-handle {
+    display: block;
+}
+
+.crop-handle[data-handle="nw"] { top: -8px; left: -8px; cursor: nwse-resize; }
+.crop-handle[data-handle="ne"] { top: -8px; right: -8px; cursor: nesw-resize; }
+.crop-handle[data-handle="se"] { right: -8px; bottom: -8px; cursor: nwse-resize; }
+.crop-handle[data-handle="sw"] { bottom: -8px; left: -8px; cursor: nesw-resize; }
+.crop-handle[data-handle="n"] { top: -8px; left: calc(50% - 7px); cursor: ns-resize; }
+.crop-handle[data-handle="s"] { bottom: -8px; left: calc(50% - 7px); cursor: ns-resize; }
+.crop-handle[data-handle="e"] { top: calc(50% - 7px); right: -8px; cursor: ew-resize; }
+.crop-handle[data-handle="w"] { top: calc(50% - 7px); left: -8px; cursor: ew-resize; }
+
+.crop-panel {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    border: 1px solid color-mix(in srgb, var(--accent-text) 45%, var(--border));
+    border-radius: var(--radius-button);
+    background: color-mix(in srgb, var(--accent) 40%, transparent);
+    animation: fold-in 0.25s ease both;
+}
+
+.crop-panel[hidden] {
+    display: none;
+}
+
+.crop-panel label {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.crop-panel select {
+    width: auto;
+    min-width: 160px;
+}
+
+.crop-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.crop-actions .primary-button {
+    margin-left: auto;
+}
+
+.crop-panel .help-text {
+    margin: 0;
+}
+
+@media (max-width: 520px) {
+    .crop-actions button {
+        flex: 1 1 auto;
+    }
+
+    .crop-actions .primary-button {
+        flex-basis: 100%;
+        margin-left: 0;
+    }
+}
+
+
+/* Thanh tab tren dien thoai: ba tab chia deu be ngang, khong bi cat chu "Cai dat" */
+@media (max-width: 520px) {
+    .nav-tab {
+        flex: 1 1 0;
+        min-width: 0;
+        gap: 5px;
+        padding: 8px 4px;
+        font-size: 13px;
+        white-space: nowrap;
+    }
+
+    .nav-icon {
+        font-size: 14px;
+    }
+}
+
+
+/* Khoi Ban thao (Cai dat): o duong dan dai tu xuong dong duoi tieu de, khong bop tieu de thanh cot chu hep */
+#draft-settings-panel .panel-heading {
+    flex-wrap: wrap;
+}
+
+#draft-settings-panel .panel-heading > div {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+#draft-settings-panel .panel-tag {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    word-break: break-all;
+}
+
+/* Hang doi cong viec tren dien thoai: an cot Thoi gian va So lieu, chi giu Ten + Thao tac */
+@media (max-width: 760px) {
+    #jobs-table-container th:nth-child(2),
+    #jobs-table-container th:nth-child(3),
+    #jobs-table-container td:nth-child(2),
+    #jobs-table-container td:nth-child(3) {
+        display: none;
+    }
+
+    #jobs-table-container td:first-child {
+        overflow-wrap: anywhere;
+    }
+}
+
+
+/* Tab Tao ban ve khi xep mot cot (may tinh bang / dien thoai): Khung ve tren giay len ngay sau Thong tin ban ve.
+   Chi doi thu tu HIEN THI; man hinh lon (> 1100px) giu hai cot nhu cu. */
+@media (max-width: 1100px) {
+    .drawing-layout {
+        display: flex;
+        flex-direction: column;
+        gap: var(--layout-gap);
+    }
+
+    .drawing-sidebar,
+    .drawing-workspace {
+        display: contents;
+    }
+
+    .drawing-layout .drawing-preview-panel {
+        order: -1;
+    }
+}

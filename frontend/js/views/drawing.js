@@ -14,7 +14,8 @@ import { loadIntoControl, refreshDrafts } from "../stores/draftstore.js";
 import { buildPath, createCanvas } from "./drawing/canvas.js";
 import * as params from "./drawing/params.js";
 import { presetValues } from "./drawing/presets.js";
-import { forget as forgetImage, prepareForUpload } from "../lib/imageprep.js";
+import { forget as forgetImage, imageSize, prepareForUpload } from "../lib/imageprep.js";
+import * as crop from "./drawing/crop.js";
 import { initTonePreview, refresh as refreshTone, setFile as showOriginal } from "./drawing/tonepreview.js";
 
 const $ = (id) => document.getElementById(id);
@@ -51,7 +52,12 @@ export function initDrawing() {
 
     canvas = createCanvas({ canvas: canvasEl, stage, zoomLabel: $("drawing-canvas-zoom"), onBox });
     params.initParams(onParamChange);
-    initTonePreview({ stageEl: $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings });
+    initTonePreview({ stageEl: $("original-image-holder") ?? $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings });
+    // Cắt ảnh: áp dụng = nạp lại như tệp mới (tỷ lệ ảnh đổi nên khung vừa lại phần trong lề).
+    crop.initCrop({
+        apply: () => { if (S.file) startImport("final", { fresh: true }); },
+        ratio: () => { const b = params.innerBox(); return b.w > 0 && b.h > 0 ? b.w / b.h : null; }
+    });
     initFile();
     initButtons();
     loadSchemaWhenOnline();
@@ -118,6 +124,8 @@ function acceptFile(file) {
     $("drawing-file-name").removeAttribute("data-i18n");
     $("drawing-file-name").textContent = `${file.name} · ${file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + " KB" : (file.size / 1048576).toFixed(1) + " MB"}`;
     showOriginal(file);
+    crop.setImage(null);
+    if (ext !== ".svg") imageSize(file).then((size) => { if (S.file === file) crop.setImage(size); });
     startImport("final", { fresh: true });
 }
 
@@ -140,13 +148,18 @@ async function startImport(quality, { fresh = false, box = null } = {}) {
     try {
         const frameBox = box ?? params.innerBox();
         let upload = S.file;
-        if (!S.file.name.toLowerCase().endsWith(".svg")) {
+        const isSvg = S.file.name.toLowerCase().endsWith(".svg");
+        if (!isSvg) {
             // Thu nhỏ ảnh ngay trong trình duyệt tới đúng cỡ backend cần: gửi nhẹ hơn, MiniPC khỏi giải mã ảnh lớn.
             setStatus("drawing.progress.prepare");
-            upload = (await prepareForUpload(S.file, { box: frameBox, pen: params.penWidthMm(), override: params.maxSideOverride() })).file;
+            upload = (await prepareForUpload(S.file, {
+                box: frameBox, pen: params.penWidthMm(), override: params.maxSideOverride(), crop: crop.current()
+            })).file;
             if (seq !== S.importSeq) return;
         }
-        job = await api.drawImport(upload, params.importOptions(quality, frameBox));
+        const options = params.importOptions(quality, frameBox);
+        if (!isSvg) Object.assign(options.raster, crop.payload());
+        job = await api.drawImport(upload, options);
     } catch (error) {
         return failImport(seq, error);
     }

@@ -14,9 +14,12 @@ Trình duyệt:  core/api.js → core/state.js (hỏi backend mỗi 0,5 giây) �
 ```
 ExtruXY/
 ├─ README.md                 Giới thiệu, cài đặt, chạy, kiểm tra
-├─ Bat Khien EXTRUH.bat      Bấm đúp: bật venv trong backend/, mở trình duyệt, chạy server
+├─ Cap nhat.bat             Bản mang đi: thay backend/ frontend/ launcher/ từ file zip, giữ Python/ và data/
+├─ launcher/                start.vbs/.ps1 (server chạy ẩn + mở trình duyệt) · stop · tao_bieu_tuong.vbs · cap_nhat.ps1 · icon.ico
+├─ Python/                  (không lên Git) Python 3.12 embeddable + thư viện; _pth có ..\backend
+├─ data/                    (tự tạo, không lên Git) drafts/ · config_backups/ · macros/ + profile.json, draw_settings.json, resume.json
 ├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE(+RAW) · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · EXPORT_FOR_AI
-├─ tools/export_context.py   Xuất mã gọn cho AI + sinh docs/CODEMAP.md (xem EXPORT_FOR_AI)
+├─ tools/                   export_context.py (xuất mã cho AI + CODEMAP) · dong_goi.ps1 (zip bản cập nhật / đầy đủ)
 ├─ samples/                  Tệp G-code mẫu để thử
 ├─ backend/
 │  ├─ app/
@@ -24,7 +27,6 @@ ExtruXY/
 │  │  ├─ api/                Router HTTP (mỏng). Thêm router: 1 file + 1 dòng trong api/__init__.py
 │  │  ├─ services/           Logic: máy, tác vụ, cấu hình mạch, hồ sơ, tab vẽ (drawing/)
 │  │  └─ links/              Kết nối máy: serial thật, SimLink, giao thức FluidNC
-│  ├─ data/                  (tự tạo, không lên Git) drafts/ · config_backups/ · macros/ + profile.json, draw_settings.json, resume.json
 │  ├─ tests/                 pytest (draw_test/ của tab vẽ)
 │  └─ tools/                 Script thử nghiệm (probe_vpype.py)
 └─ frontend/
@@ -109,7 +111,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | Kiểm tra/lưu macro | `stores/macros.js` |
 
 ## 5. Chạy và thử
-* Chạy: `uvicorn app.main:app --reload` (đang sửa code) hoặc bấm đúp `Bat Khien EXTRUH.bat` ở thư mục gốc (bật venv, mở trình duyệt, không `--reload`) → `http://127.0.0.1:8000/`.
+* Chạy: `uvicorn app.main:app --reload` trong `backend/` (đang sửa code) → `http://127.0.0.1:8000/`. Bản mang đi: icon Desktop → `launcher/start.vbs` → `start.ps1` (Python/ embeddable, `--host 0.0.0.0`, tự đặt `EXTRUXY_ALLOWED_HOSTS` theo IP LAN, `EXTRUXY_IDLE_EXIT_MIN=10`).
 * Test backend (trong `backend`, đã bật venv): `python -m pytest` (~270 test, ~70 s). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs`.
 * Sửa Python xong phải tắt (Ctrl+C) và chạy lại server. Chữ không đổi: Ctrl+Shift+R hoặc F12 → Network → Disable cache. Lỗi lạ: F12 → Console, dán dòng đỏ.
 * Thói quen: áp từng bước nhỏ → test → thử bằng sim → commit Git.
@@ -125,7 +127,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 ## 7. Dữ liệu trên đĩa và biến môi trường
 | Thứ | Ở đâu | Ghi chú |
 |---|---|---|
-Gốc dữ liệu = `backend/data/` (tự tạo khi cần, không lên Git); đổi bằng `EXTRUXY_DATA_DIR`. Giao diện không cho đổi đường dẫn.
+Gốc dữ liệu = `data/` (tự tạo khi cần, không lên Git); đổi bằng `EXTRUXY_DATA_DIR`. Giao diện không cho đổi đường dẫn.
 
 | Thứ | Ở đâu (trong gốc) | Ghi chú |
 |---|---|---|
@@ -140,12 +142,13 @@ Gốc dữ liệu = `backend/data/` (tự tạo khi cần, không lên Git); đ�
 Biến môi trường (đều tùy chọn):
 | Biến | Tác dụng |
 |---|---|
-| `EXTRUXY_DATA_DIR` | thư mục gốc dữ liệu (mặc định `backend/data`) |
+| `EXTRUXY_DATA_DIR` | thư mục gốc dữ liệu (mặc định `data`) |
 | `EXTRUXY_ALLOW_MOTION=1` | mở khóa chuyển động cố định (máy thật mặc định chỉ đọc) |
 | `EXTRUXY_UNLOCK_MINUTES` | tự khóa lại sau chừng này phút (mặc định 15; 0 = tắt) |
 | `EXTRUXY_UNLOCK_PIN` | đòi PIN khi mở khóa chuyển động |
 | `EXTRUXY_NO_UNLOCK=1` | cấm mở khóa từ giao diện |
 | `EXTRUXY_ALLOWED_HOSTS` | danh sách Host được gọi API (mặc định chỉ cục bộ) |
+| `EXTRUXY_IDLE_EXIT_MIN` | tự tắt server khi không có yêu cầu nào chừng này phút và không đang chạy tác vụ (`app/idle.py`; mặc định 0 = không tắt; launcher đặt 10). Tab ẩn vẫn gửi `/api/health` mỗi 30 s |
 | `EXTRUXY_DRAW_INPROC=1` | xử lý ảnh ngay trong tiến trình server (test, gỡ lỗi) |
 | `EXTRUXY_DRAW_TIMEOUT_S` | quá giờ thì dừng xử lý ảnh (600) |
 | `EXTRUXY_DRAW_MAX_MB` | trần bộ nhớ ảo của tiến trình xử lý ảnh, chỉ Linux (4096) |
@@ -153,7 +156,7 @@ Biến môi trường (đều tùy chọn):
 ## 8. Các chốt an toàn đã có
 - Máy thật chỉ đọc cho tới khi mở khóa chuyển động; lệnh `hold`/`reset`/`jog_cancel` luôn gửi được; lệnh chỉ đọc lấy từ `$CMD` thật (`links/protocol.py`).
 - Backend chỉ nhận Host cục bộ và chặn POST từ Origin lạ. **Chưa có đăng nhập** (xem `PLAN_ONLINE.md` trước khi mở ra mạng).
-- G-code tệp bị làm sạch (`job.clean_gcode`): bỏ chú thích; từ chối dòng `$...` (cài đặt, Home, jog), ký tự realtime (`? ! ~`, Ctrl-X), ký tự lạ; tối đa 200 000 dòng, 200 ký tự/dòng. G-code do tab vẽ sinh ra cũng phải qua đúng bộ làm sạch này (kiểm trong `service.py`). Bộ làm sạch **không** chặn `G92/G10/G28/G53` (xem `STATUS.md`); G-code của tab vẽ không sinh các lệnh đó.
+- G-code tệp bị làm sạch (`job.clean_gcode`): bỏ chú thích; từ chối dòng `$...` (cài đặt, Home, jog), ký tự realtime (`? ! ~`, Ctrl-X), ký tự lạ; tối đa 200 000 dòng, 200 ký tự/dòng. G-code do tab vẽ sinh ra cũng phải qua đúng bộ làm sạch này (kiểm trong `service.py`). Bộ làm sạch còn chặn `G10, G28, G30, G38, G53, G55–G59, G92` (đổi gốc / hệ tọa độ, chạy tới chỗ máy tự chọn) và báo một lần tối đa 5 dòng lỗi kèm số dòng; `lib/gcode.js` (`BLOCKED_G`) báo trước ngay lúc nạp và khóa nút Chạy. G54, G91, G20, M0, lệnh lạ không bị chặn (firmware tự báo). G-code của tab vẽ không sinh các lệnh bị chặn.
 - Mọi nét phải nằm trong vùng làm việc; `layout.py` chặn khung vượt giấy, `service.py` kiểm lại trước khi ra G-code.
 - Hủy an toàn 3 chế độ (reset / soft / hard); trong lúc dừng, backend từ chối job mới, lệnh chuyển động và `resume` (`stopping`). Giao diện khóa điều khiển khi báo cáo trạng thái cũ quá 2 s; tác vụ đang chạy coi là mất phản hồi sau `STATUS_STALE_S` (10 s) và tự Feed Hold.
 - Tab vẽ không gọi máy; chỉ một việc xử lý ảnh chạy một lúc; tiến trình xử lý ảnh có giới hạn thời gian/RAM và tự kết thúc khi hủy.

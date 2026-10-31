@@ -705,7 +705,7 @@ function initMachineConfig() {
 
     readBtn.addEventListener("click", readBoard);
 
-    // Bản sao lưu nằm trên máy tính (backend/data/config_backups). Qua USB chỉ ghi được cấu hình
+    // Bản sao lưu nằm trên máy tính (data/config_backups). Qua USB chỉ ghi được cấu hình
     // ĐANG CHẠY, nên khôi phục = nạp giá trị vào ô -> Áp dụng -> Lưu vào mạch (mất chú thích #).
     async function loadBackupList() {
         if (!backupSelect) return;

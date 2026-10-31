@@ -53,7 +53,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 - **Tiến trình:** thanh theo bước (đọc ảnh → tô → tối ưu → G-code), nút Hủy, cảnh báo. Chỉ một tác vụ chạy một lúc.
 - **Hai lớp xem:** *Nháp* (ảnh ≤ 600 px, sắp xếp thường, ~1–3 s, chạy lại mỗi lần đổi kiểu/thông số) và *Chính thức* (độ phân giải theo bút, two-opt). Đổi vị trí/khổ giấy không chạy lại.
 - **Bản thảo:** nút Lưu bản thảo, Mở xem nháp, Gửi sang Điều khiển (= lưu bản thảo rồi vào Hàng đợi).
-- **Cài đặt:** khối "Bản thảo" (hạn mức số bản / MB; thư mục cố định), lưu bằng `GET/PUT /api/draw/settings` (tệp `backend/data/draw_settings.json`, tách khỏi hồ sơ bút để tab Điều khiển không phải gửi lại).
+- **Cài đặt:** khối "Bản thảo" (hạn mức số bản / MB; thư mục cố định), lưu bằng `GET/PUT /api/draw/settings` (tệp `data/draw_settings.json`, tách khỏi hồ sơ bút để tab Điều khiển không phải gửi lại).
 - **Tab Điều khiển:** bật lại **Hàng đợi công việc**, đọc `GET /drafts` (theo thời gian tạo, ghim lên đầu), mỗi mục có "Xem trước" (chỉ mục được chọn) và "Chạy". Gộp luôn việc "Tệp nhanh" (trước là mục 6).
 - **Tên tệp / khóa:** giữ khóa ngôn ngữ `drawing.*` (không đổi sang `draw.*`); mã mới: `views/drawing.js` (điều phối) + `views/drawing/` (canvas, params, upload, bảng số liệu), `stores/drawstore.js`, phần vẽ nền dùng chung đưa vào `lib/`. Các view không import lẫn nhau.
 - Sửa HTML hiện có: thêm A6; bỏ `drawing-origin`; Z bút lấy từ hồ sơ (Z5/Z0), tốc độ trần lấy từ schema + `max_rate` cấu hình máy; thay "chưa khả dụng" bằng dữ liệu thật.
@@ -103,7 +103,7 @@ EXIF + `Image.draft` → **crop** → **thu nhỏ** về độ phân giải làm
 - **Sóng bị vượt 200 000 dòng:** sóng lấy mẫu 5 điểm/chu kỳ, bước sóng tự dài ra nếu tổng nét làm vượt `WAVE_POINT_BUDGET` (100 000 điểm) → ảnh đậm vẫn ra G-code hợp lệ, sóng thưa hơn.
 - **Xoắn ốc nhiều lần nhấc bút:** khe trắng ngắn hơn `BRIDGE_MM` (3 mm) trên đường xoắn ốc được vẽ liền (đỡ ~50% số nét ở ảnh thử).
 - **Chớp "thông số không hợp lệ":** gõ "4" trên đường tới "4000" nhỏ hơn mức tối thiểu 10 nên backend báo lỗi; frontend nay bỏ qua giá trị ngoài khoảng đang gõ dở (`views/drawing.js`, `onParamChange`).
-- **Không làm:** giao diện cắt ảnh (backend vẫn nhận `crop_*`); người dùng đã chỉnh vùng cần vẽ trước khi gửi ảnh.
+- **Cắt ảnh:** đã có trên giao diện (khung ảnh gốc → ✂ Cắt ảnh), gửi `crop_*` cho backend; xem DECISIONS P10.
 
 ### Xử lý ảnh trong tiến trình riêng và chuẩn bị ảnh ở trình duyệt (30/10/2026)
 - `isolated.run_import` chạy `raster.build_raster` ở tiến trình con (ưu tiên thấp, 2 luồng toán học, RAM trần 4 GB trên Linux, quá giờ 600 s). Cha nhận tiến trình qua pipe, kết thúc con khi hủy. Kết quả giống hệt chạy trong tiến trình (có test so khớp).

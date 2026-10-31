@@ -170,7 +170,7 @@
   "mc.err.notConfirmed": "The machine did not confirm:",
   "modal.config.title": "Save configuration to the board",
   "modal.config.desc": "This file will be overwritten:",
-  "modal.config.format": "FluidNC rewrites the file in its standard form: # comments are lost and default items are added. The original is backed up verbatim to backend/data/config_backups on this computer.",
+  "modal.config.format": "FluidNC rewrites the file in its standard form: # comments are lost and default items are added. The original is backed up verbatim to data/config_backups on this computer.",
   "modal.config.changes": "Items to be saved:",
   
 
@@ -233,6 +233,21 @@
 
 
   "control.gcode.lines": "lines",
+  "control.gcheck.blockedTitle": "{n} line(s) cannot run: the Run button is locked",
+  "control.gcheck.noteTitle": "Notes ({n}): the file can still run",
+  "control.gcheck.blockedHelp": "Open the file in a text editor, fix or delete the lines above, then load it again. The server blocks these commands too, so the file cannot run by mistake.",
+  "control.gcheck.line": "Line {line}:",
+  "control.gcheck.more": "… and {n} more",
+  "control.gcheck.blocked_g": "{detail} changes the origin / coordinate system or moves to a machine-chosen position; the drawing would shift off the paper.",
+  "control.gcheck.blocked_dollar": "command {detail}: $ commands (Home, settings, jog) are sent from the Terminal only, never from a file.",
+  "control.gcheck.bad_char": "contains an odd character or ? ! ~ (the machine treats them as instant stop / run commands).",
+  "control.gcheck.not_gcode": "\"{detail}\" is not a G-code command.",
+  "control.gcheck.line_too_long": "longer than 200 characters.",
+  "control.gcheck.unsupported_g": "{detail}: the preview cannot draw this command; the machine may report an error at this line.",
+  "control.gcheck.unsupported_m": "unknown M ({detail}): the machine may report an error or ignore it.",
+  "control.gcheck.program_pause": "{detail}: the machine pauses here; press Resume to continue.",
+  "control.gcheck.missing_feed": "G1 without a feed rate F: the time estimate may be off and the machine may report an error.",
+  "control.gcheck.arc_params": "arc with missing or invalid parameters: the preview draws a straight line.",
   "control.gcode.outOfRange": "outside work area",
   
   "control.gcode.cancelJob": "Cancel job",
@@ -377,6 +392,17 @@
   
   "drawing.preview.title": "Drawing box on paper",
   "drawing.preview.desc": "Drag, resize and rotate the strokes on the sheet; figures below.",
+  "drawing.crop.edit": "✂ Crop image",
+  "drawing.crop.editTitle": "Choose the part of the image to draw",
+  "drawing.crop.none": "Using the whole image",
+  "drawing.crop.info": "Crop: {w} × {h} px ({pw}% × {ph}% of the image)",
+  "drawing.crop.aspect": "Ratio",
+  "drawing.crop.free": "Free",
+  "drawing.crop.paper": "Match the paper frame",
+  "drawing.crop.reset": "Whole image",
+  "drawing.crop.cancel": "Cancel",
+  "drawing.crop.apply": "Apply crop",
+  "drawing.crop.help": "Drag inside the image to select a new area, drag the frame to move it, drag a corner or edge to resize. Apply re-traces the strokes from the cropped part.",
   "drawing.preview.noImage": "No image",
   "drawing.preview.toneToggle": "Show tone-adjusted image (preview)",
   "drawing.hint.toneToggle": "Shows the image after auto levels, black/white points, gamma and invert, updated as you type. Preview only: the real result is computed by the backend, which also applies local contrast and denoise if enabled.",

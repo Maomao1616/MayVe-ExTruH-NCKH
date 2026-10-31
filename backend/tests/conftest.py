@@ -11,6 +11,6 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def isolated_data_dir(tmp_path, monkeypatch):
-    """Mọi test ghi dữ liệu (bản thảo, sao lưu, hồ sơ, điểm dừng, macro) vào thư mục tạm, không đụng backend/data."""
+    """Mọi test ghi dữ liệu (bản thảo, sao lưu, hồ sơ, điểm dừng, macro) vào thư mục tạm, không đụng data."""
     from app import paths
     monkeypatch.setattr(paths, "DATA_DIR", tmp_path / "data")

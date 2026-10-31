@@ -965,6 +965,10 @@ class MachineService:
             return state, self._status_seq, age
 
     # --- đọc dữ liệu ----------------------------------------------------------
+    def job_active(self) -> bool:
+        """Đang chạy tác vụ G-code (app/idle.py không tự tắt server lúc này)."""
+        return self._job.active
+
     def snapshot(self) -> dict:
         with self._lock:
             return {

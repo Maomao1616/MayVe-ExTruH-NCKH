@@ -223,6 +223,10 @@ export function initTerminal() {
 
     function describeError(error) {
         if (error instanceof ApiError) {
+            // bad_gcode: máy chủ nêu rõ dòng nào, lệnh gì (tiếng Việt) -> hiện nguyên văn để sửa tệp
+            if (error.code === "bad_gcode" && error.message && error.message !== error.code) {
+                return `${API_ERRORS.bad_gcode} ${error.message}`;
+            }
             return API_ERRORS[error.code] ?? `Request failed (${error.code}).`;
         }
         return "Request failed.";

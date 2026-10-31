@@ -77,11 +77,11 @@ test("G3 ngược chiều đi qua phía đối diện", () => {
 });
 
 test("cảnh báo: lệnh G/M không hỗ trợ, thiếu F, tạm dừng chương trình", () => {
-    const p = parse(["G1 X5", "G38.2 X5 F100", "M0", "M99"]);
+    const p = parse(["G1 X5", "G7 X5 F100", "M0", "M99"]);
     const keys = p.warnings.map((w) => w.key);
     assert.ok(keys.includes("unsupported_g")); assert.ok(keys.includes("program_pause"));
     assert.ok(keys.includes("unsupported_m")); assert.ok(keys.includes("missing_feed"));
-    near(p.drawLength, 5);                                   // G38.2 không bị đoán là chuyển động
+    near(p.drawLength, 5);                                   // G7 không bị đoán là chuyển động
 });
 
 test("G4 P tính bằng giây và nằm trong tổng thời gian", () => {
@@ -115,4 +115,17 @@ test("formatDuration", () => {
     assert.equal(formatDuration(3725), "1:02:05");
     assert.equal(formatDuration(0), "0:00");
     assert.equal(formatDuration(NaN), "—");
+});
+
+test("lệnh backend sẽ từ chối được đánh dấu chặn, kèm số dòng trong tệp gốc", () => {
+    const p = parse(["G21", "; chú thích", "G92 X0 Y0", "G1 X5 F100", "$H", "G28.1", "G38.2 Z-1", "G1 X1 ?"]);
+    assert.deepEqual(p.blocked.map((w) => [w.line, w.key]),
+        [[3, "blocked_g"], [5, "blocked_dollar"], [6, "blocked_g"], [7, "blocked_g"], [8, "bad_char"]]);
+    assert.deepEqual(p.lines, ["G21", "G92 X0 Y0", "G1 X5 F100", "G28.1", "G38.2 Z-1"]);   // $ / ký tự lạ không gửi
+});
+
+test("lệnh thường không bị chặn (G54, G91, M0 chỉ là lưu ý)", () => {
+    const p = parse(["G54 G90 G21", "G91", "G1 X1 F100", "M0", "G0 X92", "G1 X1 ; G92 trong chú thích"]);
+    assert.equal(p.blocked.length, 0);
+    assert.ok(p.warnings.some((w) => w.key === "program_pause"));
 });

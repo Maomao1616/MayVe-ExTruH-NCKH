@@ -26,6 +26,34 @@ FINISH_IDLE_REPORTS = 2        # cần ngần này báo cáo Idle MỚI liên ti
 _PAREN = re.compile(r"\([^)]*\)")
 _SPACES = re.compile(r"\s+")
 _BAD_CHARS = re.compile(r"[^\x20-\x7e]")
+_G_WORD = re.compile(r"G\s*([-+]?(?:\d+\.?\d*|\.\d+))", re.IGNORECASE)
+MAX_REPORTED = 5               # báo tối đa ngần này dòng lỗi trong một thông báo
+
+# Lệnh G mà tệp vẽ KHÔNG được dùng: đổi gốc/hệ tọa độ hoặc chạy tới chỗ máy tự chọn, bản vẽ sẽ lệch
+# khỏi giấy hoặc bút đi đường lạ. Giữ danh sách ngắn: mọi lệnh khác vẫn qua, firmware tự báo nếu không hiểu.
+# frontend/js/lib/gcode.js (BLOCKED_G) giữ cùng danh sách để báo ngay lúc nạp tệp.
+BLOCKED_G = {
+    10: "G10 ghi đè gốc làm việc",
+    28: "G28 chạy về vị trí cất sẵn",
+    30: "G30 chạy về vị trí cất sẵn",
+    38: "G38 dò đầu dò (probe)",
+    53: "G53 chạy theo tọa độ máy, bỏ qua gốc làm việc",
+    55: "G55 đổi hệ tọa độ", 56: "G56 đổi hệ tọa độ", 57: "G57 đổi hệ tọa độ",
+    58: "G58 đổi hệ tọa độ", 59: "G59 đổi hệ tọa độ",
+    92: "G92 đặt lại tọa độ giữa chừng",
+}
+
+
+def blocked_command(line: str) -> str | None:
+    """Mô tả lệnh G bị cấm đầu tiên trong dòng (đã bỏ chú thích), hoặc None."""
+    for match in _G_WORD.finditer(line):
+        try:
+            code = int(float(match.group(1)))          # G28.1, G38.2, G59.3 tính theo phần nguyên
+        except ValueError:
+            continue
+        if code in BLOCKED_G:
+            return BLOCKED_G[code]
+    return None
 
 
 class JobError(Exception):
@@ -37,24 +65,40 @@ class JobError(Exception):
 def clean_gcode(raw_lines: list[str]) -> list[str]:
     """Bỏ chú thích và dòng trống; từ chối mọi thứ không phải G-code thuần.
 
-    Chặn lệnh `$...` (cài đặt, Home, jog) và ký tự realtime (`? ! ~` và Ctrl-X): tệp G-code
-    không có quyền đổi cài đặt hay dừng/chạy máy ngoài luồng của tác vụ.
+    Chặn lệnh `$...` (cài đặt, Home, jog), ký tự realtime (`? ! ~` và Ctrl-X) và vài lệnh G đổi
+    gốc/hệ tọa độ (BLOCKED_G): tệp G-code không có quyền đổi cài đặt, dời gốc hay dừng/chạy máy
+    ngoài luồng của tác vụ. Đi hết tệp rồi mới báo, gom tối đa MAX_REPORTED dòng lỗi đầu tiên
+    (kèm số dòng trong tệp gốc) để sửa một lần cho xong.
     """
     cleaned: list[str] = []
+    problems: list[str] = []
+    count = 0
     for number, raw in enumerate(raw_lines, start=1):
         line = _PAREN.sub("", raw.split(";", 1)[0]).strip()
         if not line or line.startswith("%"):
             continue
         line = _SPACES.sub(" ", line)
+        problem = None
         if _BAD_CHARS.search(line) or any(c in line for c in "?!~"):
-            raise JobError("bad_gcode", f"Dòng {number}: có ký tự không hợp lệ.")
-        if line.startswith("$"):
-            raise JobError("bad_gcode", f"Dòng {number}: không cho phép lệnh '$' trong tệp G-code.")
-        if not line[0].isalpha():
-            raise JobError("bad_gcode", f"Dòng {number}: không phải lệnh G-code.")
-        if len(line) > MAX_LINE_LEN:
-            raise JobError("bad_gcode", f"Dòng {number}: dài quá {MAX_LINE_LEN} ký tự.")
+            problem = "có ký tự không hợp lệ"
+        elif line.startswith("$"):
+            problem = f"lệnh '{line[:20]}' (lệnh $ chỉ gửi từ Terminal, không nằm trong tệp)"
+        elif not line[0].isalpha():
+            problem = "không phải lệnh G-code"
+        elif len(line) > MAX_LINE_LEN:
+            problem = f"dài quá {MAX_LINE_LEN} ký tự"
+        else:
+            problem = blocked_command(line)
+        if problem:
+            count += 1
+            if len(problems) < MAX_REPORTED:
+                problems.append(f"dòng {number}: {problem}")
+            continue
         cleaned.append(line)
+    if problems:
+        more = f" (và {count - len(problems)} dòng khác)" if count > len(problems) else ""
+        raise JobError("bad_gcode", f"Tệp có {count} dòng không chạy được: " + "; ".join(problems) + more
+                       + ". Sửa hoặc xóa các dòng này rồi nạp lại.")
     if len(cleaned) > MAX_LINES:
         raise JobError("bad_gcode", f"Tệp quá dài (tối đa {MAX_LINES} dòng).")
     return cleaned

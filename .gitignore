@@ -3,5 +3,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 # Dữ liệu riêng của từng máy: hồ sơ phần mềm, bản sao lưu cấu hình FluidNC
-backend/data/
+/data/
 export/
+# Python mang theo (embeddable + thu vien, vai tram MB) va ban cu do "Cap nhat.bat" cat lai
+/Python/
+/_ban_cu/

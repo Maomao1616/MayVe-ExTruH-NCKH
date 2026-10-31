@@ -174,7 +174,7 @@
   "mc.err.notConfirmed": "Máy không xác nhận giá trị:",
   "modal.config.title": "Lưu cấu hình vào mạch",
   "modal.config.desc": "Tệp sẽ bị ghi đè:",
-  "modal.config.format": "FluidNC viết lại tệp theo dạng chuẩn: mất các dòng chú thích (#) và có thêm các mục mặc định. Bản gốc nguyên văn được sao lưu vào backend/data/config_backups trên máy tính.",
+  "modal.config.format": "FluidNC viết lại tệp theo dạng chuẩn: mất các dòng chú thích (#) và có thêm các mục mặc định. Bản gốc nguyên văn được sao lưu vào data/config_backups trên máy tính.",
   "modal.config.changes": "Mục sẽ được lưu:",
   
 
@@ -241,6 +241,21 @@
   
 
   "control.gcode.lines": "dòng",
+  "control.gcheck.blockedTitle": "Tệp có {n} dòng không chạy được: nút Chạy đã khóa",
+  "control.gcheck.noteTitle": "Lưu ý ({n}): vẫn chạy được",
+  "control.gcheck.blockedHelp": "Mở tệp bằng trình soạn thảo, sửa hoặc xóa các dòng trên rồi nạp lại. Máy chủ cũng chặn các lệnh này nên tệp không thể chạy nhầm.",
+  "control.gcheck.line": "Dòng {line}:",
+  "control.gcheck.more": "… và {n} mục khác",
+  "control.gcheck.blocked_g": "{detail} đổi gốc / hệ tọa độ hoặc chạy tới chỗ máy tự chọn, bản vẽ sẽ lệch khỏi giấy.",
+  "control.gcheck.blocked_dollar": "lệnh {detail}: lệnh $ (Home, cài đặt, jog) chỉ gửi từ Terminal, không được nằm trong tệp.",
+  "control.gcheck.bad_char": "có ký tự lạ hoặc ? ! ~ (máy hiểu là lệnh dừng / chạy tức thì).",
+  "control.gcheck.not_gcode": "\"{detail}\" không phải lệnh G-code.",
+  "control.gcheck.line_too_long": "dài quá 200 ký tự.",
+  "control.gcheck.unsupported_g": "{detail}: xem trước không vẽ được lệnh này; máy có thể báo lỗi khi tới dòng này.",
+  "control.gcheck.unsupported_m": "M lạ ({detail}): máy có thể báo lỗi hoặc bỏ qua.",
+  "control.gcheck.program_pause": "{detail}: máy sẽ tạm dừng ở đây, bấm Tiếp tục để chạy tiếp.",
+  "control.gcheck.missing_feed": "G1 chưa có tốc độ F: thời gian ước tính có thể sai, máy có thể báo lỗi.",
+  "control.gcheck.arc_params": "cung tròn thiếu hoặc sai thông số: xem trước vẽ thành đường thẳng.",
   "control.gcode.outOfRange": "vượt vùng làm việc",
  
   "control.gcode.cancelJob": "Hủy tác vụ",
@@ -389,6 +404,17 @@
   
   "drawing.preview.title": "Khung vẽ trên giấy",
   "drawing.preview.desc": "Kéo, co giãn, xoay nét ngay trên tờ giấy; số liệu bên dưới.",
+  "drawing.crop.edit": "✂ Cắt ảnh",
+  "drawing.crop.editTitle": "Chọn phần ảnh muốn vẽ",
+  "drawing.crop.none": "Dùng toàn bộ ảnh",
+  "drawing.crop.info": "Vùng cắt: {w} × {h} px ({pw}% × {ph}% ảnh)",
+  "drawing.crop.aspect": "Tỷ lệ",
+  "drawing.crop.free": "Tự do",
+  "drawing.crop.paper": "Theo khung giấy",
+  "drawing.crop.reset": "Cả ảnh",
+  "drawing.crop.cancel": "Hủy",
+  "drawing.crop.apply": "Áp dụng cắt",
+  "drawing.crop.help": "Kéo trong ảnh để chọn vùng mới, kéo khung để dời, kéo góc hoặc cạnh để co giãn. Áp dụng sẽ tạo lại nét theo phần đã cắt.",
   "drawing.preview.noImage": "Chưa có ảnh",
   "drawing.preview.toneToggle": "Xem ảnh sau chỉnh sáng (xem trước)",
   "drawing.hint.toneToggle": "Hiện ảnh sau khi tự cân sáng, mức đen/trắng, gamma và đảo sáng tối, cập nhật ngay khi chỉnh. Chỉ để xem trước: bản tính chính thức do backend làm, có thêm cân bằng cục bộ và khử nhiễu nếu bạn bật.",
