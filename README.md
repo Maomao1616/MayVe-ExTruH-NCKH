@@ -47,6 +47,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 ## Tài liệu
 | Tệp | Để làm gì |
 |---|---|
+| [HUONG_DAN_DOC_CODE.md](HUONG_DAN_DOC_CODE.md) | **Cho người không biết code**: tìm chức năng ở đâu, sửa / thêm / bỏ chạm những chỗ nào, thư viện ảnh làm gì, hiệu ứng giao diện học ở đâu |
 | [docs/AI_START.md](docs/AI_START.md) | **Đọc đầu tiên** (dành cho AI/người mới): tóm tắt, quy tắc bắt buộc, bẫy đã gặp |
 | [docs/STATUS.md](docs/STATUS.md) | Cái gì xong / chưa / chưa kiểm chứng / còn lại |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Kiến trúc, bản đồ khối, luồng dữ liệu, biến môi trường, chốt an toàn |
