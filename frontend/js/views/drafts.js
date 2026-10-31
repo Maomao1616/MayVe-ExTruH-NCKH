@@ -208,62 +208,118 @@ async function finishRename(save) {
 }
 
 /* ==================== kéo thả đổi thứ tự (chuột và cảm ứng: Pointer Events) ==================== */
-// Giữ ☰ rồi kéo: dòng đi theo con trỏ trong cùng danh sách; chỉ đổi chỗ với bản cùng nhóm (ghim / không ghim)
-// vì máy chủ luôn xếp bản ghim lên trên. Thả ra: gửi thứ tự mới của nhóm đó trong một lần (POST /drafts/reorder).
-const EDGE_PX = 36;                                // gần mép khung cuộn thì tự cuộn
+// Giữ ☰ rồi kéo: dòng TRÔI theo con trỏ (transform, không chèn lại DOM nên không khựng), các dòng cùng nhóm
+// trượt ra nhường chỗ (CSS transition). Chỉ đổi chỗ trong cùng nhóm (ghim / không ghim) vì máy chủ luôn xếp bản
+// ghim lên trên. Thả ra: dòng trượt vào khe rồi mới đổi thứ tự thật (một lần POST /drafts/reorder).
+const EDGE_PX = 40;                                // gần mép khung cuộn thì tự cuộn
+const SCROLL_MAX = 14;                             // px mỗi khung hình khi sát mép
+const SETTLE_MS = 160;                             // thời gian trượt vào khe khi thả (= transition trong CSS)
 
 function startDrag(event, handle) {
-    if (event.button > 0 || editing) return;
+    if (event.button > 0 || editing || drag) return;
     const item = handle.closest("[data-id]");
     const container = item?.parentElement;
     if (!item || !container) return;
     event.preventDefault();
     try { handle.setPointerCapture(event.pointerId); } catch { /* con trỏ đã nhả */ }
     const group = item.dataset.pinned;
-    const before = [...container.children].filter((el) => el.dataset.pinned === group).map((el) => el.dataset.id);
-    drag = { item, container, group, before, scroller: container.closest(".draft-list, #jobs-table-container") ?? container };
+    const items = [...container.children].filter((el) => el.dataset.pinned === group);
+    const scroller = container.closest(".draft-list, #jobs-table-container") ?? container;
+    // Vị trí từng dòng theo tọa độ NỘI DUNG (không đổi khi khung cuộn): chụp một lần lúc bắt đầu
+    const base = scroller.getBoundingClientRect().top - scroller.scrollTop;
+    const slots = items.map((el) => {
+        const r = el.getBoundingClientRect();
+        return { top: r.top - base, height: r.height };
+    });
+    const from = items.indexOf(item);
+    drag = {
+        item, container, items, slots, from, to: from, scroller,
+        startY: event.clientY, startScroll: scroller.scrollTop, y: event.clientY, frame: 0, settling: false
+    };
+    container.classList.add("is-sorting");
     item.classList.add("is-dragging");
     document.body.classList.add("is-reordering");
-    const move = (e) => onDragMove(e);
+
+    const move = (e) => { if (drag) { drag.y = e.clientY; schedule(); } };
     const end = () => {
         handle.removeEventListener("pointermove", move);
         handle.removeEventListener("pointerup", end);
         handle.removeEventListener("pointercancel", end);
-        endDrag();
+        dropDrag();
     };
     handle.addEventListener("pointermove", move);
     handle.addEventListener("pointerup", end);
     handle.addEventListener("pointercancel", end);
+    schedule();
 }
 
-function onDragMove(event) {
-    if (!drag) return;
-    const { item, container, group, scroller } = drag;
+// Gộp mọi cập nhật vào một khung hình; khi đang sát mép thì tự gọi lại để cuộn đều.
+function schedule() {
+    if (drag && !drag.frame) drag.frame = requestAnimationFrame(frameDrag);
+}
+
+function frameDrag() {
+    if (!drag || drag.settling) return;
+    drag.frame = 0;
+    const { item, items, slots, from, scroller } = drag;
     const box = scroller.getBoundingClientRect();
-    if (event.clientY < box.top + EDGE_PX) scroller.scrollTop -= 12;
-    else if (event.clientY > box.bottom - EDGE_PX) scroller.scrollTop += 12;
-    const peers = [...container.children].filter((el) => el !== item && el.dataset.pinned === group);
-    const next = peers.find((el) => {
-        const r = el.getBoundingClientRect();
-        return event.clientY < r.top + r.height / 2;
-    });
-    if (next) {
-        if (item.nextElementSibling !== next) container.insertBefore(item, next);
-    } else if (peers.length) {
-        const last = peers[peers.length - 1];
-        if (last.nextElementSibling !== item) last.after(item);
+    let speed = 0;
+    if (drag.y < box.top + EDGE_PX) speed = -SCROLL_MAX * (1 - Math.max(0, drag.y - box.top) / EDGE_PX);
+    else if (drag.y > box.bottom - EDGE_PX) speed = SCROLL_MAX * (1 - Math.max(0, box.bottom - drag.y) / EDGE_PX);
+    if (speed) scroller.scrollTop += speed;
+
+    const dy = drag.y - drag.startY + (scroller.scrollTop - drag.startScroll);
+    item.style.transform = `translateY(${dy}px)`;
+
+    // Khe đích: số dòng cùng nhóm có tâm nằm trên tâm dòng đang kéo
+    const center = slots[from].top + dy + slots[from].height / 2;
+    let to = 0;
+    slots.forEach((s, i) => { if (i !== from && s.top + s.height / 2 < center) to += 1; });
+    if (to !== drag.to) {
+        drag.to = to;
+        const shift = step(slots, from);
+        items.forEach((el, i) => {
+            if (i === from) return;
+            const offset = from < to && i > from && i <= to ? -shift : from > to && i >= to && i < from ? shift : 0;
+            el.style.transform = offset ? `translateY(${offset}px)` : "";
+        });
     }
+    if (speed) schedule();
 }
 
-function endDrag() {
-    if (!drag) return;
-    const { item, container, group, before } = drag;
-    item.classList.remove("is-dragging");
-    document.body.classList.remove("is-reordering");
-    const after = [...container.children].filter((el) => el.dataset.pinned === group).map((el) => el.dataset.id);
-    drag = null;
-    if (after.join() !== before.join()) act(() => reorderDrafts(after));
-    else if (renderPending) render();
+// Khoảng một dòng chiếm (cao + khe giữa hai dòng): các dòng khác trượt đúng chừng này.
+function step(slots, i) {
+    const s = slots[i];
+    const gap = i + 1 < slots.length ? slots[i + 1].top - (s.top + s.height)
+        : i > 0 ? s.top - (slots[i - 1].top + slots[i - 1].height) : 0;
+    return s.height + Math.max(0, gap);
+}
+
+function dropDrag() {
+    if (!drag || drag.settling) return;
+    if (drag.frame) cancelAnimationFrame(drag.frame);
+    drag.settling = true;
+    const { item, items, slots, from, to, container } = drag;
+    // Trượt dòng đang cầm vào khe đích rồi mới đổi DOM (vẽ lại theo thứ tự mới trùng đúng chỗ, không nhảy)
+    const target = to > from ? slots[to].top + slots[to].height - slots[from].height : slots[to].top;
+    const offset = target - slots[from].top;          // dòng nằm trong nội dung nên tự theo khung cuộn
+    const current = parseFloat(/-?[\d.]+/.exec(item.style.transform)?.[0] ?? "0");
+    item.classList.add("is-settling");
+    item.style.transform = `translateY(${offset}px)`;
+    const finish = () => {
+        const order = items.map((el) => el.dataset.id);
+        const [moved] = order.splice(from, 1);
+        order.splice(to, 0, moved);
+        for (const el of items) el.style.transform = "";
+        item.classList.remove("is-dragging", "is-settling");
+        container.classList.remove("is-sorting");
+        document.body.classList.remove("is-reordering");
+        drag = null;
+        if (to !== from) act(() => reorderDrafts(order));
+        else if (renderPending) render();
+    };
+    if (Math.abs(current - offset) < 1) finish();
+    else setTimeout(finish, SETTLE_MS);
 }
 
 /* ==================== hộp thoại xem ảnh nháp ==================== */

@@ -1626,3 +1626,25 @@ body.is-reordering * {
     padding: 4px 8px;
     font-weight: 600;
 }
+
+
+/* Kéo thả mượt: dòng khác trượt nhường chỗ, dòng đang cầm bám theo con trỏ (không transition), thả thì trượt vào khe */
+.is-sorting > [data-id] {
+    transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+    will-change: transform;
+}
+
+.is-sorting > [data-id].is-dragging {
+    transition: none;
+}
+
+.is-sorting > [data-id].is-dragging.is-settling {
+    transition: transform 0.16s cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .is-sorting > [data-id],
+    .is-sorting > [data-id].is-dragging.is-settling {
+        transition: none;
+    }
+}
