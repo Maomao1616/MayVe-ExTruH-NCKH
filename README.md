@@ -59,6 +59,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 | [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md) | Kế hoạch MiniPC Ubuntu (Docker, IP cố định, Cloudflare Tunnel), phân quyền PIN, giới hạn |
 | [docs/KIEM_TRA_VE.md](docs/KIEM_TRA_VE.md) | Cách thử và tinh chỉnh các chế độ vẽ, preset bằng bản in |
 | [docs/DONG_GOI.md](docs/DONG_GOI.md) | Bản mang đi Windows, chuyển máy, `Cap nhat.bat`, xử lý lỗi khi bật |
+| [docs/BETA.md](docs/BETA.md) | Ý tưởng chưa làm: in trang Word/PDF, chữ viết tay, AI tạo ảnh; tính khả thi trên MiniPC |
 | [docs/EXPORT_FOR_AI.md](docs/EXPORT_FOR_AI.md) | Cách xuất mã cho AI tiết kiệm token (`tools/export_context.py`) |
 
 ## Cấu trúc thư mục
