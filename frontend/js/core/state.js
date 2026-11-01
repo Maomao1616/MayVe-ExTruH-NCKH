@@ -1,5 +1,6 @@
 // state.js — NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM.
-// Vòng lặp: /api/status rồi /api/log?since=..., mỗi POLL.statusMs. Xong cả hai mới notify().
+// Vòng lặp: /api/status mỗi POLL.statusMs (tọa độ, công tắc, trạng thái: nhanh như backend hỏi máy);
+// /api/log?since=... (terminal) thưa hơn, mỗi POLL.logMs. Nhật ký lấy theo seq nên hỏi thưa không mất dòng nào.
 
 import { api } from "./api.js";
 import { POLL } from "./config.js";
@@ -26,6 +27,8 @@ let timerId = null;
 let requestInProgress = false;
 let pingId = null;
 let lastBackendStamp = null;   // status.updated_at của lần trước
+let lastLogAt = 0;             // giờ trình duyệt của lần lấy /api/log gần nhất
+let logNow = false;            // refreshNow(): lấy nhật ký ngay, không chờ tới lượt
 
 /* ---------- hàm tiện ích dùng chung (để các view không tự tính lại) ---------- */
 
@@ -118,11 +121,16 @@ async function pollOnce() {
         const status = await api.status();
         if (!polling) return;
 
-        const logResult = await api.log(state.lastLogSeq);
-        if (!polling) return;
+        let logResult = null;
+        if (logNow || Date.now() - lastLogAt >= POLL.logMs) {
+            logResult = await api.log(state.lastLogSeq);
+            if (!polling) return;
+            lastLogAt = Date.now();
+            logNow = false;
+        }
 
         applyStatus(status);
-        applyLog(logResult);
+        if (logResult) applyLog(logResult);
 
         state.backendOnline = true;
         state.error = null;
@@ -179,15 +187,16 @@ export function startPolling() {
     else pollOnce();
 }
 
-// Đổi nhịp thăm dò (Cài đặt → Hoạt động). Áp dụng từ lần hỏi kế tiếp.
+// Đổi nhịp cập nhật terminal (Cài đặt → Hoạt động). Tọa độ / trạng thái vẫn theo POLL.statusMs.
 export function setPollInterval(ms) {
     const value = Number(ms);
-    if (Number.isFinite(value) && value >= 100) POLL.statusMs = value;
+    if (Number.isFinite(value) && value >= 100) POLL.logMs = value;
 }
 
 // Hỏi backend ngay (nút ↻). Trả Promise xong khi lần hỏi đó kết thúc.
 export async function refreshNow() {
     if (!polling || requestInProgress) return;
+    logNow = true;
     if (timerId !== null) {
         window.clearTimeout(timerId);
         timerId = null;

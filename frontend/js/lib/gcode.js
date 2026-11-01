@@ -259,6 +259,43 @@ export function positionAt(segments, t) {
     };
 }
 
+// Điểm gần (x, y) nhất trên đoạn s (x0,y0)->(x1,y1): { x, y, d }.
+export function nearestOnSegment(s, x, y) {
+    const dx = s.x1 - s.x0, dy = s.y1 - s.y0;
+    const len2 = dx * dx + dy * dy;
+    const f = len2 > 0 ? Math.min(1, Math.max(0, ((x - s.x0) * dx + (y - s.y0) * dy) / len2)) : 0;
+    const px = s.x0 + dx * f, py = s.y0 + dy * f;
+    return { x: px, y: py, d: Math.hypot(x - px, y - py) };
+}
+
+// Chỉ số đoạn đầu tiên thuộc dòng >= seq (các đoạn xếp theo seq tăng dần).
+function firstAtSeq(segments, seq) {
+    let lo = 0, hi = segments.length;
+    while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (segments[mid].seq < seq) lo = mid + 1; else hi = mid;
+    }
+    return lo;
+}
+
+// Tìm đoạn máy đang đi trên đường của tệp.
+// Máy chỉ có thể ở trong vài chục dòng trước dòng đã nhận (`acked`; bộ đệm FluidNC 16 khối + bộ đệm
+// nhận), nên tìm từ dòng acked - behind tới dòng acked, không lùi so với lần trước (`from`). Nhờ vậy
+// hỏi thưa hay mô phỏng chạy nhanh vẫn không mất dấu. Lấy đoạn ĐẦU TIÊN đi qua vị trí máy (sai số onPathMm).
+export function trackProgress(segments, from, acked, x, y, { behind = 64, window = 5000, onPathMm = 0.5 } = {}) {
+    let best = null;
+    const start = Math.max(0, from, firstAtSeq(segments, acked - behind));
+    for (let i = start; i < segments.length && i < start + window; i++) {
+        const s = segments[i];
+        if (s.seq > acked) break;
+        if (s.kind === "dwell" || s.kind === "z") continue;
+        const p = nearestOnSegment(s, x, y);
+        if (!best || p.d < best.d) best = { index: i, x: p.x, y: p.y, d: p.d };
+        if (p.d <= onPathMm) break;
+    }
+    return best;
+}
+
 export function formatDuration(seconds) {
     if (!Number.isFinite(seconds)) return "—";
     const total = Math.round(seconds);

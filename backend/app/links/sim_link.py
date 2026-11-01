@@ -42,6 +42,8 @@ class SimLink(BaseLink):
     # Alarm làm mất vị trí gốc (ước lượng).
     _LOSE_HOME = {1, 3, 6, 7, 8, 9, 12, 13, 14, 16}
 
+    PIN_TOUCH_S = 0.4
+
     def __init__(self, travel=(285.0, 318.0, 5.0), rapid_mm_min=(6000.0, 6000.0, 3000.0),
                  planner_blocks: int = 16, rx_size: int = 128, speed: float = 1.0,
                  must_home: bool = True, homing_time_s: float = 1.5) -> None:
@@ -587,6 +589,9 @@ class SimLink(BaseLink):
         mpos = ",".join(f"{v:.3f}" for v in self._pos)
         fields = [state, f"MPos:{mpos}", f"Bf:{self._planner_free()},{self._rx_size}",
                   f"FS:{self._feed if self._current else 0:.0f},0"]
+        # Công tắc hành trình: thật chỉ bị đè lúc chạm khi Home; mô phỏng bằng 0,4 s cuối của Home.
+        if self._state == "Home" and self._home_left <= self.PIN_TOUCH_S:
+            fields.append(f"Pn:{self._home_axes}")
         if self._reports % 10 == 0:
             fields.append("WCO:" + ",".join(f"{v:.3f}" for v in self._wco))
             fields.append(f"Ov:{self._feed_ov},100,100")

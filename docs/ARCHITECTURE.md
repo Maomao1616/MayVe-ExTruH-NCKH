@@ -69,7 +69,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `locales/vi.json`, `en.json` | Mọi chữ hiển thị (hai file phải khớp khóa) |
 | `js/app.js` | Vào cửa: tab, ngôn ngữ, sáng/tối, gọi `init*` của các view |
 | `js/core/api.js` | Nơi **duy nhất** gọi backend |
-| `js/core/state.js` | Nơi **duy nhất** thăm dò; `isConnected()`, `isStale()`, `firmwareLabel()`, `refreshNow()` |
+| `js/core/state.js` | Nơi **duy nhất** thăm dò: `/api/status` mỗi 100 ms (bằng nhịp backend hỏi `?`), `/api/log` (terminal) theo Cài đặt 300 ms–1 s; `isConnected()`, `isStale()`, `firmwareLabel()`, `refreshNow()` |
 | `js/core/config.js` | Giá trị dùng chung: `MACHINE` (máy, bút; Cài đặt ghi đè), `PREFS` (Hoạt động), `POLL`, `VIEW` |
 | `js/core/i18n.js` | Dịch chữ |
 | `js/lib/gcode.js` | Đọc G-code (thuần tính toán; có `cleanLine`) |
@@ -82,7 +82,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/views/header.js` | Đầu trang + ô trạng thái trên thanh tab + thanh cảnh báo + nút ↻ |
 | `js/views/terminal.js` | Terminal và nút Tạm dừng / Tiếp tục / Hủy jog / Reset / Mở khóa |
 | `js/views/control.js` | Tab Điều khiển: trạng thái, mở khóa chuyển động, jog, **thanh bút 3 nấc**, Zero, Home (hỏi lại), tệp G-code (cảnh báo gốc vị trí khi chưa Home), **ghi đè tốc độ**, tiến trình, hủy tác vụ. Hàng đợi công việc do `drafts.js` lo |
-| `js/views/preview.js` | Khung 2D (khối con của Điều khiển). Đang chạy đúng tệp đã nạp: vết vẽ theo đường của tệp (`trackProgress`), cung tròn không bị gãy theo nhịp hỏi vị trí |
+| `js/views/preview.js` | Khung 2D (khối con của Điều khiển). Đang chạy đúng tệp đã nạp: vết vẽ theo đường của tệp (`trackProgress` trong `lib/gcode.js`: tìm quanh dòng máy đã nhận `job.acked`, nên hỏi thưa hay mô phỏng nhanh vẫn không mất dấu), cung tròn không bị gãy theo nhịp hỏi vị trí. Bảng Vị trí có đèn X/Y sáng khi báo cáo có `Pn:X` / `Pn:Y` (backend hỏi `?` 10 lần/giây) |
 | `js/views/settings.js` | Tab Cài đặt: kết nối (nhớ cổng lần trước) · Hoạt động · **Cấu hình máy** (YAML trên mạch + hồ sơ phần mềm + nạp bản sao lưu) |
 | `js/views/dock.js` | Dock bên trái: macro + Tệp nhanh (bản thảo đã ghim) |
 | `js/views/drawing.js` | Tab Tạo bản vẽ: nạp tệp → tác vụ nền (tiến trình, hủy) → nét nháp → bố trí → G-code → bản thảo / sang Điều khiển. Phần con: `views/drawing/params.js` (các ô ⇄ dữ liệu gửi backend), `views/drawing/canvas.js` (canvas giấy A6/A5/A4, kéo – co giãn – hít lề), `views/drawing/presets.js` (bộ thông số dựng sẵn: dữ liệu), `views/drawing/tonepreview.js` (xem trước ảnh sau chỉnh sáng) |
@@ -96,7 +96,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | Tốc độ, gia tốc, hành trình, Home, servo (trên mạch) | Giao diện: Cài đặt → Cấu hình máy → Áp dụng / Lưu vào mạch. Mục được phép sửa: `FIELDS` trong `services/machine_config.py` |
 | Z bút 3 nấc, tốc độ bút, bước jog tối đa | Giao diện: Cài đặt → Cấu hình máy (mục App). Mặc định: `services/profile.py` và `MACHINE` trong `core/config.js` |
 | Khung 2D ngược chiều | `core/config.js` (`VIEW.flipX/flipY`) |
-| Nhịp thăm dò, ngưỡng "dữ liệu cũ" | Giao diện: Cài đặt → Hoạt động; mặc định `core/config.js` (`PREFS`, `POLL`) |
+| Nhịp thăm dò, ngưỡng "dữ liệu cũ" | Nhịp terminal: Cài đặt → Hoạt động; trạng thái `POLL.statusMs` và ngưỡng cũ `POLL.staleMs` trong `core/config.js`; nhịp hỏi máy `MachineService.POLL_S` |
 | Một dòng chữ | `vi.json` và `en.json` (cùng khóa) |
 | Dòng trạng thái trong terminal | `views/terminal.js` (`STATUS_ECHO`, `SHOW_TIME`) |
 | Màu, khoảng cách, cỡ nút | `assets/css/tokens.css` |

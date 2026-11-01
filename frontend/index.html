@@ -253,14 +253,14 @@
                     <span data-i18n="control.position.home">Home</span>
                   </div>
                 <div class="coordinate-row">
-                  <span class="axis-label axis-x">X</span>
+                  <span class="axis-label axis-x">X<i class="pin-led" data-i18n="[title]control.position.pinX" id="pin-x" title="Công tắc hành trình X (Pn:X): sáng khi đang bị đè"></i></span>
                   <button aria-label="Zero trục X" class="icon-action" data-command="G10 L20 P1 X0" disabled="" id="zero-x-btn" title="Zero X: đặt gốc làm việc tại vị trí hiện tại" type="button" data-i18n="[aria-label]aria.zeroX; [title]action.zeroX.title">↺</button>
                   <output class="coord-workspace" id="workspace-x">—</output>
                   <output class="coord-machine" id="machine-x">—</output>
                   <button aria-label="Home trục X" class="icon-action" data-command="$HX" disabled="" id="home-x-btn" title="Home trục X: chạy về công tắc hành trình" type="button" data-i18n="[aria-label]aria.homeX; [title]action.homeX.title">⌂</button>
                 </div>
                 <div class="coordinate-row">
-                  <span class="axis-label axis-y">Y</span>
+                  <span class="axis-label axis-y">Y<i class="pin-led" data-i18n="[title]control.position.pinY" id="pin-y" title="Công tắc hành trình Y (Pn:Y): sáng khi đang bị đè"></i></span>
                   <button aria-label="Zero trục Y" class="icon-action" data-command="G10 L20 P1 Y0" disabled="" id="zero-y-btn" title="Zero Y: đặt gốc làm việc tại vị trí hiện tại" type="button" data-i18n="[aria-label]aria.zeroY; [title]action.zeroY.title">↺</button>
                   <output class="coord-workspace" id="workspace-y">—</output>
                   <output class="coord-machine" id="machine-y">—</output>
@@ -1195,8 +1195,8 @@
               </div>
               <div class="setting-row">
                 <div>
-                  <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật trạng thái</strong>
-                  <p data-i18n="settings.behavior.pollDesc">Khoảng thời gian giữa hai lần đọc trạng thái máy.</p>
+                  <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật terminal</strong>
+                  <p data-i18n="settings.behavior.pollDesc">Terminal (lệnh đã gửi, phản hồi của máy) hiện dòng mới theo nhịp này. Tọa độ, đèn công tắc và trạng thái máy luôn cập nhật 10 lần/giây.</p>
                 </div>
                 <select id="poll-interval">
                   <option data-i18n="settings.behavior.ms300" value="300">300 ms</option>

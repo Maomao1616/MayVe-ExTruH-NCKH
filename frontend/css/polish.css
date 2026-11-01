@@ -1648,3 +1648,26 @@ body.is-reordering * {
         transition: none;
     }
 }
+
+/* ==================== Đèn công tắc hành trình X / Y (Pn) trên bảng Vị trí ==================== */
+.coordinates-panel .axis-label {
+    position: relative;
+}
+
+.pin-led {
+    position: absolute;
+    top: -3px;
+    right: -5px;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg-main);
+    transition: background-color 0.08s, box-shadow 0.08s;
+}
+
+.pin-led.is-on {
+    border-color: #ffb020;
+    background: #ffb020;
+    box-shadow: 0 0 6px 2px rgb(255 176 32 / 70%);
+}

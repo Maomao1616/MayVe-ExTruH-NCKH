@@ -2,7 +2,7 @@
 // Số kỳ vọng tính tay từ hình học (không chép từ kết quả chạy).
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cleanLine, parseGcode, outOfRange, positionAt, formatDuration } from "../js/lib/gcode.js";
+import { cleanLine, parseGcode, outOfRange, positionAt, formatDuration, trackProgress } from "../js/lib/gcode.js";
 
 const OPTS = { penUpZ: 5, penDownZ: 0, rapidFeed: 6000 };
 const near = (actual, expected, tol = 0.01) =>
@@ -128,4 +128,17 @@ test("lệnh thường không bị chặn (G54, G91, M0 chỉ là lưu ý)", () 
     const p = parse(["G54 G90 G21", "G91", "G1 X1 F100", "M0", "G0 X92", "G1 X1 ; G92 trong chú thích"]);
     assert.equal(p.blocked.length, 0);
     assert.ok(p.warnings.some((w) => w.key === "program_pause"));
+});
+
+test("trackProgress không mất dấu khi giữa hai lần hỏi máy đi qua hàng nghìn đoạn", () => {
+    // 3000 nét 0,1 mm nối nhau theo trục X (dòng i đi tới X = i/10)
+    const lines = ["G1 Z0 F1000", ...Array.from({ length: 3000 }, (_, i) => `G1 X${((i + 1) / 10).toFixed(1)}`)];
+    const { segments } = parse(lines);
+    // Máy đang ở X = 250 (dòng 2501 trong tệp, kể cả dòng Z đầu), đã nhận tới dòng 2520
+    const hit = trackProgress(segments, 0, 2520, 250, 0);
+    near(hit.x, 250, 0.5);                       // sai số thiết kế: đoạn đầu tiên cách dưới 0,5 mm
+    assert.ok(Math.abs(segments[hit.index].seq - 2501) <= 5);
+    // Không vượt quá dòng máy đã nhận, không lùi về trước lần trước
+    assert.equal(trackProgress(segments, hit.index, 2520, 299, 0).x <= 252.0, true);
+    assert.equal(trackProgress(segments, hit.index, 2520, 10, 0).index >= hit.index, true);
 });

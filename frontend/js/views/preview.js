@@ -9,7 +9,7 @@ import { t } from "../core/i18n.js";
 import { MACHINE, VIEW } from "../core/config.js";
 import { subscribe, isConnected } from "../core/state.js";
 import { subscribeStore } from "../stores/jobstore.js";
-import { positionAt, formatDuration } from "../lib/gcode.js";
+import { positionAt, formatDuration, trackProgress } from "../lib/gcode.js";
 
 const MARGIN = 14;
 const MIN_ZOOM = 0.5;
@@ -62,32 +62,6 @@ export function createTrail(limit = 50000, minStep = 0.05) {
     };
 }
 
-// Điểm gần (x, y) nhất trên đoạn s (x0,y0)->(x1,y1): { x, y, d }.
-export function nearestOnSegment(s, x, y) {
-    const dx = s.x1 - s.x0, dy = s.y1 - s.y0;
-    const len2 = dx * dx + dy * dy;
-    const f = len2 > 0 ? Math.min(1, Math.max(0, ((x - s.x0) * dx + (y - s.y0) * dy) / len2)) : 0;
-    const px = s.x0 + dx * f, py = s.y0 + dy * f;
-    return { x: px, y: py, d: Math.hypot(x - px, y - py) };
-}
-
-// Tìm đoạn máy đang đi trên đường của tệp.
-// Chỉ xét từ đoạn đã tới trở về sau (tiến độ không lùi) và chỉ các dòng máy đã nhận (`acked`):
-// máy không thể ở sau dòng chưa gửi. Lấy đoạn ĐẦU TIÊN đi qua vị trí máy (sai số onPathMm).
-export function trackProgress(segments, from, acked, x, y, { window = 400, onPathMm = 0.5 } = {}) {
-    let best = null;
-    const start = Math.max(0, from);
-    for (let i = start; i < segments.length && i < start + window; i++) {
-        const s = segments[i];
-        if (s.seq > acked) break;
-        if (s.kind === "dwell" || s.kind === "z") continue;
-        const p = nearestOnSegment(s, x, y);
-        if (!best || p.d < best.d) best = { index: i, x: p.x, y: p.y, d: p.d };
-        if (p.d <= onPathMm) break;
-    }
-    return best;
-}
-
 /* ---------- giao diện ---------- */
 
 export function initPreview() {
@@ -128,6 +102,7 @@ export function initPreview() {
     let wco = [0, 0, 0];
     let lastJobId = null;
     let frame = 0;
+    let lastSeen = "";             // dữ liệu máy của lần vẽ trước: không đổi thì không vẽ lại
 
     /* --- vẽ --- */
     const requestDraw = () => {
@@ -463,6 +438,11 @@ export function initPreview() {
             live = null;
             trail.add(0, 0, false);           // ngắt vết, không nối qua lúc mất dữ liệu
         }
+        // Trạng thái đến 10 lần/giây: máy đứng yên thì khỏi vẽ lại cả bản vẽ
+        const seen = [live?.x, live?.y, wco.join(), job?.id, job?.state, progress.index, progress.x, progress.y,
+            progress.done, trail.size].join("|");
+        if (seen === lastSeen) return;
+        lastSeen = seen;
         requestDraw();
     });
 

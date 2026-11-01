@@ -153,3 +153,18 @@ def test_feed_override_actions_reach_board_and_status_keeps_last_value():
         assert svc._overrides == [100, 100, 100]
     finally:
         svc._link = None
+
+
+# --- đèn công tắc hành trình (Pn) -----------------------------------------------------
+def test_limit_pins_reported_while_homing_then_cleared():
+    svc = MachineService(allow_motion=True)
+    svc.connect("sim", sim_speed=1)
+    try:
+        assert wait_for(lambda: svc._status is not None, 3.0)
+        assert svc.snapshot()["machine"]["pins"] is None
+        svc.send_line("$H")
+        assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("pins") == "XY", 3.0)
+        assert wait_for(lambda: state(svc) == "Idle", 3.0)
+        assert wait_for(lambda: svc.snapshot()["machine"]["pins"] is None, 1.0)
+    finally:
+        svc.disconnect()

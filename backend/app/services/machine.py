@@ -75,7 +75,7 @@ def _hold_done(st: dict) -> bool:
 
 
 class MachineService:
-    POLL_S = 0.25
+    POLL_S = 0.1                # hỏi `?` 10 lần/giây: một dòng trạng thái ~7 ms ở 115200 baud
 
     def __init__(self, allow_motion: bool | None = None) -> None:
         if allow_motion is None:

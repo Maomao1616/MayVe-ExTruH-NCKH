@@ -16,14 +16,14 @@ export const MACHINE = {
 
 // Tùy chọn "Hoạt động" (Cài đặt). views/settings.js nạp từ trình duyệt và ghi đè các giá trị này.
 export const PREFS = {
-    pollMs: 500,         // nhịp hỏi /api/status
+    pollMs: 500,         // nhịp cập nhật terminal (/api/log)
     confirmHome: true,   // hỏi lại trước $H / $HX / $HY
     shortcuts: false     // jog bằng phím mũi tên (mặc định tắt để tránh bấm nhầm)
 };
 
 export const POLL = {
-    statusMs: 400,       // thăm dò /api/status
-    logMs: 700,          // thăm dò /api/log
+    statusMs: 100,       // thăm dò /api/status: bằng nhịp backend hỏi `?` (MachineService.POLL_S)
+    logMs: 500,          // thăm dò /api/log (terminal), theo PREFS.pollMs
     staleMs: 2000        // quá ngưỡng này coi dữ liệu là cũ -> khóa điều khiển
 };
 

@@ -152,6 +152,7 @@ function initStatusPanel() {
         // (backend giữ lại số cuối sau khi ngắt) trông như dữ liệu trực tiếp.
         if (!connected || !machine) {
             for (const id of STATUS_FIELDS) setText(id, "—");
+            for (const id of ["pin-x", "pin-y"]) $(id)?.classList.remove("is-on");
 
             const label = t(
                 snapshot.backendOnline
@@ -178,6 +179,9 @@ function initStatusPanel() {
             setText(`workspace-${axis}`, wpos ? formatNumber(wpos[index]) : "—");
         });
         setText("pen-state", penText(wpos));
+        // Pn:XY = công tắc đang bị đè (FluidNC không gửi Pn khi không chân nào tác động)
+        const pins = String(machine.pins ?? "");
+        for (const axis of ["X", "Y"]) $(`pin-${axis.toLowerCase()}`)?.classList.toggle("is-on", pins.includes(axis));
 
         setText("controller-state", machine.state ?? "—");
 
