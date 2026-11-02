@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~335,491 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~352,615 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -63,7 +63,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `README.md` | ~1,880 |  |
+| `HUONG_DAN_DOC_CODE.md` | ~5,834 |  |
+| `README.md` | ~2,008 |  |
 
 ### `backend/app/`
 
@@ -90,14 +91,14 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `base.py` | ~756 | Giao diện chung cho mọi kiểu kết nối tới bộ điều khiển (máy thật hoặc mô phỏng). |
 | `protocol.py` | ~2,810 | Phân tích các dòng phản hồi của FluidNC v4.1.1. |
 | `serial_link.py` | ~1,058 | SerialLink: kết nối FluidNC thật qua USB/serial (CH340). |
-| `sim_link.py` | ~7,793 | SimLink: máy FluidNC giả để phát triển khi chưa có board. |
+| `sim_link.py` | ~7,870 | SimLink: máy FluidNC giả để phát triển khi chưa có board. |
 
 ### `backend/app/services/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `job.py` | ~4,727 | JobRunner: chạy một tệp G-code bằng cách gửi TỪNG DÒNG và chờ `ok`/`error` của firmware. |
-| `machine.py` | ~14,190 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
+| `machine.py` | ~14,214 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
 | `machine_config.py` | ~3,292 | Đọc / sửa / lưu cấu hình FluidNC qua cổng serial. |
 | `macros.py` | ~1,709 | Macro (nút chạy nhanh) lưu trên máy chủ: mỗi macro một tệp `<thư mục dữ liệu>/macros/<id>.json`. |
 | `profile.py` | ~716 | Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch). |
@@ -139,7 +140,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `conftest.py` | ~194 |  |
-| `test_board_paths.py` | ~2,038 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
+| `test_board_paths.py` | ~2,242 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
 | `test_docs_tools.py` | ~643 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
 | `test_idle.py` | ~489 | app/idle.py: tự tắt server khi đóng hết trang (chỉ khi đặt EXTRUXY_IDLE_EXIT_MIN). |
 | `test_job.py` | ~2,064 | Tác vụ G-code: làm sạch dòng, chạy từng dòng chờ ok, lỗi, hủy, chặn lệnh khác. |
@@ -185,24 +186,25 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `AI_START.md` | ~1,832 |  |
-| `ARCHITECTURE.md` | ~4,861 |  |
-| `BRIEF.md` | ~2,887 |  |
-| `CODEMAP.md` | ~4,550 |  |
-| `DECISIONS.md` | ~3,698 |  |
-| `DONG_GOI.md` | ~2,949 |  |
-| `DRAW_ROADMAP.md` | ~4,976 |  |
+| `AI_START.md` | ~1,966 |  |
+| `ARCHITECTURE.md` | ~5,041 |  |
+| `BRIEF.md` | ~2,962 |  |
+| `CODEMAP.md` | ~4,582 |  |
+| `DECISIONS.md` | ~3,899 |  |
+| `DONG_GOI.md` | ~3,830 |  |
+| `DRAW_ROADMAP.md` | ~4,950 |  |
 | `EXPORT_FOR_AI.md` | ~1,605 |  |
-| `KIEM_TRA_VE.md` | ~2,132 |  |
+| `FUTURE_UPGRADE_BETA.md` | ~4,412 |  |
+| `KIEM_TRA_VE.md` | ~2,389 |  |
 | `MACHINE.md` | ~1,187 |  |
-| `PLAN_ONLINE.md` | ~3,649 |  |
-| `STATUS.md` | ~1,933 |  |
+| `PLAN_ONLINE.md` | ~5,923 |  |
+| `STATUS.md` | ~2,058 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~27,179 |  |
+| `index.html` | ~27,288 |  |
 
 ### `frontend/assets/css/`
 
@@ -215,7 +217,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `drawing.css` | ~2,556 | 9. TAB TAO BAN VE |
-| `polish.css` | ~11,359 | POLISH: lop tinh chinh giao dien |
+| `polish.css` | ~11,707 | POLISH: lop tinh chinh giao dien |
 | `style.css` | ~13,036 |  |
 
 ### `frontend/js/`
@@ -229,16 +231,16 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `api.js` | ~1,626 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
-| `config.js` | ~466 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
+| `config.js` | ~496 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
 | `i18n.js` | ~439 |  |
-| `state.js` | ~1,948 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
+| `state.js` | ~2,107 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
 
 ### `frontend/js/lib/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `drafts.js` | ~424 | định dạng thông tin bản thảo (meta.json do backend trả). THUẦN (không DOM, không mạng). |
-| `gcode.js` | ~3,776 | đọc G-code thành các đoạn đường để xem trước. THUẦN (không DOM, không mạng). |
+| `gcode.js` | ~4,294 | đọc G-code thành các đoạn đường để xem trước. THUẦN (không DOM, không mạng). |
 | `imageprep.js` | ~2,271 | chuẩn bị ảnh ngay trong trình duyệt TRƯỚC khi gửi, và xem trước độ sáng. |
 | `paper.js` | ~1,502 | bố trí bản vẽ trên tờ giấy. THUẦN (không DOM, không mạng). |
 
@@ -254,12 +256,12 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `control.js` | ~10,476 | Tab Điều khiển. |
+| `control.js` | ~10,582 | Tab Điều khiển. |
 | `dock.js` | ~2,482 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
-| `drafts.js` | ~3,906 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
+| `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
 | `drawing.js` | ~8,164 | Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
-| `preview.js` | ~5,907 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
+| `preview.js` | ~5,667 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
 | `settings.js` | ~10,223 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
 | `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
 | `terminal.js` | ~3,882 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |
@@ -278,14 +280,14 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~13,560 |  |
-| `vi.json` | ~13,053 |  |
+| `en.json` | ~13,639 |  |
+| `vi.json` | ~13,129 |  |
 
 ### `frontend/tests/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `gcode.test.mjs` | ~2,054 | Kiểm lib/gcode.js (bộ đọc G-code quyết định xem trước + cảnh báo). Chạy: node --test frontend/tests/gcode.test |
+| `gcode.test.mjs` | ~2,332 | Kiểm lib/gcode.js (bộ đọc G-code quyết định xem trước + cảnh báo). Chạy: node --test frontend/tests/gcode.test |
 | `imageprep.test.mjs` | ~1,082 | Đối chiếu lib/imageprep.js với backend: node --test frontend/tests/imageprep.test.mjs |
 | `paper.test.mjs` | ~1,895 | Đối chiếu lib/paper.js với backend (layout.py). Sinh bởi script từ chính backend — chạy: node --test frontend/ |
 

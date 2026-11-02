@@ -1,13 +1,13 @@
-# Tab Tạo bản vẽ — thiết kế và hợp đồng API (30/10/2026)
+# Tab Tạo bản vẽ — thiết kế và hợp đồng API (cập nhật 02/11/2026)
 
 Tài liệu thiết kế của tab Tạo bản vẽ: nguyên tắc, hợp đồng API, bản thảo, dây chuyền ảnh, các quyết định. **Tình trạng và việc còn
-lại: `STATUS.md`** (không lặp ở đây). Phần cứng đích: MiniPC i5-3210M (2 nhân/4 luồng, 8 GB); phát triển trên laptop.
+lại: `STATUS.md`** (không lặp ở đây). Bảng từng tệp của dây chuyền + nghĩa từng nút: `BRIEF.md` mục 2–3. Phần cứng đích: MiniPC i5-3210M (2 nhân/4 luồng, 8 GB); phát triển trên laptop.
 Frontend chỉ biết API; thuật toán đổi bên trong không làm đổi giao diện (hợp đồng đã chốt và đã cài đặt đầy đủ).
 
 ## 1. Nguyên tắc thiết kế
 - **Mọi thứ là tham số**, khai báo MỘT chỗ (`services/drawing/spec.py`), trả cho frontend qua `GET /api/draw/schema`. Form của tab vẽ sinh từ schema, không rải số cứng. Máy yếu chỉ đổi giá trị, không xóa code.
 - **Không ghi ảnh gốc ra đĩa.** Ảnh chỉ nằm trong RAM lúc xử lý. Ra đĩa chỉ có *bản thảo* (G-code + ảnh minh họa + meta, mục 5).
-- **Một tác vụ nặng tại một thời điểm**, một luồng worker, có tiến trình và hủy. Yêu cầu mới hủy yêu cầu cũ. Song song chỉ nằm trong OpenCV (`cv2.setNumThreads(2)`, hạ còn 1 khi đang chạy máy). Không dùng multiprocessing. Không tự chia ảnh thành ô.
+- **Một tác vụ nặng tại một thời điểm**, một luồng worker (`tasks.py`), có tiến trình và hủy. Yêu cầu mới hủy yêu cầu cũ. Việc ảnh → nét chạy trong **một tiến trình con ưu tiên thấp** (`isolated.py`, DECISIONS P3); song song chỉ nằm trong OpenCV/numpy (2 luồng). Không tự chia ảnh thành ô.
 - **Backend không tự đặt số của máy**: vùng làm việc, hành trình Z, tốc độ, Z bút do frontend gửi (từ `MACHINE` / hồ sơ `/api/profile`).
 - **Điểm đổi trục duy nhất:** `gcode.to_machine` + `invert_y` (⚠ hướng trục C5).
 - Một lần vector hóa → nhiều lần đổi **vị trí / xoay / lật / khổ giấy** mà không vector lại. Riêng **kiểu tô (hatch)** phụ thuộc kích thước thật (khoảng gạch tính bằng mm), nên đổi **kích thước khung** thì phải tạo lại (frontend cảnh báo "mật độ đã đổi").
@@ -18,7 +18,8 @@ Frontend chỉ biết API; thuật toán đổi bên trong không làm đổi gi
 ## 2. Khung chuẩn và bút
 - Khung thật (do nhóm vẽ trên mặt bàn): vùng máy **285×318 mm**, gốc O(0,0) góc trên trái, Y xuống; **A6 ⊂ A5 ⊂ A4 cùng neo ở O**. Khớp quy ước `layout.py` (tờ giấy neo ở O, dịch bằng `paper_x/y_mm`).
 - `margin_mm` tính từ mép tờ giấy. Khung vẽ nằm trong phần trong lề; ra ngoài → lỗi `box_out_of_paper` (không tự cắt).
-- **Bút: 0,2 và 0,4 mm** (`pen_width_mm`: 0.2 / 0.4 / tùy chọn). Độ phân giải xử lý **tự tính** = cạnh dài khung vẽ ÷ độ rộng bút × 1,3 (cạnh dài trong lề A4 = 287 mm: ~930 px với bút 0,4; ~1870 px với bút 0,2), có ô ghi đè (`max_side_px`, trần 2500). Khoảng gạch nhỏ nhất = độ rộng bút; các mức nhạt hơn là bội số của nó.
+- **Bút: 0,2 / 0,4 / 0,5 mm**; viết chữ dùng 0,5. Danh sách dựng sẵn hiện chỉ có 0,2 / 0,4 (`spec.py` `PENS`), 0,5 gõ tay vào ô bề rộng bút. Độ phân giải xử lý **tự tính** = cạnh dài khung vẽ ÷ độ rộng bút × 1,3 (cạnh dài trong lề A4 = 287 mm: ~930 px với bút 0,4; ~1870 px với bút 0,2), có ô ghi đè (`max_side_px`, 400–4000).
+- **Khoảng gạch** cố định cho cả bức vẽ: mặc định 2 × bề rộng bút (`styles.py` `DEFAULT_SPACING_PEN`), nên một lớp gạch phủ ~50 % mực. Vùng tối hơn **không** gạch dày hơn mà được **chồng thêm lớp** xoay góc khác (5 mức: 0 / 1 / 2 / 3 / 4 lớp ≈ 0 / 50 / 75 / 88 / 94 % mực). Chọn hệ số theo tờ mẫu hiệu chỉnh bút (`KIEM_TRA_VE.md` mục 1).
 - `origin` (G54/máy) không vào backend: frontend kiểm lại kể cả WCO khi Chạy.
 
 ## 3. Hợp đồng API (CHỐT TRƯỚC KHI LÀM FRONTEND)
@@ -51,8 +52,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 ## 4. Giao diện tab Tạo bản vẽ
 - **Canvas riêng của tab vẽ** (không dùng khung 2D của tab Điều khiển — khung đó là màn hình theo dõi máy, chỉ hiện **đúng một G-code đang chọn**): vùng máy, A6/A5/A4 như khung chuẩn, lưới + thước mm, lề nét đứt; ảnh/nét có **8 tay nắm**, kéo, hít vào tâm/lề/mép giấy, Shift giữ tỷ lệ, xoay 90°, lật; **cắt ảnh** trên ảnh gốc; xem nét với **độ rộng bút thật** để thấy đậm nhạt. Ô số ⇄ khung kéo đồng bộ hai chiều.
 - **Bảng số liệu** (khối Thông tin có sẵn, thêm): kích thước, số nét, số lần nhấc bút, quãng vẽ, quãng di chuyển, thời gian ước tính, hộp bao, kiểm tra nằm trong vùng máy.
-- **Tiến trình:** thanh theo bước (đọc ảnh → tô → tối ưu → G-code), nút Hủy, cảnh báo. Chỉ một tác vụ chạy một lúc.
-- **Hai lớp xem:** *Nháp* (ảnh ≤ 600 px, sắp xếp thường, ~1–3 s, chạy lại mỗi lần đổi kiểu/thông số) và *Chính thức* (độ phân giải theo bút, two-opt). Đổi vị trí/khổ giấy không chạy lại.
+- **Tiến trình:** thanh theo bước (đọc ảnh → tô → tối ưu → G-code), nút Hủy, cảnh báo. Chỉ một tác vụ chạy một lúc. Đổi vị trí/khổ giấy không chạy lại. (Lớp xem "Nháp" riêng đã bỏ, P9: nạp là tạo nét ở độ phân giải đủ dùng.)
 - **Bản thảo:** nút Lưu bản thảo, Mở xem nháp, Gửi sang Điều khiển (= lưu bản thảo rồi vào Hàng đợi).
 - **Cài đặt:** khối "Bản thảo" (hạn mức số bản / MB; thư mục cố định), lưu bằng `GET/PUT /api/draw/settings` (tệp `data/draw_settings.json`, tách khỏi hồ sơ bút để tab Điều khiển không phải gửi lại).
 - **Tab Điều khiển:** bật lại **Hàng đợi công việc**, đọc `GET /drafts` (theo thời gian tạo, ghim lên đầu), mỗi mục có "Xem trước" (chỉ mục được chọn) và "Chạy". Gộp luôn việc "Tệp nhanh" (trước là mục 6).
@@ -71,18 +71,9 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`; frontend dịch theo `c
 - Mỗi bản thảo vài trăm KB; Docker/ổ 256 GB không đáng lo.
 
 ## 6. Backend phía sau API (đã cài đặt)
-| Khối | Việc | Thư viện |
-|---|---|---|
-| `worker.py` | một luồng, hàng 1, tiến trình, hủy hợp tác | stdlib |
-| `raster_in.py` | đọc, `Image.draft`, EXIF, thu nhỏ theo bút, xám | Pillow |
-| `tone.py` | gamma, mức đen trắng, CLAHE, khử nhiễu (tùy chọn) | OpenCV |
-| `edges.py` | Viền: top-hat (nét mực ≤ 4 mm, vạch sáng ≤ 1,2 mm → đường giữa) + Canny trên ảnh bilateral (xám + kênh màu a/b Lab) cho ranh giới mảng + vòng viền chấm đậm + nối khe hở ≤ 1,5 mm theo hướng đầu mút | OpenCV, scipy (cKDTree), scikit-image (skeletonize) |
-| `trace.py` | skeletonize → đồ thị → nét; làm mượt 1–2 vòng sau khi `approxPolyDP` | scikit-image + numpy |
-| `styles/` | `zigzag`, `wave`, `spiral`, `outline` (đăng ký trong `VECTORIZERS`) | numpy, OpenCV (`findContours` cho viền mảng đặc) |
-| `palette.py` | 2–4 màu: `cv2.kmeans` trên Lab, ảnh ~300 px; mỗi màu một lớp, mỗi lớp một góc hatch | OpenCV |
-| `optimize.py` | merge → simplify → filter → sort (+ two-opt 50 lượt, có ngưỡng số nét) | vpype |
-| `drafts.py` | lưu/đọc/dọn bản thảo | stdlib |
-
+Bảng từng tệp (việc + thư viện): `BRIEF.md` mục 2. Ghi chú thiết kế:
+- **Viền** (`edges.py`): top-hat (nét mực ≤ 4 mm, vạch sáng ≤ 1,2 mm → đường giữa) + Canny trên ảnh bilateral (xám + kênh màu a/b Lab) cho ranh giới mảng + vòng viền chấm đậm + nối khe hở ≤ 1,5 mm theo hướng đầu mút; `trace.py` skeletonize → đồ thị → nét, làm mượt 1–2 vòng sau `approxPolyDP`.
+- **Kiểu tô** đăng ký bằng `@FILLERS.register` trong `styles.py`; `palette.py` chạy k-means trên ảnh ~300 px, mỗi màu một lớp, mỗi lớp một góc gạch.
 - **Thêm 3 gói:** Pillow, opencv-python-headless, scikit-image (≈ +100–130 MB ước tính ⚠). **Bỏ:** scikit-learn, potrace, sknw, numba (potrace dò biên mảng đặc → bút vẽ hai đường song song; skeleton cho đường giữa nét, một lượt bút).
 - **Kiểu tô — thứ tự ưu tiên:** (1) zigzag nhiều mức, (2) sóng, (3) xoắn ốc, (4) nét viền (`edges.py`), nhập vào chân dung bằng `outline_overlay`. **Bỏ:** stipple (mỗi chấm một lần nhấc bút), TSP art. **Để sau:** hatch theo hướng khối (flow field), đường đồng mức (khác hẳn zigzag/sóng/xoắn ốc nhưng tốn công; chỉ làm khi viền + 4 kiểu hiện có không đủ).
 - Docker (nếu dùng): image ~0,7–1 GB. **Rủi ro là cổng USB**, không phải dung lượng: Linux dùng `--device=/dev/ttyUSB0`; Windows cần `usbipd` → trên Windows chạy trực tiếp.
@@ -113,7 +104,7 @@ EXIF + `Image.draft` → **crop** → **thu nhỏ** về độ phân giải làm
 - Xem trước độ sáng ở trình duyệt khớp `tone.py` (không CLAHE/khử nhiễu), sai lệch tối đa 1 mức xám.
 
 ## 7. Tình trạng, việc chưa kiểm chứng
-Xem `STATUS.md` (mục 2 đã xong, mục 3 chưa kiểm chứng, mục 4 còn lại). Điểm riêng của tab vẽ: tốc độ thật trên MiniPC (two-opt, skeleton, NLM), hướng trục, `G4 P` tính bằng giây trên FluidNC 4.1.1, thời gian ước tính chưa tính gia tốc, mức đậm nhạt thật của từng cặp bút 0,2/0,4 với từng khoảng gạch (cần vẽ thử mẫu).
+Xem `STATUS.md` (mục 2 đã xong, mục 3 chưa kiểm chứng, mục 4 còn lại). Điểm riêng của tab vẽ: tốc độ thật trên MiniPC (two-opt, skeleton, NLM), hướng trục, `G4 P` tính bằng giây trên FluidNC 4.1.1, thời gian ước tính chưa tính gia tốc, mức đậm nhạt thật của từng bút 0,2 / 0,4 / 0,5 với từng khoảng gạch (cần vẽ thử mẫu). Ý tưởng tab Beta in trang PDF: `FUTURE_UPGRADE_BETA.md`.
 
 ## 8. Kiểm thử luồng SVG bằng tay (không qua giao diện)
 1. `POST /api/draw/import`: multipart `file` = SVG, `options` = `{"svg": {"frame": "page"}}` → nhận `task` (tác vụ nền; hỏi `GET /api/draw/tasks/{task}` tới khi `done`).

@@ -5,6 +5,8 @@ Dành cho AI (hoặc người) mới nhận dự án. Đọc xong tệp này (~2
 ## 1. Dự án là gì
 **VMU PlotterPen** (thư mục `ExtruXY`): phần mềm điều khiển máy vẽ CoreXY. Máy: bo **MKS DLC32 V2.1**, firmware **FluidNC v4.1.1**, nối USB (CH340); vùng làm việc **285 × 318 mm**, Z bút 5 mm, giấy A6 ⊂ A5 ⊂ A4 đặt ở gốc O(0,0) trên trái, Y hướng xuống. Phần mềm = backend **Python/FastAPI** + frontend **JS thuần** (không framework, không bước build). Hiện chạy trên laptop (bản mang đi Windows: `DONG_GOI.md`); kế hoạch chạy trên MiniPC Ubuntu không màn hình bằng Docker (xem `PLAN_ONLINE.md`). Dữ liệu người dùng ở `data/` cùng cấp `backend/`.
 
+Bút dùng: **0,2 / 0,4 / 0,5 mm** (viết chữ dùng 0,5; văn bản Word thường cỡ 14–16).
+
 Ba tab: **Điều khiển** (kết nối, jog, Home, chạy G-code, hủy an toàn, terminal, hàng đợi), **Tạo bản vẽ** (SVG/ảnh → nét → bố trí → G-code → bản thảo), **Cài đặt**.
 
 ## 2. Thứ tự đọc
@@ -18,9 +20,11 @@ Ba tab: **Điều khiển** (kết nối, jog, Home, chạy G-code, hủy an to�
 | 6 | `docs/MACHINE.md` | đụng vào phần cứng, giao thức, an toàn |
 | 7 | `docs/DRAW_ROADMAP.md` | sửa tab Tạo bản vẽ (hợp đồng API, quyết định thiết kế) |
 | 8 | `docs/BRIEF.md` | cần hiểu từng nút bấm / luồng người dùng |
-| 9 | `docs/PLAN_ONLINE.md` | làm phần phân quyền PIN, giới hạn, MiniPC Ubuntu (Docker), IP, Cloudflare Tunnel |
-| 10 | `docs/DONG_GOI.md` | bản mang đi Windows (`Python/` embeddable, `launcher/`), chuyển máy, `Cap nhat.bat` |
+| 9 | `docs/PLAN_ONLINE.md` | làm phần phân quyền khách / quản lý, khách gửi ảnh (`customer/`), MiniPC Ubuntu (Docker), IP, Cloudflare Tunnel |
+| 10 | `docs/DONG_GOI.md` | bản mang đi Windows (`Python/` embeddable, `launcher/`), chuyển máy, `Cap nhat.bat`, chạy tay không launcher, mạng phát 4G, Codespaces |
 | 11 | `docs/KIEM_TRA_VE.md` | tinh chỉnh kiểu tô / nét viền / preset bằng bản in thật |
+| 12 | `docs/FUTURE_UPGRADE_BETA.md` | ý tưởng chưa xếp lịch: tab Beta in trang PDF, chữ tay, AI tạo ảnh, tài khoản người dùng, hàng chờ |
+| – | `HUONG_DAN_DOC_CODE.md` (gốc) | giải thích cho chủ dự án (không lập trình): tìm / sửa / thêm / bỏ chức năng ở đâu |
 
 **Nếu mã khác tài liệu thì mã mới là sự thật**; sửa tài liệu cho khớp.
 
@@ -40,7 +44,7 @@ Quy trình chi tiết, bảng "việc nào lấy gói nào", mẹo giảm token:
 3. **Chiều phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác. Một phần tử HTML chỉ một nơi ghi.
 4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Đổi tham số = sửa đúng một dòng ở đó + ô tương ứng trong `index.html`/`params.js` + khóa dịch.
 5. **Dịch:** mọi chữ qua `frontend/locales/vi.json` và `en.json`, hai tệp phải khớp khóa. Terminal giữ tiếng Anh. Mã lỗi backend `DrawError.code` ↔ khóa `drawing.error.<code>`.
-6. **Test đi cùng mã.** Backend: `cd backend && python -m pytest` (~361 test; `tests/conftest.py` đưa mọi dữ liệu vào thư mục tạm). Frontend: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`. Công thức bố trí và độ sáng có bản JS song song, được test đối chiếu số với Python; nếu đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS.
+6. **Test đi cùng mã.** Backend: `cd backend && python -m pytest` (~364 test; `tests/conftest.py` đưa mọi dữ liệu vào thư mục tạm). Frontend: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`. Công thức bố trí và độ sáng có bản JS song song, được test đối chiếu số với Python; nếu đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS.
 7. **Không bịa số máy.** Giới hạn phần cứng lấy từ `MACHINE` (`core/config.js`) hoặc hồ sơ máy; ghi rõ điều gì **chưa kiểm chứng** trên máy thật.
 8. **Báo trung thực:** test nào fail, bước nào bỏ qua, điều gì chưa chạy thử trên Ubuntu/máy thật.
 

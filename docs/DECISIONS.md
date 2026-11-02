@@ -1,4 +1,4 @@
-# VMU PlotterPen (ExtruXY) – Sổ quyết định (Cập nhật 31/10/2026)
+# VMU PlotterPen (ExtruXY) – Sổ quyết định (Cập nhật 02/11/2026)
 
 **Chọn gì – vì sao / đổi ở đâu – mức chắc.** ⚠ = giả định, **chưa kiểm chứng**. ✅ = đã làm và kiểm (máy thật không motor hoặc test tự động). ⏳ = đã quyết, chưa làm. ❌ = đã bỏ. Tình trạng chi tiết: `STATUS.md`.
 
@@ -47,7 +47,7 @@
 | P6 | Kiểu tô: zigzag (mặc định, góc 45°), sóng (bước sóng tự giãn theo ngân sách 100 000 điểm), xoắn ốc (nối khe trắng < 3 mm), viền (DoG + skeleton) + phủ viền | Ít nhấc bút; không vượt 200 000 dòng G-code | ✅ (ngưỡng viền, góc ⚠) |
 | P7 | Đa màu 2–4: k-means trên Lab có nhấn sắc độ; mỗi màu một lớp **một tệp G-code**, id lớp `<số>-<mãmàu>`; đổi bút giữa các tệp | Chỉ để thử mô hình; tên tệp tự mang mã màu | ✅ |
 | P8 | Trình duyệt thu nhỏ ảnh trước khi gửi và xem trước độ sáng ngay; **backend luôn tự làm được và kiểm lại** | Gửi nhẹ, MiniPC khỏi giải mã ảnh lớn; không tin dữ liệu từ trình duyệt | ✅ |
-| P9 | Giao diện gọn: bỏ "Tạo nháp" và "Tạo G-code" (G-code tự tính lại); có "Tạo lại nét"; 3 preset (Chân dung, Phong cảnh, Mạch điện/Bản vẽ) | Bản nháp không nhanh hơn đáng kể; ít nút thừa | ✅ |
+| P9 | Giao diện gọn: bỏ "Tạo nháp" và "Tạo G-code" (G-code tự tính lại); có "Tạo lại nét"; preset xem P14 | Bản nháp không nhanh hơn đáng kể; ít nút thừa | ✅ |
 | P10 | **Cắt ảnh trên trình duyệt** (`views/drawing/crop.js`), gửi `crop_x/y/w/h` (tỷ lệ 0..1 của ảnh gốc) cho backend cắt; trình duyệt thu nhỏ cả ảnh theo hệ số mà VÙNG CẮT cần (`imageprep.uploadTarget`). Áp dụng = nạp lại như tệp mới. SVG không cắt | trước đây định bỏ ("chỉnh ảnh trước khi gửi"), người dùng đổi ý: cắt ngay trên web tiện hơn | ✅ |
 | P11 | **Tiếp tục từ điểm dừng** (`services/resume.py`): khi hủy / lỗi / mất kết nối, lưu tệp G-code đã làm sạch + số dòng máy đã nhận vào `data/resume.json` (một chỗ, chạy trọn thì xóa). Bấm Tiếp tục: lùi 64 dòng, rồi lùi tiếp tới dòng gần nhất mà **bút đang nhấc**; dựng lại `G90 G21`, nâng bút, `G0` tới đầu nét, `G1 F...`. Từ chối nếu phần đã chạy dùng G91/G92/G10/G28/G30/G53/G55-59/M3/M4. Lưu WCO lúc dừng; đổi gốc Zero thì hỏi lại | `ok` chỉ là "đã vào hàng đợi", hủy cứng làm mất phần đang chờ; vẽ chồng một đoạn thì vô hại, bỏ sót thì mất nét | ✅ (máy giả) ⚠ máy thật |
 | P12 | Tờ mẫu hiệu chỉnh bút tạo bằng **backend** (`drawing/calibration.py`) thành bản thảo thường; A5, tỷ lệ 1:1 | thử máy thật cần chữ F, thước 100 mm, dải tô nhiều khoảng cách; đi cùng đường xem trước/xác nhận như mọi bản vẽ | ✅ |
@@ -66,10 +66,11 @@
 | # | Quyết định | Vì sao | Chắc |
 |---|---|---|---|
 | O1 | MiniPC Ubuntu không màn hình chạy cả backend và giao diện; Python làm hết việc nặng; **không dùng host chia sẻ**, một địa chỉ qua Cloudflare Tunnel | Host chỉ chứa tệp tĩnh, không giảm tải, thêm CORS/cookie chéo tên miền; USB phải ở MiniPC | ⏳ |
-| O2 | Khách (không đăng nhập) chỉ tải ảnh/dùng tab vẽ/lưu bản thảo; người vận hành nhập PIN ở Cài đặt mới dùng được phần còn lại; **backend chặn thật** | Ai biết địa chỉ cũng gửi được ảnh nhưng không điều khiển được máy | ⏳ |
+| O2 | **Hai vai trò** (đổi 02/11/2026, thay bản "khách tạo nét + PIN vận hành"): **khách** không đăng nhập chỉ xem trạng thái, xem trước G-code, chuẩn bị ảnh trong trình duyệt và **gửi ảnh vào `data/customer/`** (chỉ ghi, tự xóa sau 3 ngày); **quản lý** đúng 1 tài khoản (mật khẩu từ biến môi trường) làm mọi thứ còn lại. Backend **chặn mặc định** (danh sách trắng cho khách); vẫn giữ lớp mở khóa chuyển động. Chi tiết `PLAN_ONLINE.md` mục 2 | Đề tài cấp trường: khách không tạo nét trên máy chủ nên không cần hàng chờ, tài khoản người dùng, thư mục riêng; hết cảnh gửi ảnh qua lại. Phần nâng cao để `FUTURE_UPGRADE_BETA.md` phần B | ⏳ |
+| O7 | Quản lý dùng tab vẽ **như hiện tại** (nạp ảnh / cắt / đổi preset tự tạo nét, việc mới hủy việc cũ); **không** tách "nạp ảnh" khỏi "tạo vector" | Chỉ một người tạo nét nên không ai hủy việc của ai; tách bước chỉ cần khi có tài khoản người dùng tự tạo nét | ✅ |
 | O4 | **Bản mang đi Windows** = Python 3.12 embeddable (`Python/`, `_pth` có `..\backend`) + `launcher/` (server chạy ẩn `--host 0.0.0.0`, tự đặt `EXTRUXY_ALLOWED_HOSTS` theo IP LAN). **Một icon bật, không có icon tắt**: server tự tắt sau 10 phút không có trang nào mở (`app/idle.py`, `EXTRUXY_IDLE_EXIT_MIN`), đang chạy G-code thì không tắt; trang ẩn vẫn gửi `/api/health` mỗi 30 s. Chi tiết `DONG_GOI.md` | bạn bè chạy được không cần cài Python; người dùng không phải nhớ tắt server | ✅ |
 | O5 | **Cập nhật = zip chỉ `backend/`, `frontend/`, `launcher/`** (`tools/dong_goi.ps1`) + `Cap nhat.bat`: tắt server, thay mã (robocopy /MIR, bỏ qua `.venv`), giữ `Python/` + `data/`, cất bản cũ vào `_ban_cu/`, `requirements.txt` đổi thì `pip install` bằng pip trong `Python/` | lần sau chỉ gửi ~0,3 MB thay vì ~450 MB | ✅ |
-| O6 | **MiniPC chạy bằng Docker** (đề xuất; venv + systemd là phương án dự phòng), không dùng `Python/` của Windows; IP cố định bằng giữ chỗ DHCP trên router; Cloudflare Tunnel thay cho mở cổng. Chi tiết `PLAN_ONLINE.md` 5c–5d | image gói sẵn thư viện hệ thống của OpenCV, cập nhật bằng build lại; không lộ IP nhà | ⏳ |
+| O6 | **MiniPC chạy bằng Docker** (đề xuất; venv + systemd là phương án dự phòng), không dùng `Python/` của Windows; IP cố định bằng giữ chỗ DHCP trên router; Cloudflare Tunnel thay cho mở cổng. Chi tiết `PLAN_ONLINE.md` mục 4–6 | image gói sẵn thư viện hệ thống của OpenCV, cập nhật bằng build lại; không lộ IP nhà | ⏳ |
 | O3 | JS chỉ nhận việc nhẹ khi kết quả giống và nhanh hơn/ngang Python; sắp xếp nét 2-opt trong Web Worker chỉ làm nếu đo trên MiniPC thấy cần | Không viết lại tô nét/skeleton bằng JS (không nhanh hơn, thêm lỗi) | ⏳ |
 
 ## Giao diện, tài liệu

@@ -29,21 +29,21 @@ SVG  ── svg_in ────────────────────�
                                                │   gcode → drafts (lưu đĩa)
 ```
 
-| File | Việc |
-|---|---|
-| `spec.py` | Khai báo **mọi tham số một chỗ** (mặc định, giới hạn). Backend kiểm tra bằng nó; frontend lấy qua `/schema` |
-| `raster_in.py` | Đọc ảnh, xoay EXIF, nền trong suốt → trắng, cắt, thu nhỏ/phóng nhẹ (≤ 720 px) về cỡ làm việc |
-| `tone.py` | Tự cân sáng, mức đen/trắng, gamma, CLAHE, khử nhiễu → bản đồ độ đậm |
-| `hatch.py`, `styles.py` | Zigzag, sóng, xoắn ốc: độ đậm → đường gạch song song/xoắn ốc, nhiều mức xoay góc |
-| `edges.py`, `trace.py` | Viền: hiệu hai Gaussian → làm mảnh → dò thành nét liền (đường giữa) |
-| `palette.py` | Chia 2–4 màu (k-means trên Lab), mỗi màu một lớp |
-| `raster.py` | Ghép các bước trên, báo tiến trình, trả lớp + số liệu |
-| `optimize.py` | vpype: nối nét gần nhau, đơn giản hóa, bỏ nét ngắn, sắp xếp giảm quãng nhấc bút (+2-opt) |
-| `layout.py` | Đặt nét vào khung vẽ trong tờ giấy (A6/A5/A4), lề, xoay 0/90/180/270, lật |
-| `gcode.py`, `service.py` | Nét → dòng G-code + thống kê + cảnh báo |
-| `tasks.py` | **Một luồng worker**: nạp ảnh chạy nền, có tiến trình, hủy được; yêu cầu mới hủy yêu cầu cũ (máy yếu) |
-| `isolated.py` | Chạy việc ảnh → nét trong **tiến trình riêng, ưu tiên thấp**: hủy = kết thúc hẳn tiến trình, quá giờ/hết RAM chỉ chết tiến trình con, không làm giật luồng điều khiển máy vẽ. `EXTRUXY_DRAW_INPROC=1` để chạy ngay trong tiến trình (test, gỡ lỗi) |
-| `drafts.py` | Lưu/đọc/dọn bản thảo; kiểm tên và đường dẫn |
+| File | Việc | Thư viện |
+|---|---|---|
+| `spec.py` | Khai báo **mọi tham số một chỗ** (mặc định, giới hạn). Backend kiểm tra bằng nó; frontend lấy qua `/schema` | |
+| `raster_in.py` | Đọc ảnh (`Image.draft`), xoay EXIF, nền trong suốt → trắng, cắt, thu nhỏ/phóng nhẹ (≤ 720 px) về cỡ làm việc | Pillow |
+| `tone.py` | Tự cân sáng, mức đen/trắng, gamma, CLAHE, khử nhiễu → bản đồ độ đậm | OpenCV |
+| `hatch.py`, `styles.py` | Zigzag, sóng, xoắn ốc: độ đậm → đường gạch song song/xoắn ốc, mỗi mức đậm thêm một lớp xoay góc | numpy, OpenCV |
+| `edges.py`, `trace.py` | Viền: top-hat + Canny → làm mảnh (skeleton) → dò thành nét liền (đường giữa) | OpenCV, scipy, scikit-image |
+| `palette.py` | Chia 2–4 màu (k-means trên Lab), mỗi màu một lớp | OpenCV |
+| `raster.py` | Ghép các bước trên, báo tiến trình, trả lớp + số liệu | |
+| `optimize.py` | Nối nét gần nhau, đơn giản hóa, bỏ nét ngắn, sắp xếp giảm quãng nhấc bút (+2-opt) | vpype |
+| `layout.py` | Đặt nét vào khung vẽ trong tờ giấy (A6/A5/A4), lề, xoay 0/90/180/270, lật | |
+| `gcode.py`, `service.py` | Nét → dòng G-code + thống kê + cảnh báo | |
+| `tasks.py` | **Một luồng worker**: nạp ảnh chạy nền, có tiến trình, hủy được; yêu cầu mới hủy yêu cầu cũ (máy yếu) | stdlib |
+| `isolated.py` | Chạy việc ảnh → nét trong **tiến trình riêng, ưu tiên thấp**: hủy = kết thúc hẳn tiến trình, quá giờ/hết RAM chỉ chết tiến trình con, không làm giật luồng điều khiển máy vẽ. `EXTRUXY_DRAW_INPROC=1` để chạy ngay trong tiến trình (test, gỡ lỗi) | stdlib |
+| `drafts.py` | Lưu/đọc/dọn bản thảo; kiểm tên và đường dẫn | stdlib |
 
 ### Nguyên tắc quan trọng
 - **Mọi toạ độ là mm**, gốc trên trái, Y xuống. Khoảng cách gạch tính bằng mm trên khung thật nên mật độ mực đúng với bút.
@@ -69,7 +69,7 @@ SVG  ── svg_in ────────────────────�
 |---|---|
 | **Chọn tệp** | Nạp PNG/JPG/WEBP/SVG, tạo nét ngay (nền, có thanh tiến trình) |
 | **Hủy** (cạnh thanh tiến trình) | Dừng việc tạo nét đang chạy |
-| **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Mạch điện–Bản vẽ: điền sẵn tiền xử lý và kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
+| **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Cận cảnh – Đồ vật / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý và kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
 | **Tạo lại nét** | Chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu). Đổi xong giao diện báo "cần tạo lại" |
 | Khung vẽ trên giấy | Kéo = dời; 8 tay nắm = co giãn; hít lề và tâm; phím mũi tên dời (Shift = 10 mm); **Shift + cuộn** = thu phóng; nhấp đúp = đặt lại |
 | **Xoay 90° / Xem toàn bộ** | Xoay khung; về toàn cảnh |
@@ -114,4 +114,4 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 - **Hồ sơ máy:** vùng làm việc, Z bút. **Cấu hình máy:** đọc/ghi YAML trên mạch (có sao lưu, hoàn tác).
 
 ## 6. Chưa kiểm chứng / còn lại
-Danh sách đầy đủ và cập nhật nằm ở `STATUS.md` (mục 3 chưa kiểm chứng, mục 4 còn lại). Kế hoạch mở cho nhiều người dùng (phân quyền bằng PIN, giới hạn, Ubuntu, tunnel): `PLAN_ONLINE.md`.
+Danh sách đầy đủ và cập nhật nằm ở `STATUS.md` (mục 3 chưa kiểm chứng, mục 4 còn lại). Kế hoạch mở cho nhiều người dùng (khách / quản lý, khách gửi ảnh, Ubuntu, tunnel): `PLAN_ONLINE.md`. Ý tưởng để dành: `FUTURE_UPGRADE_BETA.md`.

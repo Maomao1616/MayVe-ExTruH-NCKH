@@ -113,3 +113,41 @@ Lưu ý:
 - `stop.ps1` dùng `taskkill /T` để tắt cả tiến trình con xử lý ảnh.
 - ✅ Đã thử (31/10/2026): `Python\` embeddable thật chạy server + nạp ảnh qua tiến trình con; `start.ps1` trong thư mục có dấu cách, lấy đúng IP LAN, máy khác gọi được; tự tắt; `stop.ps1`; đóng gói + `Cap nhat.bat` (giữ `data`, cất bản cũ, dọn tệp thừa). `tao_bieu_tuong.vbs` đã tạo icon trên máy chủ dự án.
 - 🧪 Chưa thử: máy sạch không cài gì (Visual C++ của OpenCV), nhánh `pip install` khi `requirements.txt` đổi.
+
+## 8. Chạy không dùng launcher
+
+### 8.1 Máy chỉ có thư mục `Python\` (không cài Python)
+Mở PowerShell ở thư mục gốc dự án:
+```powershell
+cd backend
+# Cho máy khác (điện thoại) vào: thêm IP của laptop; chỉ dùng trên chính laptop thì bỏ 2 dòng $env này và bỏ --host
+$env:EXTRUXY_ALLOWED_HOSTS = "localhost,127.0.0.1,192.168.43.10"   # thay bằng IP thật (ipconfig)
+$env:EXTRUXY_UNLOCK_PIN = "2468"                                    # đổi số
+..\Python\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+- Không phải chỉ đường dẫn tới thư mục nào khác: `python312._pth` đã có dòng `..\backend` nên Python tự tìm thấy mã. `cd backend` cho dễ nhớ.
+- Dữ liệu mặc định vào `data\` ở thư mục gốc (`paths.py`), giống launcher.
+- Cửa sổ phải **để mở**; lỗi hiện ngay trên đó (tiện khi thử). Tắt: `Ctrl+C`. Cách này **không** tự tắt sau 10 phút.
+- Máy có venv: thay `..\Python\python.exe` bằng `.venv\Scripts\python.exe`.
+
+### 8.2 Mạng phát 4G từ điện thoại
+1. Cho laptop vào mạng phát **trước**, rồi mới bấm icon (launcher chỉ đọc IP lúc khởi động; đổi mạng thì `stop.vbs` rồi bật lại).
+2. Windows thường xếp mạng phát là **Public** → tường lửa chặn. Lần đầu hỏi thì tick cả Public, hoặc đổi mạng đó sang Private (Cài đặt → Wi-Fi → mạng đó → Private).
+3. Điện thoại mở đúng địa chỉ trình duyệt laptop đang hiện (Android thường `192.168.43.x`, iPhone `172.20.10.x`).
+4. **Đặt PIN mở khóa** (mục 4): mở khóa là chung cả máy, laptop mở thì điện thoại cũng chạy được máy.
+5. MKS chỉ cần cắm USB; **không** cho Wi-Fi của MKS vào mạng này (WebUI FluidNC điều khiển máy vượt qua khóa của phần mềm).
+6. Dữ liệu giữa laptop và điện thoại không đi ra Internet nên gần như không tốn 4G.
+
+### 8.3 GitHub Codespaces (thử tab vẽ trên cloud, không cần tải `Python\`) 🧪
+Dùng được: tab Tạo bản vẽ, máy giả (`sim`), xem giao diện. **Không** dùng được máy thật (cổng USB ở chỗ bạn, không ở trên cloud).
+```bash
+cd backend
+python3 --version                      # nên là 3.12.x
+pip install -r requirements.txt        # vài phút lần đầu (OpenCV, SciPy, scikit-image)
+EXTRUXY_ALLOWED_HOSTS="*" python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+```
+Mở tab **Ports** → cổng 8000 → biểu tượng quả cầu. Để cổng ở chế độ **Private** (mặc định, chỉ tài khoản GitHub của bạn mở được).
+- ⚠ Chưa thử: cổng chuyển tiếp của Codespaces có thể đổi `Host`/`Origin`. Nếu bấm nút mà báo `bad_origin` thì là do chỗ kiểm Origin ở `backend/app/main.py`; báo lại để sửa.
+- Python không phải 3.12 mà `pip` báo lỗi: cần thêm `.devcontainer/` (xem `FUTURE_UPGRADE_BETA.md` mục 12).
+- Codespaces miễn phí có giới hạn số giờ mỗi tháng (xem GitHub → Settings → Billing). Dùng xong bấm **Stop codespace**; không bấm thì sau khoảng 30 phút không dùng nó tự dừng.
+- `data/` nằm trong Codespace: **xóa Codespace là mất** bản thảo. Cần giữ thì tải về trước.

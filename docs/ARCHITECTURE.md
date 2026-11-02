@@ -9,7 +9,7 @@ Máy vẽ (FluidNC, MKS DLC32) ⇄ cáp USB (COM)   hoặc   SimLink (máy giả
         ⇅
 Backend Python (FastAPI):  api/ (HTTP mỏng) → services/ (logic) → links/ (nói chuyện với máy)
         ⇅  HTTP /api/...
-Trình duyệt:  core/api.js → core/state.js (hỏi backend mỗi 0,5 giây) → views/* hiển thị
+Trình duyệt:  core/api.js → core/state.js (trạng thái 10 lần/giây, terminal thưa hơn) → views/* hiển thị
 ```
 ```
 ExtruXY/
@@ -18,7 +18,8 @@ ExtruXY/
 ├─ launcher/                start.vbs/.ps1 (server chạy ẩn + mở trình duyệt) · stop · tao_bieu_tuong.vbs · cap_nhat.ps1 · icon.ico
 ├─ Python/                  (không lên Git) Python 3.12 embeddable + thư viện; _pth có ..\backend
 ├─ data/                    (tự tạo, không lên Git) drafts/ · config_backups/ · macros/ + profile.json, draw_settings.json, resume.json
-├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE(+RAW) · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · DONG_GOI · KIEM_TRA_VE · EXPORT_FOR_AI
+├─ HUONG_DAN_DOC_CODE.md    Hướng dẫn tìm / sửa code cho người không lập trình
+├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · DONG_GOI · KIEM_TRA_VE · EXPORT_FOR_AI · FUTURE_UPGRADE_BETA
 ├─ tools/                   export_context.py (xuất mã cho AI + CODEMAP) · dong_goi.ps1 (zip bản cập nhật / đầy đủ)
 ├─ backend/
 │  ├─ app/
@@ -111,21 +112,19 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 
 ## 5. Chạy và thử
 * Chạy: `uvicorn app.main:app --reload` trong `backend/` (đang sửa code) → `http://127.0.0.1:8000/`. Bản mang đi: icon Desktop → `launcher/start.vbs` → `start.ps1` (Python/ embeddable, `--host 0.0.0.0`, tự đặt `EXTRUXY_ALLOWED_HOSTS` theo IP LAN, `EXTRUXY_IDLE_EXIT_MIN=10`).
-* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~270 test, ~70 s). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs`.
+* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~364 test). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`.
 * Sửa Python xong phải tắt (Ctrl+C) và chạy lại server. Chữ không đổi: Ctrl+Shift+R hoặc F12 → Network → Disable cache. Lỗi lạ: F12 → Console, dán dòng đỏ.
 * Thói quen: áp từng bước nhỏ → test → thử bằng sim → commit Git.
 * Cài thư viện (lần đầu hoặc sau khi cập nhật): `pip install -r requirements.txt -r requirements-dev.txt`.
 
 ## 6. Luồng dữ liệu chính
-**Điều khiển máy:** trình duyệt `state.js` hỏi `GET /api/status` mỗi 0,5 s → `MachineService` giữ trạng thái từ báo cáo của firmware. Lệnh: `api.js` → `/api/command|realtime|motion|jobs` → `MachineService` → `JobRunner` (gửi từng dòng, chờ `ok`) → `SerialLink`/`SimLink`. Mọi lệnh đi qua một chỗ kiểm tra (khóa chuyển động, đang dừng, đang chạy tác vụ).
+**Điều khiển máy:** backend hỏi máy `?` mỗi 0,1 s (`MachineService.POLL_S`) và giữ báo cáo mới nhất; trình duyệt `state.js` hỏi `GET /api/status` mỗi 100 ms và `/api/log?since=` (terminal) theo Cài đặt. Lệnh: `api.js` → `/api/command|realtime|motion|jobs` → `MachineService` → `JobRunner` (gửi từng dòng, chờ `ok`) → `SerialLink`/`SimLink`. Mọi lệnh đi qua một chỗ kiểm tra (khóa chuyển động, đang dừng, đang chạy tác vụ).
 
 **Tạo bản vẽ:** chọn tệp → (ảnh: trình duyệt thu nhỏ về đúng cỡ, `lib/imageprep.js`) → `POST /api/draw/import` → `tasks.py` (một luồng) → `isolated.py` (tiến trình con ưu tiên thấp) → `raster.build_raster` (đọc → sắc độ → tô nét/viền/chia màu → vpype) → lớp nét lưu ở `store.TASKS` (3 bản gần nhất) → `GET .../preview` (nét rút gọn, tọa độ nguồn) → canvas tự bố trí bằng `lib/paper.js` (bản JS của `layout.py`) → `POST /api/draw/gcode` (bố trí + G-code, **không lưu**) → `POST /api/draw/drafts` (lưu bản thảo vào đĩa) → tab Điều khiển nạp bản thảo (`draftstore.loadIntoControl` → `jobstore.setFile`) → xem trước → xác nhận → chạy.
 
 **Kéo khung bản vẽ:** lệch quá 12% so với cỡ lúc tạo nét thì giao diện tự tạo lại nét (`scheduleRetrace` trong `drawing.js`) để khoảng cách gạch luôn đúng theo bề rộng bút thật.
 
 ## 7. Dữ liệu trên đĩa và biến môi trường
-| Thứ | Ở đâu | Ghi chú |
-|---|---|---|
 Gốc dữ liệu = `data/` (tự tạo khi cần, không lên Git); đổi bằng `EXTRUXY_DATA_DIR`. Giao diện không cho đổi đường dẫn.
 
 | Thứ | Ở đâu (trong gốc) | Ghi chú |
@@ -154,7 +153,7 @@ Biến môi trường (đều tùy chọn):
 
 ## 8. Các chốt an toàn đã có
 - Máy thật chỉ đọc cho tới khi mở khóa chuyển động; lệnh `hold`/`reset`/`jog_cancel` luôn gửi được; lệnh chỉ đọc lấy từ `$CMD` thật (`links/protocol.py`).
-- Backend chỉ nhận Host cục bộ và chặn POST từ Origin lạ. **Chưa có đăng nhập** (xem `PLAN_ONLINE.md` trước khi mở ra mạng).
+- Backend chỉ nhận Host cục bộ và chặn POST từ Origin lạ. **Chưa có đăng nhập** (thiết kế khách / quản lý: `PLAN_ONLINE.md` mục 2, làm trước khi mở ra mạng).
 - G-code tệp bị làm sạch (`job.clean_gcode`): bỏ chú thích; từ chối dòng `$...` (cài đặt, Home, jog), ký tự realtime (`? ! ~`, Ctrl-X), ký tự lạ; tối đa 200 000 dòng, 200 ký tự/dòng. G-code do tab vẽ sinh ra cũng phải qua đúng bộ làm sạch này (kiểm trong `service.py`). Bộ làm sạch còn chặn `G10, G28, G30, G38, G53, G55–G59, G92` (đổi gốc / hệ tọa độ, chạy tới chỗ máy tự chọn) và báo một lần tối đa 5 dòng lỗi kèm số dòng; `lib/gcode.js` (`BLOCKED_G`) báo trước ngay lúc nạp và khóa nút Chạy. G54, G91, G20, M0, lệnh lạ không bị chặn (firmware tự báo). G-code của tab vẽ không sinh các lệnh bị chặn.
 - Mọi nét phải nằm trong vùng làm việc; `layout.py` chặn khung vượt giấy, `service.py` kiểm lại trước khi ra G-code.
 - Hủy an toàn 3 chế độ (reset / soft / hard); trong lúc dừng, backend từ chối job mới, lệnh chuyển động và `resume` (`stopping`). Giao diện khóa điều khiển khi báo cáo trạng thái cũ quá 2 s; tác vụ đang chạy coi là mất phản hồi sau `STATUS_STALE_S` (10 s) và tự Feed Hold.

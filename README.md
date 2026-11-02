@@ -34,7 +34,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~361 test) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test backend (~364 test) | trong `backend`, đã bật venv: `python -m pytest` |
 | Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 
@@ -56,10 +56,10 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Sổ quyết định (chọn gì, vì sao, mức chắc) |
 | [docs/MACHINE.md](docs/MACHINE.md) | Sự thật máy thật đã xác nhận |
 | [docs/DRAW_ROADMAP.md](docs/DRAW_ROADMAP.md) | Hợp đồng API và quyết định thiết kế tab Tạo bản vẽ |
-| [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md) | Kế hoạch MiniPC Ubuntu (Docker, IP cố định, Cloudflare Tunnel), phân quyền PIN, giới hạn |
+| [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md) | Phân quyền khách / quản lý, khách gửi ảnh vào `customer/`; MiniPC Ubuntu (Docker, IP cố định), Cloudflare Tunnel |
 | [docs/KIEM_TRA_VE.md](docs/KIEM_TRA_VE.md) | Cách thử và tinh chỉnh các chế độ vẽ, preset bằng bản in |
 | [docs/DONG_GOI.md](docs/DONG_GOI.md) | Bản mang đi Windows, chuyển máy, `Cap nhat.bat`, xử lý lỗi khi bật |
-| [docs/BETA.md](docs/BETA.md) | Ý tưởng chưa làm: in trang Word/PDF, chữ viết tay, AI tạo ảnh; tính khả thi trên MiniPC |
+| [docs/FUTURE_UPGRADE_BETA.md](docs/FUTURE_UPGRADE_BETA.md) | Ý tưởng để dành: tab Beta in trang PDF, chữ viết tay, AI tạo ảnh, sức MiniPC; tài khoản người dùng, hàng chờ, Cloudflare nâng cao |
 | [docs/EXPORT_FOR_AI.md](docs/EXPORT_FOR_AI.md) | Cách xuất mã cho AI tiết kiệm token (`tools/export_context.py`) |
 
 ## Cấu trúc thư mục

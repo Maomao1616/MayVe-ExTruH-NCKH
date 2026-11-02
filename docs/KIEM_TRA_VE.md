@@ -7,12 +7,14 @@ Ký hiệu: ✅ đã chốt bằng bản in · 🧪 mới thử bằng ảnh m�
 - **Mọi bước đều phải vẽ thật lên giấy.** Khung xem trước trên web chỉ dùng để kiểm tra hình học trước khi vẽ (nét đủ, đúng chỗ, đúng số dải / số bậc, không vượt khổ), đỡ phí giấy. Web **không** cho biết độ đậm thật: trên màn hình nét nào cũng mảnh như nhau, còn trên giấy mực loang, giấy thấm, bút đậm nhạt khác nhau. Các quyết định "dải nào xám vừa", "bậc nào tách rõ" chỉ làm được khi nhìn tờ giấy.
 - **Mỗi lần chỉ đổi một thông số.** Cùng loại giấy, cùng cây bút, cùng tốc độ vẽ.
 - **Ghi số ngay góc tờ giấy** (bút, khoảng cách, số mức, gamma, preset, ngày) rồi chụp ảnh tờ giấy để so về sau.
-- Làm theo thứ tự dưới đây: bước trước chốt con số mà bước sau dùng. Bút 0,2 và 0,4 làm riêng.
+- Làm theo thứ tự dưới đây: bước trước chốt con số mà bước sau dùng. Mỗi bút **0,2 / 0,4 / 0,5** làm riêng (0,5 chưa có trong danh sách bút dựng sẵn: gõ tay 0,5 vào ô bề rộng bút; với tờ mẫu thì gửi `pen_width_mm: 0.5`).
 - Ghi kết quả vào bảng ở mục 6.
 
 ## 1. Khoảng cách nét theo bút: tờ mẫu hiệu chỉnh bút
 Đã in và lưu lại (ảnh chụp tờ mẫu). Nút tạo tờ mẫu đã bỏ khỏi giao diện; cần in lại thì gọi `POST /api/draw/calibration` (vẫn còn ở backend, `drawing/calibration.py`) qua `http://127.0.0.1:8000/docs`.
 Tờ có chữ F (kiểm hướng X/Y), thước 100 mm (kiểm tỷ lệ) và **8 dải gạch** với khoảng cách = bề rộng bút × 0,8 / 1 / 1,25 / 1,5 / 2 / 2,5 / 3 / 4.
+
+**Khoảng cách nét quyết định gì:** phần mềm biết bút rộng bao nhiêu và cố ý kẻ các đường cách nhau 2 × bút (bút 0,4 → cách 0,8 mm: 0,4 mực + 0,4 giấy), nên **một lớp gạch phủ ~50 %**, nhìn xa thành xám vừa. Vùng tối hơn **không** gạch dày hơn mà được **chồng thêm lớp** xoay góc khác (5 mức: 0 / 1 / 2 / 3 / 4 lớp ≈ 0 / 50 / 75 / 88 / 94 % mực). Bút ghi 0,4 nhưng ra giấy có thể dày hơn (mực loang → đậm hơn 50 %) hoặc mảnh hơn (bút khô → nhạt hơn), vì vậy phải chọn hệ số bằng tờ thật: đứng cách 40–50 cm, dải nào trông như **mảng xám mịn** mà chưa thấy từng sợi thì lấy hệ số đó. Thấy sọc → giảm hệ số; bết mực → tăng.
 
 | Xem gì | Kết luận |
 |---|---|
@@ -84,7 +86,9 @@ Sửa số trong `frontend/js/views/drawing/presets.js` (mỗi preset vài dòng
 ## 6. Bảng ghi kết quả (điền dần)
 | Ngày | Bút | Giấy | Thử gì | Thông số | Thời gian thật / ước tính | Kết luận |
 |---|---|---|---|---|---|---|
+| | 0,2 | | tờ mẫu hiệu chỉnh | | | |
 | | 0,4 | | tờ mẫu hiệu chỉnh | | | |
+| | 0,5 | | tờ mẫu hiệu chỉnh | | | |
 | | 0,4 | | Thang xám · Chân dung | | | |
 | | 0,4 | | Thang xám · Phong cảnh | | | |
 | | 0,4 | | Thang xám · Cận cảnh | | | |
