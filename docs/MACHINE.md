@@ -71,3 +71,29 @@ Gửi `g0 x1000` → firmware trả `ok` **trước**, `ALARM:2` **sau**. Backen
 - B2: Hướng X+/Y+ thực tế trên giấy (dự kiến X+ đi trái, Y+ đi xuống).
 - B3: Z bút lên/xuống thực tế (Servo GPIO 32).
 - B4: Cung G2/G3 trên máy thật.
+
+---
+
+## C. Phần cứng và cấu hình hiện tại (ghi 02/11/2026)
+
+### C1. Linh kiện (chủ dự án cung cấp, chưa đo lại)
+| Phần | Hiện tại | Ghi chú |
+|---|---|---|
+| Servo bút | **JX PS-1109MG** 9 g, bánh răng kim loại, analog | Theo nơi bán: 4,8–6,0 V; 0,12 s/60° (4,8 V), 0,10 s/60° (6 V); 2,2 / 2,5 kg·cm |
+| Nguồn servo | Hạ áp **XL4005** → 5 V, lấy từ nguồn 12 V | Dây âm (GND) của XL4005 phải nối chung với MKS (tín hiệu servo đo so với GND của MKS) |
+| Cơ cấu nâng bút | Mẫu **Extruh pen plotter** (Printables 734327): bút **hạ xuống giấy nhờ trọng lực**, servo chỉ **nâng** cụm bút lên | Lực bút lên giấy = trọng lượng cụm bút (không phụ thuộc servo) → muốn nét đậm / chắc hơn thì **thêm khối nặng** cho cụm bút. Thời gian "hạ" = thời gian servo rút về + bút rơi. Hạ chậm = đáp nhẹ, đỡ gãy ngòi |
+| Động cơ bước | **NEMA 17 17HS4401** (X, Y) | Tài liệu nhà bán không thống nhất: 1,5–1,7 A mỗi pha, ~40 N·cm. ⚠ Xem nhãn / datasheet đúng lô hàng trước khi tăng dòng |
+| Driver | **2 × TMC2209**, Vref **1,2 V**; trên module ghi **R100** (điện trở đo 0,1 Ω), chip in `2539 a327c Germany` | Với R100: Irms ≈ 0,766 × Vref ≈ **0,92 A** (đỉnh ≈ 1,3 A), khoảng 55–60 % dòng định mức → dư an toàn cho máy vẽ nhẹ. Muốn ~1,2 A RMS thì Vref ≈ 1,57 V (công thức Trinamic, dải Vref cho phép 0,2–2,2 V). ⚠ Ghi chú: một số trang tính 0,71 × Vref (cho điện trở 110 mΩ), không đúng với R100 |
+| Nguồn tổng | **Mean Well 12 V 6 A** (72 W) | MKS DLC32 nhận 12–24 V |
+| Truyền động | Đai **GT2**, puly **20 răng**, vi bước **1/16** | Khớp `$100 = $101 = 80` bước/mm (200 × 16 / 40 mm) |
+| Bút vẽ tranh | **Sakura đầu 0,4** | Không dùng 0,2 vì sợ gãy ngòi khi chạy nhanh |
+| Bút viết chữ | **Bút bi 0,5** | Nét bi thường mảnh hơn cỡ bi (khoảng một nửa, tùy loại) → ⚠ đo trên tờ hiệu chỉnh |
+| Mạch thêm | Có thể mua ESP32-S3 dạng kit | Webcam: chưa có |
+
+### C2. Cấu hình trên mạch (đọc từ bản sao lưu `ConfigNCKH-16.yaml` 29/10/2026)
+- Gia tốc X / Y **600 mm/s²**, Z **1000 mm/s²**; `junction_deviation_mm` **0,01**; `planner_blocks` **16**; `arc_tolerance_mm` 0,002; bước `I2S`.
+- Servo Z: `gpio.32`, 50 Hz, **1350–1950 µs** (Z 0–5 mm ↔ ~54° nếu servo ~11 µs/độ, ⚠ suy luận).
+- Công tắc hành trình: X `gpio.36`, Y `gpio.35`. Mục `control` (dừng, chạy tiếp, macro…) và `probe` đều `NO_PIN`.
+- Chân **có thể còn trống** (theo cấu hình chính thức của FluidNC cho DLC32 V2.1): `gpio.34` (đầu Z-limit, chỉ đọc vào), `gpio.22` (đầu probe), `gpio.33` (bản chính thức dùng cho `macro0`). ⚠ Dò lại bằng sơ đồ mạch / đồng hồ trước khi nối.
+- **Một chu kỳ nhấc / hạ bút hiện tại** ≈ 0,7 s: `G1 Z` với `pen_feed` 3000 mm/min (≈ 0,15 s cho 5 mm với gia tốc Z 1000) + `G4 P0.2`, làm hai lần (hạ và nhấc).
+- Firmware bản `esp32-wifi`: nếu chưa cài Wi-Fi, FluidNC có thể tự phát mạng "FluidNC" (192.168.0.1). Ai vào mạng đó dùng WebUI là **vượt qua mọi khóa của phần mềm**. ⚠ Kiểm `$WiFi/Mode`; khi demo nên tắt hoặc đặt mật khẩu mạnh.

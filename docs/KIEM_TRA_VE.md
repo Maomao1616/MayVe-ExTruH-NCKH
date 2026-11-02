@@ -94,3 +94,21 @@ Sửa số trong `frontend/js/views/drawing/presets.js` (mỗi preset vài dòng
 | | 0,4 | | Thang xám · Cận cảnh | | | |
 
 Khi đã chốt, cập nhật số mặc định trong mã (đường dẫn ở trên) và đổi 🧪 thành ✅ trong `DRAW_ROADMAP.md` / `STATUS.md`.
+
+## 7. Thử tốc độ (sau khi chốt nét ở mục 1–2)
+Mục đích: vẽ nhanh hơn mà nét không xấu đi, máy không mất bước. Số hiện tại và lý do từng thông số: `FUTURE_UPGRADE_BETA.md` mục 21.1.
+- **Thông số máy** (gia tốc, `junction_deviation_mm`, tốc độ tối đa): Cài đặt → Cấu hình máy → **Áp dụng**. Chỉ đổi trong RAM, tắt máy là mất. Chốt được rồi mới **Lưu vào mạch** (phần mềm tự sao lưu bản cũ).
+- **Thông số G-code** (thời gian chờ, tốc độ vẽ / di chuyển / bút): ô ở tab Tạo bản vẽ. **Z bút lên / xuống**: Cài đặt → Cấu hình máy (mục App).
+- Mỗi lần đổi **một** thông số, cùng bản vẽ, ghi thời gian thật.
+
+| # | Bài thử | Cách làm | Nhìn gì |
+|---|---|---|---|
+| 7.1 | **Chi phí nhấc bút** | Một bản vẽ nhiều nét rất ngắn (100–200 gạch 2 mm; nhờ AI tạo sẵn tệp G-code). Thời gian thật ÷ số nét = một chu kỳ nhấc / hạ. Lần lượt đổi: thời gian chờ 0,2 → 0,1 → 0,05 s; Z nhấc 5 → 3 → 2; điện áp servo 5 → 6 V | Bút có kéo vệt khi di chuyển (nhấc chưa kịp)? Đầu nét có hụt (hạ chưa kịp chạm)? Bút có nảy? |
+| 7.2 | **Mất bước** | Vẽ một dấu + nhỏ ở góc giấy → chạy bản vẽ hoặc di chuyển nhanh nhiều lần → quay về vẽ lại dấu + | Hai dấu trùng khít = không mất bước. Lệch = giảm gia tốc / tốc độ hoặc tăng dòng động cơ |
+| 7.3 | **Gia tốc + góc** | Cùng một đoạn chữ ở gia tốc 600 / 1000 / 1500 / 2000 mm/s², rồi `junction_deviation_mm` 0,01 / 0,03 | Thời gian; gợn sóng ngay sau góc chữ (dấu hiệu rung); làm lại 7.2 |
+| 7.4 | **Tốc độ vẽ của từng bút** | Dải đường thẳng ở 2000 / 3000 / 4500 / 6000 mm/min, mỗi bút một tờ | Tốc độ cao nhất mà nét chưa nhạt / đứt |
+
+| Ngày | Bài | Bút | Thông số đổi | Thời gian thật | Số nét | Kết luận |
+|---|---|---|---|---|---|---|
+| | 7.1 | | thời gian chờ 0,2 → 0,1 | | | |
+| | 7.2 | | gia tốc 1500 | | | |
