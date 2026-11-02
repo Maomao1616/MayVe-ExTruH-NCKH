@@ -34,7 +34,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~381 test) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test backend (~387 test) | trong `backend`, đã bật venv: `python -m pytest` |
 | Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 
@@ -48,6 +48,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 | Tệp | Để làm gì |
 |---|---|
 | [HUONG_DAN_DOC_CODE.md](HUONG_DAN_DOC_CODE.md) | **Cho người không biết code**: tìm chức năng ở đâu, sửa / thêm / bỏ chạm những chỗ nào, thư viện ảnh làm gì, hiệu ứng giao diện học ở đâu |
+| [VIEC_CAN_LAM.md](VIEC_CAN_LAM.md) | **Danh sách việc cần làm** (tóm tắt): thử máy, code tiếp, khi có MiniPC, để dành |
 | [docs/AI_START.md](docs/AI_START.md) | **Đọc đầu tiên** (dành cho AI/người mới): tóm tắt, quy tắc bắt buộc, bẫy đã gặp |
 | [docs/STATUS.md](docs/STATUS.md) | Cái gì xong / chưa / chưa kiểm chứng / còn lại |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Kiến trúc, bản đồ khối, luồng dữ liệu, biến môi trường, chốt an toàn |

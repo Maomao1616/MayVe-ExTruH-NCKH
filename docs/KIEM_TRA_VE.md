@@ -7,7 +7,7 @@ Ký hiệu: ✅ đã chốt bằng bản in · 🧪 mới thử bằng ảnh m�
 - **Mọi bước đều phải vẽ thật lên giấy.** Khung xem trước trên web chỉ dùng để kiểm tra hình học trước khi vẽ (nét đủ, đúng chỗ, đúng số dải / số bậc, không vượt khổ), đỡ phí giấy. Web **không** cho biết độ đậm thật: trên màn hình nét nào cũng mảnh như nhau, còn trên giấy mực loang, giấy thấm, bút đậm nhạt khác nhau. Các quyết định "dải nào xám vừa", "bậc nào tách rõ" chỉ làm được khi nhìn tờ giấy.
 - **Mỗi lần chỉ đổi một thông số.** Cùng loại giấy, cùng cây bút, cùng tốc độ vẽ.
 - **Ghi số ngay góc tờ giấy** (bút, khoảng cách, số mức, gamma, preset, ngày) rồi chụp ảnh tờ giấy để so về sau.
-- Làm theo thứ tự dưới đây: bước trước chốt con số mà bước sau dùng. Mỗi bút **0,2 / 0,4 / 0,5** làm riêng (0,5 chưa có trong danh sách bút dựng sẵn: gõ tay 0,5 vào ô bề rộng bút; với tờ mẫu thì gửi `pen_width_mm: 0.5`).
+- Làm theo thứ tự dưới đây: bước trước chốt con số mà bước sau dùng. Mỗi bút **0,2 / 0,4 / 0,5** làm riêng (cả ba đều có trong ô "Bút vẽ"; với tờ mẫu hiệu chỉnh gửi `pen_width_mm: 0.5` cho bút 0,5).
 - Ghi kết quả vào bảng ở mục 6.
 
 ## 1. Khoảng cách nét theo bút: tờ mẫu hiệu chỉnh bút
@@ -100,6 +100,8 @@ Mục đích: vẽ nhanh hơn mà nét không xấu đi, máy không mất bư�
 - **Thông số máy** (gia tốc, `junction_deviation_mm`, tốc độ tối đa): Cài đặt → Cấu hình máy → **Áp dụng**. Chỉ đổi trong RAM, tắt máy là mất. Chốt được rồi mới **Lưu vào mạch** (phần mềm tự sao lưu bản cũ).
 - **Thông số G-code** (thời gian chờ, tốc độ vẽ / di chuyển / bút): ô ở tab Tạo bản vẽ. **Z bút lên / xuống**: Cài đặt → Cấu hình máy (mục App).
 - Mỗi lần đổi **một** thông số, cùng bản vẽ, ghi thời gian thật.
+- **Tệp G-code thử có sẵn:** `python tools/make_test_gcode.py` ghi 8 tệp vào `export\test-gcode\` (không lên Git): `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z3 / Z2-cho-0.10s`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve`. Nạp ở tab Điều khiển → Xem trước → Chạy. Z mặc định 5 / 0; hồ sơ khác thì `--up`, `--down`. 7.1: thời gian thật ÷ 100 gạch ≈ một chu kỳ nhấc + hạ + chờ.
+- **Hạ chậm, nhấc nhanh** (bút hạ bằng trọng lực): ô "Tốc độ hạ bút" ở tab Tạo bản vẽ (trống = như nâng bút). Thử 600–1500 mm/phút trong khi giữ tốc độ nâng bút ở hồ sơ máy (Cài đặt → Cấu hình máy).
 
 | # | Bài thử | Cách làm | Nhìn gì |
 |---|---|---|---|

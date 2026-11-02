@@ -51,6 +51,8 @@ def build_gcode(strokes: list[Stroke], gp: Params, machine: Params) -> tuple[lis
     if not cleaned:
         raise DrawError("empty_drawing", "Không còn nét nào sau khi làm sạch.")
     up, down = gp.pen_up_z, gp.pen_down_z
+    # Cơ cấu bút hạ bằng trọng lực: hạ chậm (đáp nhẹ, đỡ gãy ngòi), nâng nhanh. Không đặt = hai chiều như nhau.
+    down_feed = gp.pen_down_feed if gp.pen_down_feed is not None else gp.pen_feed
     use_g0 = gp.travel_feed >= machine.rapid_feed
 
     feed = {"cur": None}
@@ -75,7 +77,7 @@ def build_gcode(strokes: list[Stroke], gp: Params, machine: Params) -> tuple[lis
     for s in cleaned:
         travel_mm += math.dist(prev, s[0])
         lines.append(f"G0 {xy(s[0])}" if use_g0 else f"G1 {xy(s[0])}{f(gp.travel_feed)}")
-        lines.append(f"G1 Z{fmt(down, 3)}{f(gp.pen_feed)}")
+        lines.append(f"G1 Z{fmt(down, 3)}{f(down_feed)}")
         if gp.delay_down_s > 0:
             lines.append(f"G4 P{fmt(gp.delay_down_s, 3)}")
         for a, b in zip(s, s[1:]):
@@ -96,7 +98,7 @@ def build_gcode(strokes: list[Stroke], gp: Params, machine: Params) -> tuple[lis
     if longest > MAX_LINE_LEN:      # không xảy ra với G0/G1 thường; giữ làm chốt chặn
         raise DrawError("bad_gcode", f"Dòng G-code dài {longest} ký tự (tối đa {MAX_LINE_LEN}).")
 
-    z_s = len(cleaned) * 2 * abs(up - down) / gp.pen_feed * 60
+    z_s = len(cleaned) * abs(up - down) * (1 / gp.pen_feed + 1 / down_feed) * 60     # một nâng + một hạ mỗi nét
     eff_travel = min(gp.travel_feed, machine.rapid_feed)
     est = (draw_mm / gp.draw_feed * 60 + travel_mm / eff_travel * 60 + z_s
            + len(cleaned) * (gp.delay_up_s + gp.delay_down_s) + gp.delay_up_s)

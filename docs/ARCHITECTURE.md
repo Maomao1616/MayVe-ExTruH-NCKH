@@ -20,7 +20,7 @@ ExtruXY/
 ├─ data/                    (tự tạo, không lên Git) drafts/ · config_backups/ · macros/ + profile.json, draw_settings.json, resume.json
 ├─ HUONG_DAN_DOC_CODE.md    Hướng dẫn tìm / sửa code cho người không lập trình
 ├─ docs/                     AI_START · STATUS · ARCHITECTURE · CODEMAP · DECISIONS · MACHINE · DRAW_ROADMAP · BRIEF · PLAN_ONLINE · DONG_GOI · KIEM_TRA_VE · EXPORT_FOR_AI · FUTURE_UPGRADE_BETA
-├─ tools/                   export_context.py (xuất mã cho AI + CODEMAP) · dong_goi.ps1 (zip bản cập nhật / đầy đủ)
+├─ tools/                   export_context.py (xuất mã cho AI + CODEMAP) · dong_goi.ps1 (zip bản cập nhật / đầy đủ) · make_test_gcode.py (G-code bài thử tốc độ)
 ├─ backend/
 │  ├─ app/
 │  │  ├─ main.py             Khởi động, chặn Host/Origin lạ, phục vụ frontend
@@ -114,7 +114,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 
 ## 5. Chạy và thử
 * Chạy: `uvicorn app.main:app --reload` trong `backend/` (đang sửa code) → `http://127.0.0.1:8000/`. Bản mang đi: icon Desktop → `launcher/start.vbs` → `start.ps1` (Python/ embeddable, `--host 0.0.0.0`, tự đặt `EXTRUXY_ALLOWED_HOSTS` theo IP LAN, `EXTRUXY_IDLE_EXIT_MIN=10`).
-* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~381 test). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`.
+* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~387 test). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`.
 * Sửa Python xong phải tắt (Ctrl+C) và chạy lại server. Chữ không đổi: Ctrl+Shift+R hoặc F12 → Network → Disable cache. Lỗi lạ: F12 → Console, dán dòng đỏ.
 * Thói quen: áp từng bước nhỏ → test → thử bằng sim → commit Git.
 * Cài thư viện (lần đầu hoặc sau khi cập nhật): `pip install -r requirements.txt -r requirements-dev.txt`.

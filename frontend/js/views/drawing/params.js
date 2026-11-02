@@ -26,6 +26,7 @@ const FIELDS = [
     ["travel-feed", "gcode", "travel_feed", "num"],
     ["draw-pen-up-z", "gcode", "pen_up_z", "num"],
     ["draw-pen-down-z", "gcode", "pen_down_z", "num"],
+    ["pen-down-feed", "gcode", "pen_down_feed", "optnum"],
     ["pen-delay-down", "gcode", "delay_down_s", "num"],
     ["pen-delay-up", "gcode", "delay_up_s", "num"],
     ["simplify-tolerance", "optimize", "simplify_tolerance_mm", "num"],

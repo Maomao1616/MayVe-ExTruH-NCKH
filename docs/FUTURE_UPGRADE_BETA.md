@@ -182,7 +182,6 @@ Hiện nạp ảnh tự gọi vector hóa ở 4 chỗ trong `frontend/js/views/d
 # Phần C — việc nhỏ khác, cần đo
 
 ## 12. Việc nhỏ
-- 💡 Thêm 0,5 vào bút dựng sẵn (`spec.py` `PENS`).
 - 💡 Vệt bút theo dòng G-code cho cả macro / tiếp tục tác vụ (hiện chỉ áp cho tệp đang nạp; jog / macro / resume vẫn nối điểm tọa độ).
 - 💡 `.devcontainer/` cho GitHub Codespaces: chốt Python 3.12 và tự `pip install`.
 - 💡 Đổi mật khẩu quản lý trên giao diện (bản đầu chỉ đặt bằng biến môi trường).
@@ -295,7 +294,7 @@ Số hiện tại lấy từ `MACHINE.md` mục C. Mọi con số "ước đư�
 → Với chữ, **nhấc bút là đòn bẩy lớn nhất**. Ước tính 20–30 phút ở mục 1 là lạc quan. Phần mềm đã hiện "số lần nhấc bút" và thời gian ước tính của từng bản vẽ: đo thật một đoạn chữ để chỉnh lại bảng này.
 
 ### 21.2 Bút
-- Cơ cấu của bạn **hạ bút bằng trọng lực** (MACHINE C1): lực xuống giấy là trọng lượng cụm bút, không phải servo ép. Vậy ngòi hỏng chủ yếu do **bút rơi nhanh rồi nảy / va** lúc servo rút, ít do chạy nhanh. Giảm va: servo rút **chậm** ở đoạn cuối (tách "tốc độ hạ bút" khỏi `pen_feed`, sửa code nhỏ), cụm bút dẫn hướng trơn (không kẹt), khối nặng vừa đủ. Làm vậy có thể dùng lại bút 0,2 cho chi tiết. ⚠ Thử.
+- Cơ cấu của bạn **hạ bút bằng trọng lực** (MACHINE C1): lực xuống giấy là trọng lượng cụm bút, không phải servo ép. Vậy ngòi hỏng chủ yếu do **bút rơi nhanh rồi nảy / va** lúc servo rút, ít do chạy nhanh. Giảm va: servo rút **chậm** ở đoạn cuối (✅ đã có ô **"Tốc độ hạ bút"**, tham số `pen_down_feed`), cụm bút dẫn hướng trơn (không kẹt), khối nặng vừa đủ. Làm vậy có thể dùng lại bút 0,2 cho chi tiết. ⚠ Thử.
 - Nhấc (servo đẩy lên) có thể nhanh; hạ (bút rơi) bị giới hạn bởi tốc độ servo rút và độ trơn của dẫn hướng → hai thời gian chờ `delay_up_s` / `delay_down_s` nên **chỉnh riêng**, thường chờ sau khi hạ lâu hơn chờ sau khi nhấc.
 - Chạy nhanh quá thì mực có thể không kịp ra (nét nhạt / đứt) → tìm tốc độ vẽ cao nhất cho từng bút (KIEM_TRA_VE 7.4).
 - Bút bi cần lực đè đều và hay hụt mực ở đầu nét → chỉnh bằng **khối nặng** của cụm bút; không giảm thời gian chờ sau khi hạ về 0.

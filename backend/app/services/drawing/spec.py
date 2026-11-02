@@ -58,6 +58,7 @@ GCODE = (
     Param("pen_up_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_down_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_feed", "float", 3000.0, 10, 20000, unit="mm/min"),
+    Param("pen_down_feed", "float", None, 10, 20000, unit="mm/min"),   # None = hạ bút cùng tốc độ nâng (pen_feed)
     Param("delay_up_s", "float", 0.2, 0, 60, unit="s"),
     Param("delay_down_s", "float", 0.2, 0, 60, unit="s"),
     Param("precision", "int", 3, 1, 4),
@@ -91,7 +92,7 @@ SVG = (
 
 # Ảnh raster (độ phân giải xử lý tự tính từ khung vẽ ÷ độ rộng bút; max_side_px chỉ để ghi đè).
 RASTER = (
-    Param("pen_width_mm", "float", 0.4, 0.1, 2, unit="mm"),           # bút dựng sẵn: 0,2 / 0,4 (xem PENS)
+    Param("pen_width_mm", "float", 0.4, 0.1, 2, unit="mm"),           # bút dựng sẵn: 0,2 / 0,4 / 0,5 (xem PENS)
     Param("max_side_px", "int", None, 400, 4000, unit="px"),          # None = tự tính
     Param("quality", "choice", "final", choices=("draft", "final")),  # nháp (nhỏ, nhanh) hay chính thức
     Param("crop_x", "float", 0.0, 0, 1), Param("crop_y", "float", 0.0, 0, 1),   # cắt ảnh: tỷ lệ 0..1 của ảnh gốc
@@ -123,7 +124,7 @@ PALETTE = (
     Param("skip_background", "bool", True),
 )
 
-PENS = (0.2, 0.4)
+PENS = (0.2, 0.4, 0.5)
 STYLES = ("outline", "zigzag", "wave", "spiral")
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,

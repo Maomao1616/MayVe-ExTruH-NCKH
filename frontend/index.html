@@ -931,6 +931,10 @@
                     <span data-i18n="drawing.params.penDown">Z khi hạ bút</span>
                     <input id="draw-pen-down-z" type="number" min="0" step="0.1" value="0"/>
                   </label>
+                  <label for="pen-down-feed">
+                    <span data-i18n="drawing.params.penDownFeed">Tốc độ hạ bút (mm/phút, trống = như nâng bút)</span>
+                    <input id="pen-down-feed" type="number" min="10" max="20000" step="50" placeholder="—"/>
+                  </label>
                   <label for="pen-delay-down">
                     <span data-i18n="drawing.params.delayDown">Chờ sau khi hạ bút (giây)</span>
                     <input id="pen-delay-down" type="number" min="0" step="0.05" value="0.2"/>
@@ -944,6 +948,7 @@
                     <select id="draw-pen-width">
                       <option value="0.2">0,2 mm</option>
                       <option selected="" value="0.4">0,4 mm</option>
+                      <option value="0.5">0,5 mm</option>
                       <option data-i18n="drawing.params.penCustom" value="custom">Tùy chọn</option>
                     </select>
                   </label>

@@ -68,6 +68,26 @@ def test_zero_delay_removes_g4():
     assert "G4 P0.5" in lines and "G4 P0.25" in lines
 
 
+def test_pen_down_feed_slows_only_the_descent():
+    lines, stats, _ = build(pen_feed=3000, pen_down_feed=600, draw_feed=1500)
+    ups = [l for l in lines if l.startswith("G1 Z5")]
+    downs = [l for l in lines if l.startswith("G1 Z0")]
+    assert downs and all("F600" in l for l in downs)             # hạ chậm
+    assert any("F3000" in l for l in ups)                        # nâng vẫn nhanh
+    base = build(pen_feed=3000, draw_feed=1500)[1]
+    assert stats["est_seconds"] > base["est_seconds"]            # hạ chậm hơn thì ước tính lâu hơn
+
+
+def test_without_pen_down_feed_output_is_unchanged():
+    assert build(pen_feed=3000)[0] == build(pen_feed=3000, pen_down_feed=3000)[0]
+    assert build(pen_feed=3000)[1]["est_seconds"] == build(pen_feed=3000, pen_down_feed=3000)[1]["est_seconds"]
+
+
+def test_pen_down_feed_is_range_checked():
+    with pytest.raises(DrawError):
+        G(pen_down_feed=5)
+
+
 def test_duplicate_points_and_tiny_strokes_are_dropped_with_warning():
     lines, stats, warns = build([[(0, 0), (0, 0), (5, 0)], [(9, 9), (9.0001, 9)], [(1, 1)]], precision=3)
     assert stats["strokes"] == 1

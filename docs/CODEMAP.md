@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~367,936 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~368,880 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -67,7 +67,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `HUONG_DAN_DOC_CODE.md` | ~5,834 |  |
-| `README.md` | ~2,082 |  |
+| `README.md` | ~2,120 |  |
 
 ### `backend/app/`
 
@@ -119,7 +119,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `drafts.py` | ~3,152 | Bản thảo trên đĩa: G-code từng lớp + ảnh minh họa + meta.json, mỗi bản một thư mục con. |
 | `edges.py` | ~2,170 | Nét viền phác họa: ảnh -> mặt nạ đường mảnh 1 điểm ảnh (trace.py dò thành nét liền). |
 | `errors.py` | ~108 | Lỗi của tab Tạo bản vẽ. `code` ổn định để frontend dịch (quy ước E3), `message` chỉ để tra cứu. |
-| `gcode.py` | ~1,455 | Đường nét (mm, đã bố trí) -> dòng G-code + thống kê. Không gọi máy. |
+| `gcode.py` | ~1,531 | Đường nét (mm, đã bố trí) -> dòng G-code + thống kê. Không gọi máy. |
 | `gcode_import.py` | ~1,699 | Nhập một tệp G-code có sẵn (từ phần mềm khác) thành MỘT BẢN THẢO: một tệp = một bản. |
 | `hatch.py` | ~2,441 | Lõi tô bằng nét: bản đồ độ đậm -> mặt nạ từng mức -> đường quét song song / xoắn ốc -> các nét (mm). |
 | `isolated.py` | ~2,204 | Chạy việc nặng (ảnh -> nét) trong TIẾN TRÌNH RIÊNG, ưu tiên thấp. |
@@ -132,7 +132,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `registry.py` | ~379 | Sổ đăng ký: gom các biến thể cùng loại (kiểu vector hóa...). Thêm kiểu mới không sửa chỗ khác. |
 | `service.py` | ~1,353 | Ghép các bước: kiểm tra tham số -> bố trí -> G-code (mỗi lớp một tệp) -> kiểm bằng chính bộ làm sạch |
 | `shapes.py` | ~174 | Kiểu dữ liệu dùng chung. Tọa độ đường nét: (x, y) tính bằng mm, gốc ở góc trên trái, Y xuống. |
-| `spec.py` | ~3,075 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
+| `spec.py` | ~3,114 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
 | `store.py` | ~463 | Bộ nhớ tạm các bản vẽ đã nạp (để đổi tham số bố trí/G-code không phải nạp lại ảnh/SVG). |
 | `styles.py` | ~1,363 | Kiểu tô: zigzag, sóng, xoắn ốc. Mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
 | `svg_in.py` | ~1,559 | Nạp SVG (nhiều lớp) bằng vpype -> các lớp đường nét tính bằng mm. |
@@ -166,8 +166,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `test_calibration.py` | ~608 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
-| `test_draw_contract.py` | ~3,702 | Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay. |
-| `test_draw_gcode.py` | ~1,424 |  |
+| `test_draw_contract.py` | ~3,703 | Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay. |
+| `test_draw_gcode.py` | ~1,707 |  |
 | `test_draw_layout.py` | ~1,439 |  |
 | `test_draw_optimize.py` | ~526 |  |
 | `test_draw_registry.py` | ~196 |  |
@@ -193,15 +193,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `AI_START.md` | ~2,043 |  |
-| `ARCHITECTURE.md` | ~5,312 |  |
+| `ARCHITECTURE.md` | ~5,326 |  |
 | `BRIEF.md` | ~2,962 |  |
-| `CODEMAP.md` | ~4,643 |  |
+| `CODEMAP.md` | ~4,792 |  |
 | `DECISIONS.md` | ~3,937 |  |
 | `DONG_GOI.md` | ~4,048 |  |
-| `DRAW_ROADMAP.md` | ~4,950 |  |
+| `DRAW_ROADMAP.md` | ~4,949 |  |
 | `EXPORT_FOR_AI.md` | ~1,605 |  |
-| `FUTURE_UPGRADE_BETA.md` | ~9,129 |  |
-| `KIEM_TRA_VE.md` | ~2,932 |  |
+| `FUTURE_UPGRADE_BETA.md` | ~9,115 |  |
+| `KIEM_TRA_VE.md` | ~3,108 |  |
 | `MACHINE.md` | ~2,093 |  |
 | `PLAN_ONLINE.md` | ~6,672 |  |
 | `STATUS.md` | ~2,256 |  |
@@ -210,7 +210,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~27,662 |  |
+| `index.html` | ~27,774 |  |
 
 ### `frontend/assets/css/`
 
@@ -280,7 +280,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `canvas.js` | ~5,385 | canvas khung vẽ: tờ giấy (A6/A5/A4 như khung dán thật trên bàn), lề, nét xem nháp |
 | `crop.js` | ~2,871 | cắt ảnh ngay trên khung "ảnh gốc" của tab Tạo bản vẽ. |
-| `params.js` | ~4,367 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
+| `params.js` | ~4,385 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
 | `presets.js` | ~666 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
 | `tonepreview.js` | ~943 | khung "ảnh gốc" của tab Tạo bản vẽ: xem ảnh gốc hoặc ảnh SAU chỉnh sáng |
 
@@ -288,8 +288,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~13,969 |  |
-| `vi.json` | ~13,446 |  |
+| `en.json` | ~13,997 |  |
+| `vi.json` | ~13,471 |  |
 
 ### `frontend/tests/`
 

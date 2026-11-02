@@ -403,6 +403,7 @@
   "drawing.params.travelFeed": "Tốc độ di chuyển không vẽ (mm/phút)",
   "drawing.params.penUp": "Z khi nâng bút",
   "drawing.params.penDown": "Z khi hạ bút",
+  "drawing.params.penDownFeed": "Tốc độ hạ bút (mm/phút, trống = như nâng bút)",
   "drawing.params.delayDown": "Chờ sau khi hạ bút (giây)",
   "drawing.params.delayUp": "Chờ sau khi nâng bút (giây)",
   "drawing.params.help": "Z lấy theo hồ sơ máy (Z0 bút xuống, Z5 bút lên).",

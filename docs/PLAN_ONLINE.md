@@ -11,7 +11,7 @@ Cập nhật 02/11/2026 (đã gộp `PLAN_ACCESS.md` vào mục 2). Một chỗ 
 | 1 | Đo trên MiniPC thật: thời gian từng bước (`info.timings`, rê chuột vào dòng trạng thái tab vẽ), RAM, máy vẽ có giật khi đang xử lý ảnh không | ⏳ chờ máy về |
 | 2 | Xử lý ảnh ở **tiến trình riêng, ưu tiên thấp** (`services/drawing/isolated.py`): hủy = kết thúc tiến trình, quá giờ 600 s, RAM 4 GB (chỉ Linux) | ✅ (⚠ giới hạn RAM chưa thử Ubuntu) |
 | 3 | Trình duyệt **thu nhỏ ảnh trước khi gửi** (`lib/imageprep.js`) và **xem trước độ sáng** (`views/drawing/tonepreview.js`). Backend vẫn tự làm được và luôn kiểm lại | ✅ |
-| 4 | **Phân quyền khách / quản lý** (mục 2) | ✅ đăng nhập PIN + chặn mặc định + giao diện khách (02/11/2026, 381 test). ⏳ còn phần khách **gửi ảnh vào `customer/`** |
+| 4 | **Phân quyền khách / quản lý** (mục 2) | ✅ đăng nhập PIN + chặn mặc định + giao diện khách (02/11/2026, 387 test). ⏳ còn phần khách **gửi ảnh vào `customer/`** |
 | 5 | **Triển khai Ubuntu**: Docker (đề xuất) hoặc venv + systemd, quyền cổng USB, tên cổng cố định (udev), IP cố định (mục 4–5) | ⏳ |
 | 6 | **Cloudflare Tunnel** (mục 6). **Chỉ nối sau khi xong #4 và test** | ⏳ |
 

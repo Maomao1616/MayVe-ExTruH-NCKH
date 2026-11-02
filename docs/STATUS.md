@@ -11,7 +11,7 @@ Mục tiêu hiện tại: **một trình điều khiển máy vẽ chạy trên 
 | Cài đặt, hồ sơ máy, cấu hình YAML | ~90% | ~70% |
 | Tài liệu, test | ~90% | |
 
-Tổng: khoảng 88–90% tính năng, 60–65% kiểm chứng. Thiếu chủ yếu là thử máy thật và thử nhiều ảnh thật. Test tự động: backend 381 (`python -m pytest`), frontend 33 (`node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`).
+Tổng: khoảng 88–90% tính năng, 60–65% kiểm chứng. Thiếu chủ yếu là thử máy thật và thử nhiều ảnh thật. Test tự động: backend 387 (`python -m pytest`), frontend 33 (`node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`).
 
 ## 2. Đã xong
 **Phân quyền (02/11/2026):** khách (không đăng nhập) chỉ xem trạng thái, xem trước G-code và xem trước ảnh (xám, sáng / tối, cắt); quản lý nhập PIN (`EXTRUXY_ADMIN_PIN`) dùng mọi thứ. Backend **chặn mặc định** (chỉ vài route + đăng nhập mở cho khách; test quét mọi route), phiên cookie 12 giờ, sai 5 lần khóa 60 giây, đăng xuất tự khóa chuyển động. Chưa đặt PIN = như trước (ai vào cũng là quản lý, có nhãn cảnh báo). 🧪 Chưa thử qua Cloudflare / điện thoại thật; ⏳ khách gửi ảnh vào `customer/`.

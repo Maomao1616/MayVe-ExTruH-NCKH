@@ -391,6 +391,7 @@
   "drawing.params.travelFeed": "Travel Speed (mm/min)",
   "drawing.params.penUp": "Z when pen is up",
   "drawing.params.penDown": "Z when pen is down",
+  "drawing.params.penDownFeed": "Pen lowering speed (mm/min, empty = same as raising)",
   "drawing.params.delayDown": "Delay after lowering pen (seconds)",
   "drawing.params.delayUp": "Delay after raising pen (seconds)",
   "drawing.params.help": "Z comes from the machine profile (Z0 pen down, Z5 pen up).",
