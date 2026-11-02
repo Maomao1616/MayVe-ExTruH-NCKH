@@ -57,10 +57,10 @@ Người nhận làm:
 | Bật | Bấm icon. Server chạy ẩn (không có cửa sổ đen), trình duyệt mở `http://<IP LAN>:8000`. Đang chạy rồi thì chỉ mở trình duyệt |
 | Tắt | **Không cần**: đóng hết trang 10 phút thì server tự tắt; đang vẽ thì chờ vẽ xong. Chuyển tab / thu nhỏ trình duyệt không làm tắt (trang vẫn báo "còn mở" mỗi 30 s) |
 | Tắt ngay | Bấm đúp `launcher\stop.vbs` |
-| Máy khác cùng mạng | Mở địa chỉ trình duyệt đang hiện (vd `http://192.168.1.11:8000`). Chỉ dùng ở mạng tin cậy: **chưa có đăng nhập** |
+| Máy khác cùng mạng | Mở địa chỉ trình duyệt đang hiện (vd `http://192.168.1.11:8000`). Máy khác vào là **khách** (chỉ xem trạng thái, xem trước G-code và ảnh) nếu đã đặt PIN quản lý; **chưa đặt PIN thì ai vào cũng là quản lý** |
 | Đổi ảnh icon | `launcher\icon.ico` phải là **tệp .ico thật**; đổi đuôi ảnh `.png`/`.jpg` thành `.ico` thì Windows **không hiện**. Chuyển ảnh bằng: `.\Python\python.exe -c "from PIL import Image; im=Image.open('anh.png').convert('RGBA'); s=min(im.size); im=im.crop(((im.width-s)//2,(im.height-s)//2,(im.width+s)//2,(im.height+s)//2)).resize((256,256)); im.save('launcher/icon.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)])"` rồi bấm lại `tao_bieu_tuong.vbs` |
 | Máy đã có Python 3.12, không muốn tải zip `Python/` | Trong `backend\` chạy `py -3.12 -m venv .venv` rồi `.venv\Scripts\python.exe -m pip install -r requirements.txt`. Icon và `Cap nhat.bat` tự dùng `backend\.venv` khi không thấy `Python\` |
-| Đặt PIN mở khóa chuyển động | Mở `launcher\start.ps1`, bỏ `#` ở dòng `$env:EXTRUXY_UNLOCK_PIN = "1234"`, đổi số, lưu; tắt server rồi bật lại |
+| **Đặt PIN** (quản lý + mở khóa chuyển động) | Mở (hoặc tạo) tệp **`data\pin.txt`**, mỗi dòng một PIN: `admin=<số>` (PIN quản lý) và `unlock=<số>` (PIN mở khóa chuyển động); lưu; `launcher\stop.vbs` rồi bật lại. Tệp này **không lên Git**, không vào bản đóng gói, `Cap nhat.bat` giữ nguyên. Có PIN quản lý thì mở trang là **khách**; bấm **Đăng nhập quản lý** ở đầu trang, nhập PIN mới điều khiển được. Hai PIN nên khác nhau và **đừng dùng số dễ đoán** khi cho người ngoài vào mạng |
 
 Cách `start.ps1` chọn IP: card mạng có tuyến ra router ưu tiên cao nhất (giống Windows chọn), bỏ qua `169.254.x.x`; không có mạng thì dùng `localhost`. IP đổi trong lúc server đang chạy → tự mở `localhost`.
 
@@ -123,6 +123,7 @@ cd backend
 # Cho máy khác (điện thoại) vào: thêm IP của laptop; chỉ dùng trên chính laptop thì bỏ 2 dòng $env này và bỏ --host
 $env:EXTRUXY_ALLOWED_HOSTS = "localhost,127.0.0.1,192.168.43.10"   # thay bằng IP thật (ipconfig)
 $env:EXTRUXY_UNLOCK_PIN = "2468"                                    # đổi số
+$env:EXTRUXY_ADMIN_PIN = "1357"                                     # PIN quản lý; không đặt = ai vào cũng là quản lý
 ..\Python\python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 - Không phải chỉ đường dẫn tới thư mục nào khác: `python312._pth` đã có dòng `..\backend` nên Python tự tìm thấy mã. `cd backend` cho dễ nhớ.
@@ -134,7 +135,7 @@ $env:EXTRUXY_UNLOCK_PIN = "2468"                                    # đổi s�
 1. Cho laptop vào mạng phát **trước**, rồi mới bấm icon (launcher chỉ đọc IP lúc khởi động; đổi mạng thì `stop.vbs` rồi bật lại).
 2. Windows thường xếp mạng phát là **Public** → tường lửa chặn. Lần đầu hỏi thì tick cả Public, hoặc đổi mạng đó sang Private (Cài đặt → Wi-Fi → mạng đó → Private).
 3. Điện thoại mở đúng địa chỉ trình duyệt laptop đang hiện (Android thường `192.168.43.x`, iPhone `172.20.10.x`).
-4. **Đặt PIN mở khóa** (mục 4): mở khóa là chung cả máy, laptop mở thì điện thoại cũng chạy được máy.
+4. **Đặt PIN quản lý và PIN mở khóa** (tệp `data\pin.txt`, mục 4; chạy tay thì đặt `$env:EXTRUXY_ADMIN_PIN` như trên): điện thoại vào là khách, chỉ xem. Không đặt PIN quản lý thì điện thoại cũng điều khiển được; mở khóa chuyển động là chung cả máy.
 5. MKS chỉ cần cắm USB; **không** cho Wi-Fi của MKS vào mạng này (WebUI FluidNC điều khiển máy vượt qua khóa của phần mềm).
 6. Dữ liệu giữa laptop và điện thoại không đi ra Internet nên gần như không tốn 4G.
 

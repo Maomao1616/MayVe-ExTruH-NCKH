@@ -34,7 +34,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~364 test) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test backend (~381 test) | trong `backend`, đã bật venv: `python -m pytest` |
 | Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 
@@ -42,7 +42,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 - Cắm USB, chọn cổng ở Cài đặt → Kết nối. Ở chế độ chỉ đọc bạn chỉ xem được trạng thái và gửi lệnh đọc thông tin.
 - Muốn máy chuyển động: bấm **Mở khóa chuyển động** (tự khóa lại sau 15 phút; có thể đặt PIN). Chỉ mở khi có người đứng cạnh, tay gần công tắc nguồn.
 - Nút Reset/Dừng trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V ở máy.
-- Chạy tay `uvicorn` thì backend chỉ nhận yêu cầu từ chính máy đó (`localhost`); bản mang đi mở cho mạng LAN. **Chưa có đăng nhập**: chỉ dùng mạng tin cậy, đặt PIN mở khóa chuyển động. Đừng mở ra mạng trước khi làm xong phân quyền (`docs/PLAN_ONLINE.md`).
+- Chạy tay `uvicorn` thì backend chỉ nhận yêu cầu từ chính máy đó (`localhost`); bản mang đi mở cho mạng LAN. **Có hai vai trò**: *khách* (không đăng nhập) chỉ xem trạng thái, xem trước G-code và xem trước ảnh; *quản lý* nhập mã PIN (`EXTRUXY_ADMIN_PIN`; bản mang đi đặt trong `data\pin.txt`) mới điều khiển được. **Chưa đặt PIN thì ai vào cũng là quản lý**: khi cho máy khác vào mạng, đặt cả PIN quản lý lẫn PIN mở khóa chuyển động (`docs/PLAN_ONLINE.md` mục 2, `docs/DONG_GOI.md` mục 4).
 
 ## Tài liệu
 | Tệp | Để làm gì |

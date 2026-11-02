@@ -1649,25 +1649,129 @@ body.is-reordering * {
     }
 }
 
-/* ==================== Đèn công tắc hành trình X / Y (Pn) trên bảng Vị trí ==================== */
-.coordinates-panel .axis-label {
-    position: relative;
+/* ==================== Đèn công tắc hành trình X / Y (Pn) ở đầu bảng Vị trí ==================== */
+.panel-heading-side {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+}
+
+.pin-leds {
+    display: inline-flex;
+    gap: 6px;
 }
 
 .pin-led {
-    position: absolute;
-    top: -3px;
-    right: -5px;
-    width: 8px;
-    height: 8px;
-    border: 1px solid var(--border);
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1.5px solid var(--border);
     border-radius: 50%;
     background: var(--bg-main);
-    transition: background-color 0.08s, box-shadow 0.08s;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: help;
+    transition: background-color 0.08s, box-shadow 0.08s, color 0.08s;
 }
 
 .pin-led.is-on {
     border-color: #ffb020;
     background: #ffb020;
-    box-shadow: 0 0 6px 2px rgb(255 176 32 / 70%);
+    color: #1a1200;
+    box-shadow: 0 0 8px 2px rgb(255 176 32 / 70%);
+}
+
+/* ===== Phân quyền khách / quản lý (core/auth.js đặt body.role-guest; backend mới là nơi chặn thật) ===== */
+.auth-box {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px 8px;
+}
+
+.auth-form {
+    display: flex;
+    gap: 6px;
+}
+
+.auth-form input {
+    width: 9.5rem;
+    min-height: 0;
+    padding: 5px 10px;
+}
+
+.role-badge {
+    padding: 3px 10px;
+    border: 1px solid var(--success);
+    border-radius: 999px;
+    color: var(--success);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.role-badge.is-guest {
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+.role-badge.is-warning {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.auth-error {
+    color: var(--danger);
+    font-size: 12px;
+}
+
+.guest-only {
+    display: none;
+}
+
+body.role-guest .guest-only {
+    display: flex;
+}
+
+/* Khách: chỉ xem trạng thái, nạp + xem trước G-code, xem trước ảnh. Ẩn mọi thứ điều khiển máy / quản trị. */
+body.role-guest .jog-panel,
+body.role-guest #terminal-panel,
+body.role-guest #draft-queue-panel,
+body.role-guest #drawing-drafts-panel,
+body.role-guest #dock,
+body.role-guest #tab-settings,
+body.role-guest #panel-settings,
+body.role-guest .toolbar-actions,
+body.role-guest .toolbar-safety-note,
+body.role-guest #unlock-btn,
+body.role-guest #unlock-motion-btn,
+body.role-guest #motion-live-banner,
+body.role-guest .coordinate-actions,
+body.role-guest #run-job-btn,
+body.role-guest label[for="run-confirm"],
+body.role-guest #resume-box,
+body.role-guest #cancel-job-btn,
+body.role-guest #save-gcode-draft-btn,
+body.role-guest #final-run-btn,
+body.role-guest #regenerate-gcode-btn,
+body.role-guest #save-draft-btn,
+body.role-guest #send-to-control-btn,
+body.role-guest label:has(#drawing-confirm) {
+    display: none !important;
+}
+
+/* Khách: nút Zero / Home của từng trục là Ô của lưới 5 cột (Trục, Zero, Workspace, Machine, Home).
+   Ẩn bằng display:none sẽ làm các ô còn lại dồn sang trái và lệch cột, nên chỉ làm trong suốt, giữ nguyên chỗ. */
+body.role-guest #zero-x-btn,
+body.role-guest #zero-y-btn,
+body.role-guest #home-x-btn,
+body.role-guest #home-y-btn,
+body.role-guest .coordinate-header span:nth-child(2),
+body.role-guest .coordinate-header span:nth-child(5) {
+    visibility: hidden;
 }

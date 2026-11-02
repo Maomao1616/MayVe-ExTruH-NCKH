@@ -6,7 +6,9 @@ import {
     applyTranslations
 } from "./core/i18n.js";
 
+import { refreshAuth } from "./core/auth.js";
 import { startPolling } from "./core/state.js";
+import { initAuth } from "./views/auth.js";
 import { initTerminal } from "./views/terminal.js";
 import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
@@ -21,6 +23,8 @@ async function initApp() {
         initDetailsMemory();
         await initLanguageSelector();
         initThemeSelector();
+        await refreshAuth();             // biết mình là khách hay quản lý TRƯỚC khi các view khởi động
+        initAuth();
         startPolling();
         initControl();
         initDrawing();

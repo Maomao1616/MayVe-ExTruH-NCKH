@@ -8,6 +8,7 @@
 
 import { t, getLanguage } from "../core/i18n.js";
 import { api } from "../core/api.js";
+import { isAdmin } from "../core/auth.js";
 import { MACHINE, PREFS } from "../core/config.js";
 import { subscribe, isConnected, isStale, firmwareLabel } from "../core/state.js";
 import { parseGcode, outOfRange, formatDuration } from "../lib/gcode.js";
@@ -129,6 +130,7 @@ function penText(wpos) {
 // mở cổng nên thường không có banner. $I là lệnh chỉ đọc, được phép cả khi máy đang khóa.
 let askedFirmwareFor = null;
 function askFirmwareOnce(snapshot) {
+    if (!isAdmin()) return;                  // khách không được gửi lệnh; gửi sẽ bị 401 rồi bị hỏi lại mãi
     const status = snapshot.status;
     const connection = status?.connection;
     const key = connection?.connected ? `${connection.mode}:${connection.port}` : null;

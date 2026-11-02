@@ -49,6 +49,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `api/machine.py` | `health, ports, connection, connect, disconnect, status, command, realtime, log, jobs, jobs/cancel` (`reset`/`soft`/`hard`), `motion` |
 | `api/config.py` | `GET/POST /api/machine/config`, `POST /api/machine/config/save`, `GET/PUT /api/profile` |
 | `api/draw.py` | `/api/draw/*` của tab Tạo bản vẽ (không gọi máy) |
+| `auth.py` · `api/auth.py` | Phân quyền: phiên quản lý bằng PIN (cookie ngẫu nhiên trong RAM, 12 giờ, sai 5 lần khóa 60 giây), danh sách `GUEST_ROUTES`; `/api/auth/login`, `logout`, `me`. Cổng kiểm nằm ở middleware `main.py` |
 | `services/machine.py` | **Bộ não:** kết nối, trạng thái, nhật ký, đoán Home (`[MSG:Homed:XY]`), khóa/mở khóa chuyển động, dừng an toàn (soft/hard, xác nhận nâng bút), `query()` gom phản hồi nhiều dòng |
 | `services/job.py` | Chạy G-code: làm sạch dòng, gửi từng dòng chờ `ok`, lỗi/alarm/timeout kèm Feed Hold, hủy |
 | `services/machine_config.py` | Đọc/sửa/lưu YAML trên mạch (`$CD`, `$/axes/...`, `$CD=/localfs/...`), sao lưu bản gốc về `data/config_backups/` |
@@ -71,6 +72,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 | `js/app.js` | Vào cửa: tab, ngôn ngữ, sáng/tối, gọi `init*` của các view |
 | `js/core/api.js` | Nơi **duy nhất** gọi backend |
 | `js/core/state.js` | Nơi **duy nhất** thăm dò: `/api/status` mỗi 100 ms (bằng nhịp backend hỏi `?`), `/api/log` (terminal) theo Cài đặt 300 ms–1 s; `isConnected()`, `isStale()`, `firmwareLabel()`, `refreshNow()` |
+| `js/core/auth.js` · `js/views/auth.js` | Vai trò của trình duyệt (khách / quản lý): `body.role-guest` ẩn phần quản lý bằng CSS (`polish.css`), `isAdmin()` chặn các chỗ tự gọi API (`state.js` bỏ nhật ký, `drawing.js` bỏ tạo nét, `control.js` bỏ `$I`); khung đăng nhập ở đầu trang. Đổi vai trò = tải lại trang |
 | `js/core/config.js` | Giá trị dùng chung: `MACHINE` (máy, bút; Cài đặt ghi đè), `PREFS` (Hoạt động), `POLL`, `VIEW` |
 | `js/core/i18n.js` | Dịch chữ |
 | `js/lib/gcode.js` | Đọc G-code (thuần tính toán; có `cleanLine`) |
@@ -112,7 +114,7 @@ Giao diện chỉ hiển thị; backend là nguồn sự thật. **Không có th
 
 ## 5. Chạy và thử
 * Chạy: `uvicorn app.main:app --reload` trong `backend/` (đang sửa code) → `http://127.0.0.1:8000/`. Bản mang đi: icon Desktop → `launcher/start.vbs` → `start.ps1` (Python/ embeddable, `--host 0.0.0.0`, tự đặt `EXTRUXY_ALLOWED_HOSTS` theo IP LAN, `EXTRUXY_IDLE_EXIT_MIN=10`).
-* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~364 test). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`.
+* Test backend (trong `backend`, đã bật venv): `python -m pytest` (~381 test). Test frontend (từ gốc): `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`.
 * Sửa Python xong phải tắt (Ctrl+C) và chạy lại server. Chữ không đổi: Ctrl+Shift+R hoặc F12 → Network → Disable cache. Lỗi lạ: F12 → Console, dán dòng đỏ.
 * Thói quen: áp từng bước nhỏ → test → thử bằng sim → commit Git.
 * Cài thư viện (lần đầu hoặc sau khi cập nhật): `pip install -r requirements.txt -r requirements-dev.txt`.
@@ -144,6 +146,7 @@ Biến môi trường (đều tùy chọn):
 | `EXTRUXY_ALLOW_MOTION=1` | mở khóa chuyển động cố định (máy thật mặc định chỉ đọc) |
 | `EXTRUXY_UNLOCK_MINUTES` | tự khóa lại sau chừng này phút (mặc định 15; 0 = tắt) |
 | `EXTRUXY_UNLOCK_PIN` | đòi PIN khi mở khóa chuyển động |
+| `EXTRUXY_ADMIN_PIN` | PIN quản lý (mục 8). Không đặt = ai vào cũng là quản lý. **Phải đặt khi cho máy khác vào mạng** |
 | `EXTRUXY_NO_UNLOCK=1` | cấm mở khóa từ giao diện |
 | `EXTRUXY_ALLOWED_HOSTS` | danh sách Host được gọi API (mặc định chỉ cục bộ) |
 | `EXTRUXY_IDLE_EXIT_MIN` | tự tắt server khi không có yêu cầu nào chừng này phút và không đang chạy tác vụ (`app/idle.py`; mặc định 0 = không tắt; launcher đặt 10). Tab ẩn vẫn gửi `/api/health` mỗi 30 s |
@@ -153,7 +156,7 @@ Biến môi trường (đều tùy chọn):
 
 ## 8. Các chốt an toàn đã có
 - Máy thật chỉ đọc cho tới khi mở khóa chuyển động; lệnh `hold`/`reset`/`jog_cancel` luôn gửi được; lệnh chỉ đọc lấy từ `$CMD` thật (`links/protocol.py`).
-- Backend chỉ nhận Host cục bộ và chặn POST từ Origin lạ. **Chưa có đăng nhập** (thiết kế khách / quản lý: `PLAN_ONLINE.md` mục 2, làm trước khi mở ra mạng).
+- Backend chỉ nhận Host cục bộ và chặn POST từ Origin lạ. **Phân quyền khách / quản lý** (`app/auth.py`, PLAN_ONLINE mục 2): middleware trong `main.py` chặn MỌI route `/api` ngoài danh sách khách (`GUEST_ROUTES`) nếu không có phiên quản lý; route mới tự bị chặn. Chưa đặt `EXTRUXY_ADMIN_PIN` thì ai vào cũng là quản lý. Lớp này nằm ngoài lớp mở khóa chuyển động.
 - G-code tệp bị làm sạch (`job.clean_gcode`): bỏ chú thích; từ chối dòng `$...` (cài đặt, Home, jog), ký tự realtime (`? ! ~`, Ctrl-X), ký tự lạ; tối đa 200 000 dòng, 200 ký tự/dòng. G-code do tab vẽ sinh ra cũng phải qua đúng bộ làm sạch này (kiểm trong `service.py`). Bộ làm sạch còn chặn `G10, G28, G30, G38, G53, G55–G59, G92` (đổi gốc / hệ tọa độ, chạy tới chỗ máy tự chọn) và báo một lần tối đa 5 dòng lỗi kèm số dòng; `lib/gcode.js` (`BLOCKED_G`) báo trước ngay lúc nạp và khóa nút Chạy. G54, G91, G20, M0, lệnh lạ không bị chặn (firmware tự báo). G-code của tab vẽ không sinh các lệnh bị chặn.
 - Mọi nét phải nằm trong vùng làm việc; `layout.py` chặn khung vượt giấy, `service.py` kiểm lại trước khi ra G-code.
 - Hủy an toàn 3 chế độ (reset / soft / hard); trong lúc dừng, backend từ chối job mới, lệnh chuyển động và `resume` (`stopping`). Giao diện khóa điều khiển khi báo cáo trạng thái cũ quá 2 s; tác vụ đang chạy coi là mất phản hồi sau `STATUS_STALE_S` (10 s) và tự Feed Hold.

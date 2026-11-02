@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from . import idle
 from .api import ROUTERS
+from .auth import COOKIE, auth
 from .services.machine import ServiceError, machine
 
 # Backend điều khiển máy thật nên mặc định chỉ phục vụ máy cục bộ (uvicorn mặc định bind
@@ -61,6 +62,10 @@ async def local_guard(request: Request, call_next):
             return _error(400, "bad_request", "Content-Length không hợp lệ.")
         if length > MAX_BODY_BYTES:
             return _error(413, "too_large", "Yêu cầu quá lớn.")
+    # Chặn mặc định: route /api nào ngoài danh sách khách đều cần phiên quản lý (app/auth.py).
+    path = request.url.path
+    if path.startswith("/api") and not auth.allowed(request.method, path, request.cookies.get(COOKIE)):
+        return _error(401, "auth_required", "Cần đăng nhập quản lý.")
     return await call_next(request)
 
 

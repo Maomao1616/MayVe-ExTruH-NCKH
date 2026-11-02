@@ -5,6 +5,7 @@
 // Các ô thông số do ./drawing/params.js giữ; canvas do ./drawing/canvas.js; danh sách bản thảo do views/drafts.js.
 // Đổi bố trí (giấy, lề, xoay, kéo khung) KHÔNG nạp lại; đổi kiểu nét / tiền xử lý / tối ưu thì phải bấm Tạo nháp/chính thức.
 import { api, ApiError } from "../core/api.js";
+import { isAdmin } from "../core/auth.js";
 import { MACHINE } from "../core/config.js";
 import { t } from "../core/i18n.js";
 import { subscribe } from "../core/state.js";
@@ -133,6 +134,9 @@ function acceptFile(file) {
 // fresh = tệp mới (khung = phần trong lề); ngược lại giữ khung hiện tại và nạp theo đúng cỡ đang vẽ.
 async function startImport(quality, { fresh = false, box = null } = {}) {
     if (!S.file) return;
+    // Khách chỉ xem trước ảnh trong trình duyệt (xám, sáng/tối, cắt); tạo nét là việc của quản lý.
+    // Một cổng này chặn cả 4 chỗ tự tạo nét (chọn tệp, áp vùng cắt, đổi preset, kéo khung).
+    if (!isAdmin()) return setStatus("auth.guestPreview");
     clearTimeout(S.pollTimer);
     clearTimeout(S.retraceTimer);
     if (!fresh && !box && S.plan?.ok) box = currentSourceBox();

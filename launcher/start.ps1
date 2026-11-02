@@ -36,8 +36,18 @@ if (-not (Test-Port $port)) {
   $env:EXTRUXY_ALLOWED_HOSTS = "localhost,127.0.0.1,$ip"
   $env:EXTRUXY_DATA_DIR      = Join-Path $root "data"
   $env:EXTRUXY_IDLE_EXIT_MIN = "10"
-  # May khac cung mang vao duoc giao dien: dat PIN de nguoi la khong mo khoa chuyen dong duoc.
-  # $env:EXTRUXY_UNLOCK_PIN  = "1234"
+  # PIN doc tu data\pin.txt (data\ khong len Git, khong vao ban dong goi, Cap nhat.bat giu nguyen). Moi dong mot PIN:
+  #   admin=<so>    PIN QUAN LY: khach (khong dang nhap) chi xem trang thai, xem truoc G-code va anh. Khong dat = ai vao cung la quan ly.
+  #   unlock=<so>   PIN mo khoa chuyen dong (may duoc phep chay). Khong dat = khong doi PIN.
+  # May khac cung mang vao duoc giao dien thi nen dat ca hai.
+  $pinFile = Join-Path $root "data\pin.txt"
+  if (Test-Path $pinFile) {
+    foreach ($line in Get-Content $pinFile) {
+      if ($line -match '^\s*(admin|unlock)\s*=\s*(\S+)\s*$') {
+        if ($Matches[1] -eq "admin") { $env:EXTRUXY_ADMIN_PIN = $Matches[2] } else { $env:EXTRUXY_UNLOCK_PIN = $Matches[2] }
+      }
+    }
+  }
   # Chi ghi LOI khi khoi dong (khong ghi tung yeu cau), ghi de moi lan bat: xem khi server khong len.
   New-Item -ItemType Directory -Force -Path $env:EXTRUXY_DATA_DIR | Out-Null
   $proc = Start-Process $python -PassThru -WindowStyle Hidden -WorkingDirectory (Join-Path $root "backend") `

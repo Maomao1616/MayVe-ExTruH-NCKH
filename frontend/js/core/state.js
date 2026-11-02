@@ -3,6 +3,7 @@
 // /api/log?since=... (terminal) thưa hơn, mỗi POLL.logMs. Nhật ký lấy theo seq nên hỏi thưa không mất dòng nào.
 
 import { api } from "./api.js";
+import { isAdmin } from "./auth.js";
 import { POLL } from "./config.js";
 
 const MAX_LOGS = 500;
@@ -122,7 +123,8 @@ async function pollOnce() {
         if (!polling) return;
 
         let logResult = null;
-        if (logNow || Date.now() - lastLogAt >= POLL.logMs) {
+        // Terminal chỉ dành cho quản lý: khách gọi /api/log sẽ bị 401 và tưởng backend hỏng.
+        if (isAdmin() && (logNow || Date.now() - lastLogAt >= POLL.logMs)) {
             logResult = await api.log(state.lastLogSeq);
             if (!polling) return;
             lastLogAt = Date.now();

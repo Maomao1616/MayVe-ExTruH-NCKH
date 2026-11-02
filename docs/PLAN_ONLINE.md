@@ -11,7 +11,7 @@ Cập nhật 02/11/2026 (đã gộp `PLAN_ACCESS.md` vào mục 2). Một chỗ 
 | 1 | Đo trên MiniPC thật: thời gian từng bước (`info.timings`, rê chuột vào dòng trạng thái tab vẽ), RAM, máy vẽ có giật khi đang xử lý ảnh không | ⏳ chờ máy về |
 | 2 | Xử lý ảnh ở **tiến trình riêng, ưu tiên thấp** (`services/drawing/isolated.py`): hủy = kết thúc tiến trình, quá giờ 600 s, RAM 4 GB (chỉ Linux) | ✅ (⚠ giới hạn RAM chưa thử Ubuntu) |
 | 3 | Trình duyệt **thu nhỏ ảnh trước khi gửi** (`lib/imageprep.js`) và **xem trước độ sáng** (`views/drawing/tonepreview.js`). Backend vẫn tự làm được và luôn kiểm lại | ✅ |
-| 4 | **Phân quyền khách / quản lý** + khách gửi ảnh vào `customer/` (mục 2) | ⏳ thiết kế xong |
+| 4 | **Phân quyền khách / quản lý** (mục 2) | ✅ đăng nhập PIN + chặn mặc định + giao diện khách (02/11/2026, 381 test). ⏳ còn phần khách **gửi ảnh vào `customer/`** |
 | 5 | **Triển khai Ubuntu**: Docker (đề xuất) hoặc venv + systemd, quyền cổng USB, tên cổng cố định (udev), IP cố định (mục 4–5) | ⏳ |
 | 6 | **Cloudflare Tunnel** (mục 6). **Chỉ nối sau khi xong #4 và test** | ⏳ |
 
@@ -43,18 +43,18 @@ Quy tắc chung: mọi bước JS đều là đường nhanh tùy chọn; **back
 - Quản lý dùng tab vẽ **y như hiện tại**: nạp ảnh / đổi preset / cắt vùng thì tự tạo nét, không thêm hàng chờ. Chỉ một người tạo nét nên không ai hủy việc của ai. ✅
 - Trạng thái máy dùng chung, backend hỏi máy **một** lần rồi trả cho mọi trình duyệt (đã như vậy).
 
-### 2.3 Đăng nhập quản lý 💡
+### 2.3 Đăng nhập quản lý ✅ (đã làm 02/11/2026: `app/auth.py`, `api/auth.py`, `core/auth.js`, `views/auth.js`)
 
 | Mục | Đề xuất |
 |---|---|
-| Mật khẩu | Biến môi trường `EXTRUXY_ADMIN_PASSWORD` (launcher đặt giống dòng PIN trong `start.ps1`). Không có form tạo tài khoản. |
-| So mật khẩu | `secrets.compare_digest` (như PIN mở khóa, `services/machine.py:219`). Mật khẩu chỉ nằm trong biến môi trường nên chưa cần băm. |
+| Mã PIN | Biến môi trường **`EXTRUXY_ADMIN_PIN`** (launcher: bỏ `#` ở dòng cùng tên trong `start.ps1`). Khác với `EXTRUXY_UNLOCK_PIN` (PIN mở khóa chuyển động). Không có form tạo tài khoản. |
+| So PIN | `secrets.compare_digest`. PIN chỉ nằm trong biến môi trường nên không cần băm. |
 | Phiên | Mã `secrets.token_urlsafe(32)` lưu trong RAM (khởi động lại thì đăng nhập lại). Cookie `HttpOnly`, `SameSite=Strict`, thêm `Secure` khi chạy qua HTTPS. Hết hạn ~12 giờ. |
 | Nhập sai | Sai 5 lần liên tiếp → khóa đăng nhập 60 giây cho **mọi nguồn** (qua tunnel mọi yêu cầu đều từ 127.0.0.1). |
-| Chưa đặt mật khẩu | 💡 Giữ đúng như hôm nay (ai vào cũng là quản lý) để chạy tay khi code không phiền; giao diện hiện **dải cảnh báo đỏ** "chưa đặt mật khẩu quản lý". **Bắt buộc đặt** khi cho máy khác vào và khi lên Cloudflare. Cần chủ dự án chốt. |
+| Chưa đặt PIN | ✅ Giữ đúng như trước (ai vào cũng là quản lý) để chạy tay khi code không phiền; giao diện hiện nhãn cam **"Chưa đặt PIN quản lý"**. **Bắt buộc đặt** khi cho máy khác vào mạng và khi lên Cloudflare. |
 | Đăng xuất / hết phiên | 💡 Tự khóa chuyển động lại. |
 
-Endpoint mới: `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me` → `{role: "admin"|"guest", password_set}`.
+Endpoint: `POST /api/auth/login` `{pin}`, `POST /api/auth/logout`, `GET /api/auth/me` → `{role: "admin"|"guest", pin_set}`. Giao diện **tải lại trang** sau khi đăng nhập / đăng xuất / hết phiên để mọi view khởi động đúng vai trò. Đăng xuất tự khóa chuyển động lại.
 
 **Hai lớp khóa chuyển động** (đã kiểm mã: mở khóa là **chung cả máy**, `allow_motion` trong `services/machine.py`):
 1. Người gọi phải là quản lý (lớp mới).
@@ -110,7 +110,7 @@ Hai kiểm tra độc lập; có lớp 1 thì khách không mở khóa được 
 - Tab Điều khiển chế độ khách: giữ trạng thái + nạp/xem trước G-code (`lib/gcode.js`); ẩn jog, Home, bút, chạy, terminal, macro, mở khóa. Tab Cài đặt: ẩn hết trừ ngôn ngữ / giao diện.
 - Cách ẩn: `body.role-guest` + CSS ẩn phần có `data-admin`, cộng kiểm ở từng view chỗ có logic tự chạy.
 
-### 2.6 Thứ tự làm và ước lượng 💡
+### 2.6 Thứ tự làm và ước lượng (mục 1, 2, 3, 7 ✅ đã làm 02/11/2026; 4–6 ⏳)
 
 | # | Việc | Tệp chính | Ước lượng |
 |---|---|---|---|
@@ -123,7 +123,7 @@ Hai kiểm tra độc lập; có lớp 1 thì khách không mở khóa được 
 | 7 | Launcher: dòng mật khẩu quản lý cạnh dòng PIN | `launcher/start.ps1`, `DONG_GOI.md` | 15 phút |
 | 8 | Cập nhật `DECISIONS.md` (O2), `STATUS.md`, `ARCHITECTURE.md`, sinh lại `CODEMAP.md` | | 30 phút |
 
-Mục 1–3 + 7 đủ để thử "khách xem / quản lý điều khiển". Mục 4–6 là phần khách gửi ảnh.
+Mục 1–3 + 7 đủ để thử "khách xem / quản lý điều khiển" và **đã xong**. Mục 4–6 là phần khách gửi ảnh. Khách hiện chỉ xem trước ảnh (xám, sáng / tối, cắt); "áp dụng cắt" chưa hiện kết quả cho khách vì cắt nạp lại ảnh qua `startImport`, đã bị chặn cho khách.
 
 ### 2.7 Kiểm thử
 Backend: `cd backend && python -m pytest`, dữ liệu trong thư mục tạm (`conftest.py`).
@@ -140,6 +140,23 @@ Backend: `cd backend && python -m pytest`, dữ liệu trong thư mục tạm (`
 - Chưa có mục 2 thì **đặt PIN mở khóa**: mở khóa là chung cả máy, laptop mở thì điện thoại cũng chạy được máy.
 - Wi-Fi của MKS **không** cần vào mạng (USB là đủ); vào thì có thêm đường điều khiển qua WebUI FluidNC, vượt qua mọi khóa của phần mềm.
 - `idle.py` chỉ tự tắt server khi đặt `EXTRUXY_IDLE_EXIT_MIN` (launcher đặt 10); trang của khách cũng tính là "còn mở"; đang chạy G-code thì không tắt. MiniPC không đặt biến này.
+
+### 3.1 Demo không có mạng dây, không có Wi-Fi (tự phát) ✅ yêu cầu
+- **Giao diện chạy được khi không có Internet**: đã kiểm, frontend không tải gì từ ngoài (không CDN, không font Google). Mọi thứ nằm trên máy chủ.
+- Cách phát Wi-Fi, xếp theo độ ổn định:
+
+| Cách | Internet | Ghi chú |
+|---|---|---|
+| **Router du lịch / router mini** (cắm USB 5 V) | không cần | Ổn định nhất, nhiều máy vào cùng lúc; giữ chỗ IP cho MiniPC/laptop → **IP cố định** |
+| **Router 4G bỏ túi** (có SIM) | có (4G) | Như trên + có Internet → dùng được Cloudflare Quick Tunnel |
+| Điện thoại phát 4G | có | Dễ nhất (buổi thử 03/11); số máy vào bị giới hạn, điện thoại có thể tự tắt phát khi màn hình tắt; IP đổi mỗi lần |
+| MiniPC Ubuntu tự phát (`nmcli`, chế độ AP + `ipv4.method shared`) | không cần | Card Wi-Fi phải hỗ trợ chế độ AP (kiểm bằng `iw list`); điện thoại Android cần chế độ "infrastructure" |
+| Laptop Windows tự phát ("Mobile hotspot") | ⚠ | Windows thường đòi có kết nối để chia sẻ; không nên trông vào |
+
+- **Địa chỉ vào**: dùng IP + **mã QR in sẵn** (router giữ chỗ IP thì in một lần dùng mãi). Tên `.local` không chắc chạy trên Android.
+- **Wi-Fi của MKS (FluidNC)**: tắt hoặc đặt mật khẩu mạnh trước demo (MACHINE C2). Nếu không, người xem có thể điều khiển máy qua WebUI, vượt qua khóa của phần mềm.
+- **Có 4G thì cho người ở xa xem được**: `cloudflared tunnel --url http://localhost:8000` tạo địa chỉ tạm `*.trycloudflare.com`, không cần tài khoản hay tên miền. Cloudflare ghi rõ là chỉ để thử (không cam kết chạy liên tục, tối đa 200 yêu cầu đồng thời, tắt lệnh là mất địa chỉ). **Chỉ dùng sau khi có đăng nhập quản lý** (mục 2).
+- 💡 Ý tưởng thêm (chưa thử): "cổng đón" (captive portal). Máy chủ DNS (dnsmasq) trả mọi tên miền về máy chủ vẽ, nên điện thoại vào Wi-Fi là tự bật giao diện. ⚠ Trình duyệt mini của cổng đón trên iPhone hạn chế chọn tệp; còn phải sửa danh sách Host được phép.
 
 ---
 
@@ -183,7 +200,7 @@ services:
     environment:
       EXTRUXY_ALLOWED_HOSTS: "localhost,127.0.0.1,192.168.1.50,plotter.local,plotter.tenmien.com"
       EXTRUXY_UNLOCK_PIN: "doi-so-nay"
-      EXTRUXY_ADMIN_PASSWORD: "doi-mat-khau-nay"   # sau khi làm mục 2
+      EXTRUXY_ADMIN_PIN: "doi-so-nay"   # PIN quản lý (mục 2)
       # KHÔNG đặt EXTRUXY_IDLE_EXIT_MIN: MiniPC phải chạy suốt
 ```
 - `.dockerignore`: `.venv`, `Python`, `data`, `export`, `_ban_cu`, `**/__pycache__`, `backend/tests`.
@@ -265,7 +282,7 @@ Sau đó thêm IP và tên vào `EXTRUXY_ALLOWED_HOSTS` (tạm `"*"` khi thử, 
 
 | Việc | Cách |
 |---|---|
-| Chưa đặt mật khẩu quản lý thì cho mọi người làm quản lý (như hôm nay) hay chặn | Chủ dự án chốt (mục 2.3) |
+| Chưa đặt PIN quản lý thì cho mọi người làm quản lý (đang như hôm nay, có nhãn cảnh báo) hay chặn hẳn | Chủ dự án chốt khi mở ra ngoài (mục 2.3) |
 | Origin/Host qua Cloudflare Tunnel, cookie `Secure` | Thử cấu hình thật trên MiniPC |
 | Origin/Host qua cổng chuyển tiếp của GitHub Codespaces | Thử (`DONG_GOI.md` mục 8.3) |
 | `GET /api/status` có lộ gì không nên cho khách thấy | Đọc `services/machine.py` phần tạo trạng thái |

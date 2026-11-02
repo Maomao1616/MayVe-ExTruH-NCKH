@@ -2,12 +2,15 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~352,615 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~367,936 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
 | Phương thức | Đường dẫn | Tệp |
 |---|---|---|
+| GET | `/api/auth/me` | auth.py |
+| POST | `/api/auth/login` | auth.py |
+| POST | `/api/auth/logout` | auth.py |
 | GET | `/api/machine/config` | config.py |
 | POST | `/api/machine/config` | config.py |
 | POST | `/api/machine/config/save` | config.py |
@@ -64,21 +67,23 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `HUONG_DAN_DOC_CODE.md` | ~5,834 |  |
-| `README.md` | ~2,008 |  |
+| `README.md` | ~2,082 |  |
 
 ### `backend/app/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
+| `auth.py` | ~1,260 | Phân quyền khách / quản lý bằng mã PIN (docs/PLAN_ONLINE.md mục 2). |
 | `idle.py` | ~524 | Tự tắt server khi không còn trang web nào mở (bản đóng gói chạy ẩn, không có cửa sổ để đóng). |
-| `main.py` | ~1,047 |  |
+| `main.py` | ~1,149 |  |
 | `paths.py` | ~428 | Thư mục dữ liệu của phần mềm: MỘT gốc, ba thư mục con cố định. |
 
 ### `backend/app/api/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `__init__.py` | ~103 | Các router HTTP. Thêm router mới: tạo file trong api/ rồi thêm vào ROUTERS. |
+| `__init__.py` | ~120 | Các router HTTP. Thêm router mới: tạo file trong api/ rồi thêm vào ROUTERS. |
+| `auth.py` | ~512 | API đăng nhập quản lý bằng mã PIN. Mỏng: logic ở app/auth.py. |
 | `config.py` | ~654 | API cấu hình máy (YAML trên mạch, services/machine_config.py) và hồ sơ phần mềm |
 | `draw.py` | ~3,327 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
 | `machine.py` | ~1,044 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
@@ -140,6 +145,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `conftest.py` | ~194 |  |
+| `test_auth.py` | ~2,178 | Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/PLAN_ONLINE.md mục 2). |
 | `test_board_paths.py` | ~2,242 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
 | `test_docs_tools.py` | ~643 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
 | `test_idle.py` | ~489 | app/idle.py: tự tắt server khi đóng hết trang (chỉ khi đặt EXTRUXY_IDLE_EXIT_MIN). |
@@ -186,25 +192,25 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `AI_START.md` | ~1,966 |  |
-| `ARCHITECTURE.md` | ~5,041 |  |
+| `AI_START.md` | ~2,043 |  |
+| `ARCHITECTURE.md` | ~5,312 |  |
 | `BRIEF.md` | ~2,962 |  |
-| `CODEMAP.md` | ~4,582 |  |
-| `DECISIONS.md` | ~3,899 |  |
-| `DONG_GOI.md` | ~3,830 |  |
+| `CODEMAP.md` | ~4,643 |  |
+| `DECISIONS.md` | ~3,937 |  |
+| `DONG_GOI.md` | ~4,048 |  |
 | `DRAW_ROADMAP.md` | ~4,950 |  |
 | `EXPORT_FOR_AI.md` | ~1,605 |  |
-| `FUTURE_UPGRADE_BETA.md` | ~4,412 |  |
-| `KIEM_TRA_VE.md` | ~2,389 |  |
-| `MACHINE.md` | ~1,187 |  |
-| `PLAN_ONLINE.md` | ~5,923 |  |
-| `STATUS.md` | ~2,058 |  |
+| `FUTURE_UPGRADE_BETA.md` | ~9,129 |  |
+| `KIEM_TRA_VE.md` | ~2,932 |  |
+| `MACHINE.md` | ~2,093 |  |
+| `PLAN_ONLINE.md` | ~6,672 |  |
+| `STATUS.md` | ~2,256 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~27,288 |  |
+| `index.html` | ~27,662 |  |
 
 ### `frontend/assets/css/`
 
@@ -217,23 +223,24 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `drawing.css` | ~2,556 | 9. TAB TAO BAN VE |
-| `polish.css` | ~11,707 | POLISH: lop tinh chinh giao dien |
+| `polish.css` | ~12,503 | POLISH: lop tinh chinh giao dien |
 | `style.css` | ~13,036 |  |
 
 ### `frontend/js/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `app.js` | ~1,988 |  |
+| `app.js` | ~2,055 |  |
 
 ### `frontend/js/core/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `api.js` | ~1,626 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
+| `api.js` | ~1,742 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
+| `auth.js` | ~519 | vai trò của trình duyệt này: khách hay quản lý (backend: app/auth.py). |
 | `config.js` | ~496 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
 | `i18n.js` | ~439 |  |
-| `state.js` | ~2,107 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
+| `state.js` | ~2,153 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
 
 ### `frontend/js/lib/`
 
@@ -256,10 +263,11 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `control.js` | ~10,582 | Tab Điều khiển. |
+| `auth.js` | ~695 | khung "Khách / Quản lý" ở đầu trang: chủ ghi #auth-box và các phần tử con. |
+| `control.js` | ~10,630 | Tab Điều khiển. |
 | `dock.js` | ~2,482 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
-| `drawing.js` | ~8,164 | Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4): |
+| `drawing.js` | ~8,256 | Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
 | `preview.js` | ~5,667 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
 | `settings.js` | ~10,223 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
@@ -280,8 +288,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~13,639 |  |
-| `vi.json` | ~13,129 |  |
+| `en.json` | ~13,969 |  |
+| `vi.json` | ~13,446 |  |
 
 ### `frontend/tests/`
 

@@ -29,6 +29,8 @@ async function request(method, path, body, { text = false } = {}) {
     try { data = await response.json(); } catch { /* không có JSON */ }
 
     if (!response.ok) {
+        // Phiên quản lý hết hạn / bị đăng xuất: core/auth.js nghe sự kiện này và tải lại trang ở chế độ khách.
+        if (data?.error?.code === "auth_required") window.dispatchEvent(new Event("extruxy:auth-lost"));
         if (data?.error) throw new ApiError(data.error.code, data.error.message, response.status);
         if (data?.detail) throw new ApiError("validation_error", "Dữ liệu không hợp lệ", response.status);
         throw new ApiError("http_error", `HTTP ${response.status}`, response.status);
@@ -38,6 +40,9 @@ async function request(method, path, body, { text = false } = {}) {
 
 export const api = {
     health: () => request("GET", "/health"),
+    me: () => request("GET", "/auth/me"),
+    login: (pin) => request("POST", "/auth/login", { pin }),
+    logout: () => request("POST", "/auth/logout"),
     ports: () => request("GET", "/ports"),
     connection: () => request("GET", "/connection"),
     connect: (mode, port = null, baud = 115200, simSpeed = 1) =>

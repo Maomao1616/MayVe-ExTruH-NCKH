@@ -51,6 +51,8 @@
         </div>
       </div>
 
+      <div class="auth-box" id="auth-box"><span class="role-badge" id="role-badge"></span><form class="auth-form" id="login-form" hidden><input autocomplete="current-password" data-i18n="[placeholder]auth.pinPlaceholder; [aria-label]auth.pinPlaceholder" id="login-pin" inputmode="numeric" maxlength="64" name="pin" placeholder="Mã PIN quản lý" type="password"/><button class="toolbar-button" data-i18n="auth.submit" type="submit">Vào</button></form><span class="auth-error" id="login-error" role="alert" hidden></span><button class="toolbar-button" data-i18n="auth.login" id="login-btn" type="button">Đăng nhập quản lý</button><button class="toolbar-button" data-i18n="auth.logout" hidden id="logout-btn" type="button">Đăng xuất</button></div>
+
       <button aria-label="Làm mới trạng thái" class="icon-button" id="refresh-status-btn" title="Làm mới trạng thái" type="button" data-i18n="[aria-label]aria.refreshStatus; [title]action.refreshStatus.title">
         ↻
       </button>
@@ -240,9 +242,12 @@
                     <h2 data-i18n="control.position.title">Vị trí</h2>
                     <p><span data-i18n="control.position.coordSystem">Hệ tọa độ </span><strong>G54</strong><span data-i18n="control.position.units"> · đơn vị mm</span></p>
                   </div>
-                  <span class="panel-tag" data-i18n="common.status.noData" id="coordinate-source">
-                    Chưa có dữ liệu
-                  </span>
+                  <div class="panel-heading-side">
+                    <span aria-label="Công tắc hành trình" class="pin-leds" data-i18n="[aria-label]control.position.pinGroup"><span class="pin-led" data-i18n="[title]control.position.pinX" id="pin-x" title="Công tắc hành trình X (Pn:X): sáng khi đang bị đè">X</span><span class="pin-led" data-i18n="[title]control.position.pinY" id="pin-y" title="Công tắc hành trình Y (Pn:Y): sáng khi đang bị đè">Y</span></span>
+                    <span class="panel-tag" data-i18n="common.status.noData" id="coordinate-source">
+                      Chưa có dữ liệu
+                    </span>
+                  </div>
                 </div>
                 <div class="coordinate-table">
                   <div class="coordinate-header">
@@ -253,14 +258,14 @@
                     <span data-i18n="control.position.home">Home</span>
                   </div>
                 <div class="coordinate-row">
-                  <span class="axis-label axis-x">X<i class="pin-led" data-i18n="[title]control.position.pinX" id="pin-x" title="Công tắc hành trình X (Pn:X): sáng khi đang bị đè"></i></span>
+                  <span class="axis-label axis-x">X</span>
                   <button aria-label="Zero trục X" class="icon-action" data-command="G10 L20 P1 X0" disabled="" id="zero-x-btn" title="Zero X: đặt gốc làm việc tại vị trí hiện tại" type="button" data-i18n="[aria-label]aria.zeroX; [title]action.zeroX.title">↺</button>
                   <output class="coord-workspace" id="workspace-x">—</output>
                   <output class="coord-machine" id="machine-x">—</output>
                   <button aria-label="Home trục X" class="icon-action" data-command="$HX" disabled="" id="home-x-btn" title="Home trục X: chạy về công tắc hành trình" type="button" data-i18n="[aria-label]aria.homeX; [title]action.homeX.title">⌂</button>
                 </div>
                 <div class="coordinate-row">
-                  <span class="axis-label axis-y">Y<i class="pin-led" data-i18n="[title]control.position.pinY" id="pin-y" title="Công tắc hành trình Y (Pn:Y): sáng khi đang bị đè"></i></span>
+                  <span class="axis-label axis-y">Y</span>
                   <button aria-label="Zero trục Y" class="icon-action" data-command="G10 L20 P1 Y0" disabled="" id="zero-y-btn" title="Zero Y: đặt gốc làm việc tại vị trí hiện tại" type="button" data-i18n="[aria-label]aria.zeroY; [title]action.zeroY.title">↺</button>
                   <output class="coord-workspace" id="workspace-y">—</output>
                   <output class="coord-machine" id="machine-y">—</output>
@@ -579,7 +584,8 @@
                  TAB 2: TẠO BẢN VẼ
             =================================================== -->
       <section aria-labelledby="tab-drawing" class="tab-panel" id="panel-drawing" role="tabpanel">
-        
+        <div class="notice notice-warning guest-only" data-i18n="auth.guestNotice" role="status">Chế độ khách: chỉ xem trước ảnh (xám, sáng / tối, cắt vùng). Đăng nhập quản lý để tạo nét và G-code.</div>
+
         <div class="page-heading">
           <div>
             <p class="eyebrow" data-i18n="drawing.heading.eyebrow">DRAWING WORKSPACE</p>
@@ -1049,7 +1055,7 @@
               </div>
             </details>
 
-            <details class="panel drawing-section" open="">
+            <details class="panel drawing-section" id="drawing-drafts-panel" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.drafts.title">Bản thảo đã lưu</span>
                 <span class="drawing-section-description" data-i18n="drawing.drafts.desc">Mới nhất trước; ghim để giữ lại. Giữ ☰ kéo để đổi thứ tự, ✎ để đổi tên.</span>
