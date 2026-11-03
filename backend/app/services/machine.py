@@ -47,6 +47,7 @@ _LOSE_HOME = {1, 3, 6, 7, 8, 9, 12, 13, 14, 16}
 
 PEN_TOL_MM = 0.05          # sai số chấp nhận khi xác nhận Z đã tới đích
 PEN_LIFT_MAX_S = 120.0     # chờ xác nhận nâng bút tối đa
+HOME_LIFT_SETTLE_S = 0.3   # chờ thêm sau khi nâng bút trước Home (servo quay chậm hơn trục Z mô phỏng)
 
 
 class ServiceError(Exception):
@@ -441,7 +442,46 @@ class MachineService:
         action = REALTIME_TEXT.get(text)
         if action is not None:
             return self.send_realtime(action)
+        if homing_axes(text) is not None:
+            self._lift_pen_before_home()
         return self._send_line(text, source)
+
+    def _lift_pen_before_home(self) -> None:
+        """Nâng bút (jog Z) trước khi Home: bút hạ bằng trọng lực, Home mà quên nâng sẽ kéo một vệt chéo qua giấy.
+
+        Chỉ làm khi máy đang Idle (đang Alarm thì firmware không nhận jog) và được phép chuyển động.
+        Lỗi nâng bút không chặn Home (chỉ ghi nhật ký); lỗi khóa chuyển động vẫn do chính lệnh Home báo.
+        """
+        with self._lock:
+            status = self._status
+            if (self._link is None or self._job.active or self._stop_token is not None
+                    or not isinstance(status, dict) or status.get("state") != "Idle"
+                    or (self._info["mode"] == "serial" and not self.allow_motion)):
+                return
+            z_now = _work_z(status)
+            marker = self._status_marker()
+        prof = profile.load()
+        up, feed = prof["pen_up_z"], prof["pen_feed"]
+        if z_now is not None and abs(z_now - up) <= PEN_TOL_MM:
+            return
+        try:
+            self._send_line(f"$J=G90 G21 Z{_num(up)} F{_num(feed)}", "system")
+        except ServiceError as exc:
+            self.log_system(f"Home: pen lift not sent ({exc.code}); homing anyway.")
+            return
+        if z_now is None:                                 # không biết Z: chờ cố định thay vì xác nhận
+            time.sleep(HOME_LIFT_SETTLE_S + 0.5)
+            return
+
+        def lifted(st: dict) -> bool:
+            z = _work_z(st)
+            return st.get("state") in ("Idle", "Alarm") and z is not None and abs(z - up) <= PEN_TOL_MM
+
+        timeout = min(PEN_LIFT_MAX_S, 3.0 + abs(up - z_now) / feed * 60.0 * 2)
+        if self._wait_state(lifted, timeout=timeout, after=marker) is None:
+            self.log_system("Home: pen lift not confirmed; homing anyway.")
+            return
+        time.sleep(HOME_LIFT_SETTLE_S)                    # servo còn quay thêm sau khi trục Z báo tới nơi
 
     def _send_line(self, text: str, source: str, token: object | None = None) -> dict:
         text = text.strip()

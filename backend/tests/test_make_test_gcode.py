@@ -17,8 +17,8 @@ def load_tool():
 
 def test_every_test_file_passes_the_backend_cleaner_and_stays_in_the_work_area():
     tool = load_tool()
-    files = tool.build_all(5.0, 0.0, 3000.0, 3000.0)
-    assert len(files) >= 7
+    files = tool.build_all(3.0, 0.0, 3000.0, 5000.0, 2000.0)
+    assert len(files) >= 9
     for name, text in files.items():
         cleaned = clean_gcode(text.splitlines())
         assert cleaned, name
@@ -41,3 +41,12 @@ def test_lost_steps_draws_the_same_cross_twice():
     tool = load_tool()
     text = tool.lost_steps(5.0, 0.0, 3000.0, 3000.0)
     assert text.count("G0 X8 Y15") == 2 and text.count("G0 X15 Y8") == 2
+
+
+def test_down_feed_slows_only_the_descent_and_drag_test_travels_far():
+    tool = load_tool()
+    text = tool.drag_test(3.0, 0.0, 3000.0, 5000.0, delay=0.05, down_feed=2000.0)
+    assert "G1 Z0 F2000" in text and "G1 Z3 F3000" in text
+    xs = [float(v) for v in re.findall(r"G0 X(-?[\d.]+)", text)]
+    assert max(xs) - min(xs) >= 240                      # chạy G0 dài: chỗ dễ lộ vệt kéo
+    assert "G1 Z0 F3000" not in tool.lift_cost(3.0, 0.0, 3000.0, 5000.0, delay=0.05, down_feed=2000.0)

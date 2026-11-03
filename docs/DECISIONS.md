@@ -19,7 +19,7 @@
 | C1 | Jog, XY 0, bút, Zero mở khi `Idle`; Home khi `Idle`/`Alarm` | An toàn | ✅ |
 | C2 | Jog dùng `$J=...` | Chạy được khi chưa Home | ✅ |
 | C3 | Zero dùng `G10 L20 P1 ...` | Chuẩn FluidNC | ✅ |
-| C4 | Bút 3 nấc: Z5 lên, Z2.5 giữa, Z0 xuống (sửa được ở Cài đặt → Cấu hình máy, mục App) | Khớp WebUI FluidNC, đã thử thanh bút trên máy thật | ✅ |
+| C4 | Bút 3 nấc: Z3 lên, Z1.5 giữa, Z0 xuống (sửa được ở Cài đặt → Cấu hình máy, mục App). Đổi từ Z5 / Z2.5 ngày 03/11/2026: nhấc 3 mm là đủ, nhanh hơn | Hành trình Z thật 5 mm; Z3 chưa thử lâu dài trên giấy cong (xem bài 7.5) | 🧪 |
 | C7 | **Cấu hình máy một panel**: mục "Máy" (YAML trên mạch) Áp dụng = `$/axes/...` vào RAM, Lưu vào mạch = `$CD=/localfs/<tệp>` sau khi sao lưu bản gốc về máy tính; mục "App" lưu ở `data/profile.json`. Không cho sửa chân GPIO, kinematics, stepping | Chỉnh thông số không cần WiFi/WebUI; đã thử đọc, áp dụng, lưu, khởi động lại (MACHINE A11) | ✅ |
 | C5 | Gốc (0,0) trên trái. X+ đi trái, Y+ đi xuống (Khớp WebUI) | `VIEW.flipX/Y = false` | ✅ |
 | C6 | Nút Tạm dừng (Header) chỉ dùng cho Run. Nút Hủy Jog riêng cho Jog. | Đúng bản chất firmware | ✅ |

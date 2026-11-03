@@ -13,11 +13,14 @@ from .hatch import Field
 from .registry import FILLERS
 from .shapes import Stroke
 
-DEFAULT_SPACING_PEN = 2.0        # khoảng cách nét mặc định = 2 × bề rộng bút
+LINE_WIDTH_RATIO = 1.375         # nét thật ÷ cỡ ngòi: Sakura 0,4 ra nét ~0,55 mm (đo trên tờ hiệu chỉnh, mực loang)
+DEFAULT_SPACING_PEN = 2.0        # khoảng cách nét mặc định = 2 × bề rộng nét thật (một lớp phủ ~50% mực)
 
 
 def spacing_of(style, pen_mm: float) -> float:
-    return style.spacing_mm if style.spacing_mm is not None else DEFAULT_SPACING_PEN * pen_mm
+    if style.spacing_mm is not None:
+        return style.spacing_mm
+    return DEFAULT_SPACING_PEN * LINE_WIDTH_RATIO * pen_mm
 
 
 def _clip_out(arrays: list[np.ndarray], f: Field) -> list[Stroke]:

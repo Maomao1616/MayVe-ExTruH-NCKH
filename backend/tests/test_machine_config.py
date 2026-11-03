@@ -144,7 +144,7 @@ def test_config_routes_with_sim(client, tmp_path, monkeypatch):
 
 
 def test_profile_defaults_save_and_order_check(client, tmp_path):
-    assert client.get("/api/profile").json()["profile"]["pen_mid_z"] == 2.5
+    assert client.get("/api/profile").json()["profile"]["pen_mid_z"] == 1.5
     body = {"pen_up_z": 4, "pen_mid_z": 2, "pen_down_z": 0, "pen_feed": 2000, "jog_max_step": 10}
     assert client.put("/api/profile", json=body).json()["profile"]["pen_up_z"] == 4.0
     assert client.get("/api/profile").json()["profile"]["jog_max_step"] == 10.0

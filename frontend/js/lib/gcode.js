@@ -15,7 +15,7 @@ export const BLOCKED_G = new Set([10, 28, 30, 38, 53, 55, 56, 57, 58, 59, 92]);
 export const BLOCKING = new Set(["blocked_g", "blocked_dollar", "bad_char", "not_gcode", "line_too_long"]);
 
 export const DEFAULT_OPTIONS = {
-    penUpZ: 5,           // Z bút lên (giả định, xem config.js)
+    penUpZ: 3,           // Z bút lên (giả định, xem config.js)
     penDownZ: 0,         // Z bút xuống
     rapidFeed: 6000,     // mm/phút khi G0
     defaultFeed: 1000,   // dùng khi G1 thiếu F

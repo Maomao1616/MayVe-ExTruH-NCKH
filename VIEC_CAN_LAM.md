@@ -9,13 +9,16 @@ Cỡ việc: **S** nhỏ (vài giờ) · **M** vừa (nửa đến một ngày) 
 - [x] Đèn công tắc X / Y (hai vòng tròn ở đầu bảng Vị trí), trạng thái 10 lần/giây, vệt bút bám theo G-code
 - [x] Ô "Tốc độ hạ bút" (hạ chậm, nhấc nhanh) và bút 0,5 trong danh sách chọn
 - [x] Công cụ sinh G-code thử tốc độ: `python tools/make_test_gcode.py`
+- [x] 03/11/2026: Z nhấc 3, tốc độ vẽ 5000, chờ 0,05 s, hạ bút 2000; Home tự nâng bút trước; khoảng cách nét tính theo nét thật 0,55 mm (1,1 mm cho bút 0,4), mặc định 5 mức; thêm bài thử 7.5 (vệt kéo)
 
 ## 2. Thử trên máy thật (không cần code)
 - [ ] Đặt `data\pin.txt` (`admin=…`, `unlock=…`), vào bằng điện thoại: có ra giao diện khách không
 - [ ] Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng (không thì họ điều khiển được qua WebUI)
 - [ ] Tờ hiệu chỉnh 8 dải cho từng bút (Sakura 0,4 / bi 0,5 / 0,2 nếu có), chụp ảnh gửi lại
 - [ ] Thang xám 3 preset (Chân dung, Phong cảnh, Cận cảnh)
-- [ ] Bài thử tốc độ 7.1 – 7.4 (nhấc bút, mất bước, gia tốc, tốc độ từng bút) bằng tệp trong `export\test-gcode\`
+- [ ] Bài thử 7.1, 7.3, 7.4, **7.5** (nhấc bút, gia tốc, tốc độ từng bút, vệt kéo) bằng tệp trong `export\test-gcode\`, **mỗi bài một tờ giấy** (7.2 mất bước đã đạt 03/11)
+- [ ] Chụp cận đo bề rộng nét ở 3000 / 5000 / 6000 mm/min (7.4), rồi in lại tờ hiệu chỉnh ở tốc độ đã chốt; sửa `LINE_WIDTH_RATIO` nếu khác 1,375
+- [ ] Vẽ lại Phong cảnh với mặc định mới, so với bản cũ; chụp cận mép trên / dưới khối để xem giọt mực
 - [ ] Hướng X / Y trên giấy, Z nâng / hạ thật, thời gian Home, cung G2 / G3 (MACHINE.md mục B)
 - [ ] Đèn X / Y sáng đúng khi tay đè công tắc hành trình
 - [ ] Đo thời gian vẽ thật so với ước tính của phần mềm; ghi vào bảng KIEM_TRA_VE mục 6, 7

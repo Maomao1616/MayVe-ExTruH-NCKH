@@ -5,7 +5,7 @@
 const BASE = {                   // mặc định chung, từng preset ghi đè
     "image-auto-levels": true, "image-clahe": false, "image-denoise": false,
     "image-black-point": "0", "image-white-point": "255", "image-gamma": "1",
-    "style-levels": "4", "style-angle": "45", "style-spacing": "", "style-amplitude": "",
+    "style-levels": "5", "style-angle": "45", "style-spacing": "", "style-amplitude": "",
     "style-outline": false, "style-outline-detail": "medium", "style-invert": false, "palette-mode": "mono"
 };
 

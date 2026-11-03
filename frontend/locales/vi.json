@@ -406,7 +406,7 @@
   "drawing.params.penDownFeed": "Tốc độ hạ bút (mm/phút, trống = như nâng bút)",
   "drawing.params.delayDown": "Chờ sau khi hạ bút (giây)",
   "drawing.params.delayUp": "Chờ sau khi nâng bút (giây)",
-  "drawing.params.help": "Z lấy theo hồ sơ máy (Z0 bút xuống, Z5 bút lên).",
+  "drawing.params.help": "Z lấy theo hồ sơ máy (Z0 bút xuống, Z3 bút lên).",
   
   "drawing.preview.title": "Khung vẽ trên giấy",
   "drawing.preview.desc": "Kéo, co giãn, xoay nét ngay trên tờ giấy; số liệu bên dưới.",
@@ -565,7 +565,7 @@
   "action.homeAll.title": "Home tất cả các trục",
   "action.cancelJog.title": "Hủy lệnh jog đang chạy",
   "action.jogCenter.title": "Về gốc làm việc (X0 Y0)",
-  "action.penUp.title": "Nâng bút (Z5)",
+  "action.penUp.title": "Nâng bút (Z3)",
   "action.penDown.title": "Hạ bút (Z0)",
   "action.unlock.title": "Mở khóa sau Alarm (không làm máy chuyển động)",
   

@@ -93,7 +93,7 @@ Bảng số liệu ở đầu tab: kích thước, số nét, số lần nhấc 
 | | Reset | Dừng mềm (hỏi xác nhận); không phải dừng khẩn cấp |
 | Vị trí | Zero X/Y/XY, Home X/Y/tất cả | Đặt gốc làm việc; về công tắc hành trình (hỏi xác nhận) |
 | Di chuyển | Mũi tên, nút giữa | Jog theo bước; về gốc làm việc |
-| Bút | Lên / giữa / xuống | Theo hồ sơ máy (Z 5 / Z 0) |
+| Bút | Lên / giữa / xuống | Theo hồ sơ máy (Z 3 / Z 0; mặc định từ 03/11/2026, trước đó Z 5) |
 | Tệp G-code | **Xem trước** → tích xác nhận → **▶ Chạy** | Phải xem trước trước khi chạy; đổi tệp là phải xem trước lại |
 | | Hủy tác vụ | Hộp thoại: Tiếp tục chạy / **Dừng êm** (chờ hết bộ đệm) / **Dừng gấp** (Feed Hold → Reset → nâng bút) |
 | | −10 −1 100% +1 +10 | Chỉnh tốc độ chạy (feed override) |

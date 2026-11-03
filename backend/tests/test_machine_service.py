@@ -129,3 +129,36 @@ def test_alarm_14_keeps_axes_already_homed(svc):
     svc.send_line("$X")
     svc.send_line("$HY")
     assert wait_for(lambda: svc.snapshot()["homed_guess"])
+
+
+def _tx(svc):
+    return [e["text"] for e in svc.log_since(0)["entries"] if e["dir"] == "tx"]
+
+
+def test_home_lifts_pen_first_when_idle(svc):
+    svc.connect("sim", sim_speed=100)
+    assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("state") == "Alarm")
+    svc.send_line("$X")
+    assert wait_for(lambda: svc.snapshot()["machine"]["state"] == "Idle")
+    svc.send_line("$J=G90 G21 Z0 F3000")
+    assert wait_for(lambda: svc.snapshot()["machine"]["wpos"][2] == 0.0 and svc.snapshot()["machine"]["state"] == "Idle")
+    svc.send_line("$H")
+    assert wait_for(lambda: svc.snapshot()["homed_guess"])
+    sent = _tx(svc)
+    lift = sent.index("$J=G90 G21 Z3 F3000")            # Z nâng mặc định của hồ sơ (pen_up_z = 3)
+    assert lift < sent.index("$H")
+    assert svc.snapshot()["machine"]["wpos"][2] == 3.0
+
+
+def test_home_skips_lift_when_pen_already_up_or_alarm(svc):
+    svc.connect("sim", sim_speed=100)
+    assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("state") == "Alarm")
+    svc.send_line("$H")                                  # đang Alarm: firmware không nhận jog -> không gửi
+    assert wait_for(lambda: svc.snapshot()["homed_guess"])
+    assert not any(t.startswith("$J=") for t in _tx(svc))
+    svc.send_line("$J=G90 G21 Z3 F3000")
+    assert wait_for(lambda: svc.snapshot()["machine"]["wpos"][2] == 3.0)
+    before = _tx(svc).count("$J=G90 G21 Z3 F3000")
+    svc.send_line("$H")                                  # bút đã ở Z3: không gửi thêm lệnh nâng
+    assert wait_for(lambda: svc.snapshot()["machine"]["state"] == "Idle")
+    assert _tx(svc).count("$J=G90 G21 Z3 F3000") == before

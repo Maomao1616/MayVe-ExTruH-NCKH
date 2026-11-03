@@ -91,9 +91,17 @@ Gửi `g0 x1000` → firmware trả `ok` **trước**, `ALARM:2` **sau**. Backen
 | Mạch thêm | Có thể mua ESP32-S3 dạng kit | Webcam: chưa có |
 
 ### C2. Cấu hình trên mạch (đọc từ bản sao lưu `ConfigNCKH-16.yaml` 29/10/2026)
-- Gia tốc X / Y **600 mm/s²**, Z **1000 mm/s²**; `junction_deviation_mm` **0,01**; `planner_blocks` **16**; `arc_tolerance_mm` 0,002; bước `I2S`.
+- Gia tốc X / Y **2000 mm/s²**, Z **3000 mm/s²** (đã nâng 03/11/2026 từ 600 / 1000; bản sao lưu YAML nói trên là bản CŨ); Vref TMC2209 **1,4 V**, servo cấp **~6 V**; tốc độ tối đa XY đang đặt **6000 mm/min**; `junction_deviation_mm` **0,01**; `planner_blocks` **16**; `arc_tolerance_mm` 0,002; bước `I2S`.
 - Servo Z: `gpio.32`, 50 Hz, **1350–1950 µs** (Z 0–5 mm ↔ ~54° nếu servo ~11 µs/độ, ⚠ suy luận).
 - Công tắc hành trình: X `gpio.36`, Y `gpio.35`. Mục `control` (dừng, chạy tiếp, macro…) và `probe` đều `NO_PIN`.
 - Chân **có thể còn trống** (theo cấu hình chính thức của FluidNC cho DLC32 V2.1): `gpio.34` (đầu Z-limit, chỉ đọc vào), `gpio.22` (đầu probe), `gpio.33` (bản chính thức dùng cho `macro0`). ⚠ Dò lại bằng sơ đồ mạch / đồng hồ trước khi nối.
-- **Một chu kỳ nhấc / hạ bút hiện tại** ≈ 0,7 s: `G1 Z` với `pen_feed` 3000 mm/min (≈ 0,15 s cho 5 mm với gia tốc Z 1000) + `G4 P0.2`, làm hai lần (hạ và nhấc).
+- **Một chu kỳ nhấc / hạ bút**: trước 03/11/2026 ≈ 0,7 s (Z5, chờ 0,2 s). Từ 03/11/2026 mặc định Z nhấc **3**, nâng 3000 mm/min, **hạ 2000 mm/min**, chờ **0,05 s** mỗi lần (bài 7.1 ở 0,05 s: lưới 100 gạch đủ nét; ghi tay: chạy cỡ 1 phút, chưa đo chính xác).
 - Firmware bản `esp32-wifi`: nếu chưa cài Wi-Fi, FluidNC có thể tự phát mạng "FluidNC" (192.168.0.1). Ai vào mạng đó dùng WebUI là **vượt qua mọi khóa của phần mềm**. ⚠ Kiểm `$WiFi/Mode`; khi demo nên tắt hoặc đặt mật khẩu mạnh.
+
+### C3. Kết quả thử máy 03/11/2026 (chủ dự án chạy, ảnh chụp điện thoại)
+- **Mất bước:** bài 7.2 chạy ~20 phút, G0 liên tục ở 6000 mm/min, gia tốc XY 2000 / Z 3000, Vref 1,4 V: dấu + chỉ một dấu (không bóng đôi). Driver ~50 °C, động cơ ấm nhẹ.
+- **Tốc độ vẽ:** các đường thẳng 6000 mm/min vẫn đậm, đủ nét (ảnh chụp xa; chưa đo bề rộng nét theo tốc độ).
+- **Hạ bút:** chờ 0,05 s là đủ (đầu nét không hụt). Tờ có lưới dấu thiếu chấm là do bút chưa chạm giấy (lỗi cơ, đã chỉnh).
+- **Bề rộng nét thật:** Sakura 0,4 ra **~0,55 mm** (dải cách 0,5 mm đặc hẳn, 0,6 mm gần đặc, 0,8 mm còn thấy sợi) → một lớp cách 0,8 mm phủ ~69 %, không phải 50 %. Đã đổi công thức: khoảng cách mặc định = 2 × 1,375 × cỡ bút (1,1 mm cho bút 0,4). Đo ở tốc độ vẽ cũ (3000); ⏳ cần đo lại ở tốc độ vẽ mới 5000.
+- **Vệt kéo khi di chuyển** (vệt mảnh cong từ góc giấy, đuôi + chấm mực cuối nét): chưa rõ nguyên nhân (Z nhấc thấp? giấy cong? chờ nâng ngắn?) → bài 7.5. Đường chéo ở tờ mất bước là do bấm Home khi bút chưa nâng; từ nay Home tự nâng bút trước.
+- **Còn mở:** lỗ trắng ở khối trái bản Phong cảnh (xem trước cũng có lỗ nên nhiều khả năng do ảnh); giọt mực lồi ở mép dưới hai khối; ranh giới ngang giữa vùng sóng và vùng đặc (do bước nhảy 1 lớp → 2 lớp).

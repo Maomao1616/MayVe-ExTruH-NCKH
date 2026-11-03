@@ -53,14 +53,14 @@ LAYOUT = (
 
 # Thông số vẽ (khớp các ô trong tab).
 GCODE = (
-    Param("draw_feed", "float", 3000.0, 10, 20000, unit="mm/min"),
+    Param("draw_feed", "float", 5000.0, 10, 20000, unit="mm/min"),
     Param("travel_feed", "float", 6000.0, 10, 20000, unit="mm/min"),
     Param("pen_up_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_down_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_feed", "float", 3000.0, 10, 20000, unit="mm/min"),
-    Param("pen_down_feed", "float", None, 10, 20000, unit="mm/min"),   # None = hạ bút cùng tốc độ nâng (pen_feed)
-    Param("delay_up_s", "float", 0.2, 0, 60, unit="s"),
-    Param("delay_down_s", "float", 0.2, 0, 60, unit="s"),
+    Param("pen_down_feed", "float", None, 10, 20000, unit="mm/min"),   # None = hạ bút cùng tốc độ nâng (pen_feed); ô trên giao diện mặc định 2000 (hạ chậm đỡ nảy, đỡ loang mực)
+    Param("delay_up_s", "float", 0.05, 0, 60, unit="s"),
+    Param("delay_down_s", "float", 0.05, 0, 60, unit="s"),
     Param("precision", "int", 3, 1, 4),
 )
 
@@ -110,7 +110,7 @@ STYLE = (
     Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral")),
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
     Param("outline_detail", "choice", "medium", choices=("low", "medium", "high")),  # viền: ít = khối chính, nhiều = cả nét nhạt
-    Param("levels", "int", 4, 3, 5),                                  # số mức sáng tối
+    Param("levels", "int", 5, 3, 5),                                  # số mức sáng tối
     Param("angle", "float", 45.0, 0, 179, unit="°"),
     Param("spacing_mm", "float", None, 0.1, 20, unit="mm"),
     Param("amplitude_mm", "float", None, 0.05, 10, unit="mm"),

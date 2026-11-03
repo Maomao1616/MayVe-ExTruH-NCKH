@@ -172,3 +172,9 @@ def test_spiral_bridges_short_white_gaps_to_save_pen_lifts():
     strokes = styles.fill(f, style(kind="spiral", levels=3), 0.4)
     gap_free = styles.fill(Field(np.ones((150, 150), dtype=np.float32), 60.0, 60.0), style(kind="spiral", levels=3), 0.4)
     assert len(strokes) <= len(gap_free) + 2                  # khe hẹp không làm tăng số lần nhấc bút
+
+
+def test_default_spacing_follows_real_line_width_not_the_nominal_pen():
+    # Sakura 0,4 ra nét ~0,55 mm: một lớp cách 2 × 0,55 = 1,1 mm mới phủ ~50% mực (cách 0,8 mm thì phủ ~69%).
+    assert styles.spacing_of(style(), 0.4) == pytest.approx(1.1)
+    assert styles.spacing_of(style(spacing_mm=0.9), 0.4) == 0.9

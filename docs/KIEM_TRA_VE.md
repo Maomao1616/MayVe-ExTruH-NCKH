@@ -14,13 +14,13 @@ Ký hiệu: ✅ đã chốt bằng bản in · 🧪 mới thử bằng ảnh m�
 Đã in và lưu lại (ảnh chụp tờ mẫu). Nút tạo tờ mẫu đã bỏ khỏi giao diện; cần in lại thì gọi `POST /api/draw/calibration` (vẫn còn ở backend, `drawing/calibration.py`) qua `http://127.0.0.1:8000/docs`.
 Tờ có chữ F (kiểm hướng X/Y), thước 100 mm (kiểm tỷ lệ) và **8 dải gạch** với khoảng cách = bề rộng bút × 0,8 / 1 / 1,25 / 1,5 / 2 / 2,5 / 3 / 4.
 
-**Khoảng cách nét quyết định gì:** phần mềm biết bút rộng bao nhiêu và cố ý kẻ các đường cách nhau 2 × bút (bút 0,4 → cách 0,8 mm: 0,4 mực + 0,4 giấy), nên **một lớp gạch phủ ~50 %**, nhìn xa thành xám vừa. Vùng tối hơn **không** gạch dày hơn mà được **chồng thêm lớp** xoay góc khác (5 mức: 0 / 1 / 2 / 3 / 4 lớp ≈ 0 / 50 / 75 / 88 / 94 % mực). Bút ghi 0,4 nhưng ra giấy có thể dày hơn (mực loang → đậm hơn 50 %) hoặc mảnh hơn (bút khô → nhạt hơn), vì vậy phải chọn hệ số bằng tờ thật: đứng cách 40–50 cm, dải nào trông như **mảng xám mịn** mà chưa thấy từng sợi thì lấy hệ số đó. Thấy sọc → giảm hệ số; bết mực → tăng.
+**Khoảng cách nét quyết định gì:** phần mềm kẻ các đường cách nhau **2 × bề rộng nét thật**, để **một lớp gạch phủ ~50 %**, nhìn xa thành xám vừa. Vùng tối hơn **không** gạch dày hơn mà được **chồng thêm lớp** xoay góc khác (5 mức: 0 / 1 / 2 / 3 / 4 lớp ≈ 0 / 50 / 75 / 88 / 94 % mực; n lớp phủ 1 − (1 − p)ⁿ). **Bề rộng nét thật khác cỡ ngòi:** đo tờ hiệu chỉnh 03/11/2026, Sakura 0,4 ra ~0,55 mm (mực loang), nên cách cũ 2 × 0,4 = 0,8 mm thực tế phủ ~69 % (hai lớp ~90 %, ba lớp ~97 %): bậc 2 và 3 trông giống nhau, vùng tối lấm tấm trắng. Từ 03/11/2026 công thức là 2 × 1,375 × cỡ bút (bút 0,4 → 1,1 mm) và mặc định 5 mức. **Bề rộng nét còn phụ thuộc tốc độ vẽ và giấy**, nên chốt tốc độ (mục 7) rồi mới in lại tờ hiệu chỉnh. Cách chọn hệ số bằng tờ thật: đứng cách 40–50 cm, dải nào trông như **mảng xám mịn** mà chưa thấy từng sợi thì lấy hệ số đó. Thấy sọc → giảm hệ số; bết mực → tăng.
 
 | Xem gì | Kết luận |
 |---|---|
 | Thước đo được đúng 100 mm? | sai thì kiểm `steps_per_mm` trong cấu hình máy trước khi làm tiếp |
 | Dải **sát nhất** mà nét chưa nhòe thành mảng / giấy chưa ướt, quăn | mức đậm nhất dùng được |
-| Dải trông như **xám vừa** | khoảng cách mặc định (hiện `DEFAULT_SPACING_PEN = 2.0` × bút, `backend/app/services/drawing/styles.py`) |
+| Dải trông như **xám vừa** | khoảng cách mặc định (hiện `DEFAULT_SPACING_PEN = 2.0` × `LINE_WIDTH_RATIO = 1.375` × cỡ bút, `backend/app/services/drawing/styles.py`; đo lại nét thật rồi sửa `LINE_WIDTH_RATIO` = nét thật ÷ cỡ ngòi) |
 | Dải thưa nhất còn đọc thành "mảng" chứ không thành từng sợi | mức sáng nhất có ý nghĩa |
 
 ## 2. Thang đậm nhạt: ảnh thử preset (thang xám)
@@ -100,15 +100,16 @@ Mục đích: vẽ nhanh hơn mà nét không xấu đi, máy không mất bư�
 - **Thông số máy** (gia tốc, `junction_deviation_mm`, tốc độ tối đa): Cài đặt → Cấu hình máy → **Áp dụng**. Chỉ đổi trong RAM, tắt máy là mất. Chốt được rồi mới **Lưu vào mạch** (phần mềm tự sao lưu bản cũ).
 - **Thông số G-code** (thời gian chờ, tốc độ vẽ / di chuyển / bút): ô ở tab Tạo bản vẽ. **Z bút lên / xuống**: Cài đặt → Cấu hình máy (mục App).
 - Mỗi lần đổi **một** thông số, cùng bản vẽ, ghi thời gian thật.
-- **Tệp G-code thử có sẵn:** `python tools/make_test_gcode.py` ghi 8 tệp vào `export\test-gcode\` (không lên Git): `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z3 / Z2-cho-0.10s`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve`. Nạp ở tab Điều khiển → Xem trước → Chạy. Z mặc định 5 / 0; hồ sơ khác thì `--up`, `--down`. 7.1: thời gian thật ÷ 100 gạch ≈ một chu kỳ nhấc + hạ + chờ.
-- **Hạ chậm, nhấc nhanh** (bút hạ bằng trọng lực): ô "Tốc độ hạ bút" ở tab Tạo bản vẽ (trống = như nâng bút). Thử 600–1500 mm/phút trong khi giữ tốc độ nâng bút ở hồ sơ máy (Cài đặt → Cấu hình máy).
+- **Tệp G-code thử có sẵn:** `python tools/make_test_gcode.py` ghi 10 tệp vào `export\test-gcode\` (không lên Git): `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z2 / Z1.5-cho-0.10s`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve` (3000 / 4000 / 5000 / 6000), `7.5-keo-vet-cho-0.05s / 0.10s`. Nạp ở tab Điều khiển → Xem trước → Chạy. **Mỗi bài một tờ giấy mới** (7.3 và 7.4 vẽ cùng chỗ, chồng lên là không đọc được). Mặc định Z 3 / 0, nâng 3000, hạ 2000, vẽ 5000; hồ sơ khác thì `--up`, `--down`, `--down-feed`, `--draw-feed`. 7.1: thời gian thật ÷ 100 gạch ≈ một chu kỳ nhấc + hạ + chờ.
+- **Hạ chậm, nhấc nhanh** (bút hạ bằng trọng lực): ô "Tốc độ hạ bút" ở tab Tạo bản vẽ (trống = như nâng bút). Mặc định 2000 (từ 03/11/2026); thử 600–1500 nếu bút còn nảy hoặc loang mực đầu nét, trong khi giữ tốc độ nâng bút ở hồ sơ máy (Cài đặt → Cấu hình máy).
 
 | # | Bài thử | Cách làm | Nhìn gì |
 |---|---|---|---|
 | 7.1 | **Chi phí nhấc bút** | Một bản vẽ nhiều nét rất ngắn (100–200 gạch 2 mm; nhờ AI tạo sẵn tệp G-code). Thời gian thật ÷ số nét = một chu kỳ nhấc / hạ. Lần lượt đổi: thời gian chờ 0,2 → 0,1 → 0,05 s; Z nhấc 5 → 3 → 2; điện áp servo 5 → 6 V | Bút có kéo vệt khi di chuyển (nhấc chưa kịp)? Đầu nét có hụt (hạ chưa kịp chạm)? Bút có nảy? |
 | 7.2 | **Mất bước** | Vẽ một dấu + nhỏ ở góc giấy → chạy bản vẽ hoặc di chuyển nhanh nhiều lần → quay về vẽ lại dấu + | Hai dấu trùng khít = không mất bước. Lệch = giảm gia tốc / tốc độ hoặc tăng dòng động cơ |
 | 7.3 | **Gia tốc + góc** | Cùng một đoạn chữ ở gia tốc 600 / 1000 / 1500 / 2000 mm/s², rồi `junction_deviation_mm` 0,01 / 0,03 | Thời gian; gợn sóng ngay sau góc chữ (dấu hiệu rung); làm lại 7.2 |
-| 7.4 | **Tốc độ vẽ của từng bút** | Dải đường thẳng ở 2000 / 3000 / 4500 / 6000 mm/min, mỗi bút một tờ | Tốc độ cao nhất mà nét chưa nhạt / đứt |
+| 7.4 | **Tốc độ vẽ của từng bút** | Dải đường thẳng ở 3000 / 4000 / 5000 / 6000 mm/min, mỗi bút một tờ. Chụp cận (macro) và **đo bề rộng nét ở từng tốc độ** | Tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét thật ở tốc độ đó (số cho `LINE_WIDTH_RATIO`) |
+| 7.5 | **Vệt kéo khi di chuyển xa** | Chấm hai chấm cách 240 mm, chạy G0 qua lại 5 lần, mỗi lần một mức chờ nâng (0,05 / 0,1 s); đổi Z nhấc bằng `--up` (3 / 4 / 5). Dán giấy phẳng bằng băng keo | Có vệt mảnh nối hai chấm = bút chưa rời giấy. Hết vệt ở Z / chờ nào thì dùng mức đó |
 
 | Ngày | Bài | Bút | Thông số đổi | Thời gian thật | Số nét | Kết luận |
 |---|---|---|---|---|---|---|

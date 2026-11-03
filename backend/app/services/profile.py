@@ -12,8 +12,8 @@ import threading
 from .. import paths
 
 DEFAULTS = {
-    "pen_up_z": 5.0,        # đã khớp WebUI FluidNC trên máy thật
-    "pen_mid_z": 2.5,
+    "pen_up_z": 3.0,        # nhấc 3 mm là đủ khỏi giấy (bút hạ bằng trọng lực), nhanh hơn Z5; hành trình Z thật 5 mm
+    "pen_mid_z": 1.5,
     "pen_down_z": 0.0,
     "pen_feed": 3000.0,     # mm/phút, <= $112 (3000)
     "jog_max_step": 50.0,   # mm, bước jog lớn nhất được hiện

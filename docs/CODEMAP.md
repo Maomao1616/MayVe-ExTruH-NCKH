@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~368,880 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~375,749 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -68,6 +68,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `HUONG_DAN_DOC_CODE.md` | ~5,834 |  |
 | `README.md` | ~2,120 |  |
+| `VIEC_CAN_LAM.md` | ~1,328 |  |
 
 ### `backend/app/`
 
@@ -103,10 +104,10 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `job.py` | ~4,727 | JobRunner: chạy một tệp G-code bằng cách gửi TỪNG DÒNG và chờ `ok`/`error` của firmware. |
-| `machine.py` | ~14,214 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
+| `machine.py` | ~14,865 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
 | `machine_config.py` | ~3,292 | Đọc / sửa / lưu cấu hình FluidNC qua cổng serial. |
 | `macros.py` | ~1,709 | Macro (nút chạy nhanh) lưu trên máy chủ: mỗi macro một tệp `<thư mục dữ liệu>/macros/<id>.json`. |
-| `profile.py` | ~716 | Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch). |
+| `profile.py` | ~732 | Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch). |
 | `resume.py` | ~2,419 | Điểm dừng của tác vụ G-code, để "Tiếp tục từ dòng N" sau khi hủy / lỗi / mất kết nối. |
 | `storage.py` | ~1,093 | Xem nội dung thư mục dữ liệu qua giao diện (MiniPC không có màn hình để mở thư mục). |
 
@@ -132,9 +133,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `registry.py` | ~379 | Sổ đăng ký: gom các biến thể cùng loại (kiểu vector hóa...). Thêm kiểu mới không sửa chỗ khác. |
 | `service.py` | ~1,353 | Ghép các bước: kiểm tra tham số -> bố trí -> G-code (mỗi lớp một tệp) -> kiểm bằng chính bộ làm sạch |
 | `shapes.py` | ~174 | Kiểu dữ liệu dùng chung. Tọa độ đường nét: (x, y) tính bằng mm, gốc ở góc trên trái, Y xuống. |
-| `spec.py` | ~3,114 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
+| `spec.py` | ~3,134 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
 | `store.py` | ~463 | Bộ nhớ tạm các bản vẽ đã nạp (để đổi tham số bố trí/G-code không phải nạp lại ảnh/SVG). |
-| `styles.py` | ~1,363 | Kiểu tô: zigzag, sóng, xoắn ốc. Mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
+| `styles.py` | ~1,419 | Kiểu tô: zigzag, sóng, xoắn ốc. Mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
 | `svg_in.py` | ~1,559 | Nạp SVG (nhiều lớp) bằng vpype -> các lớp đường nét tính bằng mm. |
 | `tasks.py` | ~1,287 | Tác vụ nền của tab vẽ: MỘT luồng worker tại một thời điểm, có tiến trình và hủy hợp tác. |
 | `tone.py` | ~521 | Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất). |
@@ -151,7 +152,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_idle.py` | ~489 | app/idle.py: tự tắt server khi đóng hết trang (chỉ khi đặt EXTRUXY_IDLE_EXIT_MIN). |
 | `test_job.py` | ~2,064 | Tác vụ G-code: làm sạch dòng, chạy từng dòng chờ ok, lỗi, hủy, chặn lệnh khác. |
 | `test_machine_config.py` | ~2,329 | Đọc / sửa / lưu cấu hình FluidNC (machine_config.py) và hồ sơ phần mềm (profile.py). |
-| `test_machine_service.py` | ~1,413 |  |
+| `test_machine_service.py` | ~1,922 |  |
+| `test_make_test_gcode.py` | ~695 | tools/make_test_gcode.py: các tệp bài thử tốc độ phải qua bộ làm sạch G-code của backend và nằm trong vùng máy |
 | `test_motion_unlock.py` | ~855 |  |
 | `test_protocol.py` | ~562 |  |
 | `test_regressions.py` | ~2,227 | Hồi quy cho các lỗi đã gặp ở Giai đoạn "xác thực" (28/10/2026). |
@@ -177,7 +179,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_draw_store.py` | ~332 |  |
 | `test_draw_svg_in.py` | ~1,556 |  |
 | `test_gcode_import.py` | ~958 | Nhập một tệp G-code có sẵn thành một bản thảo. |
-| `test_hatch.py` | ~2,189 |  |
+| `test_hatch.py` | ~2,287 |  |
 | `test_isolated.py` | ~1,131 | Xử lý ảnh trong tiến trình riêng: kết quả như chạy thẳng, hủy / quá giờ / sập đều gọn. |
 | `test_palette.py` | ~743 |  |
 | `test_raster_in.py` | ~1,282 |  |
@@ -194,15 +196,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `AI_START.md` | ~2,043 |  |
 | `ARCHITECTURE.md` | ~5,326 |  |
-| `BRIEF.md` | ~2,962 |  |
+| `BRIEF.md` | ~2,973 |  |
 | `CODEMAP.md` | ~4,792 |  |
-| `DECISIONS.md` | ~3,937 |  |
+| `DECISIONS.md` | ~3,963 |  |
 | `DONG_GOI.md` | ~4,048 |  |
 | `DRAW_ROADMAP.md` | ~4,949 |  |
 | `EXPORT_FOR_AI.md` | ~1,605 |  |
-| `FUTURE_UPGRADE_BETA.md` | ~9,115 |  |
-| `KIEM_TRA_VE.md` | ~3,108 |  |
-| `MACHINE.md` | ~2,093 |  |
+| `FUTURE_UPGRADE_BETA.md` | ~9,124 |  |
+| `KIEM_TRA_VE.md` | ~3,431 |  |
+| `MACHINE.md` | ~2,560 |  |
 | `PLAN_ONLINE.md` | ~6,672 |  |
 | `STATUS.md` | ~2,256 |  |
 
@@ -210,7 +212,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~27,774 |  |
+| `index.html` | ~27,779 |  |
 
 ### `frontend/assets/css/`
 
@@ -238,7 +240,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `api.js` | ~1,742 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
 | `auth.js` | ~519 | vai trò của trình duyệt này: khách hay quản lý (backend: app/auth.py). |
-| `config.js` | ~496 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
+| `config.js` | ~501 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
 | `i18n.js` | ~439 |  |
 | `state.js` | ~2,153 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
 
@@ -304,3 +306,4 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `export_context.py` | ~4,793 | Xuất mã nguồn thành MỘT tệp markdown gọn để đưa cho AI khác, tiết kiệm token. |
+| `make_test_gcode.py` | ~2,650 | Sinh sẵn các tệp G-code cho 4 bài thử tốc độ (docs/KIEM_TRA_VE.md mục 7). Chỉ dùng thư viện chuẩn. |

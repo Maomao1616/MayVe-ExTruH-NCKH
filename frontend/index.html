@@ -332,10 +332,10 @@
                 <!-- Thanh bút 3 nấc: Z lấy từ hồ sơ máy (Cài đặt → Cấu hình máy), JS ghi số Z -->
                 <div aria-label="Nâng hạ bút" class="pen-bar" role="group" data-i18n="[aria-label]aria.penControl">
                   <button data-pen="up" disabled="" id="pen-up-btn" type="button" aria-pressed="false">
-                    <span aria-hidden="true">▲</span><small data-i18n="control.pen.up">Lên</small><span class="pen-z" id="pen-up-z">Z5</span>
+                    <span aria-hidden="true">▲</span><small data-i18n="control.pen.up">Lên</small><span class="pen-z" id="pen-up-z">Z3</span>
                   </button>
                   <button data-pen="mid" disabled="" id="pen-mid-btn" type="button" aria-pressed="false">
-                    <span aria-hidden="true">●</span><small data-i18n="control.pen.mid">Giữa</small><span class="pen-z" id="pen-mid-z">Z2.5</span>
+                    <span aria-hidden="true">●</span><small data-i18n="control.pen.mid">Giữa</small><span class="pen-z" id="pen-mid-z">Z1.5</span>
                   </button>
                   <button data-pen="down" disabled="" id="pen-down-btn" type="button" aria-pressed="false">
                     <span aria-hidden="true">▼</span><small data-i18n="control.pen.down">Xuống</small><span class="pen-z" id="pen-down-z">Z0</span>
@@ -843,7 +843,7 @@
                   </label>
                   <label for="style-levels" data-i18n="[title]drawing.hint.levels">
                     <span data-i18n="drawing.style.levels">Số mức đậm nhạt</span>
-                    <input id="style-levels" type="number" min="3" max="5" step="1" value="4"/>
+                    <input id="style-levels" type="number" min="3" max="5" step="1" value="5"/>
                   </label>
                   <label for="style-angle" data-i18n="[title]drawing.hint.angle">
                     <span data-i18n="drawing.style.angle">Góc gạch (°)</span>
@@ -917,7 +917,7 @@
                 <div class="form-grid">
                   <label for="draw-feed">
                     <span data-i18n="drawing.params.drawFeed">Tốc độ vẽ (mm/phút)</span>
-                    <input id="draw-feed" type="number" min="10" step="50" value="3000"/>
+                    <input id="draw-feed" type="number" min="10" step="50" value="5000"/>
                   </label>
                   <label for="travel-feed">
                     <span data-i18n="drawing.params.travelFeed">Tốc độ di chuyển không vẽ (mm/phút)</span>
@@ -925,7 +925,7 @@
                   </label>
                   <label for="draw-pen-up-z">
                     <span data-i18n="drawing.params.penUp">Z khi nâng bút</span>
-                    <input id="draw-pen-up-z" type="number" min="0" step="0.1" value="5"/>
+                    <input id="draw-pen-up-z" type="number" min="0" step="0.1" value="3"/>
                   </label>
                   <label for="draw-pen-down-z">
                     <span data-i18n="drawing.params.penDown">Z khi hạ bút</span>
@@ -933,15 +933,15 @@
                   </label>
                   <label for="pen-down-feed">
                     <span data-i18n="drawing.params.penDownFeed">Tốc độ hạ bút (mm/phút, trống = như nâng bút)</span>
-                    <input id="pen-down-feed" type="number" min="10" max="20000" step="50" placeholder="—"/>
+                    <input id="pen-down-feed" type="number" min="10" max="20000" step="50" placeholder="—" value="2000"/>
                   </label>
                   <label for="pen-delay-down">
                     <span data-i18n="drawing.params.delayDown">Chờ sau khi hạ bút (giây)</span>
-                    <input id="pen-delay-down" type="number" min="0" step="0.05" value="0.2"/>
+                    <input id="pen-delay-down" type="number" min="0" step="0.05" value="0.05"/>
                   </label>
                   <label for="pen-delay-up">
                     <span data-i18n="drawing.params.delayUp">Chờ sau khi nâng bút (giây)</span>
-                    <input id="pen-delay-up" type="number" min="0" step="0.05" value="0.2"/>
+                    <input id="pen-delay-up" type="number" min="0" step="0.05" value="0.05"/>
                   </label>
                   <label for="draw-pen-width">
                     <span data-i18n="drawing.params.penWidth">Bút vẽ (độ rộng nét)</span>
@@ -958,7 +958,7 @@
                   </label>
                 </div>
                 <p class="help-text" data-i18n="drawing.params.help">
-                  Z lấy theo hồ sơ máy (Z0 bút xuống, Z5 bút lên).
+                  Z lấy theo hồ sơ máy (Z0 bút xuống, Z3 bút lên).
                 </p>
               </div>
             </details>

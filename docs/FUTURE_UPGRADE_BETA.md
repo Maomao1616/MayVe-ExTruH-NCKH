@@ -276,7 +276,7 @@ Số hiện tại lấy từ `MACHINE.md` mục C. Mọi con số "ước đư�
 | Thông số | Hiện tại | Thử | Ghi chú |
 |---|---|---|---|
 | Thời gian chờ sau nhấc / hạ (`delay_up_s`, `delay_down_s`) | 0,2 / 0,2 s | 0,1 → 0,05 s | Servo chỉ cần ~0,1 s cho cả 54°. Bút bi cần chạm giấy trước khi đi → giữ thời gian chờ sau khi hạ nhỉnh hơn |
-| Độ cao nhấc (Z bút lên) | Z5 | Z3 → Z2 | Miễn là bút không quẹt giấy khi di chuyển; nhấc thấp hơn thì nhanh hơn và va giấy nhẹ hơn |
+| Độ cao nhấc (Z bút lên) | Z3 (từ 03/11/2026; trước đó Z5) | Z2 → Z1,5 | Miễn là bút không quẹt giấy khi di chuyển; nhấc thấp hơn thì nhanh hơn và va giấy nhẹ hơn |
 | Gia tốc Z | 1000 mm/s² | 2000–3000 | Z là trục ảo của servo; giới hạn thật là tốc độ servo |
 | Điện áp servo | 5 V | 6 V (vặn XL4005; **không vượt 6 V**, đo khi servo đang chạy) | Nhanh hơn ~17 % (0,12 → 0,10 s/60°), khỏe hơn |
 | Gia tốc X / Y | 600 mm/s² | 1000 → 1500 → 2000 | Chữ toàn đoạn ngắn nên gia tốc quyết định tốc độ thật. Soi gợn sóng sau góc chữ, kiểm mất bước |
