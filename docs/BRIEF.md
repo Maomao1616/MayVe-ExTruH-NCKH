@@ -34,7 +34,7 @@ SVG  ── svg_in ────────────────────�
 | `spec.py` | Khai báo **mọi tham số một chỗ** (mặc định, giới hạn). Backend kiểm tra bằng nó; frontend lấy qua `/schema` | |
 | `raster_in.py` | Đọc ảnh (`Image.draft`), xoay EXIF, nền trong suốt → trắng, cắt, thu nhỏ/phóng nhẹ (≤ 720 px) về cỡ làm việc | Pillow |
 | `tone.py` | Tự cân sáng, mức đen/trắng, gamma, CLAHE, khử nhiễu → bản đồ độ đậm | OpenCV |
-| `hatch.py`, `styles.py` | Zigzag, sóng, xoắn ốc: độ đậm → đường gạch song song/xoắn ốc, mỗi mức đậm thêm một lớp xoay góc | numpy, OpenCV |
+| `hatch.py`, `styles.py` | Zigzag, sóng, xoắn ốc: độ đậm → đường gạch song song/xoắn ốc, mỗi mức đậm nhạt một dải gạch có khoảng cách riêng | numpy, OpenCV |
 | `edges.py`, `trace.py` | Viền: top-hat + Canny → làm mảnh (skeleton) → dò thành nét liền (đường giữa) | OpenCV, scipy, scikit-image |
 | `palette.py` | Chia 2–4 màu (k-means trên Lab), mỗi màu một lớp | OpenCV |
 | `raster.py` | Ghép các bước trên, báo tiến trình, trả lớp + số liệu | |

@@ -25,6 +25,8 @@ DETAIL = {
     "medium": (18, 50, 0.16, 2.5),
     "high": (10, 30, 0.11, 1.5),         # hình vẽ đơn giản, nét nhạt
 }
+SPUR_MM = {"low": 2.4, "medium": 1.6, "high": 1.0}   # râu (nhánh cụt) ngắn hơn chừng này bị cắt: nét dày để lại râu ở góc
+FLATTEN_SP, FLATTEN_SR = 7, 22     # mean shift: bán kính không gian (điểm ảnh) và khoảng màu
 INK_MAX_MM = 4.0         # nét mực / chấm dày tới chừng này thì lấy đường giữa (dày hơn = mảng, lấy viền)
 LIGHT_MAX_MM = 1.2       # vạch sáng mảnh hơn chừng này thì lấy đường giữa
 GAP_MM = 1.5             # khe hở được nối (tính cả phần đầu nét co lại khi làm mảnh nét dày)
@@ -67,6 +69,11 @@ def ink_mask(ds: np.ndarray, px_mm: float, threshold: float) -> np.ndarray:
 
 def region_edges(ds: np.ndarray, rgb: np.ndarray | None, lo: int, hi: int) -> np.ndarray:
     """Ranh giới mảng sáng/tối và mảng màu (Canny trên ảnh đã làm mịn giữ cạnh)."""
+    if rgb is not None and rgb.shape[:2] == ds.shape:
+        # Ảnh màu: làm phẳng vùng cùng màu (mean shift) trước khi tìm viền: da, trời, vải thành mảng đều nên ranh giới
+        # mảng nổi lên và vân nhiễu mờ đi (thử ảnh người + cốc cà phê: nét dài hơn, ít mẩu vụn). Nét mảnh đậm giữ nguyên.
+        rgb = cv2.pyrMeanShiftFiltering(np.ascontiguousarray(rgb), FLATTEN_SP, FLATTEN_SR)
+        ds = 1.0 - cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY).astype(np.float32) / 255.0
     gray = (255.0 * (1.0 - ds)).astype(np.uint8)
     gray = cv2.bilateralFilter(cv2.bilateralFilter(gray, 0, 30, 3), 0, 30, 3)
     edges = cv2.Canny(gray, lo, hi, L2gradient=True) > 0
@@ -126,6 +133,61 @@ def bridge(skel: np.ndarray, gap_px: float, max_angle: float = GAP_ANGLE) -> np.
     return out > 0
 
 
+def _crossing_number(sk: np.ndarray) -> np.ndarray:
+    """Số lần đi qua nét khi quanh một điểm: 1 = đầu mút, 2 = giữa nét (kể cả bậc thang), >= 3 = ngã ba."""
+    p = np.pad(sk.astype(np.int8), 1)
+    ring = [p[:-2, 1:-1], p[:-2, 2:], p[1:-1, 2:], p[2:, 2:], p[2:, 1:-1], p[2:, :-2], p[1:-1, :-2], p[:-2, :-2]]
+    cn = np.zeros(sk.shape, np.int8)
+    for i in range(8):
+        cn += (ring[i] == 0) & (ring[(i + 1) % 8] == 1)       # mỗi lần chuyển trắng -> đen quanh vòng là một nhánh
+    return cn
+
+
+SPUR_PER_RADIUS = 1.6    # râu của nét dày dài cỡ bán kính nét; nét mảnh (chữ nhỏ, mạch in) gần như không có râu
+
+
+def prune_spurs(skel: np.ndarray, min_px: float, rounds: int = 2, radius: np.ndarray | None = None) -> np.ndarray:
+    """Cắt râu: nhánh cụt (một đầu tự do, đầu kia dính vào ngã ba) ngắn hơn min_px.
+
+    Làm mảnh nét dày (chữ đậm, viền hoạt hình) luôn đẻ ra râu ngắn ở góc và chỗ nét bắt đầu / kết thúc; bút vẽ
+    thêm các râu đó là thêm nét thừa. Đoạn thẳng rời không có ngã ba thì giữ nguyên dù ngắn (đó là nét thật).
+
+    `radius` (điểm ảnh, bản đồ khoảng cách tới mép nét mực): giới hạn từng nhánh = min(min_px, SPUR_PER_RADIUS × bán kính
+    lớn nhất dọc nhánh + 2). Nhờ vậy nét mảnh (mạch in, chữ nhỏ, dấu móc ơ ư) không bị cắt nhầm vì nhánh ngắn là thật."""
+    sk = (skel > 0).copy()
+    h, w = sk.shape
+    for _ in range(rounds):
+        cn = _crossing_number(sk)
+        ends = np.argwhere(sk & (cn == 1))
+        changed = False
+        for y, x in ends:
+            path, seen = [(y, x)], {(y, x)}
+            cy, cx = int(y), int(x)
+            junction = False
+            while len(path) <= min_px:
+                nxt = [(cy + dy, cx + dx) for dy, dx in ((-1, 0), (0, -1), (0, 1), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1))
+                       if 0 <= cy + dy < h and 0 <= cx + dx < w and sk[cy + dy, cx + dx]
+                       and (cy + dy, cx + dx) not in seen]
+                if not nxt:
+                    break                                   # hết nét mà chưa gặp ngã ba: nét rời, giữ
+                if cn[nxt[0]] >= 3:
+                    junction = True                         # phía trước là ngã ba: đoạn đã đi là râu
+                    break
+                cy, cx = nxt[0]
+                seen.add((cy, cx))
+                path.append((cy, cx))
+            limit = min_px
+            if radius is not None:
+                limit = min(min_px, SPUR_PER_RADIUS * max(float(radius[py, px]) for py, px in path + [(cy, cx)]) + 2.0)
+            if junction and len(path) <= limit:
+                for py, px in path:
+                    sk[py, px] = False
+                changed = True
+        if not changed:
+            break
+    return sk
+
+
 def outline_mask(dark: np.ndarray, rgb: np.ndarray | None, px_mm: float, detail: str = "medium",
                  ctx=None) -> np.ndarray:
     """Mặt nạ đường mảnh 1 điểm ảnh, sẵn sàng cho trace.to_strokes."""
@@ -146,4 +208,5 @@ def outline_mask(dark: np.ndarray, rgb: np.ndarray | None, px_mm: float, detail:
     merged = ink_skel | reg | rings
     merged = skeletonize(cv2.dilate(merged.astype(np.uint8), np.ones((2, 2), np.uint8)) > 0)
     merged = bridge(merged, gap_px=max(3.0, GAP_MM / px_mm))
-    return skeletonize(merged)
+    radius = cv2.distanceTransform(cv2.dilate(ink.astype(np.uint8), np.ones((3, 3), np.uint8)), cv2.DIST_L2, 3)
+    return prune_spurs(skeletonize(merged), SPUR_MM.get(detail, SPUR_MM["medium"]) / px_mm, radius=radius)

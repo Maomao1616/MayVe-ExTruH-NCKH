@@ -13,6 +13,7 @@ import numpy as np
 OFFSETS = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
 SMOOTH_PASSES = 2
 SIMPLIFY_PX = 0.6
+CLOSE_PX = 2.0                   # hai đầu một nét cách nhau không quá chừng này điểm ảnh thì khép thành vòng
 
 
 def skeleton(mask: np.ndarray, min_pixels: int) -> np.ndarray:
@@ -100,9 +101,14 @@ def to_strokes(skel: np.ndarray, px_x_mm: float, px_y_mm: float, min_len_mm: flo
     strokes = []
     scale = np.array([px_x_mm, px_y_mm], dtype=np.float32)
     for p in paths(skel):
+        closed = len(p) > 6 and float(np.hypot(*(p[0] - p[-1]))) <= CLOSE_PX
+        if closed:
+            p = np.concatenate([p, p[:1]])                 # vòng kín (hình tròn, số 0, chữ o): khép lại, đừng để hở một điểm ảnh
         p = smooth(p)
         if len(p) > 2:
             p = cv2.approxPolyDP(p.reshape(-1, 1, 2), SIMPLIFY_PX, False).reshape(-1, 2)
+        if closed and len(p) > 2:
+            p = np.concatenate([p, p[:1]]) if (p[-1] != p[0]).any() else p      # approxPolyDP có thể bỏ điểm cuối trùng đầu
         mm = (p + 0.5) * scale
         length = float(np.hypot(*np.diff(mm, axis=0).T).sum()) if len(mm) > 1 else 0.0
         if length >= min_len_mm:

@@ -46,14 +46,30 @@ def test_darker_side_gets_more_ink(kind):
     strokes = styles.fill(f, style(kind=kind), 0.4)
     left = sum(math.dist(a, b) for s in strokes for a, b in zip(s, s[1:]) if a[0] < 30 and b[0] < 30)
     right = sum(math.dist(a, b) for s in strokes for a, b in zip(s, s[1:]) if a[0] >= 30 and b[0] >= 30)
-    assert right > 3 * max(left, 1)
+    assert right > 2 * max(left, 1)             # sáng-nhạt rải đều theo bậc, không còn chồng nhiều lớp ở phía tối
 
 
-def test_more_levels_more_ink():
+def test_level_plan_gives_one_distinct_band_per_level():
+    for levels in (3, 4, 5):
+        plan = styles.level_plan(levels, 0.55)
+        assert len(plan) == levels - 1                              # bậc 0 là giấy trắng, không vẽ
+        lows = [lo for lo, _, _ in plan]
+        spacings = [sp for _, _, sp in plan]
+        assert lows == sorted(lows) and lows[0] > 0 and plan[-1][1] == math.inf
+        assert all(a[1] == b[0] for a, b in zip(plan, plan[1:]))    # các dải nối liền, không chồng
+        assert spacings == sorted(spacings, reverse=True)           # càng đậm càng sát
+        assert spacings[-1] == pytest.approx(0.55 / styles.MAX_COVERAGE)
+    assert [round(x, 2) for _, _, x in styles.level_plan(5, 0.55)] == [2.44, 1.22, 0.81, 0.61]
+    assert styles.level_plan(4, 0.55, scale=2.0)[0][2] == pytest.approx(2 * styles.level_plan(4, 0.55)[0][2])
+
+
+def test_gradient_shows_as_separate_bands_with_denser_lines_to_the_dark_side():
     f = field(gradient())
-    a = length(styles.fill(f, style(levels=3), 0.4))
-    b = length(styles.fill(f, style(levels=5), 0.4))
-    assert b > a
+    xs = lambda strokes: sorted({round(x, 1) for s in strokes for x, _ in s})
+    few = styles.fill(f, style(levels=3), 0.4)
+    many = styles.fill(f, style(levels=5), 0.4)
+    assert length(many) > 0 and length(few) > 0
+    assert length(many) < 4 * length(few)                           # nhiều bậc hơn không kéo theo nhiều lớp chồng
 
 
 def test_zigzag_joins_lines_into_few_strokes():

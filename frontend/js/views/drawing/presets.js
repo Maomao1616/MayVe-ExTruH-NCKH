@@ -20,7 +20,7 @@ export const PRESETS = {
     },
     closeup: {                   // cận cảnh: đồ ăn, cốc, đồ vật: xoắn ốc mềm + viền khối rõ
         ...BASE, "image-gamma": "1.25",
-        "style-kind": "spiral", "style-outline": true, "style-outline-detail": "low"
+        "style-kind": "spiral", "style-levels": "4", "style-outline": true, "style-outline-detail": "low"
     },
     flat2d: {                    // ảnh 2D: hình vẽ, sticker, hoạt hình, truyện tranh (kể cả dán lên ảnh chụp): chỉ viền
         ...BASE,

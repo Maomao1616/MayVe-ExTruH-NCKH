@@ -34,7 +34,7 @@ Máy Windows khác chạy được mà không cài Python: thư mục `Python/` 
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~391 test) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test backend (~397 test) | trong `backend`, đã bật venv: `python -m pytest` |
 | Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 

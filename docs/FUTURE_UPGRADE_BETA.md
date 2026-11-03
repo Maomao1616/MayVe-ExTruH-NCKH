@@ -341,3 +341,33 @@ Không có mạng dây / Wi-Fi → tự phát. Ưu tiên router du lịch hoặc
 5. **Tab Beta PDF**: chữ + đường kẻ vector + hai bút.
 6. **ESP32-S3**: chọn 1–2 nút (bảng điều khiển, điện năng, camera).
 7. Hồ sơ tốc độ, trình hiệu chỉnh nhấc bút, khách gửi ảnh, Cloudflare.
+
+## 22. Thuật toán tô: phân tích, đã làm, còn lại (03/11/2026)
+Công cụ đo không cần in giấy: `tools/ink_sim.py` (vẽ lại các nét với bề rộng thật 0,55 mm, làm mờ ~2 mm rồi so với độ đậm mong muốn; in sai số, chiều dài, số nét, thời gian ước tính). Chỉ để **so sánh thuật toán** (ảnh thử tổng hợp, chỉ đo tông, không đo vẻ đẹp).
+
+**Đã làm (có test):**
+| Việc | Số đo (ảnh thử 80 × 50 mm) |
+|---|---|
+| Mỗi mức đậm nhạt = một dải, một lượt gạch, khoảng cách riêng theo độ phủ mục tiêu (`styles.level_plan`) | zigzag: sai số 0,174 → 0,071, dài 4211 → 2331 mm (-45 %) so với thiết kế cũ (chồng lớp, cách 0,8 mm); thử trung gian "5 mức chia đều" là 0,147 (tệ nhất) |
+| Biên độ sóng = 0,18 × khoảng cách (cũ 0,35) | sóng: 0,123 → 0,090 |
+| Quay đầu zigzag / sóng bằng nửa vòng tròn (`hatch.serpentine`) | không đo được bằng mô phỏng; lý thuyết: góc vuông ép máy ~7 mm/s (junction_deviation 0,01), cung 7 điểm ~24 mm/s. ⏳ kiểm bằng ảnh chụp cận mép khối |
+| Xoắn ốc: nối khe tới 6 × bước, bỏ mẩu < 4 × bước | sai số 0,106 → 0,058; số nét ~165 (mỗi bậc cắt xoắn ốc một lần) nên ước tính 1,07 phút so với zigzag 0,52 phút; preset Cận cảnh giảm xuống 4 mức |
+| Viền: cắt râu (`edges.prune_spurs`, giới hạn theo bề dày nét: râu của nét dày dài cỡ 1,6 × bán kính, tối đa 2,4 / 1,6 / 1,0 mm theo chi tiết thấp / vừa / cao), khép vòng kín | ảnh thử chữ dày + vòng tròn: đầu mút 22 → 16, hết râu ở đỉnh chữ A, chữ g, đáy chữ V. Ảnh giống mạch in (vết 0,25 mm, pad tròn, chân linh kiện 1,6–2 mm): giữ nguyên chân ngắn, vòng pad khép kín |
+| Viền ảnh màu: làm phẳng vùng cùng màu bằng mean shift (`cv2.pyrMeanShiftFiltering`) trước khi tìm ranh giới | ảnh người (`skimage.data.astronaut`) và cốc cà phê: nét dài hơn (trung vị 5,5 → 6,4 mm; 7,4 → 9,5 mm), thêm ~0,1–0,3 s ở 400 px; ảnh mạch in không đổi |
+
+**Đã thử và bỏ:** sóng điều biến (biên độ theo độ đậm, một lượt): sai số 0,19–0,22, kém zigzag nhiều lớp.
+
+**Còn lại, cần số đo thật hoặc ảnh thật:**
+| # | Hướng | Ghi chú |
+|---|---|---|
+| a | Cách nét tham chiếu 1,3 mm (mô phỏng cũ: tốt hơn 1,1 mm) | chốt bằng thang xám in thật |
+| b | Đường cong tông (độ đậm → độ phủ thật) đo từ thang xám | chỉnh `MAX_COVERAGE` và vị trí ngưỡng; `scipy.interpolate`, OpenCV |
+| c | **Tự hiệu chỉnh bằng ảnh chụp tờ mẫu** | in 4 ô đánh dấu `cv2.aruco` ở góc tờ mẫu, chụp bằng điện thoại, phần mềm nắn phối cảnh (`cv2.findHomography`) rồi đo bề rộng nét, độ phủ từng dải, độ lệch tỷ lệ → tự cập nhật `LINE_WIDTH_RATIO` và đường cong tông |
+| d | Viền: XDoG / FDoG thay Canny, `skan` phân tích nhánh | mục 15; cần nhiều ảnh thật để so |
+| e | Gửi G-code trước nhiều dòng (character-counting) thay vì chờ `ok` từng dòng | máy có thể "đói lệnh" khi đoạn nét rất ngắn ở 5000 mm/min (~170 dòng/s); cần ghi số liệu `Bf:` (mục 21.6) để biết có đói thật không rồi mới làm; rủi ro an toàn (dòng lỗi vẫn nằm trong bộ đệm) |
+
+**Giới hạn đã biết của kiểu viền (thử 03/11/2026):**
+- Ảnh chụp màu (người, cốc) ra **bản phác** nhận ra được hình, nét hơi đứt, **không phải tranh tô màu sạch**. Muốn sạch hơn: bộ dò viền học sâu (TEED / PiDiNet, mục 15), chưa làm vì nặng cho MiniPC.
+- **Chữ nhỏ** (cỡ 14 pt, cao ~2 mm) đi qua đường ảnh này bị nát (ảnh ~0,25–0,3 mm / điểm). Chữ phải đi bằng dây chuyền riêng (kết xuất PDF 600 dpi → skeleton, mục 1 và 14), không dùng preset Schematic.
+- Mạch in đơn giản (vết, pad, chân linh kiện, nét ≥ 1,5 mm) đi được bằng preset Schematic.
+

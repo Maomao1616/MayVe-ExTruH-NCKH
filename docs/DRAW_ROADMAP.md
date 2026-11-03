@@ -19,7 +19,7 @@ Frontend chỉ biết API; thuật toán đổi bên trong không làm đổi gi
 - Khung thật (do nhóm vẽ trên mặt bàn): vùng máy **285×318 mm**, gốc O(0,0) góc trên trái, Y xuống; **A6 ⊂ A5 ⊂ A4 cùng neo ở O**. Khớp quy ước `layout.py` (tờ giấy neo ở O, dịch bằng `paper_x/y_mm`).
 - `margin_mm` tính từ mép tờ giấy. Khung vẽ nằm trong phần trong lề; ra ngoài → lỗi `box_out_of_paper` (không tự cắt).
 - **Bút: 0,2 / 0,4 / 0,5 mm**; viết chữ dùng 0,5. Danh sách dựng sẵn: 0,2 / 0,4 / 0,5 (`spec.py` `PENS`; ô chọn bút trong `index.html`). Độ phân giải xử lý **tự tính** = cạnh dài khung vẽ ÷ độ rộng bút × 1,3 (cạnh dài trong lề A4 = 287 mm: ~930 px với bút 0,4; ~1870 px với bút 0,2), có ô ghi đè (`max_side_px`, 400–4000).
-- **Khoảng gạch** cố định cho cả bức vẽ: mặc định 2 × bề rộng bút (`styles.py` `DEFAULT_SPACING_PEN`), nên một lớp gạch phủ ~50 % mực. Vùng tối hơn **không** gạch dày hơn mà được **chồng thêm lớp** xoay góc khác (5 mức: 0 / 1 / 2 / 3 / 4 lớp ≈ 0 / 50 / 75 / 88 / 94 % mực). Chọn hệ số theo tờ mẫu hiệu chỉnh bút (`KIEM_TRA_VE.md` mục 1).
+- **Khoảng gạch** cố định cho cả bức vẽ: mặc định 2 × bề rộng bút (`styles.py` `DEFAULT_SPACING_PEN`), nên một lớp gạch phủ ~50 % mực. Từ 03/11/2026 mỗi mức đậm nhạt là **một dải riêng với một lượt gạch và khoảng cách riêng** (`styles.level_plan`: độ phủ mục tiêu 0 → 90 % chia đều, s = nét thật ÷ độ phủ), không còn chồng nhiều lớp xoay góc; chỗ quay đầu zigzag / sóng là nửa vòng tròn (`hatch.serpentine`); xoắn ốc nối khe và bỏ mẩu theo bước xoắn; viền cắt râu (`edges.prune_spurs`) và khép vòng kín (`trace.to_strokes`). Chọn hệ số theo tờ mẫu hiệu chỉnh bút (`KIEM_TRA_VE.md` mục 1).
 - `origin` (G54/máy) không vào backend: frontend kiểm lại kể cả WCO khi Chạy.
 
 ## 3. Hợp đồng API (CHỐT TRƯỚC KHI LÀM FRONTEND)

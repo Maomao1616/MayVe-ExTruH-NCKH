@@ -1,7 +1,7 @@
 """Lõi tô bằng nét: bản đồ độ đậm -> mặt nạ từng mức -> đường quét song song / xoắn ốc -> các nét (mm).
 
 Mọi hàm thuần numpy / OpenCV, tọa độ ra bằng mm trong khung ảnh (gốc trên trái, Y xuống).
-Một mức j chỉ vẽ nơi độ đậm >= j/levels; các mức xoay góc khác nhau nên chồng lên thành tô chéo.
+Mỗi dải đậm nhạt (styles.level_plan) có mặt nạ riêng và một lượt gạch với khoảng cách riêng.
 """
 from __future__ import annotations
 
@@ -14,6 +14,8 @@ import numpy as np
 CHUNK_CELLS = 2_000_000          # số mẫu tối đa xử lý một lượt (giới hạn RAM)
 MIN_RUN_MM = 0.3                 # đoạn ngắn hơn chừng này bỏ qua (bút không vẽ nổi)
 BRIDGE_MM = 3.0                  # khe trắng ngắn hơn chừng này trên xoắn ốc thì vẽ liền (đỡ một lần nhấc bút ≈ 0,6 s)
+SPIRAL_BRIDGE_PITCHES = 6.0      # nối qua khe trắng tới chừng này lần bước xoắn
+SPIRAL_MIN_PITCHES = 4.0         # bỏ mẩu ngắn hơn chừng này lần bước xoắn
 WAVE_POINT_BUDGET = 100_000      # số điểm tối đa mong muốn cho đường sóng của một lớp (G-code giới hạn 200 000 dòng)
 
 
@@ -36,11 +38,6 @@ class Field:
     @property
     def px_mm(self) -> float:
         return min(self.width_mm / self.w, self.height_mm / self.h)
-
-
-def thresholds(levels: int) -> list[float]:
-    """levels mức sáng tối -> levels-1 lượt tô; lượt j vẽ nơi độ đậm >= j/levels."""
-    return [j / levels for j in range(1, levels)]
 
 
 def level_mask(f: Field, threshold: float, spacing_mm: float) -> np.ndarray:
@@ -105,39 +102,64 @@ def scan_runs(mask: np.ndarray, f: Field, angle_deg: float, spacing_mm: float, p
     return d, n, vmin, lines
 
 
-def serpentine(d, n, vmin, lines, spacing_mm: float, shape=None):
+TURN_POINTS = 7                  # nửa vòng tròn quay đầu: 7 điểm = 6 đoạn, mỗi chỗ rẽ ~30° (máy giữ được ~24 mm/s)
+
+
+def serpentine(d, n, vmin, lines, spacing_mm: float, shape=None, round_turns: bool = True):
     """Nối các đoạn của dòng kề nhau thành nét liền kiểu zigzag (đi - về). shape(u0,u1,v)->mảng (k,2) tùy biến.
 
     Chỉ nối khi đầu vào của đoạn mới ở gần cuối đoạn trước (theo hướng quét): ít nhấc bút nhất mà
     đường nối không băng qua vùng trắng xa.
+
+    round_turns: chỗ quay đầu là NỬA VÒNG TRÒN bán kính spacing / 2 (đỉnh vòng tròn đúng tại mép đoạn), không phải
+    hai góc vuông. Hai góc vuông ép máy giảm tốc gần về 0 (junction_deviation 0,01 mm: ~7 mm/s) và bút đứng lâu ở mép
+    nên mực loang thành giọt; nửa vòng tròn giữ ~24 mm/s và đỡ chậm hơn nhiều.
     """
     jump = max(2.5 * spacing_mm, 0.8)
-    strokes: list[list[np.ndarray]] = []
-    open_prev: list[tuple[float, list[np.ndarray]]] = []        # (u cuối, nét) của dòng trước
+    r = spacing_mm / 2.0
+
+    def make(a, b, v):
+        return shape(a, b, v) if shape else np.array([[a, v], [b, v]])
+
+    # nét = {"parts": [mảng uv...], "last": (a_dùng, v) của đoạn cuối}
+    strokes: list[dict] = []
+    open_prev: list[tuple[float, dict, float]] = []             # (u cuối, nét, hướng ±1) của dòng trước
     for i, runs in enumerate(lines):
         v = vmin + i * spacing_mm
         forward = (i % 2 == 0)
         taken: set[int] = set()
-        open_now: list[tuple[float, list[np.ndarray]]] = []
+        open_now: list[tuple[float, dict, float]] = []
         for u0, u1 in (runs if forward else reversed(runs)):
             a, b = (u0, u1) if forward else (u1, u0)             # đi từ a tới b
-            pts = shape(a, b, v) if shape else np.array([[a, v], [b, v]])
+            sgn = 1.0 if b > a else -1.0
             best, bd = -1, jump
-            for k, (ue, _) in enumerate(open_prev):
+            for k, (ue, _, _) in enumerate(open_prev):
                 if k not in taken and abs(ue - a) <= bd:
                     best, bd = k, abs(ue - a)
-            if best >= 0:
-                taken.add(best)
-                stroke = open_prev[best][1]
-            else:
-                stroke = []
+            if best < 0:
+                stroke = {"parts": [make(a, b, v)], "last": (a, v)}
                 strokes.append(stroke)
-            stroke.append(pts)
-            open_now.append((b, stroke))
+            else:
+                taken.add(best)
+                ue, stroke, psgn = open_prev[best]
+                a_prev, v_prev = stroke["last"]
+                apex = (ue + a) / 2.0
+                cut = apex - psgn * r                            # hai đầu cung nằm cùng u, đỉnh cung tại apex
+                turn = (round_turns and abs(ue - a) <= 0.7 * r
+                        and (cut - a_prev) * psgn >= r and (b - cut) * sgn >= 2 * r)
+                if turn:
+                    stroke["parts"][-1] = make(a_prev, cut, v_prev)
+                    t = np.linspace(-math.pi / 2, math.pi / 2, TURN_POINTS)
+                    stroke["parts"].append(np.stack([cut + psgn * r * np.cos(t),
+                                                     (v_prev + v) / 2 + (v - v_prev) / 2 * np.sin(t)], axis=1))
+                    a = cut
+                stroke["parts"].append(make(a, b, v))
+                stroke["last"] = (a, v)
+            open_now.append((b, stroke, sgn))
         open_prev = open_now
     out = []
-    for parts in strokes:
-        uv = np.concatenate(parts)
+    for st in strokes:
+        uv = np.concatenate(st["parts"])
         xy = np.stack([uv[:, 0] * d[0] + uv[:, 1] * n[0], uv[:, 0] * d[1] + uv[:, 1] * n[1]], axis=1)
         out.append(xy)
     return out
@@ -156,13 +178,18 @@ def sine_shape(amplitude: float, wavelength: float, step: float):
 
 # --- xoắn ốc --------------------------------------------------------------------------
 def spiral_runs(mask: np.ndarray, f: Field, pitch_mm: float, phase: float = 0.0):
-    """Xoắn ốc Archimedes từ tâm ảnh, bước pitch_mm; cắt theo mặt nạ. Mỗi đoạn True là một nét."""
+    """Xoắn ốc Archimedes từ tâm ảnh, bước pitch_mm; cắt theo mặt nạ. Mỗi đoạn True là một nét.
+
+    Mỗi nét tốn một lần nhấc + hạ bút (~0,25 s = ~20 mm vẽ ở 5000 mm/min), nên nối qua khe trắng tới
+    6 × bước (tối thiểu BRIDGE_MM) và bỏ mẩu ngắn hơn 4 × bước (gần như không thấy)."""
     cx, cy = f.width_mm / 2, f.height_mm / 2
     r_max = math.hypot(cx, cy) + pitch_mm
     step = max(f.px_mm * 0.7, 1e-3)
     total = math.pi * r_max * r_max / pitch_mm                  # chiều dài xấp xỉ
     n = int(total / step) + 1
     strokes = []
+    bridge = max(BRIDGE_MM, SPIRAL_BRIDGE_PITCHES * pitch_mm)
+    min_run = max(MIN_RUN_MM, SPIRAL_MIN_PITCHES * pitch_mm)
     for k0 in range(0, n, CHUNK_CELLS):
         k = np.arange(k0, min(n, k0 + CHUNK_CELLS + 1), dtype=np.float64)    # chồng 1 mẫu để không đứt nét
         theta = np.sqrt(4 * math.pi * k * step / pitch_mm)
@@ -173,11 +200,11 @@ def spiral_runs(mask: np.ndarray, f: Field, pitch_mm: float, phase: float = 0.0)
         runs = list(zip(s.tolist(), e.tolist()))
         merged: list[list[int]] = []
         for a0, a1 in runs:
-            if merged and (a0 - merged[-1][1]) * step <= BRIDGE_MM:
+            if merged and (a0 - merged[-1][1]) * step <= bridge:
                 merged[-1][1] = a1                              # nối qua khe trắng ngắn
             else:
                 merged.append([a0, a1])
         for a0, a1 in merged:
-            if (a1 - a0) * step >= MIN_RUN_MM:
+            if (a1 - a0) * step >= min_run:
                 strokes.append(np.stack([x[a0:a1 + 1], y[a0:a1 + 1]], axis=1))
     return strokes
