@@ -1,6 +1,6 @@
 """SimLink: máy FluidNC giả để phát triển khi chưa có board.
 
-Hiệu chỉnh theo log board thật (MKS DLC32, FluidNC v4.1.1, MACHINE.md 29/10/2026):
+Hiệu chỉnh theo log board thật (MKS DLC32, FluidNC v4.1.1, docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026):
   - bật lên: `[MSG:INFO: ALARM: Unhomed]` + `ALARM:14`, trạng thái Alarm (must_home);
     sau `$X` mọi G-code chạy được kể cả khi chưa Home (không có ALARM:14 về sau),
   - `!` khi Run -> Hold:1 -> Hold:0, `~` chạy tiếp; `!` khi Jog -> hủy jog, về Idle,

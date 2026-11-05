@@ -686,7 +686,7 @@ function initGcodePanel() {
             machineState === "Idle" && !active;
         runButton.disabled = !canRun;
 
-        // Sau $X máy chạy được G-code dù chưa Home (MACHINE.md A3): nhắc kiểm tra gốc vị trí.
+        // Sau $X máy chạy được G-code dù chưa Home (docs/02_PHAN_CUNG_MAY.md mục 5, F1): nhắc kiểm tra gốc vị trí.
         const originWarning = $("gcode-origin-warning");
         if (originWarning) {
             originWarning.hidden = !(file && isConnected() && snapshot?.status?.homed_guess === false);

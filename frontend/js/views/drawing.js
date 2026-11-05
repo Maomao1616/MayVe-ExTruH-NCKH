@@ -1,4 +1,4 @@
-// views/drawing.js — Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4):
+// views/drawing.js — Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4):
 //   chọn tệp -> POST /draw/import (tác vụ nền, hỏi tiến trình, hủy được) -> GET preview (nét nháp)
 //   -> canvas: kéo / co giãn / xoay khung ngay trên tờ giấy (không gọi mạng, công thức ở lib/paper.js)
 //   -> POST /draw/gcode (debounce, chỉ lấy số liệu) -> Lưu bản thảo / Chuyển sang Điều khiển.
@@ -474,7 +474,7 @@ const baseName = () => {
 };
 
 // Ảnh thang xám 11 bậc (0, 10 … 100 % đen) + dải chuyển liền bên dưới, vẽ ngay trong trình duyệt
-// rồi nạp như tệp người dùng chọn. Dùng để thử từng preset trên cùng một ảnh (docs/KIEM_TRA_VE.md mục 2).
+// rồi nạp như tệp người dùng chọn. Dùng để thử từng preset trên cùng một ảnh (docs/07_THU_NGHIEM.md mục 2).
 const RAMP_NAME = "thang-xam.png";
 async function loadToneRamp() {
     const W = 1400, H = 560, M = 20, STEPS = 11, STEP_H = 300;

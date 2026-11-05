@@ -1,18 +1,36 @@
 # VMU PlotterPen (ExtruXY) — phần mềm điều khiển máy vẽ
 
-Phần mềm điều khiển máy vẽ CoreXY (vùng làm việc 285 × 318 mm, giấy A6/A5/A4), chạy trên laptop và nối với bo mạch **MKS DLC32 V2.1** chạy firmware **FluidNC v4.1.1** qua cáp USB (CH340). Không sửa firmware; dùng giao thức có sẵn của FluidNC.
+Máy vẽ bút CoreXY tự làm (vùng làm việc 285 × 318 mm, giấy A6 / A5 / A4) và phần mềm điều khiển chạy trên trình duyệt. Máy dùng mạch **MKS DLC32 V2.1** với firmware **FluidNC v4.1.1** (không sửa firmware), nối với máy tính qua cáp USB.
 
-- **Tab Điều khiển:** kết nối, trạng thái, jog, Home/Zero, bút lên xuống, nạp + xem trước + chạy G-code, hủy an toàn, tiếp tục tác vụ đã dừng, terminal, macro, tệp nhanh (bản thảo ghim), hàng đợi công việc.
-- **Tab Tạo bản vẽ:** nạp SVG hoặc ảnh → tạo nét (zigzag, sóng, xoắn ốc, viền; đơn sắc hoặc 2–4 màu) → bố trí lên giấy → G-code → lưu bản thảo → chuyển sang Điều khiển.
-- **Tab Cài đặt:** kết nối, hoạt động, thư mục bản thảo, cấu hình máy (đọc/ghi YAML trên mạch), hồ sơ phần mềm.
+- **Tab Điều khiển:** kết nối, trạng thái, jog, Home / Zero, nâng hạ bút, nạp + xem trước + chạy G-code, hủy an toàn, tiếp tục tác vụ đã dừng, terminal, macro, hàng đợi.
+- **Tab Tạo bản vẽ:** ảnh hoặc SVG → nét (zigzag, sóng, xoắn ốc, viền; 1–4 màu) → đặt lên giấy → G-code → bản thảo → sang Điều khiển.
+- **Tab Cài đặt:** kết nối, giao diện, cấu hình máy (đọc / ghi YAML trên mạch), hồ sơ bút, dữ liệu.
 
 ```
-Trình duyệt (frontend JS thuần) ⇄ HTTP API ⇄ Backend Python (FastAPI) ⇄ SimLink (máy giả)  hoặc  SerialLink → MKS DLC32 → FluidNC
+Trình duyệt (JS thuần) ⇄ HTTP API ⇄ máy chủ Python (FastAPI) ⇄ máy giả (SimLink)  hoặc  USB → MKS DLC32 → FluidNC
 ```
-Frontend không bao giờ chạm cổng serial; backend là nguồn sự thật. Máy thật **mặc định chỉ đọc** cho tới khi mở khóa chuyển động. Tab Tạo bản vẽ **không bao giờ gọi máy**.
+Giao diện không bao giờ chạm cổng USB; máy chủ là nguồn sự thật. Máy thật **mặc định chỉ đọc** cho tới khi mở khóa chuyển động. Tab Tạo bản vẽ **không bao giờ gọi máy**.
 
-## Cài đặt và chạy
-Cần **Python 3.12** (3.15 quá mới, thiếu gói cài sẵn) và **Git**. Windows PowerShell:
+## Tài liệu
+Bắt đầu từ **[docs/01_TONG_QUAN.md](docs/01_TONG_QUAN.md)**. Tài liệu đánh số từ nhỏ đến lớn, viết cho cả người không học lập trình:
+
+| # | Tệp | Nội dung |
+|---|---|---|
+| 01 | [Tổng quan](docs/01_TONG_QUAN.md) | dự án là gì, hệ thống, các tab, từ điển, bản đồ tài liệu |
+| 02 | [Phần cứng và thông số máy](docs/02_PHAN_CUNG_MAY.md) | linh kiện, cấu hình FluidNC, hành vi firmware, kết quả thử máy |
+| 03 | [Cấu trúc phần mềm](docs/03_CAU_TRUC_PHAN_MEM.md) | cây thư mục, frontend, backend, dữ liệu, cách tìm / sửa mã, kiểm tra |
+| 04 | [Tab Điều khiển](docs/04_TAB_DIEU_KHIEN.md) | nút, luồng lệnh, gửi G-code, dừng an toàn, tiếp tục |
+| 05 | [Tab Tạo bản vẽ](docs/05_TAB_TAO_BAN_VE.md) | nút, preset, luồng dữ liệu, tham số, API, bản thảo |
+| 06 | [Thuật toán xử lý ảnh](docs/06_THUAT_TOAN_XU_LY_ANH.md) | ảnh → nét chi tiết từng bước, thư viện dùng / không dùng / có thể thêm |
+| 07 | [Thử nghiệm](docs/07_THU_NGHIEM.md) | cách thử trên giấy, bài thử tốc độ, bảng kết quả |
+| 08 | [Triển khai](docs/08_TRIEN_KHAI.md) | bản mang đi Windows, phân quyền, mạng / demo, MiniPC, Cloudflare |
+| 09 | [Quyết định thiết kế](docs/09_QUYET_DINH_THIET_KE.md) | chọn gì, vì sao |
+| 10 | [Hướng phát triển](docs/10_HUONG_PHAT_TRIEN.md) | ý tưởng để dành |
+| 11 | [Việc cần làm](docs/11_VIEC_CAN_LAM.md) | tình trạng, việc tiếp theo |
+| AI | [AI_START](docs/AI_START.md), [AI_CODEMAP](docs/AI_CODEMAP.md) | chỉ dành cho AI |
+
+## Cài đặt và chạy (máy phát triển)
+Cần **Python 3.12** (3.15 quá mới, thiếu gói) và **Git**. Windows PowerShell:
 ```powershell
 git clone <địa-chỉ-kho>
 cd <thư-mục-kho>\backend
@@ -22,59 +40,36 @@ pip install -r requirements.txt -r requirements-dev.txt
 python -m pytest
 uvicorn app.main:app --reload
 ```
-Mở `http://127.0.0.1:8000/`. Máy dùng hằng ngày không cần venv: xem **Bản mang đi** bên dưới.
-- PowerShell báo "running scripts is disabled": `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` rồi bật lại venv.
-- Linux (Ubuntu): `python3.12 -m venv .venv && source .venv/bin/activate`, các lệnh còn lại giống nhau (**chưa thử trên Ubuntu thật**; xem `docs/PLAN_ONLINE.md`).
-- Chưa có board? Chọn chế độ `sim` ở Cài đặt → Kết nối (máy giả bắt chước FluidNC theo log board thật).
-- Sau khi cập nhật mã có thêm thư viện: chạy lại `pip install -r requirements.txt`.
-
-## Bản mang đi (máy không cài Python)
-Máy Windows khác chạy được mà không cài Python: thư mục `Python/` (Python 3.12 embeddable + thư viện, không lên Git) + `launcher/`. Người dùng giải nén → bấm `launcher\tao_bieu_tuong.vbs` một lần → bấm icon **VMU PlotterPen** (server chạy ẩn, tự tắt khi đóng hết trang 10 phút). Cập nhật: chép zip bản mới cạnh `Cap nhat.bat` rồi bấm đúp (giữ `Python/` và `data/`). **Hướng dẫn đầy đủ (chuẩn bị Python, chuyển máy, GitHub Releases, cập nhật, xử lý lỗi): [docs/DONG_GOI.md](docs/DONG_GOI.md).** MiniPC Ubuntu (Docker, IP, Cloudflare Tunnel): [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md).
+Mở `http://127.0.0.1:8000/`. Chưa có máy: Cài đặt → Kết nối → chế độ `sim` (máy giả).
+- PowerShell báo "running scripts is disabled": `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+- Linux: `python3.12 -m venv .venv && source .venv/bin/activate`, còn lại giống nhau (chưa thử trên Ubuntu thật).
+- Máy không cài Python: dùng **bản mang đi** (thư mục `Python/` + `launcher/`, bấm icon), xem [08_TRIEN_KHAI.md](docs/08_TRIEN_KHAI.md) phần A.
 
 ## Kiểm tra
 | Việc | Lệnh |
 |---|---|
-| Test backend (~397 test) | trong `backend`, đã bật venv: `python -m pytest` |
-| Test frontend | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
+| Test máy chủ (~397) | trong `backend`, đã bật venv: `python -m pytest` |
+| Test giao diện (33) | từ thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` |
 | Thử API bằng tay | `http://127.0.0.1:8000/docs` |
 
-## Máy thật: dùng thế nào cho an toàn
-- Cắm USB, chọn cổng ở Cài đặt → Kết nối. Ở chế độ chỉ đọc bạn chỉ xem được trạng thái và gửi lệnh đọc thông tin.
-- Muốn máy chuyển động: bấm **Mở khóa chuyển động** (tự khóa lại sau 15 phút; có thể đặt PIN). Chỉ mở khi có người đứng cạnh, tay gần công tắc nguồn.
-- Nút Reset/Dừng trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V ở máy.
-- Chạy tay `uvicorn` thì backend chỉ nhận yêu cầu từ chính máy đó (`localhost`); bản mang đi mở cho mạng LAN. **Có hai vai trò**: *khách* (không đăng nhập) chỉ xem trạng thái, xem trước G-code và xem trước ảnh; *quản lý* nhập mã PIN (`EXTRUXY_ADMIN_PIN`; bản mang đi đặt trong `data\pin.txt`) mới điều khiển được. **Chưa đặt PIN thì ai vào cũng là quản lý**: khi cho máy khác vào mạng, đặt cả PIN quản lý lẫn PIN mở khóa chuyển động (`docs/PLAN_ONLINE.md` mục 2, `docs/DONG_GOI.md` mục 4).
+## Dùng máy thật an toàn
+- Cắm USB, chọn cổng ở Cài đặt → Kết nối. Chế độ chỉ đọc chỉ xem trạng thái và gửi lệnh đọc.
+- Muốn máy chạy: **Mở khóa chuyển động** (tự khóa sau 15 phút). Chỉ mở khi có người đứng cạnh, tay gần công tắc nguồn.
+- Nút Reset / Dừng trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V.
+- **Hai vai trò**: khách (không đăng nhập) chỉ xem; quản lý nhập PIN. Chưa đặt PIN thì ai vào cũng là quản lý: khi cho máy khác vào mạng, đặt PIN quản lý và PIN mở khóa trong `data\pin.txt` ([08_TRIEN_KHAI.md](docs/08_TRIEN_KHAI.md) phần A4, B).
+- Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng (WebUI FluidNC vượt qua mọi khóa của phần mềm).
 
-## Tài liệu
-| Tệp | Để làm gì |
-|---|---|
-| [HUONG_DAN_DOC_CODE.md](HUONG_DAN_DOC_CODE.md) | **Cho người không biết code**: tìm chức năng ở đâu, sửa / thêm / bỏ chạm những chỗ nào, thư viện ảnh làm gì, hiệu ứng giao diện học ở đâu |
-| [VIEC_CAN_LAM.md](VIEC_CAN_LAM.md) | **Danh sách việc cần làm** (tóm tắt): thử máy, code tiếp, khi có MiniPC, để dành |
-| [docs/AI_START.md](docs/AI_START.md) | **Đọc đầu tiên** (dành cho AI/người mới): tóm tắt, quy tắc bắt buộc, bẫy đã gặp |
-| [docs/STATUS.md](docs/STATUS.md) | Cái gì xong / chưa / chưa kiểm chứng / còn lại |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Kiến trúc, bản đồ khối, luồng dữ liệu, biến môi trường, chốt an toàn |
-| [docs/CODEMAP.md](docs/CODEMAP.md) | Bản đồ mã nguồn sinh tự động (route API, vai trò + token từng tệp) |
-| [docs/BRIEF.md](docs/BRIEF.md) | Giải thích khối chức năng và từng nút bấm |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Sổ quyết định (chọn gì, vì sao, mức chắc) |
-| [docs/MACHINE.md](docs/MACHINE.md) | Sự thật máy thật đã xác nhận |
-| [docs/DRAW_ROADMAP.md](docs/DRAW_ROADMAP.md) | Hợp đồng API và quyết định thiết kế tab Tạo bản vẽ |
-| [docs/PLAN_ONLINE.md](docs/PLAN_ONLINE.md) | Phân quyền khách / quản lý, khách gửi ảnh vào `customer/`; MiniPC Ubuntu (Docker, IP cố định), Cloudflare Tunnel |
-| [docs/KIEM_TRA_VE.md](docs/KIEM_TRA_VE.md) | Cách thử và tinh chỉnh các chế độ vẽ, preset bằng bản in |
-| [docs/DONG_GOI.md](docs/DONG_GOI.md) | Bản mang đi Windows, chuyển máy, `Cap nhat.bat`, xử lý lỗi khi bật |
-| [docs/FUTURE_UPGRADE_BETA.md](docs/FUTURE_UPGRADE_BETA.md) | Ý tưởng để dành: tab Beta in trang PDF, chữ viết tay, AI tạo ảnh, sức MiniPC; tài khoản người dùng, hàng chờ, Cloudflare nâng cao |
-| [docs/EXPORT_FOR_AI.md](docs/EXPORT_FOR_AI.md) | Cách xuất mã cho AI tiết kiệm token (`tools/export_context.py`) |
-
-## Cấu trúc thư mục
+## Thư mục
 ```
-backend/app/{api,services,links}   HTTP mỏng → logic → kết nối máy (serial thật / máy giả)
-backend/app/services/drawing/      Dây chuyền tab Tạo bản vẽ (ảnh/SVG → nét → G-code → bản thảo)
+backend/app/{api,services,links}   HTTP mỏng → logic → kết nối máy (USB thật / máy giả)
+backend/app/services/drawing/      dây chuyền tab Tạo bản vẽ
 backend/tests/                     pytest (draw_test/ cho tab vẽ)
-frontend/{index.html,css,js,locales,assets/css/tokens.css,tests}
-launcher/                          Bật/tắt server chạy ẩn, tạo icon Desktop, cập nhật (bản mang đi)
-tools/export_context.py            Xuất mã gọn cho AI + sinh docs/CODEMAP.md
-tools/dong_goi.ps1                 Đóng gói zip bản cập nhật / bản đầy đủ (vào export/)
-docs/                              Tài liệu (bảng trên)
+frontend/                          index.html, css, js, locales, tests
+launcher/  Cap nhat.bat            bản mang đi Windows
+tools/                             export_context.py (xuất mã cho AI, sinh AI_CODEMAP) · dong_goi.ps1 · make_test_gcode.py · ink_sim.py
+docs/                              tài liệu (bảng trên)
+data/                              (không lên Git) bản thảo, macro, sao lưu, hồ sơ, PIN
 ```
-Dữ liệu riêng của từng máy nằm ở `data/`, không lên Git, tự tạo khi cần: `drafts/` (bản thảo), `config_backups/` (sao lưu cấu hình), `macros/`, cùng `profile.json`, `resume.json`. Xem được trong Cài đặt → Lưu trữ dữ liệu; đổi gốc bằng biến môi trường `EXTRUXY_DATA_DIR`.
 
-## Làm việc với Git
-Trước khi làm: `git pull`. Xong một việc nhỏ: `git add .`, `git commit -m "mô tả ngắn"`, `git push`. Mỗi commit một việc; không đẩy mật khẩu, token, `.venv`, `data/`.
+## Git
+Trước khi làm: `git pull`. Xong một việc: `git add .`, `git commit -m "mô tả ngắn"`, `git push`. Không đẩy mật khẩu, PIN, `.venv`, `data/`.

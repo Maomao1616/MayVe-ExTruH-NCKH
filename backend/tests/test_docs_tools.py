@@ -41,8 +41,22 @@ def test_markdown_links_between_docs_resolve():
     assert not broken, broken
 
 
+CORE_DOCS = ("01_TONG_QUAN", "02_PHAN_CUNG_MAY", "03_CAU_TRUC_PHAN_MEM", "04_TAB_DIEU_KHIEN", "05_TAB_TAO_BAN_VE",
+             "06_THUAT_TOAN_XU_LY_ANH", "07_THU_NGHIEM", "08_TRIEN_KHAI", "09_QUYET_DINH_THIET_KE",
+             "10_HUONG_PHAT_TRIEN", "11_VIEC_CAN_LAM", "AI_START", "AI_CODEMAP")
+OLD_DOCS = ("PROJECT_MAP", "HANDOVER", "STATUS", "ARCHITECTURE", "CODEMAP", "DECISIONS", "MACHINE", "EXPORT_FOR_AI",
+            "PLAN_ONLINE", "BRIEF", "DONG_GOI", "DRAW_ROADMAP", "FUTURE_UPGRADE_BETA", "KIEM_TRA_VE")
+
+
 def test_core_docs_exist_and_old_names_are_gone():
-    for name in ("AI_START", "STATUS", "ARCHITECTURE", "CODEMAP", "DECISIONS", "MACHINE", "EXPORT_FOR_AI", "PLAN_ONLINE"):
+    for name in CORE_DOCS:
         assert (ROOT / "docs" / f"{name}.md").is_file(), name
-    for old in ("PROJECT_MAP", "HANDOVER"):
+    for old in OLD_DOCS:
         assert not (ROOT / "docs" / f"{old}.md").exists(), old
+    for old in ("HUONG_DAN_DOC_CODE", "VIEC_CAN_LAM"):
+        assert not (ROOT / f"{old}.md").exists(), old
+
+
+def test_ai_only_docs_say_so_on_the_first_line():
+    for doc in sorted((ROOT / "docs").glob("AI_*.md")):
+        assert "FOR AI" in doc.read_text(encoding="utf-8").splitlines()[0], doc.name

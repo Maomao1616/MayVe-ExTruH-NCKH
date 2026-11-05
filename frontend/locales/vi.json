@@ -761,7 +761,7 @@
   "settings.storage.download": "Tải về",
   "settings.storage.error": "Không đọc được danh sách từ máy chủ.",
   "drawing.toneRamp.button": "Ảnh thử preset (thang xám)",
-  "drawing.toneRamp.help": "Nạp ảnh thang xám 11 bậc trắng → đen. Chọn preset, Lưu bản thảo rồi vẽ: mỗi preset một tờ, xem các bậc có tách rõ không rồi chỉnh preset (docs/KIEM_TRA_VE.md).",
+  "drawing.toneRamp.help": "Nạp ảnh thang xám 11 bậc trắng → đen. Chọn preset, Lưu bản thảo rồi vẽ: mỗi preset một tờ, xem các bậc có tách rõ không rồi chỉnh preset (docs/07_THU_NGHIEM.md).",
   "drawing.toneRamp.draftName": "Thang xám",
   "drawing.error.bad_param": "Thông số không hợp lệ",
   "drawing.error.box_out_of_paper": "Khung vẽ vượt ra ngoài phần trong lề của tờ giấy",

@@ -24,7 +24,7 @@ def fmt(v: float, precision: int) -> str:
 
 
 def to_machine(x: float, y: float, machine: Params) -> tuple[float, float]:
-    """ĐIỂM DUY NHẤT đổi tọa độ bản vẽ -> tọa độ máy (hướng trục chưa kiểm chứng, giả định C5)."""
+    """ĐIỂM DUY NHẤT đổi tọa độ bản vẽ -> tọa độ máy (hướng trục đã xác nhận đúng 05/11/2026 với invert_y = false)."""
     return (x, machine.work_h - y) if machine.invert_y else (x, y)
 
 

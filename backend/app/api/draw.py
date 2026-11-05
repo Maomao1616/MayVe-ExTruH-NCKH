@@ -1,6 +1,6 @@
 """API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4).
 
-Hợp đồng (docs/DRAW_ROADMAP.md mục 3):
+Hợp đồng (docs/05_TAB_TAO_BAN_VE.md mục 7):
   GET  /schema                      tham số, khổ giấy, bút, kiểu tô, giới hạn
   POST /import                      nạp SVG hoặc ảnh (tác vụ nền) -> 202 {task, state}
   POST /svg                         như /import nhưng chạy đồng bộ, chỉ SVG (giữ để tương thích)

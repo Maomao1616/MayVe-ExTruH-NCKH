@@ -1,7 +1,7 @@
 // views/drawing/presets.js — bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu).
 // Khóa = id ô trong index.html; giá trị = chuỗi/boolean ghi thẳng vào ô (params.setValues).
 // Ô không có trong preset giữ nguyên giá trị người dùng đang để. Chỉnh dần theo ảnh thật: sửa đúng file này
-// (cách thử: docs/KIEM_TRA_VE.md). 🧪 Mới thử bằng ảnh mẫu, chưa in ra giấy.
+// (cách thử: docs/07_THU_NGHIEM.md). 🧪 Mới thử bằng ảnh mẫu, chưa in ra giấy.
 const BASE = {                   // mặc định chung, từng preset ghi đè
     "image-auto-levels": true, "image-clahe": false, "image-denoise": false,
     "image-black-point": "0", "image-white-point": "255", "image-gamma": "1",

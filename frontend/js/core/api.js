@@ -74,7 +74,7 @@ export const api = {
     macroDelete: (id) => request("DELETE", `/macros/${id}`),
     storage: () => request("GET", "/storage"),
 
-    // --- tab Tạo bản vẽ (docs/DRAW_ROADMAP.md mục 3) ---
+    // --- tab Tạo bản vẽ (docs/05_TAB_TAO_BAN_VE.md mục 7) ---
     drawSchema: () => request("GET", "/draw/schema"),
     drawImport: (file, options = {}) => {
         const form = new FormData();

@@ -1,4 +1,4 @@
-"""SimLink phải khớp hành vi đã thấy trên board thật (MACHINE.md, 29/10/2026)."""
+"""SimLink phải khớp hành vi đã thấy trên board thật (docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026)."""
 import math
 import time
 

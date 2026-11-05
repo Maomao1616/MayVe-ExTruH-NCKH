@@ -30,5 +30,5 @@ export const POLL = {
 export const DEFAULT_BAUD = 115200;
 
 // Chiều hiển thị khung 2D: mặc định gốc (0,0) ở góc trên trái, X sang phải, Y xuống dưới.
-// Đổi true nếu thử máy thật thấy ngược chiều.
+// Đã xác nhận đúng trên máy thật 05/11/2026 (docs/02_PHAN_CUNG_MAY.md mục 4).
 export const VIEW = { flipX: false, flipY: false };

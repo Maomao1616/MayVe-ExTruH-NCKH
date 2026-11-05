@@ -1,5 +1,5 @@
 """Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật
-(MACHINE.md 29/10/2026). Kiểm bằng SimLink đã hiệu chỉnh: KHÔNG thay cho thử máy thật."""
+(docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026). Kiểm bằng SimLink đã hiệu chỉnh: KHÔNG thay cho thử máy thật."""
 import pytest
 
 from app.links.protocol import homing_axes, is_motion_free_command, is_read_only_command

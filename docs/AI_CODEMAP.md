@@ -1,8 +1,8 @@
-# CODEMAP — bản đồ mã nguồn (SINH TỰ ĐỘNG)
+# AI_CODEMAP — FOR AI: bản đồ mã nguồn (SINH TỰ ĐỘNG)
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~379,252 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~370,137 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -66,15 +66,13 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `HUONG_DAN_DOC_CODE.md` | ~5,834 |  |
-| `README.md` | ~2,120 |  |
-| `VIEC_CAN_LAM.md` | ~1,424 |  |
+| `README.md` | ~1,563 |  |
 
 ### `backend/app/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `auth.py` | ~1,260 | Phân quyền khách / quản lý bằng mã PIN (docs/PLAN_ONLINE.md mục 2). |
+| `auth.py` | ~1,261 | Phân quyền khách / quản lý bằng mã PIN (docs/08_TRIEN_KHAI.md phần B). |
 | `idle.py` | ~524 | Tự tắt server khi không còn trang web nào mở (bản đóng gói chạy ẩn, không có cửa sổ để đóng). |
 | `main.py` | ~1,149 |  |
 | `paths.py` | ~428 | Thư mục dữ liệu của phần mềm: MỘT gốc, ba thư mục con cố định. |
@@ -86,7 +84,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `__init__.py` | ~120 | Các router HTTP. Thêm router mới: tạo file trong api/ rồi thêm vào ROUTERS. |
 | `auth.py` | ~512 | API đăng nhập quản lý bằng mã PIN. Mỏng: logic ở app/auth.py. |
 | `config.py` | ~654 | API cấu hình máy (YAML trên mạch, services/machine_config.py) và hồ sơ phần mềm |
-| `draw.py` | ~3,327 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
+| `draw.py` | ~3,328 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
 | `machine.py` | ~1,044 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
 | `storage.py` | ~481 | API lưu trữ: macro (CRUD) và xem/tải nội dung thư mục dữ liệu (chỉ đọc). Mỏng: logic ở services. |
 
@@ -97,7 +95,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `base.py` | ~756 | Giao diện chung cho mọi kiểu kết nối tới bộ điều khiển (máy thật hoặc mô phỏng). |
 | `protocol.py` | ~2,810 | Phân tích các dòng phản hồi của FluidNC v4.1.1. |
 | `serial_link.py` | ~1,058 | SerialLink: kết nối FluidNC thật qua USB/serial (CH340). |
-| `sim_link.py` | ~7,870 | SimLink: máy FluidNC giả để phát triển khi chưa có board. |
+| `sim_link.py` | ~7,877 | SimLink: máy FluidNC giả để phát triển khi chưa có board. |
 
 ### `backend/app/services/`
 
@@ -118,9 +116,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `__init__.py` | ~319 | Tab Tạo bản vẽ: ảnh/SVG -> đường nét -> G-code. Không gọi máy. |
 | `calibration.py` | ~1,016 | Tờ mẫu hiệu chỉnh bút: tạo thành một BẢN THẢO như mọi bản khác (xem trước, nạp sang Điều khiển, chạy). |
 | `drafts.py` | ~3,152 | Bản thảo trên đĩa: G-code từng lớp + ảnh minh họa + meta.json, mỗi bản một thư mục con. |
-| `edges.py` | ~2,894 | Nét viền phác họa: ảnh -> mặt nạ đường mảnh 1 điểm ảnh (trace.py dò thành nét liền). |
+| `edges.py` | ~3,288 | Nét viền phác họa: ảnh -> mặt nạ đường mảnh 1 điểm ảnh (trace.py dò thành nét liền). |
 | `errors.py` | ~108 | Lỗi của tab Tạo bản vẽ. `code` ổn định để frontend dịch (quy ước E3), `message` chỉ để tra cứu. |
-| `gcode.py` | ~1,531 | Đường nét (mm, đã bố trí) -> dòng G-code + thống kê. Không gọi máy. |
+| `gcode.py` | ~1,537 | Đường nét (mm, đã bố trí) -> dòng G-code + thống kê. Không gọi máy. |
 | `gcode_import.py` | ~1,699 | Nhập một tệp G-code có sẵn (từ phần mềm khác) thành MỘT BẢN THẢO: một tệp = một bản. |
 | `hatch.py` | ~2,984 | Lõi tô bằng nét: bản đồ độ đậm -> mặt nạ từng mức -> đường quét song song / xoắn ốc -> các nét (mm). |
 | `isolated.py` | ~2,204 | Chạy việc nặng (ảnh -> nét) trong TIẾN TRÌNH RIÊNG, ưu tiên thấp. |
@@ -129,7 +127,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `palette.py` | ~1,124 | Chia 2–4 màu: k-means (OpenCV) trên Lab, ảnh thu nhỏ ~300 px; mỗi màu một vùng, mỗi vùng một lớp bút. |
 | `preview.py` | ~409 | Nét xem nháp: rút gọn để vẽ lên canvas (tọa độ NGUỒN, trước bố trí; frontend tự di chuyển/co giãn). |
 | `raster.py` | ~2,048 | Dây chuyền ảnh raster -> đường nét: đọc -> chỉnh sắc độ -> tô nét -> tối ưu vpype. |
-| `raster_in.py` | ~1,737 | Nạp ảnh raster -> ảnh xám ở độ phân giải làm việc + kích thước thật (mm). |
+| `raster_in.py` | ~1,742 | Nạp ảnh raster -> ảnh xám ở độ phân giải làm việc + kích thước thật (mm). |
 | `registry.py` | ~379 | Sổ đăng ký: gom các biến thể cùng loại (kiểu vector hóa...). Thêm kiểu mới không sửa chỗ khác. |
 | `service.py` | ~1,353 | Ghép các bước: kiểm tra tham số -> bố trí -> G-code (mỗi lớp một tệp) -> kiểm bằng chính bộ làm sạch |
 | `shapes.py` | ~174 | Kiểu dữ liệu dùng chung. Tọa độ đường nét: (x, y) tính bằng mm, gốc ở góc trên trái, Y xuống. |
@@ -146,9 +144,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `conftest.py` | ~194 |  |
-| `test_auth.py` | ~2,178 | Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/PLAN_ONLINE.md mục 2). |
-| `test_board_paths.py` | ~2,242 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
-| `test_docs_tools.py` | ~643 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
+| `test_auth.py` | ~2,179 | Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/08_TRIEN_KHAI.md phần B). |
+| `test_board_paths.py` | ~2,249 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
+| `test_docs_tools.py` | ~863 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
 | `test_idle.py` | ~489 | app/idle.py: tự tắt server khi đóng hết trang (chỉ khi đặt EXTRUXY_IDLE_EXIT_MIN). |
 | `test_job.py` | ~2,064 | Tác vụ G-code: làm sạch dòng, chạy từng dòng chờ ok, lỗi, hủy, chặn lệnh khác. |
 | `test_machine_config.py` | ~2,329 | Đọc / sửa / lưu cấu hình FluidNC (machine_config.py) và hồ sơ phần mềm (profile.py). |
@@ -160,7 +158,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_resume.py` | ~2,118 | Tiếp tục từ dòng N: chọn dòng bắt đầu lại an toàn (hàm thuần) + ghi điểm dừng khi hủy/lỗi (máy giả). |
 | `test_routes.py` | ~1,723 | Kiểm tra lớp HTTP: đường dẫn, mã trạng thái, hình dạng JSON mà frontend dựa vào. |
 | `test_safe_stop.py` | ~2,897 | Hồi quy cho đợt tối ưu backend 29/10/2026 (cac_van_de_can_toi_uu_backend.txt). |
-| `test_sim_link.py` | ~3,718 | SimLink phải khớp hành vi đã thấy trên board thật (MACHINE.md, 29/10/2026). |
+| `test_sim_link.py` | ~3,724 | SimLink phải khớp hành vi đã thấy trên board thật (docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026). |
 | `test_storage_macros.py` | ~1,818 | Macro lưu ở máy chủ + xem/tải nội dung thư mục dữ liệu qua API. |
 
 ### `backend/tests/draw_test/`
@@ -181,6 +179,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_gcode_import.py` | ~958 | Nhập một tệp G-code có sẵn thành một bản thảo. |
 | `test_hatch.py` | ~2,664 |  |
 | `test_isolated.py` | ~1,131 | Xử lý ảnh trong tiến trình riêng: kết quả như chạy thẳng, hủy / quá giờ / sập đều gọn. |
+| `test_outline_cleanup.py` | ~760 | Viền nét đơn: cắt râu của nét dày, khép vòng kín. |
 | `test_palette.py` | ~743 |  |
 | `test_raster_in.py` | ~1,282 |  |
 
@@ -194,25 +193,25 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `AI_START.md` | ~2,043 |  |
-| `ARCHITECTURE.md` | ~5,326 |  |
-| `BRIEF.md` | ~2,979 |  |
-| `CODEMAP.md` | ~4,892 |  |
-| `DECISIONS.md` | ~3,963 |  |
-| `DONG_GOI.md` | ~4,048 |  |
-| `DRAW_ROADMAP.md` | ~5,027 |  |
-| `EXPORT_FOR_AI.md` | ~1,605 |  |
-| `FUTURE_UPGRADE_BETA.md` | ~9,874 |  |
-| `KIEM_TRA_VE.md` | ~3,511 |  |
-| `MACHINE.md` | ~2,560 |  |
-| `PLAN_ONLINE.md` | ~6,672 |  |
-| `STATUS.md` | ~2,256 |  |
+| `01_TONG_QUAN.md` | ~2,158 |  |
+| `02_PHAN_CUNG_MAY.md` | ~2,587 |  |
+| `03_CAU_TRUC_PHAN_MEM.md` | ~5,322 |  |
+| `04_TAB_DIEU_KHIEN.md` | ~4,184 |  |
+| `05_TAB_TAO_BAN_VE.md` | ~3,871 |  |
+| `06_THUAT_TOAN_XU_LY_ANH.md` | ~10,886 |  |
+| `07_THU_NGHIEM.md` | ~2,541 |  |
+| `08_TRIEN_KHAI.md` | ~4,874 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~2,570 |  |
+| `10_HUONG_PHAT_TRIEN.md` | ~2,624 |  |
+| `11_VIEC_CAN_LAM.md` | ~1,548 |  |
+| `AI_CODEMAP.md` | ~4,977 |  |
+| `AI_START.md` | ~2,611 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~27,779 |  |
+| `index.html` | ~27,780 |  |
 
 ### `frontend/assets/css/`
 
@@ -238,9 +237,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `api.js` | ~1,742 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
+| `api.js` | ~1,743 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
 | `auth.js` | ~519 | vai trò của trình duyệt này: khách hay quản lý (backend: app/auth.py). |
-| `config.js` | ~501 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
+| `config.js` | ~511 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
 | `i18n.js` | ~439 |  |
 | `state.js` | ~2,153 | NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM. |
 
@@ -266,10 +265,10 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `auth.js` | ~695 | khung "Khách / Quản lý" ở đầu trang: chủ ghi #auth-box và các phần tử con. |
-| `control.js` | ~10,630 | Tab Điều khiển. |
+| `control.js` | ~10,636 | Tab Điều khiển. |
 | `dock.js` | ~2,482 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
-| `drawing.js` | ~8,256 | Tab Tạo bản vẽ: điều phối. Luồng (docs/DRAW_ROADMAP.md mục 3–4): |
+| `drawing.js` | ~8,258 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
 | `preview.js` | ~5,667 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
 | `settings.js` | ~10,223 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
@@ -290,7 +289,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~14,048 |  |
+| `en.json` | ~14,049 |  |
 | `vi.json` | ~13,513 |  |
 
 ### `frontend/tests/`
@@ -305,5 +304,6 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `export_context.py` | ~4,793 | Xuất mã nguồn thành MỘT tệp markdown gọn để đưa cho AI khác, tiết kiệm token. |
-| `make_test_gcode.py` | ~2,650 | Sinh sẵn các tệp G-code cho 4 bài thử tốc độ (docs/KIEM_TRA_VE.md mục 7). Chỉ dùng thư viện chuẩn. |
+| `export_context.py` | ~4,890 | Xuất mã nguồn thành MỘT tệp markdown gọn để đưa cho AI khác, tiết kiệm token. |
+| `ink_sim.py` | ~1,175 | Mô phỏng mực: nét (mm) -> ảnh độ phủ mực với bề rộng nét thật, so với độ đậm mong muốn. Không cần in giấy. |
+| `make_test_gcode.py` | ~2,652 | Sinh sẵn các tệp G-code cho 4 bài thử tốc độ (docs/07_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn. |

@@ -1,67 +1,91 @@
-# AI_START — đọc tệp này đầu tiên
+# AI_START — FOR AI (tài liệu chỉ dành cho AI, người đọc xem `01_TONG_QUAN.md`)
 
-Dành cho AI (hoặc người) mới nhận dự án. Đọc xong tệp này (~2 000 token) là đủ để biết nên mở gì tiếp, không cần quét cả kho.
+Đọc tệp này đầu tiên khi nhận dự án. ~2 500 token. Xong thì mở đúng tệp cần, đừng quét cả kho (~380 000 token).
 
-## 1. Dự án là gì
-**VMU PlotterPen** (thư mục `ExtruXY`): phần mềm điều khiển máy vẽ CoreXY. Máy: bo **MKS DLC32 V2.1**, firmware **FluidNC v4.1.1**, nối USB (CH340); vùng làm việc **285 × 318 mm**, Z bút 5 mm, giấy A6 ⊂ A5 ⊂ A4 đặt ở gốc O(0,0) trên trái, Y hướng xuống. Phần mềm = backend **Python/FastAPI** + frontend **JS thuần** (không framework, không bước build). Hiện chạy trên laptop (bản mang đi Windows: `DONG_GOI.md`); kế hoạch chạy trên MiniPC Ubuntu không màn hình bằng Docker (xem `PLAN_ONLINE.md`). Dữ liệu người dùng ở `data/` cùng cấp `backend/`.
+## 1. Dự án
+**VMU PlotterPen** (thư mục `ExtruXY`): phần mềm điều khiển máy vẽ bút CoreXY. Mạch **MKS DLC32 V2.1**, firmware **FluidNC v4.1.1** (không sửa), nối USB (CH340, 115200). Vùng làm việc **285 × 318 mm**, Z bút 5 mm (servo, bút hạ bằng trọng lực). Giấy A6 ⊂ A5 ⊂ A4 neo ở O(0,0) góc trên trái, Y xuống. **Hướng trục đã xác nhận đúng 05/11/2026** (`VIEW.flipX/flipY = false`, `invert_y = false`).
+Backend **Python 3.12 / FastAPI**; frontend **JS thuần** (không framework, không build). Chạy trên laptop (bản mang đi Windows); kế hoạch MiniPC Ubuntu + Docker + Cloudflare Tunnel. Dữ liệu ở `data/` cùng cấp `backend/`.
+Bút: Sakura 0,4 (tranh, nét thật ~0,55 mm), bút bi 0,5 (chữ, Word cỡ 14–16). Mặc định vẽ 5000 mm/min, Z3 / Z0, chờ 0,05 s, hạ bút 2000.
+Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, đề tài cấp trường, mục tiêu sản phẩm IoT chạy thật, demo **không cần Internet**.
 
-Bút dùng: **0,2 / 0,4 / 0,5 mm** (viết chữ dùng 0,5; văn bản Word thường cỡ 14–16).
+## 2. Tài liệu
+| Tệp | Mở khi |
+|---|---|
+| `docs/11_VIEC_CAN_LAM.md` | biết cái gì xong / chưa kiểm chứng / việc tiếp |
+| `docs/AI_CODEMAP.md` | tìm tệp theo vai trò + token, danh sách route (sinh tự động, không sửa tay) |
+| `docs/03_CAU_TRUC_PHAN_MEM.md` | tầng frontend / backend, quy tắc phụ thuộc, dữ liệu, biến môi trường |
+| `docs/04_TAB_DIEU_KHIEN.md` | sửa điều khiển máy, chạy G-code, dừng an toàn, tiếp tục |
+| `docs/05_TAB_TAO_BAN_VE.md` | sửa tab vẽ: luồng, tham số, **hợp đồng API** |
+| `docs/06_THUAT_TOAN_XU_LY_ANH.md` | sửa thuật toán ảnh → nét (con số, công thức, thư viện đã loại) |
+| `docs/02_PHAN_CUNG_MAY.md` | đụng phần cứng, giao thức, hành vi firmware đã xác nhận |
+| `docs/09_QUYET_DINH_THIET_KE.md` | **trước khi đổi một hành vi đã chốt** |
+| `docs/07_THU_NGHIEM.md` · `08_TRIEN_KHAI.md` · `10_HUONG_PHAT_TRIEN.md` | thử trên giấy · đóng gói / phân quyền / mạng / MiniPC · ý tưởng để dành |
 
-Ba tab: **Điều khiển** (kết nối, jog, Home, chạy G-code, hủy an toàn, terminal, hàng đợi), **Tạo bản vẽ** (SVG/ảnh → nét → bố trí → G-code → bản thảo), **Cài đặt**.
+**Mã khác tài liệu thì mã là sự thật**; sửa tài liệu cho khớp. Tài liệu 01–11 viết cho **người không học code**: giữ văn phong đó khi sửa (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
 
-## 2. Thứ tự đọc
-| Bước | Tệp | Khi nào |
-|---|---|---|
-| 1 | `docs/AI_START.md` (tệp này) | luôn |
-| 2 | `docs/STATUS.md` | muốn biết cái gì xong / chưa / chưa kiểm chứng |
-| 3 | `docs/ARCHITECTURE.md` | cần biết khối nào nằm ở đâu, quy tắc phụ thuộc, biến môi trường |
-| 4 | `docs/CODEMAP.md` | tìm tệp theo vai trò + token ước tính (sinh tự động) |
-| 5 | `docs/DECISIONS.md` | trước khi đổi một hành vi đã chốt |
-| 6 | `docs/MACHINE.md` | đụng vào phần cứng, giao thức, an toàn |
-| 7 | `docs/DRAW_ROADMAP.md` | sửa tab Tạo bản vẽ (hợp đồng API, quyết định thiết kế) |
-| 8 | `docs/BRIEF.md` | cần hiểu từng nút bấm / luồng người dùng |
-| 9 | `docs/PLAN_ONLINE.md` | làm phần phân quyền khách / quản lý, khách gửi ảnh (`customer/`), MiniPC Ubuntu (Docker), IP, Cloudflare Tunnel |
-| 10 | `docs/DONG_GOI.md` | bản mang đi Windows (`Python/` embeddable, `launcher/`), chuyển máy, `Cap nhat.bat`, chạy tay không launcher, mạng phát 4G, Codespaces |
-| 11 | `docs/KIEM_TRA_VE.md` | tinh chỉnh kiểu tô / nét viền / preset bằng bản in thật |
-| 12 | `docs/FUTURE_UPGRADE_BETA.md` | ý tưởng chưa xếp lịch: tab Beta in trang PDF, chữ tay, AI tạo ảnh, tài khoản người dùng, hàng chờ |
-| – | `HUONG_DAN_DOC_CODE.md` (gốc) | giải thích cho chủ dự án (không lập trình): tìm / sửa / thêm / bỏ chức năng ở đâu |
+## 3. Quy tắc bắt buộc
+1. **An toàn máy trước hết.** Máy thật mặc định chỉ đọc (`allow_motion`); không bao giờ tự chạy G-code, luôn qua xem trước + xác nhận; tab vẽ **không bao giờ gọi máy**; nút web không phải dừng khẩn cấp. Không nới các chốt này nếu chưa được yêu cầu rõ.
+2. **Frontend không chạm serial.** `core/api.js` là nơi duy nhất gọi mạng, `core/state.js` là nơi duy nhất thăm dò.
+3. **Phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác (trừ `control.js` → `preview.js`). Một phần tử HTML chỉ một chủ ghi.
+4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Thêm tham số = dòng `Param` + ô `index.html` + dòng `FIELDS` trong `views/drawing/params.js` + khóa dịch.
+5. **Dịch:** mọi chữ qua `frontend/locales/vi.json` và `en.json`, hai tệp cùng khóa. Terminal giữ tiếng Anh. `DrawError.code` ↔ khóa `drawing.error.<code>`.
+6. **Test đi cùng mã.** `cd backend && python -m pytest` (~397; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`). Frontend: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` (33). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
+7. **Không bịa số máy.** Lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `02_PHAN_CUNG_MAY.md`; ghi rõ điều chưa kiểm chứng.
+8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`). Thêm route cho khách = một dòng trong danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
+9. **Thuật toán tô:** đánh giá thay đổi bằng `tools/ink_sim.py` (sai số tông, chiều dài, thời gian) trước khi đề xuất; nêu số trước / sau.
+10. **Báo trung thực:** test fail, bước bỏ qua, điều chưa chạy trên Ubuntu / máy thật / giấy.
 
-**Nếu mã khác tài liệu thì mã mới là sự thật**; sửa tài liệu cho khớp.
+## 4. Làm việc với chủ dự án
+- Tiếng Việt, **lời thường trước, kỹ thuật sau**; thư viện và cơ chế mới phải giải thích. Ngắn, thẳng, dùng bảng khi so sánh.
+- Chủ dự án tự `git push`. **Chỉ commit khi được bảo**; mỗi commit một việc, message tiếng Việt.
+- Không tự đổi `tokens.css` / giao diện lớn khi chưa hỏi; giữ nguyên CSS chủ dự án sửa tay.
+- PIN thật nằm ở `data\pin.txt` (gitignored); không đưa PIN thật vào Git hay tài liệu.
 
-## 3. Lấy mã mà không tốn token
-Đừng dán cả kho (~266 000 token). Dùng `python tools/export_context.py`:
+## 5. Bẫy đã gặp
+- Python **3.12** (3.15 thiếu gói). Windows: `node --test` nhận **đường dẫn tệp**, không nhận thư mục. Console cp1252 không in được tiếng Việt: script gọi `sys.stdout.reconfigure(encoding="utf-8")`.
+- `.html`, `.css`, `.json` có thể là CRLF: thay chuỗi nhiều dòng bằng script dễ trượt; giữ kiểu xuống dòng.
+- Dấu `"` trong chuỗi tiếng Việt của JSON locale phải thoát.
+- Xử lý ảnh mặc định chạy ở **tiến trình con** (`isolated.py`); test đường đó ở `tests/draw_test/test_isolated.py`.
+- FastAPI bọc router: liệt kê route bằng `app.openapi()["paths"]`, không dùng `app.routes`.
+- `launcher/*.ps1`, `*.vbs`, `tools/dong_goi.ps1`: **ASCII không dấu** (PowerShell 5.1). Zip ghi tên tệp bằng `/`. Bản embeddable cần `..\backend` trong `python312._pth`.
+- Thử launcher / cập nhật trong thư mục tạm, **kiểm cổng 8000 trống trước** (`stop.ps1` tắt mọi thứ nghe 8000).
+- `str.replace` hàng loạt trên tệp Python có thể trượt im lặng: đọc lại đoạn đã sửa hoặc chạy test ngay.
+- `.vscode/project-export.json` là tệp sinh bởi tiện ích (~90 000 token đường dẫn): **đừng đọc**.
+
+## 6. Xuất mã cho AI khác mà tiết kiệm token (`tools/export_context.py`, chỉ dùng thư viện chuẩn)
 ```
-python tools/export_context.py --list                     # các gói + token
-python tools/export_context.py docs                       # tài liệu cốt lõi
+python tools/export_context.py --list                      # các gói + token ước tính
+python tools/export_context.py docs                        # tài liệu cốt lõi cho AI
 python tools/export_context.py draw-backend --budget 35000
 python tools/export_context.py --files backend/app/services/job.py
+python tools/export_context.py control --html panel-control   # thêm đúng một khối index.html
+python tools/export_context.py --map                       # viết lại docs/AI_CODEMAP.md sau khi thêm / đổi tệp
 ```
-Quy trình chi tiết, bảng "việc nào lấy gói nào", mẹo giảm token: `docs/EXPORT_FOR_AI.md`.
+Kết quả ở `export/` (gitignored). Chỉ lấy tệp Git đang theo dõi; bỏ tệp > 200 KB, ảnh, `.gcode`, `samples`, `fixtures`, `.vscode`. Token ≈ ký tự ÷ 3,2 (để so sánh).
 
-## 4. Quy tắc bắt buộc (không thương lượng)
-1. **An toàn máy trước hết.** Máy thật mặc định chỉ đọc (`motion_locked`); không bao giờ tự chạy G-code, luôn qua xem trước + người dùng xác nhận; tab Tạo bản vẽ **không bao giờ gọi máy**, chỉ ghi bản thảo; nút web không phải dừng khẩn cấp. Đừng nới các chốt này nếu chưa có yêu cầu rõ.
-2. **Frontend không chạm cổng serial.** Chỉ backend giữ serial. Frontend chỉ gọi API (`core/api.js` là nơi duy nhất gọi mạng, `core/state.js` là nơi duy nhất thăm dò).
-3. **Chiều phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác. Một phần tử HTML chỉ một nơi ghi.
-4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Đổi tham số = sửa đúng một dòng ở đó + ô tương ứng trong `index.html`/`params.js` + khóa dịch.
-5. **Dịch:** mọi chữ qua `frontend/locales/vi.json` và `en.json`, hai tệp phải khớp khóa. Terminal giữ tiếng Anh. Mã lỗi backend `DrawError.code` ↔ khóa `drawing.error.<code>`.
-6. **Test đi cùng mã.** Backend: `cd backend && python -m pytest` (~397 test; `tests/conftest.py` đưa mọi dữ liệu vào thư mục tạm). Frontend: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs`. Công thức bố trí và độ sáng có bản JS song song, được test đối chiếu số với Python; nếu đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS.
-7. **Không bịa số máy.** Giới hạn phần cứng lấy từ `MACHINE` (`core/config.js`) hoặc hồ sơ máy; ghi rõ điều gì **chưa kiểm chứng** trên máy thật.
-8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`: khách chỉ gọi được `GUEST_ROUTES`). Thêm route cho khách = thêm đúng một dòng vào danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
-9. **Báo trung thực:** test nào fail, bước nào bỏ qua, điều gì chưa chạy thử trên Ubuntu/máy thật.
+| Việc | Gói | Token ~ |
+|---|---|---|
+| Làm quen | `docs` | ~12 000 |
+| Chọn tệp cần đọc | `codemap` | ~5 000 |
+| Tab Điều khiển (giao diện) | `docs control` | ~55 000 |
+| Logic máy, hủy an toàn, chạy G-code | `docs machine-backend machine-facts` | ~45 000 |
+| Thuật toán / tab vẽ backend | `docs algorithm draw-backend` (chỉ đọc thuật toán: `algorithm` ~15 000) | ~66 000 |
+| Tab vẽ frontend | `docs draw-frontend` | ~57 000 |
+| Cài đặt / cấu hình máy | `docs settings` | ~31 000 |
+| CSS | `css` + `--html panel-<tab>` | ~29 000+ |
+| Test | `tests-machine` hoặc `tests-draw` | ~26 000–29 000 mỗi gói |
 
-## 5. Quy ước làm việc với chủ dự án
-- Chủ dự án không phải dân lập trình: **giải thích bằng lời thường** trước khi đưa chi tiết kỹ thuật; thư viện và cơ chế mới phải giải thích rõ.
-- Trả lời ngắn gọn, đi thẳng vào việc, dùng bảng khi so sánh. Tiếng Việt.
-- Chủ dự án tự `git push`. Chỉ commit khi được bảo; mỗi commit một việc, tiếng Việt.
-- Không tự đổi `tokens.css`/giao diện lớn mà chưa hỏi; phần CSS chủ dự án đã sửa tay thì giữ nguyên.
+Mẹo: đừng gửi cả `index.html` (~28 000 token), dùng `--html`; đừng gửi hai tệp dịch trừ khi sửa chữ; gửi `git diff` thay vì cả tệp khi nhờ xem lại; bắt AI trả lời bằng bản vá; mỗi phiên một khối. `--no-comments` giảm 5–10 % nhưng **mất lý do "vì sao"** (dự án ghi nhiều lý do trong chú thích). Thêm gói mới: sửa `BUNDLES` đầu `tools/export_context.py`.
 
-## 6. Bẫy đã gặp (tiết kiệm thời gian)
-- Python **3.12** (3.15 quá mới, thiếu gói cài sẵn). Windows: `node --test` nhận **đường dẫn tệp**, không nhận thư mục.
-- Tệp `.html`, `.css`, `.json` có thể là CRLF: khi sửa bằng script phải giữ kiểu xuống dòng; một lần thay chuỗi nhiều dòng trượt vì CRLF.
-- Số liệu tiếng Việt trong JSON locale: dấu `"` phải thoát, đừng dán trực tiếp.
-- Chế độ mặc định xử lý ảnh chạy ở **tiến trình con** (`isolated.py`); test đặt `EXTRUXY_DRAW_INPROC=1` trong `conftest.py`. Muốn test đường tiến trình con dùng `tests/draw_test/test_isolated.py`.
-- Trên Windows, dừng server thử bằng cách tắt tiến trình đang nghe cổng, kiểm bằng `curl` thấy mã 000.
-- FastAPI bọc router; liệt kê route bằng `app.openapi()["paths"]`, không dùng `app.routes`.
-- `launcher/*.ps1`, `*.vbs`, `tools/dong_goi.ps1`: viết **ASCII không dấu** (PowerShell 5.1 đọc UTF-8 không BOM sai). Zip phải ghi tên tệp bằng `/` (`Compress-Archive` 5.1 ghi `\`). Bản embeddable cần `..\backend` trong `python312._pth`.
-- Chạy thử launcher/cập nhật: làm trong thư mục tạm, **kiểm cổng 8000 trống trước** (`stop.ps1` tắt mọi thứ đang nghe 8000).
-- `.vscode/project-export.json` là tệp sinh bởi tiện ích VS Code (liệt kê hàng nghìn đường dẫn loại trừ), **đừng đưa cho AI**.
+Mẫu tin nhắn mở đầu cho AI mới:
+```
+Bạn nhận dự án VMU PlotterPen (máy vẽ CoreXY, MKS DLC32 + FluidNC; backend FastAPI, frontend JS thuần).
+Đọc tệp đính kèm (AI_START, 03, 09, 11) rồi xác nhận: 1) các quy tắc an toàn không được nới, 2) cách chạy test, 3) khối nào ở đâu.
+Chủ dự án không phải dân lập trình: lời thường, ngắn, tiếng Việt. Khi sửa, chỉ đưa đoạn thay đổi.
+Việc hôm nay: <một việc cụ thể>. Cần tệp nào thì nói, tôi gửi đúng tệp đó.
+```
+
+## 7. Giữ tài liệu đúng
+- Thêm / đổi tệp lớn → `python tools/export_context.py --map`.
+- Xong một việc → `11_VIEC_CAN_LAM.md`. Đổi hành vi đã chốt → `09_QUYET_DINH_THIET_KE.md`. Đổi API tab vẽ → `05_TAB_TAO_BAN_VE.md` mục 7 + `spec.py`. Đổi con số thuật toán → `06_THUAT_TOAN_XU_LY_ANH.md`. Số đo máy mới → `02_PHAN_CUNG_MAY.md`.
+- Không tạo tệp tài liệu mới nếu nội dung thuộc một tệp đã có. Tệp mới cho người đọc thì đánh số; tệp chỉ cho AI thì đặt tiền tố `AI_` và ghi "FOR AI" ở dòng đầu.

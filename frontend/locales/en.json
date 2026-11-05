@@ -745,7 +745,7 @@
   "settings.storage.download": "Download",
   "settings.storage.error": "Could not read the list from the server.",
   "drawing.toneRamp.button": "Preset test image (grey ramp)",
-  "drawing.toneRamp.help": "Loads an 11-step white → black grey ramp. Pick a preset, Save draft and plot it: one sheet per preset; check that the steps stay distinct, then adjust the preset (docs/KIEM_TRA_VE.md).",
+  "drawing.toneRamp.help": "Loads an 11-step white → black grey ramp. Pick a preset, Save draft and plot it: one sheet per preset; check that the steps stay distinct, then adjust the preset (docs/07_THU_NGHIEM.md).",
   "drawing.toneRamp.draftName": "Grey ramp",
   "drawing.error.bad_param": "Invalid parameter",
   "drawing.error.box_out_of_paper": "The drawing box exceeds the inner area of the paper",

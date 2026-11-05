@@ -8,9 +8,9 @@ Dùng thư viện chuẩn của Python, không cần bật venv. Chạy từ b�
     python tools/export_context.py draw-backend draw-frontend --budget 30000
     python tools/export_context.py --files backend/app/services/job.py frontend/js/views/control.js
     python tools/export_context.py control --html panel-control   # thêm đúng một khối của index.html
-    python tools/export_context.py --map                   # viết lại docs/CODEMAP.md (bản đồ mã nguồn)
+    python tools/export_context.py --map                   # viết lại docs/AI_CODEMAP.md (bản đồ mã nguồn)
 
-Hướng dẫn đầy đủ: docs/EXPORT_FOR_AI.md. Chỉ lấy tệp đang được Git theo dõi (không .venv, không dữ liệu máy).
+Hướng dẫn đầy đủ: docs/AI_START.md mục 6. Chỉ lấy tệp đang được Git theo dõi (không .venv, không dữ liệu máy).
 """
 from __future__ import annotations
 
@@ -34,15 +34,19 @@ LANG = {".py": "python", ".js": "javascript", ".mjs": "javascript", ".css": "css
 BUNDLES: dict[str, dict] = {
     "docs": {
         "desc": "Tài liệu cốt lõi: vào đây trước khi đọc mã",
-        "files": ["docs/AI_START.md", "docs/ARCHITECTURE.md", "docs/STATUS.md", "docs/DECISIONS.md"],
+        "files": ["docs/AI_START.md", "docs/03_CAU_TRUC_PHAN_MEM.md", "docs/09_QUYET_DINH_THIET_KE.md", "docs/11_VIEC_CAN_LAM.md"],
     },
     "codemap": {
         "desc": "Bản đồ mã nguồn tự sinh: route API + vai trò và token từng tệp (dùng để chọn gói)",
-        "files": ["docs/CODEMAP.md"],
+        "files": ["docs/AI_CODEMAP.md"],
     },
     "machine-facts": {
-        "desc": "Sự thật máy thật đã xác nhận + hợp đồng tab vẽ (đọc trước khi đụng phần cứng / tab vẽ)",
-        "files": ["docs/MACHINE.md", "docs/DRAW_ROADMAP.md"],
+        "desc": "Phần cứng, hành vi firmware đã xác nhận + tab Điều khiển (đọc trước khi đụng phần cứng / điều khiển)",
+        "files": ["docs/02_PHAN_CUNG_MAY.md", "docs/04_TAB_DIEU_KHIEN.md"],
+    },
+    "algorithm": {
+        "desc": "Tab vẽ: luồng, tham số, hợp đồng API + thuật toán ảnh -> nét chi tiết (đọc trước khi sửa tab vẽ)",
+        "files": ["docs/05_TAB_TAO_BAN_VE.md", "docs/06_THUAT_TOAN_XU_LY_ANH.md"],
     },
     "frontend-core": {
         "desc": "Nền tảng frontend: vào cửa, api, trạng thái, cấu hình, dịch, lưu trữ chung",
@@ -252,7 +256,7 @@ def write_map() -> Path:
         folder = f.parent.as_posix()
         rows.setdefault(folder, []).append(f"| `{f.name}` | ~{n:,} | {desc} |")
     lines = [
-        "# CODEMAP — bản đồ mã nguồn (SINH TỰ ĐỘNG)", "",
+        "# AI_CODEMAP — FOR AI: bản đồ mã nguồn (SINH TỰ ĐỘNG)", "",
         "Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để",
         "chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần",
         f"(`python tools/export_context.py --list`). Toàn bộ dự án ~{total:,} token nếu đọc hết.", "",
@@ -262,7 +266,7 @@ def write_map() -> Path:
     lines += ["", "## Tệp theo thư mục", ""]
     for folder in sorted(rows):
         lines += [f"### `{folder}/`", "", "| Tệp | Token | Vai trò |", "|---|---|---|"] + rows[folder] + [""]
-    target = ROOT / "docs" / "CODEMAP.md"
+    target = ROOT / "docs" / "AI_CODEMAP.md"
     target.write_text("\n".join(lines), encoding="utf-8", newline="\n")
     return target
 
@@ -272,7 +276,7 @@ def main() -> int:
     for stream in (sys.stdout, sys.stderr):          # Windows: bảng mã console mặc định không in được tiếng Việt
         if hasattr(stream, "reconfigure"):
             stream.reconfigure(encoding="utf-8")
-    ap = argparse.ArgumentParser(description="Xuất mã nguồn gọn cho AI (xem docs/EXPORT_FOR_AI.md).")
+    ap = argparse.ArgumentParser(description="Xuất mã nguồn gọn cho AI (xem docs/AI_START.md mục 6).")
     ap.add_argument("bundles", nargs="*", help="tên gói (xem --list)")
     ap.add_argument("--list", action="store_true", help="liệt kê gói và token ước tính")
     ap.add_argument("--files", nargs="+", default=[], help="thêm tệp / mẫu glob đích danh")
@@ -281,7 +285,7 @@ def main() -> int:
     ap.add_argument("--budget", type=int, default=0, help="cảnh báo nếu vượt chừng này token")
     ap.add_argument("--out", help="tệp đầu ra (mặc định export/<tên>-<ngày>.md)")
     ap.add_argument("--stdout", action="store_true", help="in ra màn hình thay vì ghi tệp")
-    ap.add_argument("--map", action="store_true", help="viết lại docs/CODEMAP.md")
+    ap.add_argument("--map", action="store_true", help="viết lại docs/AI_CODEMAP.md")
     args = ap.parse_args()
 
     if args.map:

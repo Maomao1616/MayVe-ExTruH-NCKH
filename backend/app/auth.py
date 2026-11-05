@@ -1,4 +1,4 @@
-"""Phân quyền khách / quản lý bằng mã PIN (docs/PLAN_ONLINE.md mục 2).
+"""Phân quyền khách / quản lý bằng mã PIN (docs/08_TRIEN_KHAI.md phần B).
 
 - Quản lý = ai nhập đúng EXTRUXY_ADMIN_PIN: được cấp phiên (cookie ngẫu nhiên, lưu trong RAM).
 - Khách = không có phiên: chỉ gọi được các route trong GUEST_ROUTES (xem trạng thái, khai báo tham số tab vẽ).

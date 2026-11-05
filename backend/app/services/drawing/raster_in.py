@@ -1,6 +1,6 @@
 """Nạp ảnh raster -> ảnh xám ở độ phân giải làm việc + kích thước thật (mm).
 
-Thứ tự đã chốt (docs/DRAW_ROADMAP.md): EXIF + Image.draft -> cắt -> thu nhỏ -> xám.
+Thứ tự đã chốt (docs/06_THUAT_TOAN_XU_LY_ANH.md mục 4): EXIF + Image.draft -> cắt -> thu nhỏ -> xám.
 Ảnh lớn thì thu nhỏ về độ phân giải cần cho bút. Ảnh nhỏ chỉ được phóng nhẹ (nội suy mịn) tới
 UPSCALE_TO_PX cạnh dài để đường viền các vùng đậm nhạt không bị ô vuông; không bao giờ phóng quá mức đó
 (thêm điểm ảnh không thêm chi tiết). Hộp tham chiếu (kích thước khung vẽ thật) chỉ để tính độ phân giải.
