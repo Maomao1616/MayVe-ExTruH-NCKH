@@ -22,6 +22,8 @@ Mục tiêu trước mắt cho phần web điều khiển: chốt thông số ch
 - [x] 02/11: đăng nhập PIN (khách chỉ xem), đèn công tắc X / Y, trạng thái 10 lần / giây, vệt bút bám G-code, ô tốc độ hạ bút, bút 0,5, công cụ sinh G-code thử tốc độ.
 
 ## 3. Thử trên máy thật (không cần code)
+Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép mẫu ở 07 mục 8, điền số, gửi kèm ảnh.
+
 - [ ] Đặt `data\pin.txt` (`admin=…`, `unlock=…`) bằng **số khó đoán**; vào bằng điện thoại xem có ra giao diện khách.
 - [ ] Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng.
 - [ ] Bài 7.4: chụp cận đo bề rộng nét ở 3000 / 5000 / 6000 → in lại tờ hiệu chỉnh ở tốc độ đã chốt → sửa `LINE_WIDTH_RATIO` nếu khác 1,375.

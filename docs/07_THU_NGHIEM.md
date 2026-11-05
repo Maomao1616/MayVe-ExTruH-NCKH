@@ -4,6 +4,9 @@
 > preset, tốc độ) **bằng bản in thật**, vì màn hình không cho biết mực loang, giấy thấm, bút khô ra sao.
 > Ký hiệu: ✅ đã chốt bằng bản in · 🧪 mới thử bằng ảnh mẫu / mô phỏng · ⏳ chưa làm.
 > Kết quả thử máy đã có: [02_PHAN_CUNG_MAY.md](02_PHAN_CUNG_MAY.md) mục 6.
+>
+> **Cách dùng:** xem việc cần thử ở [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) mục 3 → làm theo hướng dẫn bài đó ở tệp này →
+> chép **mẫu ở mục 8**, điền số, gửi kèm ảnh. Không cần tự sửa mã hay tài liệu.
 
 ## 0. Nguyên tắc
 - **Mọi quyết định về độ đậm phải nhìn tờ giấy.** Khung xem trước trên web chỉ để kiểm hình học (đủ nét, đúng chỗ, không vượt khổ).
@@ -107,3 +110,79 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 | | | | 7.5 vệt kéo | Z 3 / 4 / 5, chờ 0,05 / 0,1 | | |
 
 Khi đã chốt: sửa số mặc định trong mã (đường dẫn ở trên), ghi kết quả vào [02_PHAN_CUNG_MAY.md](02_PHAN_CUNG_MAY.md) mục 6, đánh dấu xong ở [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md).
+
+## 8. Mẫu gửi kết quả
+Chép đúng khối của bài vừa làm, điền sau dấu `:`, bỏ trống chỗ không đo được. Gửi kèm **ảnh cả tờ** (chụp thẳng, đủ sáng) và **ảnh cận** nếu bài yêu cầu.
+Mẹo: đặt thước kẻ hoặc tờ có thước 100 mm cạnh chỗ chụp cận để đọc được bề rộng nét.
+
+**Phần chung (mọi bài)**
+```
+Ngày:
+Bút (0,4 Sakura / 0,5 bi / khác):
+Giấy (loại, định lượng nếu biết):
+Bài:
+Có đổi gì so với mặc định không (Z, chờ, tốc độ, gia tốc):
+```
+
+**Mục 1 / 7.4: bề rộng nét**
+```
+Tốc độ vẽ:
+Dải sát nhất còn đặc mà chưa ướt (mm):
+Dải trông xám vừa khi đứng xa 40-50 cm (mm):
+Bề rộng một nét đo bằng ảnh cận (mm) ở 3000 / 4000 / 5000 / 6000:
+Tốc độ nào nét bắt đầu nhạt / đứt:
+```
+
+**Mục 2: thang xám (mỗi preset một khối)**
+```
+Preset (Chân dung / Phong cảnh / Cận cảnh):
+Đếm được mấy mật độ khác nhau trên giấy (tối đa 5 kể cả giấy trắng):
+Cặp bậc trông giống nhau (vd 20% và 30%):
+Bậc đậm nhất: đặc đẹp / bết mực / giấy quăn:
+Cả tờ: quá đậm / vừa / quá nhạt:
+Vùng nhạt có lộ từng sợi không:
+So với dải chuyển liền: đoạn nào lệch (sáng hơn / tối hơn):
+Thời gian vẽ thật / ước tính:
+```
+
+**Mục 3–5: kiểu tô, viền, preset với ảnh thật**
+```
+Preset / kiểu tô:
+Ảnh dùng (tả ngắn hoặc gửi kèm):
+Chỗ quay đầu ở mép khối còn giọt mực không (ảnh cận):
+Viền: liền / đứt / thừa vụn / nét đôi:
+Thời gian vẽ thật / ước tính:
+Số lần nhấc bút (nếu giao diện có hiện):
+Nhận xét bằng mắt:
+```
+
+**7.1: chi phí nhấc bút**
+```
+Chờ (s) / Z nhấc:
+Thời gian chạy cả tệp 100 gạch (giây, bấm đồng hồ):
+Có kéo vệt / hụt đầu nét / bút nảy không:
+```
+
+**7.3: gia tốc và góc**
+```
+Gia tốc X / Y:
+junction (Cài đặt -> Cấu hình máy -> "Độ lệch góc"):
+Thời gian chạy:
+Gợn sóng sau góc chữ: không / ít / rõ:
+Máy có kêu lạ, rung mạnh không:
+```
+
+**7.5: vệt kéo khi đi xa**
+```
+Z nhấc / chờ:
+Có vệt mảnh nối hai chấm không (lần nào):
+Giấy có phẳng không:
+```
+
+**Khác (Home, G2 / G3, đèn X / Y, tiếp tục sau khi dừng)**
+```
+Việc:
+Làm thế nào:
+Kết quả / thời gian:
+Có gì bất thường:
+```
