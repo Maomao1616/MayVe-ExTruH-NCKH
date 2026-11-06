@@ -89,10 +89,13 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 | # | Bài | Cách làm | Nhìn gì | Tình trạng |
 |---|---|---|---|---|
 | 7.1 | Chi phí nhấc bút | 100 gạch 2 mm; thời gian thật ÷ 100 = một chu kỳ nhấc + hạ + chờ. Đổi chờ 0,2 → 0,1 → 0,05 s; Z nhấc 3 → 2 → 1,5 | bút kéo vệt khi di chuyển (nhấc chưa kịp)? đầu nét hụt (hạ chưa chạm)? bút nảy? | ✅ chờ 0,05 s đủ nét; ⏳ đo thời gian chính xác |
-| 7.2 | Mất bước | vẽ dấu + ở góc → chạy nhanh nhiều lần → vẽ lại dấu + | hai dấu trùng khít = không mất bước | ✅ 03/11 (6000 mm/min, ~20 phút) |
-| 7.3 | Gia tốc + góc | cùng đoạn chữ ở gia tốc 1000 / 1500 / 2000 / 3000, rồi `junction_deviation` 0,01 / 0,03 | thời gian; gợn sóng sau góc chữ | ⏳ |
+| 7.2 | Mất bước | vẽ dấu + ở góc → chạy nhanh nhiều lần → vẽ lại dấu + | hai dấu trùng khít = không mất bước | ✅ 03/11 (6000 mm/min, gia tốc 2000, ~20 phút). ⏳ lặp lại ở mức mới (7.2b) |
+| 7.2b | Mất bước ở mức mới | như 7.2 nhưng `$110`/`$111` = **8000**, gia tốc X/Y = **2500** (Z giữ 3000), chạy G0 liên tục 10–20 phút; chạm thử nhiệt động cơ + driver | trùng khít = giữ 8000 / 2500; lệch = hạ gia tốc về 2000 trước, chưa đụng Vref | ⏳ |
+| 7.3 | Gia tốc + góc | cùng đoạn chữ ở gia tốc 1000 / 1500 / 2000 / 2500, rồi `junction_deviation` **0,02 / 0,05 / 0,1** (chạy ở 8000 mm/min, gia tốc 2500) | thời gian; gợn sóng sau góc chữ; giọt mực ở góc. 0,1 không gợn thì dùng cho chữ, ảnh để 0,05 | ⏳ |
 | 7.4 | Tốc độ vẽ từng bút | dải đường thẳng 3000 / 4000 / 5000 / 6000, mỗi bút một tờ, **chụp cận đo bề rộng nét** | tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét ở đó (→ `LINE_WIDTH_RATIO`) | 🧪 6000 vẫn đậm (ảnh xa); ⏳ đo |
 | 7.5 | Vệt kéo khi đi xa | hai chấm cách 240 mm, G0 qua lại 5 lần, mỗi lần một mức chờ nâng; đổi Z nhấc 3 / 4 / 5. Dán giấy phẳng | vệt mảnh nối hai chấm = bút chưa rời giấy | ⏳ |
+
+**Mức đang nhắm tới (đề xuất 06/11/2026, chưa thử):** tốc độ tối đa X/Y 8000 mm/min (nguồn 12 V, không nên quá 10000), gia tốc X/Y 2500 (3000 là của Z), `junction_deviation` 0,05, Vref giữ 1,4. G0 chạy tới 8000; tốc độ vẽ chốt theo 7.4 (khoảng 5000–7000). Theo công thức góc cua, 0,02 → 0,05 → 0,1 chỉ nhanh thêm ~1–2 % với ảnh tô, ~7–8 % mỗi bậc với chữ nhiều góc vuông đoạn ngắn. Thứ tự thử: 7.2b trước, rồi 7.3.
 
 **Hạ chậm, nhấc nhanh** (bút hạ bằng trọng lực): ô "Tốc độ hạ bút" (mặc định 2000). Thử 600–1500 nếu bút còn nảy hoặc loang mực đầu nét.
 
@@ -100,7 +103,9 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 | Ngày | Bút | Giấy | Thử gì | Thông số | Thời gian thật / ước tính | Kết luận |
 |---|---|---|---|---|---|---|
 | 03/11/2026 | 0,4 | | tờ mẫu hiệu chỉnh | vẽ 3000 | | nét ~0,55 mm |
-| 03/11/2026 | | | 7.2 mất bước | G0 6000, gia tốc 2000 / 3000, Vref 1,4 V | ~20 phút | không mất bước |
+| 03/11/2026 | | | 7.2 mất bước | G0 6000, gia tốc X/Y 2000 (Z 3000), Vref 1,4 V | ~20 phút | không mất bước |
+| | | | 7.2b mất bước mức mới | G0 8000, gia tốc X/Y 2500, Vref 1,4 V | 10–20 phút | |
+| | | | 7.3 góc cua | junction 0,02 / 0,05 / 0,1 ở 8000, gia tốc 2500 | | |
 | | 0,4 | | tờ mẫu hiệu chỉnh | vẽ 5000 | | |
 | | 0,5 | | tờ mẫu hiệu chỉnh | | | |
 | | 0,4 | | Thang xám · Chân dung | | | |
@@ -166,9 +171,20 @@ Có kéo vệt / hụt đầu nét / bút nảy không:
 **7.3: gia tốc và góc**
 ```
 Gia tốc X / Y:
-junction (Cài đặt -> Cấu hình máy -> "Độ lệch góc"):
+junction 0,02 / 0,05 / 0,1 (Cài đặt -> Cấu hình máy -> "Độ lệch góc"):
+Tốc độ vẽ:
 Thời gian chạy:
+Giọt mực ở góc: không / ít / nhiều:
 Gợn sóng sau góc chữ: không / ít / rõ:
+Máy có kêu lạ, rung mạnh không:
+```
+
+**7.2b: mất bước ở mức mới**
+```
+Tốc độ G0 / gia tốc X / Y:
+Thời gian chạy (phút):
+Hai dấu + trùng khít không (lệch bao nhiêu mm, hướng nào):
+Nhiệt động cơ X / Y, driver (ấm / nóng tay / không chạm được):
 Máy có kêu lạ, rung mạnh không:
 ```
 

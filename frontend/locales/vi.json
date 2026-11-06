@@ -365,6 +365,7 @@
   "drawing.layout.a4": "A4 (210 × 297 mm)",
   "drawing.layout.a5": "A5 (148 × 210 mm)",
   "drawing.layout.letter": "Letter (216 × 279 mm)",
+  "drawing.layout.work": "Cả vùng máy",
   "drawing.layout.custom": "Tùy chọn",
   "drawing.layout.width": "Chiều rộng (mm)",
   "drawing.layout.height": "Chiều cao (mm)",

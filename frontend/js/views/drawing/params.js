@@ -103,6 +103,8 @@ export function paperSize() {
         const h = Number($("drawing-paper-height")?.value);
         return { name, w: w > 0 ? w : 210, h: h > 0 ? h : 297 };
     }
+    // "work" = cả vùng máy; gửi backend như khổ tùy chọn đúng bằng vùng máy (lề vẫn trừ ở ô Lề an toàn)
+    if (name === "work") return { name: "custom", w: MACHINE.travelX, h: MACHINE.travelY };
     const p = papers()[name] ?? PAPERS_FALLBACK.a4;
     return { name, w: p.w, h: p.h };
 }

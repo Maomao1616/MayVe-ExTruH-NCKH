@@ -353,6 +353,7 @@
   "drawing.layout.a4": "A4 (210 × 297 mm)",
   "drawing.layout.a5": "A5 (148 × 210 mm)",
   "drawing.layout.letter": "Letter (216 × 279 mm)",
+  "drawing.layout.work": "Whole work area",
   "drawing.layout.custom": "Custom",
   "drawing.layout.width": "Width (mm)",
   "drawing.layout.height": "Height (mm)",
