@@ -156,8 +156,8 @@ def joblog_list():
 
 
 @router.get("/joblogs/{log_id}")
-def joblog_read(log_id: str, points: int = 3000):
-    return _joblog(joblog.read_log, log_id, points)
+def joblog_read(log_id: str, points: int = 3000, window: float | None = None, end: float | None = None):
+    return _joblog(joblog.read_log, log_id, points, window, end)
 
 
 @router.get("/joblogs/{log_id}/csv")

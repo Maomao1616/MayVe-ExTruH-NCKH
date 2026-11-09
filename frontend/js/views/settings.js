@@ -885,6 +885,22 @@ function initPinChange() {
     showState();
     window.addEventListener("extruxy:language-changed", showState);
 
+    // Dấu ✓ / ✕ ở ô "Nhập lại": hai lần nhập đã trùng chưa (chưa gõ ô nhập lại thì không hiện gì).
+    const match = $("pin-match");
+    const showMatch = () => {
+        const typed = newPin2.value !== "";
+        const same = newPin.value === newPin2.value;
+        match.textContent = !typed ? "" : same ? "✓" : "✕";
+        match.title = !typed ? "" : t(same ? "settings.pin.match" : "settings.pin.noMatch");
+        match.classList.toggle("is-ok", typed && same);
+        match.classList.toggle("is-bad", typed && !same);
+        newPin2.classList.toggle("is-match", typed && same);
+        newPin2.classList.toggle("is-mismatch", typed && !same);
+    };
+    newPin.addEventListener("input", showMatch);
+    newPin2.addEventListener("input", showMatch);
+    window.addEventListener("extruxy:language-changed", showMatch);
+
     save.addEventListener("click", async () => {
         if (newPin.value !== newPin2.value) return say(t("settings.pin.mismatch"), "error");
         save.disabled = true;

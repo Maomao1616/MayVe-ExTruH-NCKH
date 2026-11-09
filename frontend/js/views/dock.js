@@ -141,9 +141,26 @@ function initMacroForm() {
     addButton.addEventListener("click", () => openForm(null));
     $("macro-cancel-btn")?.addEventListener("click", closeForm);
 
-    $("macro-delete-btn")?.addEventListener("click", async () => {
+    // Hộp xác nhận riêng của app (cùng kiểu "Bỏ điểm dừng"), thay cho window.confirm của trình duyệt.
+    const modal = $("macro-delete-modal");
+    const closeModal = () => modal?.setAttribute("hidden", "");
+    $("macro-delete-btn")?.addEventListener("click", () => {
+        if (!editingId || !modal) return;
+        const macro = loadMacros().find((m) => m.id === editingId);
+        if (!macro) return;
+        $("macro-delete-name").textContent = macro.name;
+        const first = macro.lines[0] ?? "";
+        $("macro-delete-lines").textContent = macro.lines.length > 1
+            ? `${first} … (${macro.lines.length} ${t("dock.macro.linesUnit")})` : first;
+        modal.removeAttribute("hidden");
+        $("macro-delete-cancel")?.focus();               // mặc định là "Giữ lại": bấm Enter nhầm cũng an toàn
+    });
+    $("macro-delete-cancel")?.addEventListener("click", closeModal);
+    modal?.addEventListener("click", (event) => { if (event.target === modal) closeModal(); });
+    window.addEventListener("keydown", (event) => { if (event.key === "Escape" && modal && !modal.hidden) closeModal(); });
+    $("macro-delete-confirm")?.addEventListener("click", async () => {
+        closeModal();
         if (!editingId) return;
-        if (!window.confirm(t("dock.macro.deleteConfirm"))) return;
         if (await deleteMacro(editingId)) closeForm();
         else setError(t("dock.macro.err.storage"));
     });

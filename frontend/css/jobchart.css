@@ -18,9 +18,29 @@
     position: relative;
 }
 .view-switch[hidden] { display: none; }
+.preview-actions.path-only {
+    transition: opacity 0.2s ease;     /* cùng nhịp với các nút khác (style.css) */
+}
 
-/* Ở chế độ biểu đồ: ẩn mọi thứ của khung đường vẽ, chỉ giữ tiêu đề + thanh tiến trình */
-.preview-panel[data-view="chart"] .path-only,
+/* Hiệu ứng chuyển: dùng lại keyframe `tab-enter` của style.css (mờ dần + trượt lên 8px; tắt khi hệ điều hành bật "giảm chuyển động").
+   Chỉ chạy sau lần bấm đầu tiên (class view-animate do jobchart.js đặt) để lúc tải trang không nhấp nháy. */
+.job-chart:not([hidden]) {
+    animation: tab-enter 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.preview-panel.view-animate[data-view="path"] .preview-toolbar,
+.preview-panel.view-animate[data-view="path"] .preview-playback:not([hidden]),
+.preview-panel.view-animate[data-view="path"] #preview-canvas-container,
+.preview-panel.view-animate[data-view="path"] .preview-footer {
+    animation: tab-enter 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Ở chế độ biểu đồ: ẩn mọi thứ của khung đường vẽ, chỉ giữ tiêu đề + thanh tiến trình.
+   Cụm nút zoom chỉ làm trong suốt (vẫn giữ chỗ) để nút [Đường vẽ | Biểu đồ] không bị đẩy sang mép phải. */
+.preview-panel[data-view="chart"] .path-only {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
 .preview-panel[data-view="chart"] .preview-toolbar,
 .preview-panel[data-view="chart"] .preview-playback,
 .preview-panel[data-view="chart"] #preview-canvas-container,
@@ -52,6 +72,14 @@
 .job-chart-toolbar select {
     max-width: min(100%, 380px);
 }
+/* Danh sách thả xuống: trình duyệt vẽ phần lớn khung này; ở đây chỉ chỉnh được màu nền / chữ của từng dòng */
+.job-chart-toolbar select option {
+    background: var(--bg-elevated);
+    color: var(--text-main);
+}
+.job-chart-toolbar select:focus-visible {
+    border-color: var(--accent-text);
+}
 .job-chart-toolbar a.secondary-button {
     display: inline-flex;
     align-items: center;
@@ -74,6 +102,17 @@
     font-size: 13px;
 }
 .job-chart-notice.is-error { border-left-color: var(--danger); }
+
+.job-chart-pos {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+.job-chart-pos[hidden] { display: none; }
+.job-chart-pos input[type="range"] { flex: 1; }
 
 .job-chart-empty {
     padding: 28px 12px;

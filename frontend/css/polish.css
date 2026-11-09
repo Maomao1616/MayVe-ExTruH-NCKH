@@ -1775,3 +1775,27 @@ body.role-guest .coordinate-header span:nth-child(2),
 body.role-guest .coordinate-header span:nth-child(5) {
     visibility: hidden;
 }
+
+/* ===== Ô "Nhập lại PIN mới": dấu ✓ / ✕ báo hai lần nhập đã trùng chưa (views/settings.js initPinChange) ===== */
+.pin-field {
+    position: relative;
+    display: block;
+}
+.pin-field input {
+    width: 100%;
+    padding-right: 38px;
+}
+.pin-match {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 700;
+    line-height: 1;
+    pointer-events: none;
+}
+.pin-match.is-ok { color: var(--success); }
+.pin-match.is-bad { color: var(--danger); }
+/* selector đủ "nặng" để thắng quy tắc input chung ở style.css (cùng độ ưu tiên, polish.css nạp sau) */
+.pin-field input[type="password"].is-match { border-color: var(--success); }
+.pin-field input[type="password"].is-mismatch { border-color: var(--danger); }

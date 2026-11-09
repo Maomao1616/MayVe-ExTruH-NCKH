@@ -504,11 +504,23 @@
                     <select id="chart-run"></select></label>
                   <label for="chart-compare"><span data-i18n="chart.compare">So với</span>
                     <select id="chart-compare"></select></label>
+                  <label for="chart-window"><span data-i18n="chart.window">Khung thời gian</span>
+                    <select id="chart-window">
+                      <option data-i18n="chart.win.auto" value="auto">Tự động (đang chạy: 1 phút gần nhất)</option>
+                      <option data-i18n="chart.win.30" value="30">30 giây</option>
+                      <option data-i18n="chart.win.60" value="60">1 phút</option>
+                      <option data-i18n="chart.win.300" value="300">5 phút</option>
+                      <option data-i18n="chart.win.all" value="0">Cả lần chạy</option>
+                    </select></label>
                   <button class="secondary-button" data-i18n="chart.refresh" id="chart-refresh-btn" type="button">Làm mới</button>
-                  <a class="secondary-button" data-i18n="chart.csv" download hidden id="chart-csv-link" href="#">Tải CSV</a>
-                  <button class="danger-button" data-i18n="chart.delete" id="chart-delete-btn" type="button">Xóa</button>
+                  <a class="secondary-button" data-i18n="chart.csv; [title]chart.csvHint" download hidden id="chart-csv-link" href="#" title="Tải một bản CSV về máy đang dùng. Bản gốc vẫn nằm trên máy chủ.">Tải CSV</a>
+                  <button class="danger-button" data-i18n="chart.delete; [title]chart.deleteHint" id="chart-delete-btn" title="Xóa số liệu lần chạy này khỏi máy chủ (không khôi phục được)" type="button">Xóa</button>
                 </div>
                 <p class="job-chart-notice" id="chart-notice" role="status" hidden></p>
+                <div class="job-chart-pos" hidden id="chart-pos-row">
+                  <input aria-label="Vị trí cửa sổ trên lần chạy" data-i18n="[aria-label]chart.pos" id="chart-pos" max="1000" min="0" type="range" value="1000"/>
+                  <span id="chart-pos-label"></span>
+                </div>
                 <div class="job-chart-empty" data-i18n="chart.empty" id="chart-empty">Chưa có lần chạy nào được ghi. Chạy một tệp G-code (máy thật hoặc máy giả) là có số liệu ở đây.</div>
                 <div class="job-chart-plots" hidden id="chart-plots">
                   <figure><figcaption data-i18n="chart.title.speed">Tốc độ thật (mm/phút). Đường xanh lá = tốc độ vẽ trung bình</figcaption>
@@ -520,7 +532,7 @@
                   <p class="job-chart-hover" id="chart-hover" data-i18n="chart.hoverHint">Rê chuột lên biểu đồ để xem số liệu từng lúc.</p>
                 </div>
                 <table class="job-chart-summary" hidden id="chart-summary"></table>
-                <p class="help-text" data-i18n="chart.help">Số liệu lấy mỗi lần máy báo trạng thái (~10 lần/giây). Số lần nhấc bút tính từ G-code, không phải từ mẫu. Hàng đợi chỉ có khi máy gửi Bf (lệnh $10=3).</p>
+                <p class="help-text" data-i18n="chart.help">Mỗi lần chạy tự lưu trên máy chủ (thư mục data/job_logs, giữ 30 lần gần nhất, tự xóa lần cũ nhất khi đầy). "Tải CSV" chép một bản về máy bạn; "So với" là so sánh hai lần chạy ngay trên màn hình.</p>
               </div>
 
               <div class="preview-canvas-container" id="preview-canvas-container">
@@ -1287,7 +1299,10 @@
                 </label>
                 <label for="pin-new2">
                   <span data-i18n="settings.pin.new2">Nhập lại PIN mới</span>
-                  <input autocomplete="new-password" id="pin-new2" maxlength="64" type="password"/>
+                  <span class="pin-field">
+                    <input autocomplete="new-password" id="pin-new2" maxlength="64" type="password"/>
+                    <span aria-live="polite" class="pin-match" id="pin-match" role="status"></span>
+                  </span>
                 </label>
               </div>
               <div class="mc-actions">
@@ -1484,6 +1499,40 @@
     <div class="glass-modal-actions">
       <button class="secondary-button" data-i18n="control.resume.discardKeep" id="discard-modal-cancel" type="button">Giữ lại</button>
       <button class="primary-button danger-button" data-i18n="control.resume.discardConfirmBtn" id="discard-modal-confirm" type="button">Bỏ điểm dừng</button>
+    </div>
+  </div>
+</div>
+
+<!-- Xác nhận xóa một macro (thanh Dock) -->
+<div class="glass-modal-overlay" id="macro-delete-modal" hidden>
+  <div class="glass-modal-box resume-modal-box discard-modal-box" role="alertdialog" aria-modal="true" aria-labelledby="macro-delete-title">
+    <div class="glass-modal-icon">🗑️</div>
+    <h3 data-i18n="dock.macro.deleteTitle" id="macro-delete-title">Xóa macro này?</h3>
+    <dl class="resume-facts">
+      <div class="resume-fact-wide"><dt data-i18n="dock.macro.name">Tên</dt><dd id="macro-delete-name">—</dd></div>
+      <div class="resume-fact-wide"><dt data-i18n="dock.macro.lines">Nội dung</dt><dd id="macro-delete-lines">—</dd></div>
+    </dl>
+    <p data-i18n="dock.macro.deleteText">Macro bị xóa khỏi máy chủ, các trình duyệt khác cũng mất nút này. Không khôi phục được; muốn có lại phải tạo mới. Việc này không đụng tới máy vẽ.</p>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="dock.macro.deleteKeep" id="macro-delete-cancel" type="button">Giữ lại</button>
+      <button class="primary-button danger-button" data-i18n="dock.macro.deleteConfirmBtn" id="macro-delete-confirm" type="button">Xóa macro</button>
+    </div>
+  </div>
+</div>
+
+<!-- Xác nhận xóa số liệu một lần chạy (biểu đồ, tab Điều khiển) -->
+<div class="glass-modal-overlay" id="chart-delete-modal" hidden>
+  <div class="glass-modal-box resume-modal-box discard-modal-box" role="alertdialog" aria-modal="true" aria-labelledby="chart-delete-title">
+    <div class="glass-modal-icon">🗑️</div>
+    <h3 data-i18n="chart.deleteTitle" id="chart-delete-title">Xóa số liệu lần chạy này?</h3>
+    <dl class="resume-facts">
+      <div class="resume-fact-wide"><dt data-i18n="chart.fact.name">Tệp</dt><dd id="chart-delete-name">—</dd></div>
+      <div class="resume-fact-wide"><dt data-i18n="chart.fact.when">Lúc chạy</dt><dd id="chart-delete-when">—</dd></div>
+    </dl>
+    <p data-i18n="chart.deleteText">Số liệu (tệp CSV) bị xóa khỏi máy chủ, không khôi phục được. Nếu cần giữ thì bấm "Tải CSV" trước. Việc này không đụng tới máy vẽ hay bản thảo.</p>
+    <div class="glass-modal-actions">
+      <button class="secondary-button" data-i18n="chart.deleteKeep" id="chart-delete-cancel" type="button">Giữ lại</button>
+      <button class="primary-button danger-button" data-i18n="chart.deleteConfirm" id="chart-delete-confirm" type="button">Xóa số liệu</button>
     </div>
   </div>
 </div>

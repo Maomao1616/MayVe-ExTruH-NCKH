@@ -15,7 +15,12 @@ const $ = (id) => document.getElementById(id);
 const POLL_MS = 2000;
 const PAD = { left: 50, right: 10, top: 8, bottom: 20 };
 
-const S = { logs: [], runId: null, compareId: null, a: null, b: null, liveId: null, hoverT: null, timer: null, busy: false };
+const S = { logs: [], runId: null, compareId: null, a: null, b: null, liveId: null, hoverT: null, timer: null, busy: false,
+            win: "auto", end: null };       // win: "auto" | số giây (0 = cả lần chạy); end: giây kết thúc cửa sổ (null = theo cuối)
+
+const LIVE_WINDOW_S = 60;                      // đang chạy: chỉ hiện chừng này giây gần nhất, biểu đồ "chạy" thay vì thu nhỏ dần
+// Mốc Z hay dùng (nhấc 1 / 3 / 5 mm) thay cho 0, 2, 4, 6
+const Z_TICKS = [0, 1, 3, 5];
 
 export function initJobChart() {
     const panel = document.querySelector(".preview-panel");
@@ -30,10 +35,32 @@ export function initJobChart() {
     for (const button of document.querySelectorAll("#preview-view-switch [data-view]")) {
         button.addEventListener("click", () => setView(button.dataset.view));
     }
-    $("chart-run").addEventListener("change", () => { S.runId = $("chart-run").value; S.liveId = null; load(); });
+    $("chart-run").addEventListener("change", () => { S.runId = $("chart-run").value; S.end = null; load(); });
+    $("chart-window").addEventListener("change", () => {
+        S.win = $("chart-window").value === "auto" ? "auto" : Number($("chart-window").value);
+        S.end = null;
+        load();
+    });
+    let posTimer = null;
+    $("chart-pos").addEventListener("input", () => {            // kéo để xem lại đoạn trước (chỉ khi không theo cuối)
+        const range = S.a?.range;
+        const win = windowSeconds();
+        if (!range || win <= 0) return;
+        const v = Number($("chart-pos").value) / 1000;
+        S.end = v >= 0.999 ? null : win + Math.max(0, range.duration - win) * v;
+        showPos();
+        clearTimeout(posTimer);
+        posTimer = setTimeout(load, 150);
+    });
     $("chart-compare").addEventListener("change", () => { S.compareId = $("chart-compare").value || null; load(); });
     $("chart-refresh-btn").addEventListener("click", () => refreshList());
-    $("chart-delete-btn").addEventListener("click", deleteRun);
+    $("chart-delete-btn").addEventListener("click", askDelete);
+    const modal = $("chart-delete-modal");
+    const closeModal = () => modal.setAttribute("hidden", "");
+    $("chart-delete-cancel").addEventListener("click", closeModal);
+    modal.addEventListener("click", (event) => { if (event.target === modal) closeModal(); });
+    window.addEventListener("keydown", (event) => { if (event.key === "Escape" && !modal.hidden) closeModal(); });
+    $("chart-delete-confirm").addEventListener("click", () => { closeModal(); deleteRun(); });
 
     let resizeTimer = null;
     window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(draw, 120); });
@@ -50,6 +77,7 @@ const isOpen = () => $("job-chart-view")?.offsetParent !== null;
 function setView(name) {
     const panel = document.querySelector(".preview-panel");
     panel.dataset.view = name;
+    panel.classList.add("view-animate");               // từ lần bấm đầu tiên mới có hiệu ứng chuyển (jobchart.css)
     for (const button of document.querySelectorAll("#preview-view-switch [data-view]")) {
         const on = button.dataset.view === name;
         button.setAttribute("aria-selected", String(on));
@@ -88,12 +116,21 @@ async function refreshList() {
     await load();
 }
 
+// Cửa sổ đang dùng (giây; 0 = cả lần chạy). "Tự động": đang chạy thì 1 phút gần nhất, đã xong thì cả lần chạy.
+function windowSeconds() {
+    if (S.win === "auto") return S.runId && S.runId === S.liveId ? LIVE_WINDOW_S : 0;
+    return S.win;
+}
+
 async function load() {
     if (!S.runId) { S.a = S.b = null; return render(); }
     S.busy = true;
+    const win = windowSeconds();
+    const live = S.runId === S.liveId;
+    const end = live ? null : S.end;                             // đang chạy thì luôn theo cuối
     try {
-        S.a = await api.joblog(S.runId);
-        S.b = S.compareId ? await api.joblog(S.compareId) : null;
+        S.a = await api.joblog(S.runId, 3000, win, end);
+        S.b = S.compareId ? await api.joblog(S.compareId, 3000, win, end) : null;
         say("");
     } catch (error) {
         S.a = S.b = null;
@@ -104,8 +141,18 @@ async function load() {
     render();
 }
 
+// Hộp xác nhận riêng của app (cùng kiểu "Bỏ điểm dừng"), thay cho window.confirm của trình duyệt.
+function askDelete() {
+    const log = S.logs.find((l) => l.id === S.runId);
+    if (!log) return;
+    $("chart-delete-name").textContent = log.name || "?";
+    $("chart-delete-when").textContent = `${log.started_at ? new Date(log.started_at * 1000).toLocaleString() : "?"} · ${Number.isFinite(log.elapsed_s) ? formatDuration(log.elapsed_s) : "…"}`;
+    $("chart-delete-modal").removeAttribute("hidden");
+    $("chart-delete-cancel").focus();                 // mặc định là "Giữ lại": bấm Enter nhầm cũng an toàn
+}
+
 async function deleteRun() {
-    if (!S.runId || !window.confirm(t("chart.confirmDelete"))) return;
+    if (!S.runId) return;
     try {
         await api.joblogDelete(S.runId);
         S.runId = null;
@@ -154,8 +201,11 @@ function render() {
     $("chart-empty").hidden = !empty;
     $("chart-plots").hidden = empty;
     $("chart-summary").hidden = empty;
-    if (empty) { $("chart-summary").replaceChildren(); if (!S.logs.length) say(""); return; }
-    if (S.a.summary?.has_bf === false) say(t("chart.noBf"));
+    if (empty) { $("chart-summary").replaceChildren(); $("chart-pos-row").hidden = true; if (!S.logs.length) say(""); return; }
+    showPos();
+    // Giao diện mới + máy chủ cũ (chưa khởi động lại): máy chủ cũ bỏ qua cửa sổ thời gian và không trả `range`.
+    if (windowSeconds() > 0 && !S.a.range) say(t("chart.oldServer"), true);
+    else if (S.a.summary?.has_bf === false) say(t("chart.noBf"));
     else if (S.a.meta?.state === "running") say(t("chart.live"));
     else say("");
     renderSummary();
@@ -196,6 +246,19 @@ function renderSummary() {
     table.replaceChildren(head, ...body);
 }
 
+// Thanh trượt xem lại: chỉ hiện khi đang dùng cửa sổ ngắn hơn lần chạy và lần chạy không đang ghi (đang ghi thì theo cuối).
+function showPos() {
+    const row = $("chart-pos-row");
+    const range = S.a?.range;
+    const win = windowSeconds();
+    const show = Boolean(range) && win > 0 && range.duration > win && S.runId !== S.liveId;
+    row.hidden = !show;
+    if (!show) return;
+    const from = range.to - win;
+    $("chart-pos").value = String(S.end === null ? 1000 : Math.round(1000 * (S.end - win) / Math.max(1e-6, range.duration - win)));
+    $("chart-pos-label").textContent = `${formatDuration(Math.max(0, from))} – ${formatDuration(range.to)} / ${formatDuration(range.duration)}`;
+}
+
 /* ---------- vẽ ---------- */
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || "#888";
 
@@ -204,11 +267,13 @@ function draw() {
     const a = S.a.series, b = S.b?.series ?? null;
     const colors = { a: css("--accent-text"), b: css("--highlight"), muted: css("--text-muted"), grid: css("--border"),
                      text: css("--text-main"), bad: css("--danger"), ok: css("--success") };
-    const tMax = Math.max(a.t.at(-1) ?? 1, b?.t.at(-1) ?? 0, 1);
+    const win = windowSeconds() > 0 && S.a.range ? S.a.range : null;
+    const tMin = win ? win.from : 0;
+    const tMax = win ? Math.max(win.to, win.from + 1) : Math.max(a.t.at(-1) ?? 1, b?.t.at(-1) ?? 0, 1);
     const top = S.a.summary?.planner_blocks_max ?? null;
     const hasBf = S.a.summary?.has_bf !== false && top !== null;
 
-    plot($("chart-speed"), { tMax, yMin: 0, yUnit: "", colors, layers: [
+    plot($("chart-speed"), { tMin, tMax, yMin: 0, yUnit: "", colors, layers: [
         { kind: "area", t: a.t, y: a.feed, color: colors.a + "33" },
         { kind: "line", t: a.t, y: a.feed_max, color: colors.muted, width: 1 },
         { kind: "line", t: a.t, y: a.feed, color: colors.a, width: 1.6 },
@@ -219,14 +284,14 @@ function draw() {
     // Hàng đợi: số khối ĐANG CÓ (= tối đa − trống). 0 khi máy đang chạy = đói lệnh (đánh dấu đỏ).
     const filled = (series) => series.bf.map((v) => (v === null || top === null ? null : top - v));
     const fa = hasBf ? filled(a) : [];
-    plot($("chart-buffer"), { tMax, yMin: 0, yMaxMin: Math.max(top ?? 1, 1), colors, empty: hasBf ? null : t("chart.noBfShort"), layers: hasBf ? [
+    plot($("chart-buffer"), { tMin, tMax, yMin: 0, yMaxMin: Math.max(top ?? 1, 1), colors, empty: hasBf ? null : t("chart.noBfShort"), layers: hasBf ? [
         { kind: "area", t: a.t, y: fa, color: colors.a + "33" },
         { kind: "line", t: a.t, y: fa, color: colors.a, width: 1.4 },
         { kind: "marks", t: a.t, on: fa.map((v, i) => v === 0 && a.run[i] > 0.5), color: colors.bad },
         ...(b && S.b.summary?.has_bf !== false ? [{ kind: "line", t: b.t, y: filled(b), color: colors.b, width: 1.1, dash: [5, 3] }] : [])
     ] : [] });
 
-    plot($("chart-pen"), { tMax, yMin: 0, yMaxMin: 5, colors, layers: [
+    plot($("chart-pen"), { tMin, tMax, yMin: 0, yMaxMin: 5, yTicks: Z_TICKS, colors, layers: [
         { kind: "line", t: a.t, y: a.z_max, color: colors.a + "88", width: 1 },
         { kind: "band", t: a.t, lo: a.z_min, hi: a.z_max, color: colors.a },
         ...(b ? [{ kind: "line", t: b.t, y: b.z_max, color: colors.b, width: 1, dash: [4, 3] }] : [])
@@ -249,12 +314,16 @@ function plot(canvas, cfg) {
         const ys = layer.y ?? layer.hi ?? [];
         for (const v of (layer.kind === "hline" ? [layer.y] : ys)) if (Number.isFinite(v) && v > hi) hi = v;
     }
-    const yt = niceTicks(cfg.yMin ?? 0, hi, 4);
-    const xt = niceTicks(0, cfg.tMax, 6);
+    const yt = cfg.yTicks
+        ? { ticks: cfg.yTicks, min: cfg.yTicks[0], max: Math.max(cfg.yTicks.at(-1) * 1.08, hi) }   // mốc cố định (Z: 0, 1, 3, 5)
+        : niceTicks(cfg.yMin ?? 0, hi, 4);
+    const tMin = cfg.tMin ?? 0;
+    const span = Math.max(cfg.tMax - tMin, 1e-6);
+    const xt = niceTicks(tMin, cfg.tMax, 6);
     const x0 = PAD.left, x1 = width - PAD.right, y0 = height - PAD.bottom, y1 = PAD.top;
-    const X = (tt) => x0 + (tt / cfg.tMax) * (x1 - x0);
+    const X = (tt) => x0 + ((tt - tMin) / span) * (x1 - x0);
     const Y = (v) => y0 - ((v - yt.min) / (yt.max - yt.min || 1)) * (y0 - y1);
-    canvas._map = { x0, x1, tMax: cfg.tMax };
+    canvas._map = { x0, x1, tMin, tMax: cfg.tMax };
 
     ctx.font = "11px system-ui, sans-serif";
     ctx.lineWidth = 1;
@@ -269,7 +338,7 @@ function plot(canvas, cfg) {
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     for (const v of xt.ticks) {
-        if (v > cfg.tMax) break;
+        if (v < tMin || v > cfg.tMax) continue;
         ctx.fillText(formatDuration(v), X(v), y0 + 4);
     }
 
@@ -313,7 +382,7 @@ function plot(canvas, cfg) {
         ctx.restore();
     }
 
-    if (S.hoverT !== null && S.hoverT <= cfg.tMax) {
+    if (S.hoverT !== null && S.hoverT >= tMin && S.hoverT <= cfg.tMax) {
         ctx.strokeStyle = colors.text; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
         ctx.beginPath(); ctx.moveTo(X(S.hoverT), y1); ctx.lineTo(X(S.hoverT), y0); ctx.stroke();
     }
@@ -324,7 +393,7 @@ function hover(event, canvas) {
     if (!map || !S.a) return;
     const rect = canvas.getBoundingClientRect();
     const px = event.clientX - rect.left;
-    S.hoverT = Math.min(map.tMax, Math.max(0, ((px - map.x0) / (map.x1 - map.x0)) * map.tMax));
+    S.hoverT = Math.min(map.tMax, Math.max(map.tMin, map.tMin + ((px - map.x0) / (map.x1 - map.x0)) * (map.tMax - map.tMin)));
     draw();
     hoverText();
 }

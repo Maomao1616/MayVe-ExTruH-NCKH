@@ -54,7 +54,9 @@ export const api = {
     realtime: (action) => request("POST", "/realtime", { action }),
     jobStart: (name, lines, client = null) => request("POST", "/jobs", client ? { name, lines, client } : { name, lines }),
     joblogs: () => request("GET", "/joblogs"),
-    joblog: (id, points = 3000) => request("GET", `/joblogs/${encodeURIComponent(id)}?points=${points}`),
+    // window = chỉ lấy chừng này giây (0 / bỏ trống = cả lần chạy); end = giây kết thúc cửa sổ (bỏ trống = cuối lần chạy)
+    joblog: (id, points = 3000, window = 0, end = null) => request("GET",
+        `/joblogs/${encodeURIComponent(id)}?points=${points}${window > 0 ? `&window=${window}` : ""}${end !== null && window > 0 ? `&end=${end}` : ""}`),
     joblogDelete: (id) => request("DELETE", `/joblogs/${encodeURIComponent(id)}`),
     joblogCsvUrl: (id) => `${BASE}/joblogs/${encodeURIComponent(id)}/csv`,
     log: (since = 0) => request("GET", `/log?since=${since}`),
