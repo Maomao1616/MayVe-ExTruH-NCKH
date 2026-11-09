@@ -66,7 +66,7 @@ Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, ảnh gốc �
 |---|---|
 | Tài khoản "người dùng" ✅ | chỉ tên + mật khẩu, không email; mật khẩu băm bằng `hashlib.scrypt` 💡; form đăng ký không bao giờ tạo quản lý |
 | Thư mục riêng theo tài khoản ✅ | người này không xem được của người kia; giữ 3 ngày; mọi route đọc tệp phải kiểm chủ |
-| Hàng chờ tạo nét ✅ | tách "nạp ảnh" khỏi "tạo nét" (nút "Tạo vector"); một việc một lúc theo thứ tự đến; mỗi người chỉ hủy việc của mình; `idle.py` phải tính việc đang chờ |
+| Hàng chờ tạo nét ✅ | tách "nạp ảnh" khỏi "tạo nét" (nút "Tạo nét", đã đưa vào kế hoạch [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) mục 5 bước 4); một việc một lúc theo thứ tự đến; mỗi người chỉ hủy việc của mình; `idle.py` phải tính việc đang chờ |
 | Lưu nét gốc `strokes.json` ✅ | đổi bố trí / G-code mà không vector lại; "dấu vân tay" = băm (ảnh + vùng cắt + tham số vector) để biết nét đã cũ |
 | Màu chỉ cho quản lý ✅ | khóa ở máy chủ, không chỉ ẩn ô |
 | Cloudflare nâng cao 💡 | Cloudflare Access làm thêm lớp đăng nhập ngoài; giới hạn tần suất theo `CF-Connecting-IP` |
