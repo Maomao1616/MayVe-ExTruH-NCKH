@@ -6,6 +6,7 @@ const WORD = /([A-Z])\s*([-+]?(?:\d+\.?\d*|\.\d+))/g;
 const PAREN = /\([^)]*\)/g;
 const MM_PER_INCH = 25.4;
 const MAX_LINE_LEN = 200;                 // = services/job.py MAX_LINE_LEN
+const PEN_DOWN_TOL = 0.5;                   // mm: Z cách Z xuống không quá chừng này = bút xuống
 
 // Lệnh G backend từ chối (services/job.py BLOCKED_G): đổi gốc / hệ tọa độ hoặc chạy tới chỗ máy tự chọn.
 // Tính theo phần nguyên: G28.1, G38.2, G59.3 cũng bị chặn.
@@ -15,7 +16,7 @@ export const BLOCKED_G = new Set([10, 28, 30, 38, 53, 55, 56, 57, 58, 59, 92]);
 export const BLOCKING = new Set(["blocked_g", "blocked_dollar", "bad_char", "not_gcode", "line_too_long"]);
 
 export const DEFAULT_OPTIONS = {
-    penUpZ: 3,           // Z bút lên (giả định, xem config.js)
+    penUpZ: 5,           // Z bút lên lúc bắt đầu (giả định, xem config.js)
     penDownZ: 0,         // Z bút xuống
     rapidFeed: 6000,     // mm/phút khi G0
     defaultFeed: 1000,   // dùng khi G1 thiếu F
@@ -76,7 +77,8 @@ export function parseGcode(text, options = {}) {
     const opts = { ...DEFAULT_OPTIONS, ...options };
     const rawLines = text.split(/\r\n|\r|\n/);
     const hasZ = /(^|[^A-Z])Z\s*[-+]?[\d.]/i.test(rawLines.map(cleanLine).join("\n"));
-    const penThreshold = (opts.penUpZ + opts.penDownZ) / 2;
+    // Bút coi là xuống khi Z sát Z xuống (không dựa vào Z lên: G-code nhấc thấp 1,5 / 2 / 3 còn Z điều khiển là 5).
+    const penThreshold = opts.penDownZ + PEN_DOWN_TOL;
 
     const warnings = [];
     const warn = (line, key, detail = "") => warnings.push({ line, key, detail });
@@ -305,4 +307,17 @@ export function formatDuration(seconds) {
     return h > 0
         ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
         : `${m}:${String(s).padStart(2, "0")}`;
+}
+
+// Số liệu giao diện đã tính từ G-code, gửi kèm khi bấm Chạy để nhật ký chạy máy so với số đo thật
+// (backend/app/api/machine.py JobClientInfo). rapids = số đoạn G0 ~ số lần nhấc bút.
+export function jobClientInfo(parsed) {
+    const round = (v, d) => (Number.isFinite(v) ? Number(v.toFixed(d)) : undefined);
+    return {
+        est_seconds: round(parsed.seconds, 1),
+        draw_mm: round(parsed.drawLength, 1),
+        travel_mm: round(parsed.travelLength, 1),
+        rapids: parsed.segments.filter((s) => s.kind === "rapid").length,
+        lines: parsed.lineCount
+    };
 }

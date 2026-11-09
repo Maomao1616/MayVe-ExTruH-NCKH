@@ -22,7 +22,7 @@ from collections import deque
 
 from ..links.base import BaseLink, LinkError
 from ..links.sim_link import SimLink
-from . import profile, resume
+from . import joblog, profile, resume
 from .job import JobError, JobRunner, clean_gcode
 from ..links.protocol import (CYCLE_START, FEED_HOLD, FEED_OV_MINUS_1, FEED_OV_MINUS_10,
                               FEED_OV_PLUS_1, FEED_OV_PLUS_10, FEED_OV_RESET, JOG_CANCEL,
@@ -107,6 +107,8 @@ class MachineService:
         # Đồng bộ điểm ghi G-code với cancel để không lọt dòng sau khi hủy.
         self._job_write_lock = threading.Lock()
         self._job = JobRunner(self)
+        self._joblog = joblog.JobLog()           # số liệu từng lần chạy -> data/job_logs (services/joblog.py)
+        self._joblog_extra: dict = {}
         self._clear_machine()
 
     def _clear_machine(self) -> None:
@@ -174,6 +176,7 @@ class MachineService:
             self._relock("Disconnected")
         if link is not None:
             self._job.abort("disconnected", "Disconnected")
+            self._joblog.close("disconnected")
             link.close()
             self._add_log("sys", "system", "Disconnected")
         return self.connection_info()
@@ -188,6 +191,7 @@ class MachineService:
             self._abandon_stop("Connection lost")
             self._relock("Connection lost")
             self._job.abort("link_lost", reason)
+            self._joblog.close("link_lost")
             self._add_log("sys", "system", reason)
 
     def _abandon_stop(self, why: str) -> None:      # gọi khi đang giữ self._lock
@@ -410,6 +414,7 @@ class MachineService:
             self._saw_home = False
         self._status = st
         self._status_seq += 1
+        self._joblog.observe(self._job.snapshot(), st, self._joblog_extra)
         self._updated_at = time.time()
         self._status_mono = time.monotonic()
 
@@ -551,7 +556,7 @@ class MachineService:
         return {"sent": action}
 
     # --- tác vụ G-code (gửi từng dòng, xem services/job.py) ---------------------
-    def start_job(self, name: str, lines: list[str]) -> dict:
+    def start_job(self, name: str, lines: list[str], client: dict | None = None) -> dict:
         try:
             cleaned = clean_gcode(lines)           # ngoài khóa: tệp lớn có thể mất một lúc
         except JobError as exc:
@@ -568,9 +573,18 @@ class MachineService:
                 raise ServiceError("not_idle", f"Máy phải ở trạng thái Idle (hiện tại: {state}).", 409)
             try:
                 self._touch_motion()
+                self._set_joblog_extra(client)
                 return self._job.start(name, cleaned, pre_cleaned=True)
             except JobError as exc:
                 raise ServiceError(exc.code, exc.message, exc.status) from exc
+
+    def _set_joblog_extra(self, client: dict | None) -> None:
+        """Thông tin kèm nhật ký lần chạy sắp bắt đầu (gọi khi đang giữ self._lock, ngay trước JobRunner.start)."""
+        self._joblog_extra = {"mode": self._info.get("mode"), "pen_down_z": profile.load()["pen_down_z"],
+                              "client": client or {}}
+
+    def joblog_current(self) -> str | None:
+        return self._joblog.current_id
 
     def resume_info(self) -> dict:
         return resume.describe(self.work_offset(), profile.load()["pen_feed"])
@@ -609,6 +623,7 @@ class MachineService:
                 label = f"{record['name']} (tiếp từ dòng {p['start'] + 1})"
                 self.log_system(f"Resume: {record['name']} from line {p['start'] + 1} of {record['total']} "
                                 f"({len(p['prefix'])} setup lines first).")
+                self._set_joblog_extra(None)
                 return self._job.start(label, cleaned, pre_cleaned=True, origin=origin)
             except JobError as exc:
                 raise ServiceError(exc.code, exc.message, exc.status) from exc

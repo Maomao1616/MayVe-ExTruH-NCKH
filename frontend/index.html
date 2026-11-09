@@ -10,6 +10,7 @@
   <link href="./css/style.css" rel="stylesheet"/>
   <link href="./css/drawing.css" rel="stylesheet"/>
   <link href="./css/polish.css" rel="stylesheet"/>
+  <link href="./css/jobchart.css" rel="stylesheet"/>
   <script src="./js/app.js" type="module"></script>
 </head>
 <body>
@@ -332,7 +333,7 @@
                 <!-- Thanh bút 3 nấc: Z lấy từ hồ sơ máy (Cài đặt → Cấu hình máy), JS ghi số Z -->
                 <div aria-label="Nâng hạ bút" class="pen-bar" role="group" data-i18n="[aria-label]aria.penControl">
                   <button data-pen="up" disabled="" id="pen-up-btn" type="button" aria-pressed="false">
-                    <span aria-hidden="true">▲</span><small data-i18n="control.pen.up">Lên</small><span class="pen-z" id="pen-up-z">Z3</span>
+                    <span aria-hidden="true">▲</span><small data-i18n="control.pen.up">Lên</small><span class="pen-z" id="pen-up-z">Z5</span>
                   </button>
                   <button data-pen="mid" disabled="" id="pen-mid-btn" type="button" aria-pressed="false">
                     <span aria-hidden="true">●</span><small data-i18n="control.pen.mid">Giữa</small><span class="pen-z" id="pen-mid-z">Z1.5</span>
@@ -434,7 +435,11 @@
                   <h2 data-i18n="control.preview.title">Khung nhìn 2D</h2>
                   <p data-i18n="control.preview.desc">Xem đường vẽ từ trên xuống</p>
                 </div>
-                <div class="preview-actions">
+                <div class="view-switch" id="preview-view-switch" role="tablist" aria-label="Chế độ khung" data-i18n="[aria-label]chart.viewLabel">
+                  <button aria-selected="true" class="secondary-button is-active" data-i18n="chart.view.path" data-view="path" role="tab" type="button">Đường vẽ</button>
+                  <button aria-selected="false" class="secondary-button" data-i18n="chart.view.chart" data-view="chart" role="tab" type="button">Biểu đồ</button>
+                </div>
+                <div class="preview-actions path-only">
                   <button aria-label="Thu nhỏ" class="secondary-button" id="zoom-out-btn" type="button" data-i18n="[aria-label]aria.zoomOut">−</button>
                   <button aria-label="Phóng to" class="secondary-button" id="zoom-in-btn" type="button" data-i18n="[aria-label]aria.zoomIn">+</button>
                   <button class="secondary-button" data-i18n="control.preview.fit" id="fit-preview-btn" type="button">Về toàn cảnh</button>
@@ -491,6 +496,31 @@
                 <span id="preview-time">0:00 / 0:00</span>
                 <button class="danger-button" data-i18n="control.gcode.cancelJob" hidden id="cancel-job-btn" type="button">Hủy tác vụ</button>
 
+              </div>
+
+              <div class="job-chart" id="job-chart-view" hidden>
+                <div class="job-chart-toolbar">
+                  <label for="chart-run"><span data-i18n="chart.run">Lần chạy</span>
+                    <select id="chart-run"></select></label>
+                  <label for="chart-compare"><span data-i18n="chart.compare">So với</span>
+                    <select id="chart-compare"></select></label>
+                  <button class="secondary-button" data-i18n="chart.refresh" id="chart-refresh-btn" type="button">Làm mới</button>
+                  <a class="secondary-button" data-i18n="chart.csv" download hidden id="chart-csv-link" href="#">Tải CSV</a>
+                  <button class="danger-button" data-i18n="chart.delete" id="chart-delete-btn" type="button">Xóa</button>
+                </div>
+                <p class="job-chart-notice" id="chart-notice" role="status" hidden></p>
+                <div class="job-chart-empty" data-i18n="chart.empty" id="chart-empty">Chưa có lần chạy nào được ghi. Chạy một tệp G-code (máy thật hoặc máy giả) là có số liệu ở đây.</div>
+                <div class="job-chart-plots" hidden id="chart-plots">
+                  <figure><figcaption data-i18n="chart.title.speed">Tốc độ thật (mm/phút). Đường xanh lá = tốc độ vẽ trung bình</figcaption>
+                    <canvas aria-label="Biểu đồ tốc độ" id="chart-speed"></canvas></figure>
+                  <figure><figcaption data-i18n="chart.title.queue">Hàng đợi lệnh trong máy (số khối). 0 khi đang chạy = đói lệnh (chấm đỏ)</figcaption>
+                    <canvas aria-label="Biểu đồ hàng đợi" id="chart-buffer"></canvas></figure>
+                  <figure><figcaption data-i18n="chart.title.pen">Độ cao bút Z (mm): mỗi vạch là một khoảng nhấc / hạ</figcaption>
+                    <canvas aria-label="Biểu đồ độ cao bút" id="chart-pen"></canvas></figure>
+                  <p class="job-chart-hover" id="chart-hover" data-i18n="chart.hoverHint">Rê chuột lên biểu đồ để xem số liệu từng lúc.</p>
+                </div>
+                <table class="job-chart-summary" hidden id="chart-summary"></table>
+                <p class="help-text" data-i18n="chart.help">Số liệu lấy mỗi lần máy báo trạng thái (~10 lần/giây). Số lần nhấc bút tính từ G-code, không phải từ mẫu. Hàng đợi chỉ có khi máy gửi Bf (lệnh $10=3).</p>
               </div>
 
               <div class="preview-canvas-container" id="preview-canvas-container">
@@ -1236,6 +1266,37 @@
                   <option data-i18n="common.status.on" value="on">Bật</option>
                 </select>
               </div>
+            </article>
+
+            <article class="panel" id="pin-panel">
+              <div class="panel-heading">
+                <div>
+                  <h2 data-i18n="settings.pin.title">PIN quản lý</h2>
+                  <p data-i18n="settings.pin.desc">PIN để đăng nhập quản lý (khách không có PIN chỉ xem). Đổi xong áp dụng ngay, các trình duyệt khác bị đăng xuất.</p>
+                </div>
+                <span class="panel-tag" id="pin-state">—</span>
+              </div>
+              <div class="form-grid form-grid-spaced">
+                <label for="pin-old" id="pin-old-label">
+                  <span data-i18n="settings.pin.old">PIN hiện tại</span>
+                  <input autocomplete="current-password" id="pin-old" maxlength="64" type="password"/>
+                </label>
+                <label for="pin-new">
+                  <span data-i18n="settings.pin.new">PIN mới</span>
+                  <input autocomplete="new-password" id="pin-new" maxlength="64" type="password"/>
+                </label>
+                <label for="pin-new2">
+                  <span data-i18n="settings.pin.new2">Nhập lại PIN mới</span>
+                  <input autocomplete="new-password" id="pin-new2" maxlength="64" type="password"/>
+                </label>
+              </div>
+              <div class="mc-actions">
+                <button class="primary-button" data-i18n="settings.pin.save" id="pin-save-btn" type="button">Đổi PIN</button>
+                <span class="mc-status" id="pin-status" role="status"></span>
+              </div>
+              <p class="help-text" data-i18n="settings.pin.help">
+                4–64 ký tự: chữ, số, ký hiệu; không khoảng trắng, không dấu tiếng Việt. Nên từ 6 ký tự, khó đoán. PIN lưu ở data/pin.txt trên máy chủ (không lên Git).
+              </p>
             </article>
 
             <details class="panel drawing-section storage-panel" id="storage-panel" open="">

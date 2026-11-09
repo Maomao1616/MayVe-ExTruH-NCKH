@@ -142,3 +142,9 @@ test("trackProgress không mất dấu khi giữa hai lần hỏi máy đi qua h
     assert.equal(trackProgress(segments, hit.index, 2520, 299, 0).x <= 252.0, true);
     assert.equal(trackProgress(segments, hit.index, 2520, 10, 0).index >= hit.index, true);
 });
+
+test("G-code nhấc thấp (Z2) vẫn là bút lên dù Z điều khiển là 5: ngưỡng theo Z xuống, không theo Z lên", () => {
+    const p = parse(["G90 G21", "G1 Z2 F3000", "G0 X10 Y10", "G1 Z0", "G1 X20 Y10 F1500", "G1 Z2", "G0 X30 Y30"]);
+    near(p.drawLength, 10);                        // chỉ nét Z0 tính là vẽ
+    near(p.travelLength, Math.hypot(10, 10) + Math.hypot(10, 20));
+});

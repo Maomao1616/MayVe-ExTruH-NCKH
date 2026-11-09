@@ -37,10 +37,10 @@
 | | Mở khóa chuyển động | máy thật mặc định **chỉ đọc**; bấm (kèm PIN nếu đặt) mới cho chạy, tự khóa sau 15 phút không dùng | (không gửi gì, chỉ mở cổng ở máy chủ) |
 | Vị trí | Tọa độ X, Y, Z; đèn công tắc X / Y | đèn sáng khi báo cáo có `Pn:X` / `Pn:Y` (đang đè công tắc hành trình) | |
 | | Zero X / Y / XY | đặt gốc làm việc tại chỗ bút đang đứng | `G10 L20 P1 X0 Y0` |
-| | Home X / Y / tất cả | chạy về công tắc hành trình (hỏi xác nhận). **Tự nâng bút trước** | `$J=G90 G21 Z3 F3000` rồi `$H` / `$HX` / `$HY` |
+| | Home X / Y / tất cả | chạy về công tắc hành trình (hỏi xác nhận). **Tự nâng bút trước** | `$J=G90 G21 Z5 F3000` rồi `$H` / `$HX` / `$HY` |
 | Di chuyển | Mũi tên, ô bước | jog theo bước đã chọn (tối đa 50 mm) | `$J=G91 G21 X10 F…` |
 | | Nút giữa | về gốc làm việc | `$J=G90 G21 X0 Y0 F…` |
-| Bút | Lên / Giữa / Xuống | Z3 / Z1,5 / Z0 (sửa ở Cài đặt → Cấu hình máy, mục App) | `$J=G90 G21 Z3 F3000` |
+| Bút | Lên / Giữa / Xuống | Z5 / Z1,5 / Z0 (sửa ở Cài đặt → Cấu hình máy, mục App). Z nhấc của G-code (mặc định 3) là giá trị khác, chỉnh ở cùng mục; nhấc của G-code vẫn hiện là "Lên" | `$J=G90 G21 Z5 F3000` |
 | Tệp G-code | Chọn tệp → **Xem trước** → tích xác nhận → **▶ Chạy** | phải xem trước trước khi chạy; đổi tệp là phải xem trước lại. Dòng bị cấm hiện đỏ kèm số dòng và lý do, khóa nút Chạy | gửi từng dòng |
 | | Hủy tác vụ | hộp thoại: Tiếp tục chạy / **Dừng êm** / **Dừng gấp** | xem mục 6 |
 | | −10 −1 100% +1 +10 | ghi đè tốc độ (10–200 %) | byte `0x90`…`0x94` |
@@ -136,7 +136,24 @@ hết dòng: chờ 2 báo cáo Idle MỚI liên tiếp → xong
 
 **Khi đang chạy tác vụ**, terminal chỉ gửi được `? ! ~` và các nút dừng. Lý do: mỗi dòng gửi thêm có một `ok` riêng, làm lệch việc đếm `ok` của tác vụ.
 
-### 5.3 Khung 2D bám theo bút (`views/preview.js`, `lib/gcode.js` `trackProgress`)
+### 5.3 Biểu đồ số liệu chạy máy (`views/jobchart.js`, `services/joblog.py`)
+Trong khung "Khung nhìn 2D" có nút chuyển **[Đường vẽ | Biểu đồ]** (chỉ quản lý thấy). Mỗi lần chạy tệp, backend ghi mỗi báo cáo trạng thái (~10 lần/giây) vào `data/job_logs/<giờ>-<số>.csv` + một tệp `.json` tóm tắt; giữ 30 lần gần nhất (và không quá 150 MB).
+
+| Cột CSV | Ý nghĩa |
+|---|---|
+| `t`, `state` | giây từ lúc bắt đầu, trạng thái máy (Run / Hold / Idle…) |
+| `x y z` | tọa độ làm việc |
+| `feed` | **tốc độ thật** (`FS:`, mm/phút) |
+| `bf_planner`, `bf_rx` | số khối trống trong hàng đợi chuyển động / bộ đệm nhận (`Bf:`) |
+| `sent`, `acked` | số dòng đã gửi / đã nhận `ok` |
+
+Giao diện vẽ ba biểu đồ dùng chung trục thời gian: **tốc độ thật**, **hàng đợi** (số khối đang có = tối đa − trống; **0 khi đang chạy = máy đói lệnh**, chấm đỏ) và **độ cao bút Z**. Rê chuột để đọc số từng lúc. Đang chạy thì tự làm mới mỗi 2 giây. Bảng tóm tắt: thời gian thật so với ước tính, số lần nhấc bút (đếm đoạn G0 trong G-code, không đếm từ mẫu vì mẫu thưa hơn một chu kỳ nhấc), % thời gian máy chạy / bút xuống, tốc độ vẽ trung bình, % thời gian đói lệnh. Chọn thêm một lần chạy khác ở ô "So với" thì có cột so sánh và % chênh, tô xanh / đỏ theo tốt hơn / xấu hơn.
+
+**Cần `$10=3`:** máy thật đang để `$10=1` nên không gửi `Bf:`; khi đó biểu đồ hàng đợi trống và có lời nhắc. Mở khóa chuyển động, gõ `$10=3` trong terminal (`$10` để xem), rồi chạy lại. Máy giả mặc định `$10=3`; gõ `$10=1` để giống máy thật.
+
+Số liệu kèm từ giao diện khi bấm Chạy: ước tính thời gian, quãng vẽ / di chuyển, số đoạn G0 (`client` trong `POST /api/jobs`). API: `GET /api/joblogs`, `GET /api/joblogs/{id}`, `GET /api/joblogs/{id}/csv`, `DELETE /api/joblogs/{id}` (đều cần quản lý). Lỗi ghi đĩa chỉ tắt nhật ký của lần chạy đó, không bao giờ làm hỏng việc gửi lệnh.
+
+### 5.4 Khung 2D bám theo bút (`views/preview.js`, `lib/gcode.js` `trackProgress`)
 Máy chỉ có thể đang ở trong vài chục dòng trước dòng đã nhận `ok` (planner 16 khối + bộ đệm nhận). Khung 2D tìm đoạn gần vị trí máy nhất trong khoảng từ (dòng đã nhận − 64) tới dòng đã nhận, không lùi so với lần trước. Nhờ vậy hỏi thưa hay mô phỏng chạy nhanh vẫn không mất dấu, cung tròn không bị gãy.
 
 ---
@@ -193,6 +210,7 @@ Vẽ chồng một đoạn ngắn thì vô hại; bỏ sót thì mất nét. Nê
 |---|---|
 | `frontend/js/views/control.js` | tab Điều khiển: trạng thái, mở khóa, jog, thanh bút 3 nấc, Zero, Home, tệp G-code, ghi đè tốc độ, tiến trình, hủy |
 | `frontend/js/views/preview.js` | khung 2D, vệt bút, đèn X / Y |
+| `frontend/js/views/jobchart.js` · `lib/chart.js` · `css/jobchart.css` | biểu đồ số liệu chạy máy (vẽ canvas · tính vạch trục, bảng so sánh) |
 | `frontend/js/views/terminal.js` | terminal và các nút an toàn ở đầu trang |
 | `frontend/js/views/dock.js` · `stores/macros.js` | macro và tệp nhanh |
 | `frontend/js/views/drafts.js` · `stores/draftstore.js` | hàng đợi công việc (bản thảo) |
@@ -202,4 +220,5 @@ Vẽ chồng một đoạn ngắn thì vô hại; bỏ sót thì mất nét. Nê
 | `backend/app/services/machine.py` | **bộ não**: kết nối, trạng thái, nhật ký, đoán Home, khóa chuyển động, dừng an toàn |
 | `backend/app/services/job.py` | làm sạch và chạy tệp G-code |
 | `backend/app/services/resume.py` | điểm dừng và tiếp tục |
+| `backend/app/services/joblog.py` | ghi / đọc / tóm tắt số liệu từng lần chạy (`data/job_logs/`) |
 | `backend/app/links/protocol.py` · `serial_link.py` · `sim_link.py` | đọc dòng FluidNC · cổng COM thật · máy giả |

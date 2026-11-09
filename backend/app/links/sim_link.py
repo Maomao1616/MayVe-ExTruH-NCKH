@@ -46,8 +46,11 @@ class SimLink(BaseLink):
 
     def __init__(self, travel=(285.0, 318.0, 5.0), rapid_mm_min=(6000.0, 6000.0, 3000.0),
                  planner_blocks: int = 16, rx_size: int = 128, speed: float = 1.0,
-                 must_home: bool = True, homing_time_s: float = 1.5) -> None:
+                 must_home: bool = True, homing_time_s: float = 1.5, report_mask: int = 3) -> None:
         super().__init__()
+        # `$10` (mặt nạ báo cáo trạng thái): bit 0 = MPos (không có = WPos), bit 1 = `Bf:`. Máy thật đang để 1
+        # (không có Bf); máy giả mặc định 3 để thử biểu đồ, gõ `$10=1` để giống máy thật.
+        self._report_mask = report_mask
         self._travel = travel
         self._rapid = rapid_mm_min
         self._planner_max = planner_blocks
@@ -246,7 +249,17 @@ class SimLink(BaseLink):
             self._emit("ok")
         elif text == "$$":
             for line in self.SETTINGS:
-                self._emit(line)
+                self._emit(f"$10={self._report_mask}" if line.startswith("$10=") else line)
+            self._emit("ok")
+        elif re.fullmatch(r"\$10(=\d+)?", text):
+            if "=" in text:
+                value = int(text.split("=", 1)[1])
+                if value > 255:
+                    self._error(3)
+                    return
+                self._report_mask = value
+            else:
+                self._emit(f"$10={self._report_mask}")
             self._emit("ok")
         elif text == "$G":
             dist = "G90" if self._absolute else "G91"
@@ -586,9 +599,15 @@ class SimLink(BaseLink):
     # --- báo cáo trạng thái ---------------------------------------------------
     def _status_line(self) -> str:
         state = f"Hold:{self._hold_sub}" if self._state == "Hold" else self._state
-        mpos = ",".join(f"{v:.3f}" for v in self._pos)
-        fields = [state, f"MPos:{mpos}", f"Bf:{self._planner_free()},{self._rx_size}",
-                  f"FS:{self._feed if self._current else 0:.0f},0"]
+        if self._report_mask & 1:
+            pos = ",".join(f"{v:.3f}" for v in self._pos)
+            fields = [state, f"MPos:{pos}"]
+        else:
+            pos = ",".join(f"{v - w:.3f}" for v, w in zip(self._pos, self._wco))
+            fields = [state, f"WPos:{pos}"]
+        if self._report_mask & 2:
+            fields.append(f"Bf:{self._planner_free()},{self._rx_size}")
+        fields.append(f"FS:{self._feed if self._current else 0:.0f},0")
         # Công tắc hành trình: thật chỉ bị đè lúc chạm khi Home; mô phỏng bằng 0,4 s cuối của Home.
         if self._state == "Home" and self._home_left <= self.PIN_TOUCH_S:
             fields.append(f"Pn:{self._home_axes}")

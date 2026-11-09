@@ -53,7 +53,7 @@ Người nhận: chuột phải zip → Properties → **Unblock** → giải n�
 | Bật | bấm icon. Server chạy ẩn, trình duyệt mở `http://<IP LAN>:8000` |
 | Tắt | không cần: đóng hết trang 10 phút thì tự tắt (đang vẽ thì chờ xong). Tắt ngay: `launcher\stop.vbs` |
 | Máy khác cùng mạng | mở đúng địa chỉ trình duyệt đang hiện. Đã đặt PIN quản lý thì máy khác vào là khách |
-| **Đặt PIN** | mở / tạo `data\pin.txt`, mỗi dòng một PIN: `admin=<số>` (quản lý), `unlock=<số>` (mở khóa chuyển động); `stop.vbs` rồi bật lại. Tệp này không lên Git, không vào bản đóng gói. **Đừng dùng số dễ đoán** khi cho người ngoài vào mạng |
+| **Đặt PIN** | mở / tạo `data\pin.txt`, dòng `admin=<PIN>` (chữ / số / ký hiệu, 4–64 ký tự, không khoảng trắng, không dấu tiếng Việt). Từ 09/11/2026 có thể **đổi ngay trong Cài đặt → PIN quản lý** (nhập PIN cũ + PIN mới hai lần; áp dụng ngay, các trình duyệt khác bị đăng xuất; chưa có PIN thì chỉ cần nhập PIN mới). PIN mở khóa chuyển động (`unlock=`) **không dùng**: không ghi dòng đó thì bấm mở khóa là mở luôn. Tệp này không lên Git, không vào bản đóng gói. **Đừng dùng số dễ đoán** khi cho người ngoài vào mạng |
 | Đổi icon | `launcher\icon.ico` phải là tệp .ico thật (đổi đuôi .png không hiện). Chuyển bằng Pillow rồi bấm lại `tao_bieu_tuong.vbs` |
 
 ## A5. Cập nhật bằng `Cap nhat.bat`
@@ -96,7 +96,7 @@ Ghi chú kỹ thuật: `start.ps1` đặt `EXTRUXY_ALLOWED_HOSTS=localhost,127.0
 ## B3. Đăng nhập quản lý ✅ (`app/auth.py`, `api/auth.py`, `core/auth.js`, `views/auth.js`)
 | Mục | Cách làm |
 |---|---|
-| PIN | biến `EXTRUXY_ADMIN_PIN` (bản mang đi: dòng `admin=` trong `data\pin.txt`). Khác với PIN mở khóa chuyển động |
+| PIN | dòng `admin=` trong `data/pin.txt` (máy chủ tự đọc; đổi ở Cài đặt), nếu không có thì biến `EXTRUXY_ADMIN_PIN`. Đăng nhập sai 5 lần khóa 60 giây, đổi PIN sai PIN cũ cũng tính vào bộ đếm đó |
 | So PIN | `secrets.compare_digest` (chống đoán theo thời gian) |
 | Phiên | mã ngẫu nhiên `secrets.token_urlsafe(32)` lưu trong RAM; cookie `HttpOnly`, `SameSite=Strict` (thêm `Secure` khi qua HTTPS); hết hạn 12 giờ |
 | Nhập sai | 5 lần liên tiếp → khóa đăng nhập 60 giây (cho mọi nguồn, vì qua tunnel mọi yêu cầu đều từ 127.0.0.1) |

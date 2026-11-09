@@ -16,6 +16,7 @@ Test tự động: máy chủ ~397 bài (`python -m pytest` trong `backend`), gi
 Mục tiêu trước mắt cho phần web điều khiển: chốt thông số chuẩn bằng bản in → đo thời gian thật → (nếu có) tab Beta → MiniPC + Docker + Cloudflare. Camera, nút cứng, ESP32 thêm lúc nào cũng được.
 
 ## 2. Đã xong gần đây
+- [x] 09/11: khổ giấy "Cả vùng máy"; tách Z (điều khiển Z5, G-code Z3); đổi PIN quản lý trên giao diện; biểu đồ số liệu chạy máy (nút [Đường vẽ / Biểu đồ] trong Khung nhìn 2D, ghi `data/job_logs/`); máy giả hiểu `$10`. **Chưa thử trên máy thật** (xem mục 3).
 - [x] 05/11: hướng trục X / Y trên giấy **đúng** (chủ dự án xác nhận).
 - [x] 03–04/11: thuật toán tô mới (mỗi mức một dải, khoảng cách theo nét thật, quay đầu nửa vòng tròn, xoắn ốc nối khe), viền cắt râu + khép vòng + làm phẳng màu, bộ mô phỏng mực `tools/ink_sim.py`.
 - [x] 03/11: Z nhấc 3, vẽ 5000, chờ 0,05 s, hạ bút 2000; Home tự nâng bút; khoảng cách nét theo nét thật 0,55 mm; bài thử 7.5.
@@ -25,6 +26,7 @@ Mục tiêu trước mắt cho phần web điều khiển: chốt thông số ch
 Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép mẫu ở 07 mục 8, điền số, gửi kèm ảnh.
 
 - [ ] Đặt `data\pin.txt` dòng `admin=…` bằng **PIN khó đoán** (chỉ PIN đăng nhập; không cần `unlock=`); vào bằng điện thoại xem có ra giao diện khách.
+- [ ] **Thử các việc mới (09/11/2026)** trên máy thật: (a) nút Bút lên / Home nâng tới Z5; tệp G-code nhấc Z3 vẫn chạy đúng; (b) Cài đặt → PIN quản lý: đổi PIN, đăng nhập lại bằng điện thoại; (c) Điều khiển → Khung 2D → **Biểu đồ**: chạy một tệp thật, xem tốc độ thật, hàng đợi, Z; (d) so sánh hai lần chạy.
 - [ ] Bật báo bộ đệm: mở khóa chuyển động → terminal gõ `$10` (xem giá trị), `$10=3`, rồi `?` xem dòng trạng thái có `|Bf:…|`. Tắt bật máy, gõ lại `$10` xem còn 3 không. Cần cho biểu đồ (mục 5 bước 2).
 - [ ] Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng.
 - [ ] Bài 7.4: chụp cận đo bề rộng nét ở 3000 / 5000 / 6000 → in lại tờ hiệu chỉnh ở tốc độ đã chốt → sửa `LINE_WIDTH_RATIO` nếu khác 1,375.
@@ -55,11 +57,11 @@ Kế hoạch chốt 09/11/2026: làm lần lượt **bước 1 → 6** (không c
 
 | Bước | Việc | Cỡ | Chi tiết |
 |---|---|---|---|
-| 1a | Đổi nhãn "Độ lệch góc (junction)" thành "Độ bo góc khi qua góc (junction)" + gợi ý 0,02–0,1 | S | dễ hiểu hơn |
-| 1b | Dọn: bỏ nhắc `project-export.json` trong `AI_START.md`, `.gitignore` thêm `*.gcode` ở gốc | S | tệp đã không còn dùng |
-| 1c | **Tách Z**: "Z bút lên (điều khiển)" = **5** cho nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog; "Z nhấc khi sinh G-code" = **3** (chỉnh 3 / 2 / 1,5 theo bản vẽ). Khung 2D đoán bút lên bằng "Z > Z xuống + 0,5" thay vì ngưỡng giữa | S–M | điều khiển tay nhấc cao cho chắc, chỉ G-code nhấc thấp cho nhanh (09 C4) |
-| 1d | **Đổi PIN đăng nhập** trên giao diện (Cài đặt): nhập PIN cũ + mới hai lần → ghi `data/pin.txt`, áp dụng ngay, đăng xuất phiên khác. Máy chủ tự đọc `pin.txt` (không chỉ qua launcher) để dùng được trên MiniPC. PIN có chữ được, dài tuỳ ý, tránh dấu tiếng Việt / khoảng trắng, nên ≥ 6 ký tự | S | PIN mở khóa chuyển động **không dùng** (không ghi `unlock=`) |
-| 2 | **Biểu đồ số liệu chạy máy**: mỗi báo cáo `?` khi chạy tệp ghi một dòng `data/job_logs/*.csv` (giờ, trạng thái, X Y Z, `FS:`, `Bf:`, số dòng đã nhận; giữ ~30 lần). Trong "Khung nhìn 2D" tab Điều khiển thêm nút chuyển **[Đường vẽ / Biểu đồ]**: tốc độ thật so với tốc độ đặt, bộ đệm (đói lệnh), Z; số tổng (thời gian thật / ước tính, % vẽ / di chuyển / nhấc bút); so sánh hai lần chạy; tải CSV. Tự vẽ bằng canvas (không thư viện ngoài, O8). Máy giả chỉ báo `Bf` khi `$10` có bit 2 (như máy thật); thiếu `Bf` thì nhắc gõ `$10=3` | M | mọi số đo sau dựa vào đây; quyết bước 7 (baud) |
+| 1a ✅ | Đổi nhãn "Độ lệch góc (junction)" thành "Độ bo góc khi qua góc (junction)" | S | xong 09/11/2026 (chưa thêm dòng gợi ý 0,02–0,1) |
+| 1b ✅ | Dọn: bỏ nhắc `project-export.json` trong `AI_START.md`, `.gitignore` thêm `*.gcode` ở gốc | S | tệp đã không còn dùng |
+| 1c ✅ | **Tách Z**: "Z bút lên (điều khiển)" = **5** cho nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog; "Z nhấc khi sinh G-code" = **3** (chỉnh 3 / 2 / 1,5 theo bản vẽ). Khung 2D đoán bút lên bằng "Z > Z xuống + 0,5" thay vì ngưỡng giữa | S–M | điều khiển tay nhấc cao cho chắc, chỉ G-code nhấc thấp cho nhanh (09 C4) |
+| 1d ✅ | **Đổi PIN đăng nhập** trên giao diện (Cài đặt): nhập PIN cũ + mới hai lần → ghi `data/pin.txt`, áp dụng ngay, đăng xuất phiên khác. Máy chủ tự đọc `pin.txt` (không chỉ qua launcher) để dùng được trên MiniPC. PIN có chữ được, dài tuỳ ý, tránh dấu tiếng Việt / khoảng trắng, nên ≥ 6 ký tự | S | PIN mở khóa chuyển động **không dùng** (không ghi `unlock=`) |
+| 2 ✅ | **Biểu đồ số liệu chạy máy**: mỗi báo cáo `?` khi chạy tệp ghi một dòng `data/job_logs/*.csv` (giờ, trạng thái, X Y Z, `FS:`, `Bf:`, số dòng đã nhận; giữ ~30 lần). Trong "Khung nhìn 2D" tab Điều khiển thêm nút chuyển **[Đường vẽ / Biểu đồ]**: tốc độ thật so với tốc độ đặt, bộ đệm (đói lệnh), Z; số tổng (thời gian thật / ước tính, % vẽ / di chuyển / nhấc bút); so sánh hai lần chạy; tải CSV. Tự vẽ bằng canvas (không thư viện ngoài, O8). Máy giả chỉ báo `Bf` khi `$10` có bit 2 (như máy thật); thiếu `Bf` thì nhắc gõ `$10=3` | M | mọi số đo sau dựa vào đây; quyết bước 7 (baud) |
 | 3 | **Mục "Tờ thử / hiệu chỉnh"** trong Cài đặt → Cấu hình máy, mỗi nút tạo một bản thảo: tờ hiệu chỉnh bút (đưa nút trở lại), **tờ nhấc bút mới** (mỗi hàng một tổ hợp Z nhấc / chờ / tốc độ hạ, đầu hàng có số chấm = số hàng; bảng hàng → thông số; nút "Dùng hàng N" ghi vào Z G-code / chờ / tốc độ hạ; thời gian thật từng hàng lấy từ biểu đồ), bộ thử 7.2 / 7.3 / 7.4 / 7.5 (từ `tools/make_test_gcode.py`). Thang xám vẫn ở tab vẽ | S–M | khỏi chạy lệnh tay; chọn mức nhấc bút bằng mắt |
 | 4 | **Nạp ảnh chưa tạo nét**: nạp chỉ hiện ảnh xám, cắt + chỉnh tông trên trình duyệt, bấm **"Tạo nét"** mới chạy máy chủ. Sau lần đầu, kéo khung lệch > 12 % vẫn tự tạo lại | S–M | MiniPC không tạo nét cho lần chỉnh dở; khớp luồng khách (09 P9 / O7) |
 | 5 | **SSE** cho trạng thái + terminal (lệnh giữ HTTP): luồng SSE nhìn số thứ tự trạng thái ~20 lần/s, ping ~20 s chống Cloudflare cắt; **giữ hỏi lặp làm dự phòng** (SSE hỏng thì tự quay về). Lưu ý trình duyệt chỉ mở 6 kết nối / địa chỉ | M | người xem qua Cloudflare đỡ trễ, đỡ tải (09 A6) |
@@ -76,6 +78,8 @@ Sau đó (cần đo, dây hoặc in thật):
 | 11 | ESP32-S3: bảng điều khiển không dây, đo điện năng, đo nhiệt (chọn 1–2) | L | phần IoT trình diễn được |
 | 12 | Tự hiệu chỉnh bằng ảnh chụp tờ mẫu (ArUco) | M | khỏi đo tay bề rộng nét |
 | 13 | Mã QR địa chỉ, `.devcontainer/` | S | chưa vội |
+
+**Việc nhỏ còn sót:** thêm dòng gợi ý "0,02–0,1; lớn hơn = qua góc nhanh hơn" dưới ô junction trong Cấu hình máy (bước 1a mới đổi nhãn). Chỉ có `$10` trên máy giả; máy thật bật `$10=3` bằng tay (mục 3).
 
 **Không làm:** hồ sơ tốc độ (Chữ / Tranh / Đẹp nhất). Mặc định luôn chạy nhanh nhất có thể và nhấc bút thấp nhất đủ dùng; khi cần thì chỉnh tay.
 

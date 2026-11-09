@@ -65,7 +65,7 @@ export function initDrawing() {
 
     // Hồ sơ máy (Cài đặt) đổi Z bút -> cập nhật hai ô Z và tạo lại G-code.
     window.addEventListener("extruxy:profile-changed", () => {
-        params.setPenZ(MACHINE.penUpZ, MACHINE.penDownZ);
+        params.setPenZ(MACHINE.gcodeUpZ, MACHINE.penDownZ);
         invalidateResult();
         scheduleGcode();
     });

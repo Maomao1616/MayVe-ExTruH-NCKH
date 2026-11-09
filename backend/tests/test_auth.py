@@ -175,3 +175,49 @@ def test_guest_logout_does_not_relock_motion(guest, pin_set, monkeypatch):
     guest.post("/api/auth/logout")
     assert locked == []
 
+
+
+# --- đổi PIN trên giao diện (data/pin.txt) ---------------------------------------------
+def test_change_pin_writes_file_keeps_unlock_line_and_applies_at_once(admin, tmp_path):
+    from app import paths
+    paths.data_file("pin.txt").parent.mkdir(parents=True, exist_ok=True)
+    paths.data_file("pin.txt").write_text("unlock=9999\nadmin=cu\n", encoding="utf-8")   # tệp thắng biến môi trường
+    r = admin.post("/api/auth/pin", json={"old_pin": "cu", "new_pin": "Moi-Pin_2026"})
+    assert r.status_code == 200 and r.json() == {"role": "admin", "pin_set": True}
+    text = paths.data_file("pin.txt").read_text(encoding="utf-8")
+    assert text.splitlines() == ["admin=Moi-Pin_2026", "unlock=9999"]
+    assert admin.get("/api/profile").status_code == 200                 # người đổi vẫn là quản lý (phiên mới)
+    other = TestClient(app)
+    assert code(other.post("/api/auth/login", json={"pin": "cu"})) == "bad_pin"
+    assert other.post("/api/auth/login", json={"pin": "Moi-Pin_2026"}).status_code == 200
+
+
+def test_change_pin_logs_out_other_sessions(admin, guest):
+    assert guest.post("/api/auth/login", json={"pin": PIN}).status_code == 200
+    assert admin.post("/api/auth/pin", json={"old_pin": PIN, "new_pin": "abcd1234"}).status_code == 200
+    assert code(guest.get("/api/profile")) == "auth_required"
+
+
+def test_change_pin_needs_the_current_pin_and_counts_failures(admin):
+    assert code(admin.post("/api/auth/pin", json={"old_pin": "sai", "new_pin": "abcd1234"})) == "bad_pin"
+    for _ in range(4):
+        admin.post("/api/auth/pin", json={"old_pin": "sai", "new_pin": "abcd1234"})
+    assert code(admin.post("/api/auth/pin", json={"old_pin": PIN, "new_pin": "abcd1234"})) == "login_locked"
+
+
+@pytest.mark.parametrize("bad", ["abc", "có dấu 123", "a b c d", "x" * 65, ""])
+def test_change_pin_rejects_bad_new_pin(admin, bad):
+    r = admin.post("/api/auth/pin", json={"old_pin": PIN, "new_pin": bad})
+    assert r.status_code in (400, 422)
+
+
+def test_guest_cannot_change_pin(guest, pin_set):
+    assert code(guest.post("/api/auth/pin", json={"old_pin": PIN, "new_pin": "abcd1234"})) == "auth_required"
+
+
+def test_first_pin_can_be_set_when_none_exists(guest, monkeypatch):
+    monkeypatch.delenv("EXTRUXY_ADMIN_PIN", raising=False)
+    assert guest.post("/api/auth/pin", json={"new_pin": "abcd1234"}).status_code == 200
+    assert guest.get("/api/auth/me").json() == {"role": "admin", "pin_set": True}
+    other = TestClient(app)
+    assert other.get("/api/auth/me").json()["role"] == "guest"

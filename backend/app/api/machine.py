@@ -4,8 +4,10 @@ from __future__ import annotations
 from typing import Annotated, Literal
 
 from fastapi import APIRouter
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from ..services import joblog
 from ..services.machine import ServiceError, machine
 
 router = APIRouter(prefix="/api")
@@ -22,8 +24,19 @@ class CommandRequest(BaseModel):
     line: str = Field(min_length=1, max_length=200)
 
 
+class JobClientInfo(BaseModel):
+    """Số liệu giao diện đã tính từ G-code (để so với số đo thật trong nhật ký chạy)."""
+    model_config = {"extra": "forbid"}
+    est_seconds: float | None = Field(None, ge=0, le=10_000_000, allow_inf_nan=False)
+    draw_mm: float | None = Field(None, ge=0, le=10_000_000, allow_inf_nan=False)
+    travel_mm: float | None = Field(None, ge=0, le=10_000_000, allow_inf_nan=False)
+    rapids: int | None = Field(None, ge=0, le=10_000_000)      # số đoạn G0 ~ số lần nhấc bút
+    lines: int | None = Field(None, ge=0, le=10_000_000)
+
+
 class JobStartRequest(BaseModel):
     name: str = Field("gcode", max_length=120)
+    client: JobClientInfo | None = None
     # Dòng thô có thể kèm chú thích dài; sau khi làm sạch vẫn bị giới hạn 200 ký tự (job.py).
     lines: list[Annotated[str, Field(max_length=4096)]] = Field(min_length=1, max_length=200_000)
 
@@ -106,7 +119,7 @@ def log(since: int = 0):
 
 @router.post("/jobs")
 def start_job(req: JobStartRequest):
-    return machine.start_job(req.name, req.lines)
+    return machine.start_job(req.name, req.lines, req.client.model_dump(exclude_none=True) if req.client else None)
 
 
 @router.get("/jobs/resume")
@@ -127,3 +140,33 @@ def resume_discard():
 @router.post("/jobs/cancel")
 def cancel_job(req: CancelRequest = CancelRequest()):
     return machine.cancel_job(req.mode, req.lift_z, req.lift_feed)
+
+
+# --- số liệu từng lần chạy (services/joblog.py) ---------------------------------------------
+def _joblog(call, *args, **kwargs):
+    try:
+        return call(*args, **kwargs)
+    except joblog.JobLogError as exc:
+        raise ServiceError(exc.code, exc.message, exc.status) from exc
+
+
+@router.get("/joblogs")
+def joblog_list():
+    return {"logs": joblog.list_logs(machine.joblog_current())}
+
+
+@router.get("/joblogs/{log_id}")
+def joblog_read(log_id: str, points: int = 3000):
+    return _joblog(joblog.read_log, log_id, points)
+
+
+@router.get("/joblogs/{log_id}/csv")
+def joblog_csv(log_id: str):
+    path = _joblog(joblog.csv_file, log_id)
+    return FileResponse(path, media_type="text/csv", filename=f"{log_id}.csv")
+
+
+@router.delete("/joblogs/{log_id}")
+def joblog_delete(log_id: str):
+    _joblog(joblog.delete_log, log_id, machine.joblog_current())
+    return {"ok": True}

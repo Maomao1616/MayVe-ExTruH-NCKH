@@ -50,7 +50,6 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 - `launcher/*.ps1`, `*.vbs`, `tools/dong_goi.ps1`: **ASCII không dấu** (PowerShell 5.1). Zip ghi tên tệp bằng `/`. Bản embeddable cần `..\backend` trong `python312._pth`.
 - Thử launcher / cập nhật trong thư mục tạm, **kiểm cổng 8000 trống trước** (`stop.ps1` tắt mọi thứ nghe 8000).
 - `str.replace` hàng loạt trên tệp Python có thể trượt im lặng: đọc lại đoạn đã sửa hoặc chạy test ngay.
-- `.vscode/project-export.json` là tệp sinh bởi tiện ích (~90 000 token đường dẫn): **đừng đọc**.
 
 ## 6. Xuất mã cho AI khác mà tiết kiệm token (`tools/export_context.py`, chỉ dùng thư viện chuẩn)
 ```

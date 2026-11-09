@@ -11,10 +11,11 @@ import { api } from "../core/api.js";
 import { isAdmin } from "../core/auth.js";
 import { MACHINE, PREFS } from "../core/config.js";
 import { subscribe, isConnected, isStale, firmwareLabel } from "../core/state.js";
-import { parseGcode, outOfRange, formatDuration } from "../lib/gcode.js";
+import { parseGcode, outOfRange, formatDuration, jobClientInfo } from "../lib/gcode.js";
 import { store, setFile, requestPreview, subscribeStore } from "../stores/jobstore.js";
 import { refreshDrafts } from "../stores/draftstore.js";
 import { initPreview } from "./preview.js";
+import { initJobChart } from "./jobchart.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -65,6 +66,7 @@ export function initControl() {
     initGcodePanel();
     initFeedOverride();
     initPreview();
+    initJobChart();
     initMotionLock();
 }
 
@@ -116,7 +118,8 @@ function penLevel(wpos) {
     const z = workZ(wpos);
     if (!Number.isFinite(z)) return null;
     return Object.keys(PEN_LEVELS)
-        .find((level) => Math.abs(z - MACHINE[PEN_LEVELS[level]]) <= PEN_TOL_MM) ?? null;
+        .find((level) => Math.abs(z - MACHINE[PEN_LEVELS[level]]) <= PEN_TOL_MM)
+        ?? (Math.abs(z - MACHINE.gcodeUpZ) <= PEN_TOL_MM ? "up" : null);   // nhấc của G-code cũng là "Lên"
 }
 
 function penText(wpos) {
@@ -501,7 +504,7 @@ function initGcodePanel() {
         if (!file) return;
         runButton.disabled = true;
         try {
-            await api.jobStart(file.name, file.parsed.lines);
+            await api.jobStart(file.name, file.parsed.lines, jobClientInfo(file.parsed));
             confirmBox.checked = false;              // lần chạy sau phải xác nhận lại
         } catch (error) {
             message({ error });

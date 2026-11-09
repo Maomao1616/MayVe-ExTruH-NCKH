@@ -43,6 +43,7 @@ export const api = {
     me: () => request("GET", "/auth/me"),
     login: (pin) => request("POST", "/auth/login", { pin }),
     logout: () => request("POST", "/auth/logout"),
+    changePin: (oldPin, newPin) => request("POST", "/auth/pin", { old_pin: oldPin, new_pin: newPin }),
     ports: () => request("GET", "/ports"),
     connection: () => request("GET", "/connection"),
     connect: (mode, port = null, baud = 115200, simSpeed = 1) =>
@@ -51,7 +52,11 @@ export const api = {
     status: () => request("GET", "/status"),
     command: (line) => request("POST", "/command", { line }),
     realtime: (action) => request("POST", "/realtime", { action }),
-    jobStart: (name, lines) => request("POST", "/jobs", { name, lines }),
+    jobStart: (name, lines, client = null) => request("POST", "/jobs", client ? { name, lines, client } : { name, lines }),
+    joblogs: () => request("GET", "/joblogs"),
+    joblog: (id, points = 3000) => request("GET", `/joblogs/${encodeURIComponent(id)}?points=${points}`),
+    joblogDelete: (id) => request("DELETE", `/joblogs/${encodeURIComponent(id)}`),
+    joblogCsvUrl: (id) => `${BASE}/joblogs/${encodeURIComponent(id)}/csv`,
     log: (since = 0) => request("GET", `/log?since=${since}`),
     motion: (on, pin = null) => request("POST", "/motion", { on, pin }),
     jobCancel: (mode = "reset", liftZ = null, liftFeed = 1000) =>

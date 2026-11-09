@@ -4,9 +4,11 @@
 //   3. initFirmwareInfo   Cấu hình máy: dòng Firmware
 //      initMachineConfig  Cấu hình máy: YAML trên mạch + hồ sơ phần mềm (backend -> MACHINE)
 //   4. initDraftSettings  Bản thảo: hạn mức (GET/PUT /api/draw/settings); thư mục cố định, xem ở views/storage.js
+//   5. initPinChange      PIN quản lý: đổi (POST /api/auth/pin), ghi data/pin.txt
 // Các view khác KHÔNG import file này: chúng đọc MACHINE / PREFS trong core/config.js.
 // (Ngôn ngữ và sáng/tối ở khối "Giao diện chung" do app.js lo vì phải chạy trước mọi view.)
 import { api, ApiError } from "../core/api.js";
+import { auth } from "../core/auth.js";
 import { MACHINE, PREFS } from "../core/config.js";
 import { t } from "../core/i18n.js";
 import { subscribe, setPollInterval, firmwareLabel, isConnected, isStale } from "../core/state.js";
@@ -18,6 +20,7 @@ export function initSettings() {
     initFirmwareInfo();
     initMachineConfig();
     initDraftSettings();
+    initPinChange();
 }
 
 /* ==================== 1. KẾT NỐI MÁY (sim / cổng COM) ==================== */
@@ -458,7 +461,7 @@ function initBehavior() {
 // nên control.js / preview.js tự dùng giá trị mới mà không cần import file này.
 
 const PROFILE_TO_MACHINE = {
-    pen_up_z: "penUpZ", pen_mid_z: "penMidZ", pen_down_z: "penDownZ",
+    pen_up_z: "penUpZ", pen_mid_z: "penMidZ", pen_down_z: "penDownZ", gcode_up_z: "gcodeUpZ",
     pen_feed: "penFeed", jog_max_step: "jogMaxStep"
 };
 let profileLimits = null;           // {khóa: [min, max]} do backend trả về
@@ -504,6 +507,7 @@ const APP_FIELDS = [
     { key: "pen_up_z", group: "z", unit: "mm" },
     { key: "pen_mid_z", group: "z", unit: "mm" },
     { key: "pen_down_z", group: "z", unit: "mm" },
+    { key: "gcode_up_z", group: "z", unit: "mm" },
     { key: "pen_feed", group: "z", unit: "mm/min" },
     { key: "jog_max_step", group: "general", unit: "mm" }
 ];
@@ -666,8 +670,9 @@ function initMachineConfig() {
     function validateEdits(boardEdits, appEdits) {
         const pen = { ...currentProfile(), ...appEdits };
         if (!(pen.pen_down_z < pen.pen_mid_z && pen.pen_mid_z < pen.pen_up_z)) return t("mc.err.penOrder");
+        if (!(pen.gcode_up_z > pen.pen_down_z)) return t("mc.err.gcodeUp");
         const zTravel = boardEdits[Z_TRAVEL] ?? board?.values?.[Z_TRAVEL];
-        if (Number.isFinite(zTravel) && (pen.pen_up_z > zTravel || pen.pen_down_z < 0)) {
+        if (Number.isFinite(zTravel) && (pen.pen_up_z > zTravel || pen.gcode_up_z > zTravel || pen.pen_down_z < 0)) {
             return `${t("mc.err.penTravel")} (0–${show(zTravel)} mm)`;
         }
         return null;
@@ -858,4 +863,39 @@ function initDraftSettings() {
     });
 
     load();
+}
+
+/* ==================== 5. PIN QUẢN LÝ ==================== */
+function initPinChange() {
+    const $ = (id) => document.getElementById(id);
+    const oldPin = $("pin-old"), newPin = $("pin-new"), newPin2 = $("pin-new2");
+    const save = $("pin-save-btn"), status = $("pin-status"), state = $("pin-state"), oldLabel = $("pin-old-label");
+    if (!oldPin || !newPin || !newPin2 || !save || !status) return;
+
+    const say = (text, kind = "") => {
+        status.textContent = text;
+        status.classList.toggle("is-error", kind === "error");
+        status.classList.toggle("is-success", kind === "success");
+    };
+    // Chưa đặt PIN: ai cũng là quản lý, không cần PIN hiện tại.
+    const showState = () => {
+        if (state) state.textContent = auth.pinSet ? t("settings.pin.set") : t("settings.pin.notSet");
+        if (oldLabel) oldLabel.hidden = !auth.pinSet;
+    };
+    showState();
+    window.addEventListener("extruxy:language-changed", showState);
+
+    save.addEventListener("click", async () => {
+        if (newPin.value !== newPin2.value) return say(t("settings.pin.mismatch"), "error");
+        save.disabled = true;
+        try {
+            await api.changePin(oldPin.value, newPin.value);
+            say(t("settings.pin.done"), "success");
+            setTimeout(() => window.location.reload(), 900);     // phiên mới đã được cấp: tải lại cho mọi view
+        } catch (error) {
+            const key = error instanceof ApiError ? `auth.error.${error.code}` : "";
+            say(key && t(key) !== key ? t(key) : String(error.message ?? error), "error");
+            save.disabled = false;
+        }
+    });
 }

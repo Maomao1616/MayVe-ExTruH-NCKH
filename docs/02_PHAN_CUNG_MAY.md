@@ -55,7 +55,8 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 
 | Thông số | Giá trị | Trong phần mềm |
 |---|---|---|
-| Bút lên / giữa / xuống | **Z3 / Z1,5 / Z0** (từ 03/11/2026; trước đó Z5 / Z2,5) | Cài đặt → Cấu hình máy, mục App; mặc định ở `services/profile.py`, `frontend/js/core/config.js` |
+| Bút lên / giữa / xuống (điều khiển tay) | **Z5 / Z1,5 / Z0** (từ 09/11/2026: nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog dùng Z5 cho chắc) | Cài đặt → Cấu hình máy, mục App; mặc định ở `services/profile.py`, `frontend/js/core/config.js` |
+| Z nhấc khi **sinh G-code** | **Z3** (chỉnh 3 / 2 / 1,5 theo bản vẽ) | cùng mục App, ô "Z nhấc khi sinh G-code"; tab Tạo bản vẽ lấy làm mặc định cho ô Z |
 | Tốc độ nâng bút / hạ bút | 3000 / **2000** mm/min (hạ chậm hơn, đỡ nảy) | tab Tạo bản vẽ; `spec.py` |
 | Chờ sau nâng / sau hạ | **0,05 s** / 0,05 s | tab Tạo bản vẽ |
 | Tốc độ vẽ / di chuyển | **5000** / 6000 mm/min | tab Tạo bản vẽ |

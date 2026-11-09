@@ -59,6 +59,7 @@ class ProfileRequest(BaseModel):
     pen_up_z: Finite
     pen_mid_z: Finite
     pen_down_z: Finite
+    gcode_up_z: Finite = 3.0
     pen_feed: Finite
     jog_max_step: Finite
 

@@ -145,7 +145,7 @@ def test_config_routes_with_sim(client, tmp_path, monkeypatch):
 
 def test_profile_defaults_save_and_order_check(client, tmp_path):
     assert client.get("/api/profile").json()["profile"]["pen_mid_z"] == 1.5
-    body = {"pen_up_z": 4, "pen_mid_z": 2, "pen_down_z": 0, "pen_feed": 2000, "jog_max_step": 10}
+    body = {"pen_up_z": 4, "pen_mid_z": 2, "pen_down_z": 0, "gcode_up_z": 2.5, "pen_feed": 2000, "jog_max_step": 10}
     assert client.put("/api/profile", json=body).json()["profile"]["pen_up_z"] == 4.0
     assert client.get("/api/profile").json()["profile"]["jog_max_step"] == 10.0
     r = client.put("/api/profile", json={**body, "pen_mid_z": 5})
@@ -176,3 +176,12 @@ def test_backup_routes(client, tmp_path, monkeypatch):
     assert client.get("/api/machine/config/backups").json() == {"backups": []}
     r = client.get("/api/machine/config/backups/20261029-120000_ConfigNCKH-16.yaml")
     assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"
+
+
+def test_profile_gcode_lift_default_and_validation(client):
+    p = client.get("/api/profile").json()["profile"]
+    assert (p["pen_up_z"], p["gcode_up_z"]) == (5.0, 3.0)      # điều khiển nhấc 5, G-code nhấc 3
+    body = {"pen_up_z": 5, "pen_mid_z": 1.5, "pen_down_z": 0, "pen_feed": 3000, "jog_max_step": 50}
+    assert client.put("/api/profile", json=body).json()["profile"]["gcode_up_z"] == 3.0   # thiếu khóa: dùng mặc định
+    r = client.put("/api/profile", json={**body, "gcode_up_z": 0})
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param"

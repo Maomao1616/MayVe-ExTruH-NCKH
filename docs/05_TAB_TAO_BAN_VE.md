@@ -39,7 +39,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
 | Khổ giấy, lề, rộng / cao, căn giữa, lật, đảo thứ tự | bố trí; đổi là G-code tự tính lại sau 0,4 s. Khổ "Cả vùng máy" = hành trình máy, mặc định 285 × 318 mm (lề chỉnh ở ô Lề an toàn, mặc định 5) |
-| Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 5000 / 6000 / 3000 / 2000 mm/min, Z3 / Z0, chờ 0,05 s) |
+| Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 5000 / 6000 / 3000 / 2000 mm/min, Z3 / Z0 (ô Z nhấc lấy mặc định từ Cài đặt → "Z nhấc khi sinh G-code", không phải Z bút lên của điều khiển), chờ 0,05 s) |
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |
 | **Chuyển sang Điều khiển** | cần tích "Tôi đã kiểm tra…". Tự lưu bản thảo (không tạo trùng) rồi nạp vào tab Điều khiển. **Không tự chạy** |
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |

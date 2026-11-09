@@ -14,6 +14,11 @@ class LoginRequest(BaseModel):
     pin: str = Field(max_length=64)
 
 
+class ChangePinRequest(BaseModel):
+    old_pin: str = Field("", max_length=64)
+    new_pin: str = Field(max_length=64)
+
+
 def _role(request: Request) -> dict:
     return {"role": "admin" if auth.is_admin(request.cookies.get(COOKIE)) else "guest",
             "pin_set": auth.pin_set()}
@@ -27,6 +32,16 @@ def me(request: Request):
 @router.post("/login")
 def login(req: LoginRequest, request: Request, response: Response):
     token = auth.login(req.pin)
+    https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
+    response.set_cookie(COOKIE, token, max_age=SESSION_TTL_S, httponly=True, samesite="strict",
+                        secure=https, path="/")
+    return {"role": "admin", "pin_set": True}
+
+
+@router.post("/pin")
+def change_pin(req: ChangePinRequest, request: Request, response: Response):
+    """Đổi PIN quản lý (cần đang là quản lý: không nằm trong GUEST_ROUTES). Người đổi được cấp phiên mới."""
+    token = auth.change_pin(req.old_pin, req.new_pin)
     https = request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https"
     response.set_cookie(COOKIE, token, max_age=SESSION_TTL_S, httponly=True, samesite="strict",
                         secure=https, path="/")

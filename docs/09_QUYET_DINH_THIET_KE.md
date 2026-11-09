@@ -23,7 +23,7 @@
 | C1 | Jog, bút, Zero chỉ khi Idle; Home khi Idle / Alarm | an toàn | ✅ |
 | C2 | Jog dùng `$J=…` | chạy được khi chưa Home, hủy được ngay | ✅ |
 | C3 | Zero dùng `G10 L20 P1` | chuẩn FluidNC | ✅ |
-| C4 | Bút 3 nấc **Z3 / Z1,5 / Z0** (03/11/2026, trước là Z5 / Z2,5). **Sẽ tách (09/11/2026):** điều khiển tay (nút Bút lên, Home, hủy, jog) nhấc **Z5**; chỉ G-code sinh ra nhấc thấp (mặc định Z3, chỉnh 2 / 1,5) | nhấc 3 mm đủ khỏi giấy, nhanh hơn; điều khiển tay hiếm khi cần nhanh nên nhấc cao cho chắc | 🧪 chưa thử lâu trên giấy cong · ⏳ tách |
+| C4 | Bút 3 nấc **Z3 / Z1,5 / Z0** (03/11/2026, trước là Z5 / Z2,5). **Đã tách (09/11/2026):** điều khiển tay (nút Bút lên, Home, hủy, jog) nhấc **Z5**; chỉ G-code sinh ra nhấc thấp (mặc định Z3, chỉnh 2 / 1,5). Khung 2D coi bút xuống khi Z ≤ Z xuống + 0,5 mm (không dựa vào Z lên) | nhấc 3 mm đủ khỏi giấy, nhanh hơn; điều khiển tay hiếm khi cần nhanh nên nhấc cao cho chắc | 🧪 chưa thử lâu trên giấy cong · ✅ tách (máy giả) |
 | C5 | Gốc (0,0) trên trái, Y xuống; không lật khung 2D, không đảo trục Y | ✅ chủ dự án xác nhận hướng trục đúng 05/11/2026 | ✅ |
 | C6 | Nút Tạm dừng chỉ cho tác vụ; nút Hủy jog riêng | đúng bản chất firmware (Hold hủy jog, không resume được) | ✅ |
 | C7 | Cấu hình máy một panel: "Máy" (YAML trên mạch: Áp dụng vào RAM, Lưu vào mạch sau khi sao lưu) và "App" (hồ sơ phần mềm). Không cho sửa chân GPIO, kinematics | chỉnh thông số không cần WebUI / Wi-Fi | ✅ |
@@ -61,6 +61,7 @@
 | S2 | Macro lưu ở máy chủ | mọi trình duyệt thấy cùng bộ, sao lưu cùng dữ liệu | ✅ |
 | S3 | Xem thư mục dữ liệu qua giao diện, chỉ đọc + tải về | MiniPC không màn hình | ✅ |
 | S4 | Tệp nhanh = bản thảo đã ghim | | ✅ |
+| S10 | **Số liệu chạy máy** ghi ra `data/job_logs/*.csv` (tốc độ thật, hàng đợi `Bf:`, Z, dòng đã nhận), giữ 30 lần / 150 MB; ghi trong luồng đọc serial nhưng mọi lỗi đĩa chỉ tắt nhật ký đó. Biểu đồ tự vẽ bằng canvas, nằm trong Khung nhìn 2D (nút chuyển) | tab Công việc đã bỏ; cần số đo thật để quyết định baud, hệ số ước tính, so sánh thông số; không thư viện ngoài vì demo không có Internet | ✅ máy giả · ⏳ máy thật (`$10=3`) |
 | S5 | Không ghi nhật ký hệ thống ra tệp | log dài, khó đọc; điểm dừng + sao lưu đã đủ phục hồi | ✅ |
 | S6 | Nhập G-code có sẵn = một tệp một bản thảo, qua cùng bộ làm sạch | chạy lại, ghim tệp từ phần mềm khác | ✅ |
 | S8 | `data/` nằm ở gốc dự án | cập nhật chỉ thay `backend/` + `frontend/` | ✅ |

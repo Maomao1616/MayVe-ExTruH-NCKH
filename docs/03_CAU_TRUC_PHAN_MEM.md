@@ -94,7 +94,7 @@ Quy tắc: view **không** dùng view khác (trừ `control.js` dùng `preview.j
 | | `imageprep.js` | thu nhỏ ảnh trước khi gửi + công thức độ sáng (khớp `raster_in.py` / `tone.py`) |
 | | `drafts.js` | định dạng số liệu bản thảo |
 | stores | `jobstore.js` · `draftstore.js` · `macros.js` | tệp G-code đang nạp · danh sách bản thảo · macro |
-| views | `control.js`, `preview.js`, `terminal.js`, `header.js`, `dock.js` | tab Điều khiển và các khối chung |
+| views | `control.js`, `preview.js`, `jobchart.js`, `terminal.js`, `header.js`, `dock.js` | tab Điều khiển và các khối chung |
 | | `drawing.js` + `drawing/` (`params`, `canvas`, `crop`, `presets`, `tonepreview`) | tab Tạo bản vẽ |
 | | `drafts.js` | danh sách bản thảo (tab vẽ) + Hàng đợi (tab Điều khiển) |
 | | `settings.js`, `storage.js` | tab Cài đặt |
@@ -120,15 +120,16 @@ links/     nói chuyện với máy: serial thật (pyserial) hoặc máy giả
 | `auth.py` · `api/auth.py` | phân quyền: phiên quản lý bằng PIN (cookie ngẫu nhiên trong RAM, 12 giờ, sai 5 lần khóa 60 s), danh sách route cho khách `GUEST_ROUTES` |
 | `paths.py` | **một chỗ** quy định thư mục dữ liệu và 3 thư mục con |
 | `idle.py` | tự tắt server khi đóng hết trang 10 phút (chỉ bản mang đi) |
-| `api/machine.py` | `connect, status, command, realtime, log, jobs, jobs/cancel, jobs/resume, motion…` |
+| `api/machine.py` | `connect, status, command, realtime, log, jobs, jobs/cancel, jobs/resume, joblogs, motion…` |
 | `api/config.py` | cấu hình trên mạch, hồ sơ phần mềm |
 | `api/draw.py` | `/api/draw/*` của tab vẽ (không gọi máy) |
 | `api/storage.py` | macro, xem / tải thư mục dữ liệu |
 | `services/machine.py` | **bộ não**: kết nối, trạng thái, nhật ký, đoán Home, khóa chuyển động, dừng an toàn |
 | `services/job.py` | làm sạch G-code, gửi từng dòng chờ `ok` |
 | `services/resume.py` | điểm dừng, tiếp tục từ dòng an toàn |
+| `services/joblog.py` | số liệu từng lần chạy máy → `data/job_logs/*.csv` + tóm tắt (biểu đồ ở tab Điều khiển) |
 | `services/machine_config.py` | đọc / sửa / lưu YAML trên mạch (thư viện PyYAML), sao lưu |
-| `services/profile.py` | hồ sơ phần mềm (`data/profile.json`): Z bút, tốc độ bút, bước jog tối đa |
+| `services/profile.py` | hồ sơ phần mềm (`data/profile.json`): Z bút (điều khiển) và Z nhấc khi sinh G-code, tốc độ bút, bước jog tối đa |
 | `services/macros.py` · `services/storage.py` | macro trên đĩa · xem thư mục dữ liệu (chỉ đọc) |
 | `services/drawing/` | dây chuyền tab vẽ ([05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md) mục 9) |
 | `links/protocol.py` | đọc từng dòng máy gửi (trạng thái, `ok`, `error`, `ALARM`, `MSG`); lệnh nào là chỉ đọc; tên mã lỗi |
@@ -149,17 +150,18 @@ Gốc dữ liệu = `data/` ở thư mục gốc dự án (tự tạo, không l�
 | Bản thảo | `drafts/` | mỗi bản một thư mục: `meta.json`, `draw[-<n>-<màu>].gcode`, `preview.svg` |
 | Sao lưu cấu hình mạch | `config_backups/` | tạo trước mỗi lần "Lưu vào mạch" |
 | Macro | `macros/` | mỗi macro một tệp JSON |
-| Hồ sơ phần mềm | `profile.json` | Z bút, tốc độ bút, bước jog |
+| Hồ sơ phần mềm | `profile.json` | Z bút, Z nhấc G-code, tốc độ bút, bước jog |
+| Số liệu chạy máy | `job_logs/` | mỗi lần chạy một `.csv` + `.json`; giữ 30 lần gần nhất |
 | Hạn mức bản thảo | `draw_settings.json` | số bản, MB |
 | Điểm dừng tác vụ | `resume.json` | xóa khi tác vụ chạy trọn |
-| PIN | `pin.txt` | `admin=…`, `unlock=…` (bản mang đi đọc lúc bật) |
+| PIN | `pin.txt` | `admin=…` (PIN đăng nhập; **đổi được ở Cài đặt → PIN quản lý**, máy chủ tự đọc và áp dụng ngay). `unlock=…` không dùng (09/11/2026) |
 | Lỗi khởi động | `server-loi.txt` | chỉ bản mang đi |
 
 Nhật ký hệ thống **không ghi ra tệp** (chỉ nằm trong bộ nhớ, hiện ở terminal).
 
 | Biến môi trường (đều tùy chọn) | Tác dụng |
 |---|---|
-| `EXTRUXY_ADMIN_PIN` | PIN quản lý. Không đặt = ai vào cũng là quản lý |
+| `EXTRUXY_ADMIN_PIN` | PIN quản lý khi không có dòng `admin=` trong `data/pin.txt` (tệp thắng biến này). Không đặt cả hai = ai vào cũng là quản lý |
 | `EXTRUXY_UNLOCK_PIN` | PIN mở khóa chuyển động |
 | `EXTRUXY_ALLOW_MOTION=1` | mở khóa chuyển động cố định (máy thật mặc định chỉ đọc) |
 | `EXTRUXY_UNLOCK_MINUTES` | tự khóa lại sau chừng này phút (15; 0 = tắt) |

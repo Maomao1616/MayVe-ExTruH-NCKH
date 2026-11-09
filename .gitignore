@@ -8,3 +8,5 @@ export/
 # Python mang theo (embeddable + thu vien, vai tram MB) va ban cu do "Cap nhat.bat" cat lai
 /Python/
 /_ban_cu/
+# G-code thử / xuất ra ở gốc dự án (G-code thật nằm trong data/ hoặc export/)
+/*.gcode

@@ -6,7 +6,8 @@ export const MACHINE = {
     travelY: 318,        // mm 
     // Bút: giá trị mặc định; views/settings.js ghi đè bằng hồ sơ ở backend (Cài đặt → Cấu hình máy).
     travelZ: 5,          // mm, hành trình Z trong YAML (tab Tạo bản vẽ dùng để kiểm Z bút)
-    penUpZ: 3,           // Z3 = bút lên (đủ khỏi giấy, nhanh hơn Z5; hành trình Z thật là 5)
+    penUpZ: 5,           // Z bút lên khi ĐIỀU KHIỂN (nút Bút lên, Home, hủy, jog): cao cho chắc; hành trình Z thật là 5
+    gcodeUpZ: 3,         // Z nhấc mặc định khi SINH G-code (ô Z trong tab Tạo bản vẽ): thấp cho nhanh (3 / 2 / 1,5)
     penMidZ: 1.5,        // nấc giữa: bút lơ lửng sát giấy
     penDownZ: 0,         // Z0 = bút xuống
     penFeed: 3000,       // mm/phút

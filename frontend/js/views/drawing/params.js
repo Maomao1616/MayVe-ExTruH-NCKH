@@ -303,7 +303,7 @@ function restoreForm() {
 // `onChange(kind, id)` kind: "layout" (chỉ bố trí lại) | "import" (phải vector hóa lại) | "gcode" (chỉ tạo lại G-code)
 export function initParams(onChange) {
     restoreForm();
-    setPenZ(MACHINE.penUpZ, MACHINE.penDownZ);
+    setPenZ(MACHINE.gcodeUpZ, MACHINE.penDownZ);
     syncVisibility();
 
     const watch = (id, kind, eventName) => {

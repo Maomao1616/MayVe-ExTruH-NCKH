@@ -12,14 +12,16 @@ import threading
 from .. import paths
 
 DEFAULTS = {
-    "pen_up_z": 3.0,        # nhấc 3 mm là đủ khỏi giấy (bút hạ bằng trọng lực), nhanh hơn Z5; hành trình Z thật 5 mm
+    "pen_up_z": 5.0,        # Z bút lên khi ĐIỀU KHIỂN (nút Bút lên, Home tự nâng, hủy tác vụ, jog): nhấc cao cho chắc
     "pen_mid_z": 1.5,
     "pen_down_z": 0.0,
+    "gcode_up_z": 3.0,      # Z nhấc mặc định khi SINH G-code (tab Tạo bản vẽ); nhấc thấp thì nhanh hơn, chỉnh 3 / 2 / 1,5 theo bản vẽ
     "pen_feed": 3000.0,     # mm/phút, <= $112 (3000)
     "jog_max_step": 50.0,   # mm, bước jog lớn nhất được hiện
 }
 LIMITS = {
     "pen_up_z": (-100, 100), "pen_mid_z": (-100, 100), "pen_down_z": (-100, 100),
+    "gcode_up_z": (-100, 100),
     "pen_feed": (1, 30000), "jog_max_step": (0.1, 1000),
 }
 
@@ -44,6 +46,8 @@ def validate(data: dict) -> dict:
         out[key] = float(value)
     if not out["pen_down_z"] < out["pen_mid_z"] < out["pen_up_z"]:
         raise ProfileError("Z bút phải theo thứ tự: xuống < giữa < lên.")
+    if not out["gcode_up_z"] > out["pen_down_z"]:
+        raise ProfileError("Z nhấc khi sinh G-code phải cao hơn Z bút xuống.")
     return out
 
 
