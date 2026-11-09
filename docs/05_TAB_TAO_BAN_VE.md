@@ -30,11 +30,13 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 
 | Nút / ô | Làm gì |
 |---|---|
-| **Chọn tệp** | nạp ảnh hoặc SVG, tạo nét ngay (chạy nền, có thanh tiến trình) |
+| **Chọn tệp** | **ảnh**: chỉ hiện ảnh (cắt và chỉnh sáng / tối chạy ngay trong trình duyệt, máy chủ chưa làm gì); canvas trống cho tới khi bấm **Tạo nét**. **SVG**: nhẹ nên tạo nét ngay. Chọn tệp khác thì xóa nét của tệp trước |
+| **Gửi ảnh** (khách) | thay cho Tạo nét khi chưa đăng nhập: gửi ảnh + thông số cho chủ máy (xem 08 B4). Quản lý mở ảnh khách ở hộp thư "Ảnh khách gửi" |
+| **Tạo nét** | (chỉ ảnh) chạy xử lý ở máy chủ, nền, có thanh tiến trình. Sau lần đầu nút đổi tên thành **Tạo lại nét**. Khách (không đăng nhập) không bấm được |
 | **Hủy** (cạnh thanh tiến trình) | dừng việc tạo nét đang chạy |
 | **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Cận cảnh – Đồ vật / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
-| Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng = nạp lại như tệp mới |
+| Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
@@ -43,7 +45,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |
 | **Chuyển sang Điều khiển** | cần tích "Tôi đã kiểm tra…". Tự lưu bản thảo (không tạo trùng) rồi nạp vào tab Điều khiển. **Không tự chạy** |
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
-| **Ảnh thử preset (thang xám)** | nạp ảnh 11 bậc trắng → đen để in thử từng preset ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2) |
+| **Thang xám** (nay nằm ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang xám ở tab Tạo bản vẽ") | nạp ảnh 11 bậc trắng → đen để in thử từng preset ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2) |
 
 Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (chưa tính gia tốc), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
 
@@ -144,6 +146,8 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`. Trình duyệt dịch t
 
 | Route | Việc | Trả về |
 |---|---|---|
+| `POST /api/customer` (khách) · `GET /api/customer` · `GET /api/customer/{id}/image` · `POST …/seen` · `DELETE …` (quản lý) | ảnh khách gửi, xem [08_TRIEN_KHAI.md](08_TRIEN_KHAI.md) B4 | `{item}` / `{items, days}` |
+| `POST /api/draw/testsheet` | tờ thử máy thành bản thảo (`kind` = lift / lost / accel / speed / drag, kèm `options`); tờ nhấc bút trả thêm `rows` (hàng N ↔ Z nhấc, chờ, tốc độ hạ) | `{draft, rows?, warnings}` |
 | `GET /api/draw/schema` | tham số các nhóm, khổ giấy, bút, kiểu tô, giới hạn | `{papers, pens, params, styles, limits}` |
 | `POST /api/draw/import` | multipart `file` + `options` JSON; tự nhận SVG / ảnh (`/svg` là bí danh cũ) | `202 {task, state}` |
 | `GET /api/draw/tasks/{id}` | trạng thái tác vụ | `{state, step, progress 0..1, message, source?, warnings?, error?}` |

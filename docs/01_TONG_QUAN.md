@@ -52,7 +52,8 @@ Tạo bản vẽ  ──lưu──►  bản thảo (G-code + ảnh minh họa) 
 | | Khách (không đăng nhập) | Quản lý (nhập PIN) |
 |---|---|---|
 | Xem trạng thái máy, xem trước G-code, xem trước ảnh | ✔ | ✔ |
-| Tạo nét, lưu bản thảo, điều khiển máy, cấu hình | ✘ | ✔ |
+| **Gửi ảnh cho chủ máy** (cắt, khổ giấy, tông, kiểu nét mong muốn; chỉ xem trước ảnh xám) | ✔ | – |
+| Hộp thư "Ảnh khách gửi", tạo nét, lưu bản thảo, điều khiển máy, cấu hình | ✘ | ✔ |
 
 PIN đặt trong tệp `data\pin.txt` (không lên Git). Chưa đặt PIN thì ai vào cũng là quản lý. Chi tiết: [08_TRIEN_KHAI.md](08_TRIEN_KHAI.md) phần B.
 

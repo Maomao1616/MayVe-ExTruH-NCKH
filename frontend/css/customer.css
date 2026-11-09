@@ -1,0 +1,53 @@
+/* Ảnh khách gửi (views/customer.js). Chỉ dùng biến màu có sẵn ở tokens.css. */
+
+/* Khách: khung "Gửi ảnh". .guest-only (polish.css) mặc định ẩn, khách thấy dạng flex hàng: ở đây xếp cột. */
+.customer-send {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 12px;
+    border: 1px solid var(--accent-text);
+    border-radius: var(--radius-button);
+    background: var(--accent);
+}
+.customer-send h4 { margin: 0; font-size: 14px; color: var(--highlight); }
+.customer-send label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--text-muted); }
+.customer-send textarea { resize: vertical; min-height: 54px; }
+
+/* Quản lý: hộp thư. Khách không thấy; cũng không thấy "Thông số vẽ" (tốc độ, Z, chờ): khách không gửi được các số này. */
+body.role-guest #customer-inbox-panel,
+body.role-guest #drawing-gcode-params-panel { display: none; }
+.customer-inbox-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.customer-inbox-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.customer-item {
+    display: grid;
+    grid-template-columns: 64px 1fr auto;
+    gap: 10px;
+    align-items: start;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+}
+.customer-item.is-new { border-color: var(--accent-text); }
+.customer-item img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
+    background: var(--bg-elevated);
+}
+.customer-item-text { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.customer-item-text small { color: var(--text-muted); }
+.customer-item-text p { margin: 2px 0; font-size: 13px; overflow-wrap: anywhere; }
+.customer-item-actions { display: flex; flex-direction: column; gap: 6px; }
+.customer-item-actions button { padding: 2px 12px; height: auto; }
+.customer-item.is-new .customer-item-text strong::after {
+    content: " ●";
+    color: var(--accent-text);
+}
+
+@media (max-width: 700px) {
+    .customer-item { grid-template-columns: 48px 1fr; }
+    .customer-item img { width: 48px; height: 48px; }
+    .customer-item-actions { grid-column: 1 / -1; flex-direction: row; }
+}

@@ -5,10 +5,11 @@
 //      initMachineConfig  Cấu hình máy: YAML trên mạch + hồ sơ phần mềm (backend -> MACHINE)
 //   4. initDraftSettings  Bản thảo: hạn mức (GET/PUT /api/draw/settings); thư mục cố định, xem ở views/storage.js
 //   5. initPinChange      PIN quản lý: đổi (POST /api/auth/pin), ghi data/pin.txt
+//   6. initTestSheets     Tờ thử / hiệu chỉnh: tờ nhấc bút (chọn hàng → ghi Z / chờ / tốc độ hạ), tờ hiệu chỉnh bút, bài 7.2–7.5
 // Các view khác KHÔNG import file này: chúng đọc MACHINE / PREFS trong core/config.js.
 // (Ngôn ngữ và sáng/tối ở khối "Giao diện chung" do app.js lo vì phải chạy trước mọi view.)
 import { api, ApiError } from "../core/api.js";
-import { auth } from "../core/auth.js";
+import { auth, isAdmin } from "../core/auth.js";
 import { MACHINE, PREFS } from "../core/config.js";
 import { t } from "../core/i18n.js";
 import { subscribe, setPollInterval, firmwareLabel, isConnected, isStale } from "../core/state.js";
@@ -21,6 +22,7 @@ export function initSettings() {
     initMachineConfig();
     initDraftSettings();
     initPinChange();
+    initTestSheets();
 }
 
 /* ==================== 1. KẾT NỐI MÁY (sim / cổng COM) ==================== */
@@ -480,6 +482,7 @@ function applyProfile(result) {
 
 // Backend chưa chạy: giữ giá trị mặc định trong config.js.
 async function loadProfile() {
+    if (!isAdmin()) return;                  // hồ sơ máy chỉ dành cho quản lý: khách gọi sẽ bị 401
     try {
         applyProfile(await api.profile());
     } catch (error) {
@@ -819,6 +822,7 @@ function initMachineConfig() {
 
 /* ==================== 4. BẢN THẢO (thư mục lưu + hạn mức) ==================== */
 function initDraftSettings() {
+    const $ = (id) => document.getElementById(id);
     const count = document.getElementById("draft-max-count");
     const size = document.getElementById("draft-max-mb");
     const save = document.getElementById("draft-settings-save-btn");
@@ -829,6 +833,7 @@ function initDraftSettings() {
     const show = (result) => {
         count.value = String(result.settings.max_count);
         size.value = String(result.settings.max_mb);
+        if ($("customer-days")) $("customer-days").value = String(result.settings.customer_days ?? 5);
         if (folder) { folder.textContent = result.folder; folder.title = result.folder; }
     };
     const say = (key, kind = "") => {
@@ -847,7 +852,7 @@ function initDraftSettings() {
         save.disabled = true;
         try {
             show(await api.drawSettingsSave({
-                max_count: Number(count.value), max_mb: Number(size.value)
+                max_count: Number(count.value), max_mb: Number(size.value), customer_days: Number($("customer-days")?.value || 5)
             }));
             say("settings.drafts.saved", "success");
             refreshDrafts();                          // đổi thư mục: danh sách bản thảo ở hai tab đọc lại
@@ -914,4 +919,164 @@ function initPinChange() {
             save.disabled = false;
         }
     });
+}
+
+/* ==================== 6. TỜ THỬ / HIỆU CHỈNH ==================== */
+// Mỗi nút tạo một bản thảo (POST /api/draw/testsheet, backend services/drawing/testsheets.py). Tờ nhấc bút trả thêm bảng
+// hàng N ↔ (Z nhấc, chờ, tốc độ hạ); "Dùng hàng N" ghi Z nhấc vào hồ sơ (gcode_up_z) và chờ / tốc độ hạ vào ô tab Tạo bản vẽ.
+const SHEET_KEY = "extruxy-liftsheet-v1";
+const LIFT_MAX_ROWS = 24;                       // = testgcode.LIFT_MAX_ROWS
+
+function initTestSheets() {
+    const $ = (id) => document.getElementById(id);
+    const panel = $("testsheet-panel");
+    if (!panel) return;
+    const status = $("sheet-status");
+    const say = (text, kind = "") => {
+        status.textContent = text;
+        status.classList.toggle("is-error", kind === "error");
+        status.classList.toggle("is-success", kind === "success");
+    };
+    const errorText = (error) => {
+        const key = error instanceof ApiError ? `sheet.error.${error.code}` : "";
+        if (key && t(key) !== key) return t(key);
+        return error instanceof ApiError && error.message ? error.message : String(error?.message ?? error);
+    };
+
+    const machine = () => ({ work_w: MACHINE.travelX, work_h: MACHINE.travelY, z_travel: MACHINE.travelZ, rapid_feed: MACHINE.rapidFeed });
+    const gcode = () => {
+        const num = (id, fallback) => { const v = Number($(id)?.value); return Number.isFinite(v) && v > 0 ? v : fallback; };
+        return { pen_up_z: MACHINE.gcodeUpZ, pen_down_z: MACHINE.penDownZ, pen_feed: MACHINE.penFeed,
+                 draw_feed: num("draw-feed", 5000), pen_down_feed: num("pen-down-feed", 2000) };
+    };
+    const group = (name) => [...panel.querySelectorAll(`[data-sheet-group="${name}"]:checked`)].map((e) => Number(e.value));
+
+    async function create(kind, options, button) {
+        button.disabled = true;
+        say(t("sheet.creating"));
+        try {
+            const result = await api.drawTestSheet({ kind, machine: machine(), gcode: gcode(), options });
+            refreshDrafts();
+            say(t("sheet.created").replace("{name}", result.draft?.name ?? ""), "success");
+            return result;
+        } catch (error) {
+            say(errorText(error), "error");
+            return null;
+        } finally {
+            button.disabled = false;
+            updateCount();
+        }
+    }
+
+    /* --- tờ nhấc bút --- */
+    const liftBtn = $("sheet-lift-btn");
+    const count = $("sheet-lift-count");
+    function updateCount() {
+        const rows = group("ups").length * group("delays").length * group("down_feeds").length;
+        count.textContent = t("sheet.lift.count").replace("{n}", String(rows)).replace("{max}", String(LIFT_MAX_ROWS));
+        count.classList.toggle("is-error", rows === 0 || rows > LIFT_MAX_ROWS);
+        liftBtn.disabled = rows === 0 || rows > LIFT_MAX_ROWS;
+    }
+    panel.addEventListener("change", (event) => { if (event.target.matches("[data-sheet-group]")) updateCount(); });
+    window.addEventListener("extruxy:language-changed", () => { updateCount(); renderRows(); });
+    updateCount();
+
+    liftBtn.addEventListener("click", async () => {
+        const result = await create("lift", { ups: group("ups"), delays: group("delays"), down_feeds: group("down_feeds") }, liftBtn);
+        if (!result?.rows) return;
+        saved = { name: result.draft?.name ?? "", created: Date.now(), rows: result.rows, used: null };
+        persist();
+        renderRows();
+    });
+
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(SHEET_KEY) ?? "null"); } catch { /* hỏng: bỏ */ }
+    const persist = () => { try { localStorage.setItem(SHEET_KEY, JSON.stringify(saved)); } catch { /* bị chặn */ } };
+
+    const fmt = (v) => String(Number(v)).replace(".", t("sheet.decimal"));
+    function renderRows() {
+        const box = $("sheet-lift-result");
+        if (!saved?.rows?.length) { box.hidden = true; return; }
+        box.hidden = false;
+        $("sheet-lift-result-title").textContent = `${saved.name} · ${new Date(saved.created).toLocaleString()}`;
+        const table = $("sheet-lift-table");
+        const head = document.createElement("tr");
+        for (const key of ["sheet.col.row", "sheet.col.up", "sheet.col.delay", "sheet.col.downFeed", "sheet.col.est", ""]) {
+            const th = document.createElement("th");
+            th.textContent = key ? t(key) : "";
+            head.append(th);
+        }
+        const body = saved.rows.map((row) => {
+            const tr = document.createElement("tr");
+            tr.classList.toggle("is-used", saved.used === row.n);
+            const cells = [row.n, `Z${fmt(row.up)}`, `${fmt(row.delay)} s`, fmt(row.down_feed), `${row.est_s.toFixed(1)} s`];
+            for (const text of cells) { const td = document.createElement("td"); td.textContent = String(text); tr.append(td); }
+            const action = document.createElement("td");
+            const use = document.createElement("button");
+            use.type = "button";
+            use.className = "secondary-button sheet-use";
+            use.textContent = saved.used === row.n ? t("sheet.used") : t("sheet.use");
+            use.addEventListener("click", () => useRow(row, use));
+            action.append(use);
+            tr.append(action);
+            return tr;
+        });
+        table.replaceChildren(head, ...body);
+    }
+
+    async function useRow(row, button) {
+        button.disabled = true;
+        try {
+            await saveProfile({ gcode_up_z: row.up });
+            window.dispatchEvent(new CustomEvent("extruxy:gcode-timing", { detail: { delay: row.delay, downFeed: row.down_feed } }));
+            saved.used = row.n;
+            persist();
+            renderRows();
+            say(t("sheet.usedDone").replace("{n}", String(row.n)).replace("{up}", fmt(row.up)).replace("{delay}", fmt(row.delay))
+                .replace("{feed}", fmt(row.down_feed)), "success");
+        } catch (error) {
+            say(errorText(error), "error");
+            button.disabled = false;
+        }
+    }
+    renderRows();
+
+    /* --- tờ hiệu chỉnh bút + bộ thử máy --- */
+    const penButton = $("sheet-pen-btn");
+    penButton.addEventListener("click", async () => {
+        const width = Number($("sheet-pen-width").value);
+        if (!(width >= 0.1 && width <= 2)) return say(t("sheet.error.pen"), "error");
+        penButton.disabled = true;           // (không dùng event.currentTarget: sau await nó là null)
+        try {
+            const body = { machine: machine(), gcode: gcode(), pen_width_mm: width, paper: $("sheet-pen-paper").value };
+            const result = await api.drawCalibration(body);
+            refreshDrafts();
+            say(t("sheet.created").replace("{name}", result.draft?.name ?? ""), "success");
+        } catch (error) {
+            say(errorText(error), "error");
+        } finally {
+            penButton.disabled = false;
+        }
+    });
+
+    // Thang xám nạp ở tab Tạo bản vẽ (cần đi qua preset): chuyển tab rồi nhờ drawing.js nạp ảnh.
+    $("sheet-tone-btn").addEventListener("click", () => {
+        document.getElementById("tab-drawing")?.click();
+        window.dispatchEvent(new CustomEvent("extruxy:tone-ramp", { detail: { paper: $("sheet-tone-paper").value } }));
+    });
+
+    for (const button of panel.querySelectorAll("[data-sheet-kind]")) {
+        button.addEventListener("click", () => {
+            const kind = button.dataset.sheetKind;
+            let options = {};
+            if (kind === "speed") {
+                const speeds = $("sheet-speeds").value.split(/[,;\s]+/).filter(Boolean).map(Number);
+                if (!speeds.length || speeds.some((v) => !Number.isFinite(v))) return say(t("sheet.error.speeds"), "error");
+                options = { speeds };
+            } else if (kind === "drag") {
+                options = { delay: Number($("sheet-drag-delay").value) };
+            }
+            create(kind, options, button);
+        });
+    }
 }

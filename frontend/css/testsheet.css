@@ -1,0 +1,70 @@
+/* Tờ thử / hiệu chỉnh (Cài đặt, views/settings.js initTestSheets). Chỉ dùng biến màu có sẵn ở tokens.css. */
+.testsheet-panel .sheet-block {
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+}
+.testsheet-panel .sheet-block:first-of-type { border-top: 0; }
+.testsheet-panel h3 {
+    margin: 0 0 4px;
+    font-size: 15px;
+    color: var(--highlight);
+}
+.sheet-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 10px 0;
+}
+.sheet-options fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin: 0;
+    padding: 8px 12px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    min-width: 180px;
+}
+.sheet-options legend {
+    padding: 0 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.sheet-count { font-size: 13px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.sheet-count.is-error { color: var(--danger); }
+.sheet-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.sheet-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+
+.sheet-result { margin-top: 12px; }
+.sheet-result-title { margin: 0 0 6px; font-size: 13px; color: var(--text-muted); }
+.sheet-table-wrap { overflow-x: auto; }
+.sheet-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+.sheet-table th, .sheet-table td {
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    white-space: nowrap;
+}
+.sheet-table th { color: var(--text-muted); font-weight: 600; }
+.sheet-table th:first-child, .sheet-table td:first-child { text-align: left; }
+.sheet-table tr.is-used td { background: var(--accent); color: var(--accent-text); }
+.sheet-use { padding: 2px 12px; height: auto; }
+
+/* hàng nút + ô nhập: dồn về bên trái, thẳng đáy (mặc định .mc-actions dồn về phải) */
+.testsheet-panel .mc-actions {
+    justify-content: flex-start;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+}

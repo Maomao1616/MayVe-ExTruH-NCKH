@@ -16,7 +16,7 @@
 - Tệp G-code thử có sẵn: `python tools/make_test_gcode.py` ghi vào `export\test-gcode\` (không lên Git). Nạp ở tab Điều khiển → Xem trước → Chạy. **Mỗi bài một tờ giấy mới.**
 
 ## 1. Bề rộng nét thật: tờ mẫu hiệu chỉnh bút
-Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và **8 dải gạch** cách nhau 0,8 / 1 / 1,25 / 1,5 / 2 / 2,5 / 3 / 4 × cỡ bút. Nút trên giao diện đã bỏ; cần in lại thì gọi `POST /api/draw/calibration` ở `http://127.0.0.1:8000/docs` (gửi `pen_width_mm`).
+Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và **8 dải gạch** có khoảng cách dòng bằng 0,8 / 1 / 1,25 / 1,5 / 2 / 2,5 / 3 / 4 **lần cỡ bút** (số nhân, không phải mm; bút 0,4 mm thì 0,32 / 0,40 / 0,50 / 0,60 / 0,80 / 1,00 / 1,20 / 1,60 mm). Tạo tờ này ở Cài đặt → **Tờ thử / hiệu chỉnh** → "Tạo tờ hiệu chỉnh bút" (chọn khổ **A5** hoặc **A6**; A6 gọn hơn: dải rộng 95 mm, thước 80 mm, vừa lề 5 mm của A6) (hoặc gọi `POST /api/draw/calibration`, gửi `pen_width_mm`).
 
 | Xem gì | Kết luận |
 |---|---|
@@ -31,7 +31,7 @@ Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và
 ## 2. Thang đậm nhạt: ảnh thử preset (thang xám)
 Chỉ làm **một lần cho mỗi bút + loại giấy**, để chốt số cho preset.
 
-1. Tab Tạo bản vẽ → **"Ảnh thử preset (thang xám)"**: nạp ảnh 11 bậc (0, 10 … 100 % đen) + một dải chuyển liền.
+1. Cài đặt → **Tờ thử / hiệu chỉnh** → chọn khổ giấy (A6 / A5 / A4, hoặc giữ khổ đang chọn) → **"Mở ảnh thang xám ở tab Tạo bản vẽ"** (tự chuyển sang tab vẽ, đặt khổ giấy, xoay 90° cho ảnh to hơn rồi nạp; sau đó bấm Tạo nét): nạp ảnh 11 bậc (0, 10 … 100 % đen) + một dải chuyển liền.
 2. Chọn preset **Chân dung** → chờ tạo nét → **Lưu bản thảo** (tên tự thành "Thang xám · Chân dung") → vẽ.
 3. Làm tương tự với **Phong cảnh** và **Cận cảnh**. Ba tờ là đủ (Ảnh 2D và Schematic chỉ vẽ viền, thang xám không nói lên gì).
 4. Nhìn từng tờ, sửa đúng preset đó theo bảng dưới.
@@ -84,7 +84,8 @@ Sau mục 1–2, vẽ mỗi preset bằng một ảnh thật đúng loại (A5).
 Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 - **Thông số máy** (gia tốc, `junction_deviation_mm`, tốc độ tối đa): Cài đặt → Cấu hình máy → Áp dụng (chỉ RAM). Chốt được rồi mới Lưu vào mạch.
 - **Thông số G-code** (chờ, tốc độ vẽ / di chuyển / bút): tab Tạo bản vẽ. **Z bút**: Cài đặt → Cấu hình máy, mục App.
-- Tệp có sẵn: `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z2 / Z1.5`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve` (3000 / 4000 / 5000 / 6000), `7.5-keo-vet-cho-0.05s / 0.10s`. Mặc định Z 3 / 0, nâng 3000, hạ 2000, vẽ 5000; đổi bằng `--up`, `--down`, `--down-feed`, `--draw-feed`.
+- **Tạo tờ thử bằng giao diện (từ 09/11/2026):** Cài đặt → **Tờ thử / hiệu chỉnh**. Nút **Tạo tờ nhấc bút** (chọn Z nhấc 1 / 1,5 / 2 / 3 / 5, chờ, tốc độ hạ; mỗi hàng một tổ hợp, hàng k có k chấm ở đầu) cho ra bảng hàng ↔ thông số; chạy tờ trên giấy, chọn hàng đẹp nhất, bấm **Dùng** thì Z nhấc ghi vào hồ sơ và chờ / tốc độ hạ vào ô tab Tạo bản vẽ. Có sẵn cả nút tờ hiệu chỉnh bút và bài 7.2 / 7.3 / 7.4 / 7.5; tất cả thành bản thảo trong Hàng đợi (tab Điều khiển).
+- Tệp có sẵn (hoặc sinh tay bằng `tools/make_test_gcode.py`): `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z2 / Z1.5`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve` (3000 / 4000 / 5000 / 6000), `7.5-keo-vet-cho-0.05s / 0.10s`. Mặc định Z 3 / 0, nâng 3000, hạ 2000, vẽ 5000; đổi bằng `--up`, `--down`, `--down-feed`, `--draw-feed`.
 
 | # | Bài | Cách làm | Nhìn gì | Tình trạng |
 |---|---|---|---|---|

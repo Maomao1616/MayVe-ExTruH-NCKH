@@ -76,7 +76,7 @@ Ví dụ bấm mũi tên phải (jog X +10 mm):
  links/protocol.py     classify_line: phân loại dòng nhận về (status / ok / error / ALARM / MSG)
  services/machine.py   _on_line: cập nhật trạng thái, đếm ok, ghi nhật ký
         │
-[Trình duyệt]  core/state.js hỏi GET /api/status mỗi 100 ms → views vẽ lại tọa độ
+[Trình duyệt]  core/state.js nhận luồng SSE /api/events (dự phòng: hỏi GET /api/status mỗi 100 ms) → views vẽ lại tọa độ
 ```
 
 Ba quy tắc rút ra từ sơ đồ:
@@ -96,12 +96,14 @@ Ba quy tắc rút ra từ sơ đồ:
 | FluidNC | trả một dòng `<Idle\|MPos:10.000,20.000,3.000\|Bf:15,127\|FS:0,0\|Pn:X\|WCO:…>` | mỗi lần hỏi |
 | `protocol.py` | tách trạng thái, MPos / WPos, WCO, bộ đệm `Bf`, tốc độ `FS`, công tắc `Pn`, ghi đè `Ov` | |
 | `_update_status` | đổi MPos ↔ WPos bằng WCO (WPos = MPos − WCO), tăng số thứ tự báo cáo, ghi giờ | |
-| Trình duyệt (`core/state.js`) | `GET /api/status` | 100 ms |
-| | `GET /api/log?since=` (terminal) | 300 ms–1 s (Cài đặt → Hoạt động) |
+| Máy chủ (`api/events.py`) | **đẩy** qua một kết nối SSE `GET /api/events?since=`: sự kiện `status` (nội dung như `/api/status`) khi đổi, ít nhất mỗi 2 s; sự kiện `log` (chỉ quản lý) khi có dòng nhật ký mới | nhìn 10 lần/giây |
+| Trình duyệt (`core/state.js`) | nhận SSE; **dự phòng** khi SSE im quá 5 s / chưa nối được / tab ẩn: `GET /api/status` | 100 ms |
+| | dự phòng: `GET /api/log?since=` (terminal) | 300 ms–1 s (Cài đặt → Hoạt động) |
 
 - **MPos** = vị trí theo máy (tính từ công tắc hành trình). **WPos** = vị trí làm việc (tính từ gốc Zero). **WCO** = độ lệch giữa hai cái.
 - **Số thứ tự báo cáo** (`_status_seq`) tăng mãi. Khi cần chờ "máy đã dừng chưa", mã chỉ tin báo cáo có số lớn hơn mốc lấy **trước** khi gửi lệnh (`_wait_state`). Nhờ vậy không nhầm báo cáo cũ còn nằm trong bộ nhớ.
 - **Đoán đã Home:** FluidNC không có trường "đã Home". Máy chủ đoán theo ba tín hiệu: dòng `[MSG:Homed:XY]`, trạng thái Home → Idle, hoặc `ok` sau `$H`. Phải đủ cả X và Y mới coi là đã Home. Alarm làm mất Home (danh sách `_LOSE_HOME`).
+- **SSE (từ 09/11/2026):** SSE khỏe thì giao diện **không gọi `/api/status` hay `/api/log` nữa** (đo trên Chrome: 0 lần gọi trong 6 giây, trước đó ~60). Máy chủ tắt thì tự quay về hỏi lặp, bật lại thì SSE tự nối lại (since mới nên không lặp dòng nhật ký). Tab bị ẩn thì đóng SSE (bản đóng gói vẫn tự tắt khi không còn trang nào). Qua Cloudflare Tunnel: máy chủ gửi lại trạng thái mỗi 2 s nên kết nối không bị cắt vì im lặng; tối đa 40 kết nối cùng lúc. Lệnh điều khiển vẫn là HTTP POST. Trình duyệt chỉ mở tối đa 6 kết nối tới một địa chỉ: mở quá 6 tab cùng lúc thì tab mới có thể treo.
 - **Dữ liệu cũ:** báo cáo cũ hơn 2 s thì giao diện khóa nút điều khiển (`POLL.staleMs`).
 
 ---

@@ -3,7 +3,9 @@
 //   -> canvas: kéo / co giãn / xoay khung ngay trên tờ giấy (không gọi mạng, công thức ở lib/paper.js)
 //   -> POST /draw/gcode (debounce, chỉ lấy số liệu) -> Lưu bản thảo / Chuyển sang Điều khiển.
 // Các ô thông số do ./drawing/params.js giữ; canvas do ./drawing/canvas.js; danh sách bản thảo do views/drafts.js.
-// Đổi bố trí (giấy, lề, xoay, kéo khung) KHÔNG nạp lại; đổi kiểu nét / tiền xử lý / tối ưu thì phải bấm Tạo nháp/chính thức.
+// Ảnh raster: chọn tệp chỉ HIỆN ảnh (cắt, sáng / tối chạy ngay trong trình duyệt); máy chủ chỉ tạo nét khi bấm "Tạo nét"
+// (MiniPC không chạy nét cho những lần chỉnh dở). SVG nhẹ nên vẫn tạo nét ngay.
+// Đổi bố trí (giấy, lề, xoay, kéo khung) KHÔNG nạp lại; đổi kiểu nét / tiền xử lý / tối ưu thì phải bấm "Tạo lại nét".
 import { api, ApiError } from "../core/api.js";
 import { isAdmin } from "../core/auth.js";
 import { MACHINE } from "../core/config.js";
@@ -17,6 +19,7 @@ import * as params from "./drawing/params.js";
 import { presetValues } from "./drawing/presets.js";
 import { forget as forgetImage, imageSize, prepareForUpload } from "../lib/imageprep.js";
 import * as crop from "./drawing/crop.js";
+import { initCustomer } from "./customer.js";
 import { initTonePreview, refresh as refreshTone, setFile as showOriginal } from "./drawing/tonepreview.js";
 
 const $ = (id) => document.getElementById(id);
@@ -56,16 +59,28 @@ export function initDrawing() {
     initTonePreview({ stageEl: $("original-image-holder") ?? $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings });
     // Cắt ảnh: áp dụng = nạp lại như tệp mới (tỷ lệ ảnh đổi nên khung vừa lại phần trong lề).
     crop.initCrop({
-        apply: () => { if (S.file) startImport("final", { fresh: true }); },
+        apply: () => {
+            if (S.file && S.taskId) startImport("final", { fresh: true });        // đã tạo nét: tạo lại với vùng cắt mới
+            else if (S.file) guestFrame();                                         // chưa: chỉ nhớ vùng cắt (khách: cập nhật khung)
+        },
         ratio: () => { const b = params.innerBox(); return b.w > 0 && b.h > 0 ? b.w / b.h : null; }
     });
     initFile();
     initButtons();
+    initCustomer({
+        snapshot: () => ({ file: S.file, params: { ...params.customerSnapshot(), crop: crop.current() ?? undefined } }),
+        open: openCustomerItem
+    });
     loadSchemaWhenOnline();
 
     // Hồ sơ máy (Cài đặt) đổi Z bút -> cập nhật hai ô Z và tạo lại G-code.
     window.addEventListener("extruxy:profile-changed", () => {
         params.setPenZ(MACHINE.gcodeUpZ, MACHINE.penDownZ);
+        invalidateResult();
+        scheduleGcode();
+    });
+    window.addEventListener("extruxy:gcode-timing", (event) => {           // từ Cài đặt → tờ nhấc bút → "Dùng hàng N"
+        params.setTiming(event.detail.delay, event.detail.downFeed);
         invalidateResult();
         scheduleGcode();
     });
@@ -112,12 +127,12 @@ function initFile() {
     }
 }
 
-function acceptFile(file) {
+function acceptFile(file) {      // trả Promise xong khi đã biết cỡ ảnh (vùng cắt dùng được)
     const name = file.name.toLowerCase();
     const ext = EXTENSIONS.find((e) => name.endsWith(e));
-    if (!ext) return setStatus("drawing.error.bad_image", "", true);
+    if (!ext) return void setStatus("drawing.error.bad_image", "", true);
     const limit = ext === ".svg" ? MAX_BYTES.svg : MAX_BYTES.raster;
-    if (file.size > limit) return setStatus("drawing.error.file_too_large", "", true);
+    if (file.size > limit) return void setStatus("drawing.error.file_too_large", "", true);
 
     forgetImage();
     S.file = file;
@@ -126,8 +141,50 @@ function acceptFile(file) {
     $("drawing-file-name").textContent = `${file.name} · ${file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + " KB" : (file.size / 1048576).toFixed(1) + " MB"}`;
     showOriginal(file);
     crop.setImage(null);
-    if (ext !== ".svg") imageSize(file).then((size) => { if (S.file === file) crop.setImage(size); });
-    startImport("final", { fresh: true });
+    window.dispatchEvent(new CustomEvent("extruxy:draw-file", { detail: { file } }));
+    if (ext === ".svg") { startImport("final", { fresh: true }); return Promise.resolve(); }
+    clearTrace();                                            // ảnh: chỉ hiện ảnh, chờ người dùng bấm "Tạo nét"
+    setStatus(isAdmin() ? "drawing.progress.waitTrace" : "auth.guestPreview");
+    return imageSize(file).then((size) => {
+        if (S.file !== file) return;
+        crop.setImage(size);
+        guestFrame();
+    });
+}
+
+// Khách không tạo nét được: vẫn cho thấy KHUNG ảnh trên tờ giấy (theo cỡ ảnh sau khi cắt) để chọn khổ, lề, kích thước, xoay.
+async function guestFrame() {
+    if (isAdmin() || !S.file || S.file.name.toLowerCase().endsWith(".svg")) return;
+    const size = await imageSize(S.file);
+    if (!size || S.taskId) return;
+    const c = crop.current() ?? { x: 0, y: 0, w: 1, h: 1 };
+    S.src = { x: 0, y: 0, w: size.width * c.w, h: size.height * c.h };
+    refit();
+    refreshScene();
+}
+
+// Quản lý mở một ảnh khách gửi: nạp ảnh, điền lại thông số và vùng cắt khách đã chọn (chỉ các ô an toàn); chưa tạo nét.
+async function openCustomerItem(file, saved) {
+    await acceptFile(file);
+    params.customerRestore(saved);
+    crop.restore(saved.crop);
+    refreshTone();
+    onParamChange("layout", "drawing-paper");                // tính lại khung theo khổ giấy khách chọn
+    setStatus("drawing.progress.waitTrace");
+}
+
+// Bỏ nét / bản vẽ của tệp trước (và hủy tác vụ đang chạy) khi nạp tệp mới: không để canvas còn hình cũ.
+function clearTrace() {
+    clearTimeout(S.pollTimer);
+    clearTimeout(S.retraceTimer);
+    S.importSeq += 1;                                        // kết quả của tác vụ đang chạy (nếu có) bị bỏ
+    if (S.busy && S.jobId) api.drawTaskCancel(S.jobId).catch(() => {});
+    if (S.taskId) api.drawTaskDrop(S.taskId).catch(() => {});
+    Object.assign(S, { taskId: null, jobId: null, busy: false, preview: null, src: null, layers: [], source: null,
+                       importWarnings: [], savedDraft: null, savedKey: null, importDirty: false, importKeep: false });
+    setProgress(0);
+    invalidateResult();
+    refreshScene();
 }
 
 /* ==================== tác vụ nền: nạp + tiến trình ==================== */
@@ -295,8 +352,8 @@ function onPreset() {
     params.setValues(values);
     S.applyingPreset = false;
     refreshTone();
-    if (S.file) startImport("final");
-    else setStatus("drawing.progress.stale");
+    if (S.file && S.taskId) startImport("final");                                     // đã có nét: tạo lại theo preset mới
+    else setStatus(S.file ? "drawing.progress.waitTrace" : "drawing.progress.stale");  // chưa tạo nét: chỉ đặt thông số
 }
 
 function onParamChange(kind, id) {
@@ -446,7 +503,17 @@ function initButtons() {
     $("drawing-confirm")?.addEventListener("change", setButtons);
     $("save-draft-btn")?.addEventListener("click", () => run(saveDraft));
     $("send-to-control-btn")?.addEventListener("click", () => run(sendToControl));
-    $("tone-ramp-btn")?.addEventListener("click", () => run(loadToneRamp));
+    window.addEventListener("extruxy:tone-ramp", (event) => {                     // nút nằm ở Cài đặt → Tờ thử / hiệu chỉnh
+        const paper = event.detail?.paper;
+        const select = $("drawing-paper");
+        if (paper && select && [...select.options].some((o) => o.value === paper)) {
+            select.value = paper;
+            select.dispatchEvent(new Event("change"));                            // đặt khổ giấy TRƯỚC khi nạp: khung vừa lề khổ đó
+            const rotate = $("drawing-rotate");
+            if (rotate) { rotate.value = "90"; rotate.dispatchEvent(new Event("change")); }   // ảnh thang xám ngang, giấy dọc: xoay cho to
+        }
+        run(loadToneRamp);
+    });
 }
 
 function generateNow() {
@@ -626,7 +693,9 @@ function renderInfo() {
 function setButtons() {
     const has = (id, disabled) => { const el = $(id); if (el) el.disabled = disabled; };
     const planOk = Boolean(S.plan?.ok);
-    has("final-run-btn", !S.file || S.busy);
+    has("final-run-btn", !S.file || S.busy || !isAdmin());
+    const traceBtn = $("final-run-btn");
+    if (traceBtn) traceBtn.textContent = t(S.taskId ? "drawing.action.final" : "drawing.action.trace");    // "Tạo nét" → "Tạo lại nét"
     has("regenerate-gcode-btn", !S.taskId || S.busy || !planOk);
     has("drawing-cancel-btn", !S.busy);
     has("drawing-rotate-btn", !S.src);

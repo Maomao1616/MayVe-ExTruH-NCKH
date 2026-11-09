@@ -86,7 +86,7 @@ Quy tắc: view **không** dùng view khác (trừ `control.js` dùng `preview.j
 |---|---|---|
 | vào cửa | `app.js` | chọn tab, ngôn ngữ, sáng / tối, gọi `init…` của từng view |
 | core | `api.js` | **nơi duy nhất** gọi máy chủ (`fetch`) |
-| | `state.js` | **nơi duy nhất** hỏi trạng thái: `/api/status` mỗi 100 ms, `/api/log` (terminal) 300 ms–1 s |
+| | `state.js` | **nơi duy nhất** nhận trạng thái: luồng SSE `/api/events` (dự phòng: hỏi `/api/status` mỗi 100 ms, `/api/log` 300 ms–1 s) |
 | | `config.js` | hằng số máy (`MACHINE`: vùng 285 × 318, Z bút), tùy chọn (`PREFS`), nhịp hỏi (`POLL`), chiều khung 2D (`VIEW`) |
 | | `i18n.js` · `auth.js` | dịch chữ · vai trò khách / quản lý của trình duyệt |
 | lib | `gcode.js` | đọc G-code thành đoạn để xem trước, cảnh báo dòng bị cấm, bám tiến trình |
@@ -121,6 +121,7 @@ links/     nói chuyện với máy: serial thật (pyserial) hoặc máy giả
 | `paths.py` | **một chỗ** quy định thư mục dữ liệu và 3 thư mục con |
 | `idle.py` | tự tắt server khi đóng hết trang 10 phút (chỉ bản mang đi) |
 | `api/machine.py` | `connect, status, command, realtime, log, jobs, jobs/cancel, jobs/resume, joblogs, motion…` |
+| `api/events.py` | `GET /api/events` luồng SSE: trạng thái máy + nhật ký terminal (khách chỉ nhận trạng thái) |
 | `api/config.py` | cấu hình trên mạch, hồ sơ phần mềm |
 | `api/draw.py` | `/api/draw/*` của tab vẽ (không gọi máy) |
 | `api/storage.py` | macro, xem / tải thư mục dữ liệu |
@@ -152,7 +153,8 @@ Gốc dữ liệu = `data/` ở thư mục gốc dự án (tự tạo, không l�
 | Macro | `macros/` | mỗi macro một tệp JSON |
 | Hồ sơ phần mềm | `profile.json` | Z bút, Z nhấc G-code, tốc độ bút, bước jog |
 | Số liệu chạy máy | `job_logs/` | mỗi lần chạy một `.csv` + `.json`; giữ 30 lần gần nhất |
-| Hạn mức bản thảo | `draw_settings.json` | số bản, MB |
+| Ảnh khách gửi | `customer/` | mỗi mục một thư mục (`image.jpg` + `meta.json`); tự xóa sau `customer_days` ngày (mặc định 5) |
+| Hạn mức bản thảo | `draw_settings.json` | số bản, MB, số ngày giữ ảnh khách |
 | Điểm dừng tác vụ | `resume.json` | xóa khi tác vụ chạy trọn |
 | PIN | `pin.txt` | `admin=…` (PIN đăng nhập; **đổi được ở Cài đặt → PIN quản lý**, máy chủ tự đọc và áp dụng ngay). `unlock=…` không dùng (09/11/2026) |
 | Lỗi khởi động | `server-loi.txt` | chỉ bản mang đi |

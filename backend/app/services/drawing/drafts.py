@@ -23,8 +23,8 @@ from .errors import DrawError
 from .preview import build as build_preview
 from .shapes import Layer
 
-DEFAULTS = {"max_count": 50, "max_mb": 500}
-LIMITS = {"max_count": (1, 1000), "max_mb": (10, 100000)}
+DEFAULTS = {"max_count": 50, "max_mb": 500, "customer_days": 5}
+LIMITS = {"max_count": (1, 1000), "max_mb": (10, 100000), "customer_days": (1, 30)}   # customer_days: ảnh khách gửi giữ chừng ngày (services/customer.py)
 
 ID_RE = re.compile(r"^\d{8}-\d{6}-[a-z0-9-]{1,40}$")
 LAYER_FILE_RE = re.compile(r"^draw(-[A-Za-z0-9_-]{1,40})?$")

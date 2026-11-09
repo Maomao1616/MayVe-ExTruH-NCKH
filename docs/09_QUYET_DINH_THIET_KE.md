@@ -12,7 +12,7 @@
 | A3 | Không framework, không bước build | đơn giản, chạy được trên máy yếu, ít phụ thuộc | ✅ |
 | A4 | Hai đường nối máy: máy thật (SerialLink) và máy giả (SimLink, bắt chước theo log board thật) | phát triển và test khi chưa có máy | ✅ |
 | A5 | Chỉ `api.js` gọi mạng, chỉ `state.js` thăm dò; một phần tử HTML chỉ một tệp ghi | một nơi để sửa, không giật | ✅ |
-| A6 | Giao tiếp (09/11/2026): **lệnh** giữ HTTP POST; **trạng thái + terminal** sẽ đổi từ hỏi lặp sang **SSE** (đẩy một chiều) khi lên Cloudflare; **không dùng WebSocket** | trên cùng máy / mạng nội bộ hỏi lặp đã đủ (trễ chủ yếu do backend hỏi `?` 10 lần/s, không do HTTP). Qua Internet mỗi lần hỏi tốn một vòng đi–về → SSE nhanh gần gấp đôi, mượt hơn. SSE chạy trên HTTP, tự nối lại, dùng được cookie PIN; WebSocket phải tự lo nối lại, kiểm Origin, nối luồng với async → dễ lỗi mà lệnh chỉ nhanh thêm 1–2 ms | ⏳ SSE |
+| A6 | Giao tiếp (09/11/2026): **lệnh** giữ HTTP POST; **trạng thái + terminal** sẽ đổi từ hỏi lặp sang **SSE** (đẩy một chiều) khi lên Cloudflare; **không dùng WebSocket** | trên cùng máy / mạng nội bộ hỏi lặp đã đủ (trễ chủ yếu do backend hỏi `?` 10 lần/s, không do HTTP). Qua Internet mỗi lần hỏi tốn một vòng đi–về → SSE nhanh gần gấp đôi, mượt hơn. SSE chạy trên HTTP, tự nối lại, dùng được cookie PIN; WebSocket phải tự lo nối lại, kiểm Origin, nối luồng với async → dễ lỗi mà lệnh chỉ nhanh thêm 1–2 ms | ✅ SSE (máy giả, 09/11/2026) · ⏳ qua Cloudflare thật |
 | A7 | Mỗi tab một tệp view. Bỏ tab Công việc (gộp vào Điều khiển). **Bỏ thẻ SD / Flash** | thực tế chỉ stream từ máy tính; MKS đọc thẻ dễ lỗi | ✅ |
 | P1 | Mọi tham số vẽ khai báo **một chỗ** (`spec.py`), giao diện lấy qua `/api/draw/schema` | không rải số cứng; đổi một dòng | ✅ |
 | P2 | Tab vẽ **không bao giờ gọi máy**; hai tab chỉ nối qua bản thảo; chạy phải qua xem trước + xác nhận | an toàn | ✅ |
@@ -34,7 +34,7 @@
 | M6 | Sau `$X` máy chạy được G-code kể cả chưa Home → giao diện cảnh báo | sự thật firmware | ✅ |
 | S7 | Bộ làm sạch G-code chặn `$…`, ký tự tức thời, `G10 G28 G30 G38 G53 G55–G59 G92`; báo một lần tối đa 5 dòng kèm số dòng. Giao diện giữ cùng danh sách | các lệnh đó đổi gốc / hệ tọa độ → bản vẽ lệch khỏi giấy; danh sách ngắn để tệp thường không bị từ chối oan | ✅ |
 | P11 | Tiếp tục từ điểm dừng: lùi 64 dòng rồi lùi tới đầu nét gần nhất, dựng lại trạng thái, kiểm gốc Zero | `ok` chỉ là "đã vào hàng đợi"; vẽ chồng vô hại, bỏ sót thì mất nét | ✅ máy giả · 🧪 máy thật |
-| O2 | Hai vai trò khách / quản lý bằng PIN; máy chủ **chặn mặc định**; vẫn giữ lớp mở khóa chuyển động (**không đặt PIN** cho lớp này, PIN chỉ dùng để đăng nhập, 09/11/2026) | đề tài cấp trường: khách chỉ xem / gửi ảnh, không cần tài khoản, hàng chờ | ✅ (gửi ảnh ⏳) |
+| O2 | Hai vai trò khách / quản lý bằng PIN; máy chủ **chặn mặc định**; vẫn giữ lớp mở khóa chuyển động (**không đặt PIN** cho lớp này, PIN chỉ dùng để đăng nhập, 09/11/2026) | đề tài cấp trường: khách chỉ xem / gửi ảnh, không cần tài khoản, hàng chờ | ✅ (gửi ảnh ✅ 09/11/2026) |
 
 ## 3. Tạo bản vẽ và xử lý ảnh
 | # | Quyết định | Vì sao | |
@@ -48,7 +48,7 @@
 | P13 | Viền: top-hat (nét mực ≤ 4 mm → đường giữa) + Canny trên ảnh làm phẳng màu (mean shift, kênh a / b Lab) + vòng viền chấm + nối khe ≤ 1,5 mm + cắt râu theo bề dày nét + khép vòng. Thay DoG cũ | DoG cho hai đường song song ở nét dày, mất viền mảng không có nét đen | ✅ ảnh mẫu · 🧪 in giấy |
 | P7 | Nhiều màu 2–4: k-means trên Lab có nhấn sắc độ; mỗi màu một tệp G-code, tên có mã màu | để thử; đổi bút giữa các tệp | ✅ |
 | P8 | Trình duyệt thu nhỏ ảnh và xem trước độ sáng; máy chủ luôn tự làm được và kiểm lại | gửi nhẹ; không tin dữ liệu từ trình duyệt | ✅ |
-| P9 | Bỏ nút "Tạo nháp", "Tạo G-code"; G-code tự tính lại. **Đổi 09/11/2026:** nạp ảnh chỉ hiện ảnh xám, bấm **"Tạo nét"** mới tạo nét (khách thấy nút "Gửi ảnh" thay vào) | bản nháp không nhanh hơn đáng kể; cắt / chỉnh tông xong mới tốn máy chủ, MiniPC không chạy nét cho lần chỉnh dở | ✅ bỏ nút nháp · ⏳ nút Tạo nét |
+| P9 | Bỏ nút "Tạo nháp", "Tạo G-code"; G-code tự tính lại. **Đổi 09/11/2026:** nạp ảnh chỉ hiện ảnh xám, bấm **"Tạo nét"** mới tạo nét (khách thấy nút "Gửi ảnh" thay vào) | bản nháp không nhanh hơn đáng kể; cắt / chỉnh tông xong mới tốn máy chủ, MiniPC không chạy nét cho lần chỉnh dở | ✅ bỏ nút nháp · ✅ nút Tạo nét (09/11/2026; SVG vẫn tạo ngay) |
 | P10 | Cắt ảnh ngay trên web, gửi tỷ lệ vùng cắt cho máy chủ | tiện hơn chỉnh ảnh trước khi gửi | ✅ |
 | P12 | Tờ mẫu hiệu chỉnh bút do máy chủ tạo thành bản thảo thường (nút đã bỏ, route còn) | đi cùng đường xem trước / xác nhận | ✅ |
 | P14 | 5 preset: Chân dung, Phong cảnh, Cận cảnh, Ảnh 2D, Schematic. **Không thêm kiểu tô mới** trừ khi khác hẳn và đẹp hơn | tập trung chất lượng; stipple / TSP đã bỏ | ✅ · 🧪 in giấy |
@@ -65,7 +65,7 @@
 | S5 | Không ghi nhật ký hệ thống ra tệp | log dài, khó đọc; điểm dừng + sao lưu đã đủ phục hồi | ✅ |
 | S6 | Nhập G-code có sẵn = một tệp một bản thảo, qua cùng bộ làm sạch | chạy lại, ghim tệp từ phần mềm khác | ✅ |
 | S8 | `data/` nằm ở gốc dự án | cập nhật chỉ thay `backend/` + `frontend/` | ✅ |
-| S9 | Ảnh gốc không ghi ra đĩa. **Ngoại lệ:** ảnh khách tự bấm "Gửi ảnh" lưu ở `data/customer/` (đã thu nhỏ), tự xóa sau 5 ngày (chỉnh 3–5); bản thảo giữ như cũ | riêng tư, đỡ dung lượng; quản lý cần ảnh khách để tạo nét sau | ✅ · ⏳ ảnh khách |
+| S9 | Ảnh gốc không ghi ra đĩa. **Ngoại lệ:** ảnh khách tự bấm "Gửi ảnh" lưu ở `data/customer/` (đã thu nhỏ), tự xóa sau 5 ngày (chỉnh 3–5); bản thảo giữ như cũ | riêng tư, đỡ dung lượng; quản lý cần ảnh khách để tạo nét sau | ✅ · ✅ ảnh khách (máy giả, 09/11/2026) |
 
 ## 5. Triển khai
 | # | Quyết định | Vì sao | |
@@ -74,7 +74,7 @@
 | O5 | Cập nhật = zip chỉ mã (~0,3 MB) + `Cap nhat.bat` giữ `Python/` và `data/` | khỏi gửi lại ~450 MB | ✅ |
 | O1 | MiniPC chạy cả máy chủ và giao diện; một địa chỉ qua Cloudflare Tunnel; không dùng host chia sẻ | host chỉ chứa tệp tĩnh, không giảm tải; cổng USB phải ở MiniPC | ⏳ |
 | O6 | MiniPC chạy bằng Docker (venv + systemd dự phòng); IP cố định bằng giữ chỗ DHCP | image gói sẵn thư viện hệ thống; không lộ IP nhà | ⏳ |
-| O7 | Quản lý dùng tab vẽ như hiện tại (việc mới hủy việc cũ), một việc tạo nét một lúc. Tách "nạp ảnh" và "tạo nét" bằng nút (P9) | chỉ một người tạo nét | ✅ · ⏳ nút Tạo nét |
+| O7 | Quản lý dùng tab vẽ như hiện tại (việc mới hủy việc cũ), một việc tạo nét một lúc. Tách "nạp ảnh" và "tạo nét" bằng nút (P9) | chỉ một người tạo nét | ✅ · ✅ nút Tạo nét |
 | O9 | **Người điều khiển vào thẳng địa chỉ mạng nội bộ** (cùng Wi-Fi / hotspot với MiniPC), không qua Cloudflare; người xem từ xa qua Cloudflare (trễ ~30–150 ms, bù bằng vệt bút nội suy theo G-code). Dừng khẩn thật = **nút cứng** | lệnh không phải ra Internet rồi quay về; mất mạng ngoài vẫn điều khiển được; nút cứng không phụ thuộc mạng / trình duyệt / backend | ⏳ |
 | O8 | Demo **không cần Internet**: giao diện không tải gì từ ngoài; tự phát Wi-Fi | buổi trình diễn có thể không có mạng | ✅ |
 

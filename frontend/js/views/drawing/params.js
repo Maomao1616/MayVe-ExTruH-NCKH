@@ -198,6 +198,13 @@ export function setLayoutFields({ width, height, offsetX, offsetY, center, rotat
     syncVisibility();
 }
 
+// Tờ nhấc bút (Cài đặt → "Dùng hàng N"): đặt thời gian chờ và tốc độ hạ cho lần sinh G-code sau, nhớ như người dùng gõ.
+export function setTiming(delay, downFeed) {
+    for (const id of ["pen-delay-down", "pen-delay-up"]) if ($(id)) $(id).value = String(delay);
+    if ($("pen-down-feed")) $("pen-down-feed").value = String(downFeed);
+    saveForm();
+}
+
 export function setPenZ(upZ, downZ) {
     if ($("draw-pen-up-z")) $("draw-pen-up-z").value = String(upZ);
     if ($("draw-pen-down-z")) $("draw-pen-down-z").value = String(downZ);
@@ -243,6 +250,32 @@ export function toneSettings() {
 export function maxSideOverride() {
     const v = Math.round(Number($("image-max-side")?.value));
     return Number.isFinite(v) && v > 0 ? v : null;
+}
+
+/* ---------- gửi / nhận qua "ảnh khách gửi" (views/customer.js) ---------- */
+// Chỉ các ô tiền xử lý, kiểu nét, màu, bố trí, cỡ bút (KHÔNG có tốc độ / Z / chờ của G-code: khách không được đặt chúng).
+// Thông số của khách là dữ liệu không tin cậy: khi nhận chỉ ghi vào đúng các ô trong danh sách này.
+const CUSTOMER_GROUPS = new Set(["layout", "raster", "style", "palette"]);
+const CUSTOMER_EXTRA = ["drawing-paper", "drawing-paper-width", "drawing-paper-height", "draw-pen-width", "draw-pen-width-custom",
+    "drawing-lock-ratio", "draw-preset"];
+const customerIds = () => [...FIELDS.filter(([, g]) => CUSTOMER_GROUPS.has(g)).map(([id]) => id), ...CUSTOMER_EXTRA];
+
+export function customerSnapshot() {
+    const values = {};
+    for (const id of customerIds()) {
+        const el = $(id);
+        if (el) values[id] = el.type === "checkbox" ? el.checked : el.value;
+    }
+    return values;
+}
+
+export function customerRestore(values) {
+    const allowed = new Set(customerIds());
+    const safe = {};
+    for (const [id, v] of Object.entries(values ?? {})) {
+        if (allowed.has(id) && (typeof v === "string" || typeof v === "number" || typeof v === "boolean")) safe[id] = v;
+    }
+    setValues(safe);
 }
 
 // Ghi nhiều ô cùng lúc (bộ thông số dựng sẵn). Không phát sự kiện: drawing.js tự tạo lại nét sau đó.

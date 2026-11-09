@@ -22,7 +22,7 @@ from fastapi.responses import PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from ..services.drawing import DrawError, describe, drafts, import_svg, make_gcode, spec
-from ..services.drawing import calibration, gcode_import, isolated, preview, raster, service
+from ..services.drawing import calibration, gcode_import, isolated, preview, raster, service, testsheets
 from ..services.drawing.shapes import Layer
 from ..services.drawing.store import TASKS
 from ..services.drawing.svg_in import MAX_SVG_BYTES
@@ -70,11 +70,20 @@ class CalibrationRequest(BaseModel):
     pen_width_mm: float = Field(0.4, allow_inf_nan=False)
     paper_x_mm: float = Field(0.0, ge=0, le=5000, allow_inf_nan=False)
     paper_y_mm: float = Field(0.0, ge=0, le=5000, allow_inf_nan=False)
+    paper: str = Field("a5", max_length=4)           # a5 (mặc định) hoặc a6
+
+
+class TestSheetRequest(BaseModel):
+    kind: str = Field(max_length=20)
+    machine: dict[str, Any]
+    gcode: dict[str, Any]
+    options: dict[str, Any] = {}
 
 
 class SettingsRequest(BaseModel):
     max_count: int
     max_mb: int
+    customer_days: int = 5
 
 
 def _wrap(fn, *args):
@@ -223,8 +232,14 @@ def draft_import_gcode(file: UploadFile = File(...), work_w: float = Form(285.0)
 @router.post("/calibration", status_code=201)
 def calibration_create(req: CalibrationRequest):
     """Tạo bản thảo tờ mẫu hiệu chỉnh bút (chữ F, thước 100 mm, 8 dải tô). Xem services/drawing/calibration.py."""
-    return _wrap(calibration.make_draft, "Mẫu hiệu chỉnh bút", req.machine, req.gcode,
-                 req.pen_width_mm, req.paper_x_mm, req.paper_y_mm)
+    return _wrap(calibration.make_draft, "Mẫu hiệu chỉnh bút" + (" A6" if req.paper == "a6" else ""), req.machine, req.gcode,
+                 req.pen_width_mm, req.paper_x_mm, req.paper_y_mm, req.paper)
+
+
+@router.post("/testsheet", status_code=201)
+def testsheet_create(req: TestSheetRequest):
+    """Tờ thử máy thành bản thảo: kind = lift | lost | accel | speed | drag. Xem services/drawing/testsheets.py."""
+    return _wrap(testsheets.make_draft, req.kind, req.machine, req.gcode, req.options)
 
 
 @router.get("/drafts")

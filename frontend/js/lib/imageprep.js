@@ -168,3 +168,38 @@ export function toneMap(gray, { auto = true, black = 0, white = 255, gamma = 1, 
     for (let i = 0; i < gray.length; i++) out[i] = lut[gray[i]];
     return out;
 }
+
+/* ---------- gửi cho chủ máy (khách) ---------- */
+
+// Kích thước vừa trong hình vuông maxSide, giữ tỉ lệ, không bao giờ phóng to.
+export function fitWithin(width, height, maxSide) {
+    const k = Math.min(1, maxSide / Math.max(width, height));
+    return { width: Math.max(1, Math.round(width * k)), height: Math.max(1, Math.round(height * k)) };
+}
+
+// Ảnh -> JPEG nhỏ để gửi (nền trong suốt thành trắng như giấy). null nếu trình duyệt không đọc được ảnh.
+export async function shrinkToJpeg(file, maxSide = 1600, quality = 0.85) {
+    try {
+        const image = await decode(file);
+        const width = image.naturalWidth;
+        const height = image.naturalHeight;
+        if (!width || !height) return null;
+        let source = image;
+        const steps = halvingSteps(width, height, fitWithin(width, height, maxSide));
+        steps.forEach((step, i) => {
+            const canvas = document.createElement("canvas");
+            canvas.width = step.width;
+            canvas.height = step.height;
+            const ctx = canvas.getContext("2d");
+            if (i === 0) { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, step.width, step.height); }
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(source, 0, 0, step.width, step.height);
+            source = canvas;
+        });
+        const blob = await new Promise((resolve) => source.toBlob(resolve, "image/jpeg", quality));
+        return blob ? new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.jpg`, { type: "image/jpeg" }) : null;
+    } catch {
+        return null;
+    }
+}

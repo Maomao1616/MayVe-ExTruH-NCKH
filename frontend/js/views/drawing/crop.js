@@ -50,6 +50,19 @@ export function setImage(size) {
     render();
 }
 
+// Đặt lại vùng đã áp dụng (ảnh khách gửi): chỉ nhận số hợp lệ, ép vào trong ảnh. Gọi SAU setImage.
+export function restore(rect) {
+    if (!natural || !rect) return;
+    const x = clamp(Number(rect.x), 0, 1 - MIN);
+    const y = clamp(Number(rect.y), 0, 1 - MIN);
+    const w = clamp(Number(rect.w), MIN, 1 - x);
+    const h = clamp(Number(rect.h), MIN, 1 - y);
+    if (![x, y, w, h].every(Number.isFinite)) return;
+    applied = isFull({ x, y, w, h }) ? { ...FULL } : { x, y, w, h };
+    draft = null;
+    render();
+}
+
 // Vùng đã áp dụng (tỷ lệ 0..1), null = dùng cả ảnh.
 export function current() {
     return natural && !isFull(applied) ? { ...applied } : null;

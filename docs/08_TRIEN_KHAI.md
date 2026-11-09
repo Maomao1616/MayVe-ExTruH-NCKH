@@ -89,7 +89,7 @@ Ghi chú kỹ thuật: `start.ps1` đặt `EXTRUXY_ALLOWED_HOSTS=localhost,127.0
 | Xem trạng thái máy, tiến độ, đèn công tắc | ✔ chỉ đọc | ✔ |
 | Nạp G-code, xem trước khung (chạy trong trình duyệt) | ✔ | ✔ |
 | Tải ảnh, cắt, xem trước sáng tối, chọn khổ giấy (trong trình duyệt) | ✔ | ✔ |
-| Gửi ảnh cho người vận hành (`customer/`) | ⏳ | – |
+| **Gửi ảnh cho người vận hành** (`data/customer/`, tự xóa sau vài ngày) | ✔ | – |
 | Tạo nét, G-code, bản thảo | ✘ | ✔ |
 | Điều khiển máy, terminal, macro, cấu hình, lưu trữ | ✘ | ✔ |
 
@@ -106,14 +106,15 @@ Ghi chú kỹ thuật: `start.ps1` đặt `EXTRUXY_ALLOWED_HOSTS=localhost,127.0
 Route: `POST /api/auth/login {pin}`, `POST /api/auth/logout`, `GET /api/auth/me` → `{role, pin_set}`.
 **Hai lớp khóa chuyển động độc lập**: (1) người gọi phải là quản lý, (2) máy phải đang mở khóa có hẹn giờ (+ PIN mở khóa nếu đặt). Khách biết PIN mở khóa cũng không chạy được máy.
 
-Mở cho khách (`GUEST_ROUTES`): `GET /api/health`, `/api/status`, `/api/connection`, `/api/draw/schema`, `/api/auth/*`, tệp giao diện. Thêm route cho khách = thêm đúng một dòng vào danh sách **và** sửa `tests/test_auth.py` (test quét mọi route, route ngoài danh sách phải trả 401).
+Mở cho khách (`GUEST_ROUTES`): `GET /api/health`, `/api/status`, `/api/events` (SSE, khách chỉ nhận trạng thái), `/api/connection`, `/api/draw/schema`, `/api/auth/*`, **`POST /api/customer`** (gửi ảnh), tệp giao diện. Thêm route cho khách = thêm đúng một dòng vào danh sách **và** sửa `tests/test_auth.py` (test quét mọi route, route ngoài danh sách phải trả 401).
 
-## B4. Khách gửi ảnh vào `customer/` ⏳ (kế hoạch)
-1. Khách chọn ảnh, cắt, xem trước sáng tối, chọn khổ giấy (đều trong trình duyệt), điền tên / số điện thoại + ghi chú, bấm **"Gửi cho người vận hành"** → `POST /api/customer`.
-2. Máy chủ lưu `data/customer/<giờ>_<6 ký tự ngẫu nhiên>/image.png + info.json`; kiểm ảnh thật (Pillow `verify`, trần 10 MB, ~25 triệu điểm), **lưu lại thành tệp mới** (bỏ EXIF, gồm vị trí GPS); tối đa ~200 bài / 1 GB; **tự xóa sau 3 ngày**; tối đa 1 bài mỗi 10 giây.
-3. Quản lý mở danh sách "Khách gửi" → bấm một mục → ảnh nạp kèm đúng vùng cắt / sáng tối / khổ giấy → tạo nét → lưu bản thảo → vẽ.
-
-Ước lượng: route + thư mục 1,5 giờ; tab vẽ chế độ khách (vẽ ảnh xem trước lên giấy, ô tên / ghi chú / gửi) 2–3 giờ; danh sách cho quản lý 1,5 giờ.
+## B4. Khách gửi ảnh vào `customer/` ✅ (09/11/2026; `api/customer.py`, `services/customer.py`, `views/customer.js`)
+1. **Khách** (không đăng nhập) chọn ảnh ở tab Tạo bản vẽ: cắt, chọn khổ giấy / lề / kích thước / xoay (khung ảnh hiện trên tờ giấy, không có nét), chỉnh tông và chọn preset / kiểu nét mong muốn (chỉ xem trước **ảnh xám**, không có mô phỏng G-code), điền tên + ghi chú (không bắt buộc), bấm **"Gửi ảnh"**. Khách không thấy mục "Thông số vẽ" (tốc độ, Z, chờ) và không gửi được các số đó.
+2. Trình duyệt thu nhỏ ảnh còn ≤ 1600 px (JPEG) rồi `POST /api/customer` (multipart: `file` + `meta` = `{name, note, params}`). Máy chủ **giải mã rồi ghi lại thành JPEG** (không bao giờ lưu nguyên tệp khách gửi; bỏ EXIF; nền trong suốt thành trắng), tối đa 3 MB / 60 triệu điểm; thông số chỉ nhận khóa `[a-z0-9-]`, giá trị chuỗi ≤ 40 ký tự / số / bool, tổng ≤ 8 KB.
+3. Lưu ở `data/customer/<giờ>-<8 ký tự ngẫu nhiên>/` (`image.jpg` + `meta.json`). **Tự xóa sau `customer_days` ngày** (mặc định **5**, chỉnh 1–30 ở Cài đặt → Bản thảo → "Ảnh khách gửi giữ"); dọn mỗi lần gửi / liệt kê, không có luồng nền. Bản thảo (SVG, G-code, JSON) **không** tự xóa, vẫn theo hạn mức 50 bản / MB.
+4. Giới hạn: **6 ảnh / giờ** theo từng nguồn (qua Cloudflare dùng `CF-Connecting-IP`), tối đa **100 mục** và **300 MB** (đầy thì báo "hộp ảnh đầy").
+5. **Quản lý** thấy hộp thư "Ảnh khách gửi" trong tab Tạo bản vẽ (ảnh nhỏ, tên, ghi chú, giờ gửi, ngày tự xóa; chấm ● = chưa xem; làm mới mỗi 30 s). **Mở** = nạp ảnh + điền lại vùng cắt và các ô thông số khách chọn (chỉ các ô tiền xử lý / kiểu nét / màu / bố trí / cỡ bút, danh sách trắng) rồi **bạn tự bấm "Tạo nét"**; **Xóa** = hộp xác nhận rồi xóa khỏi máy chủ.
+API: `POST /api/customer` (khách); `GET /api/customer`, `GET /api/customer/{id}/image`, `POST /api/customer/{id}/seen`, `DELETE /api/customer/{id}` (quản lý).
 
 ---
 

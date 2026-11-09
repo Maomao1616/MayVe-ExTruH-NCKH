@@ -26,7 +26,9 @@ def analyse(lines: list[str]) -> tuple[list[list[tuple[float, float]]], dict, li
     """(nét vẽ, số liệu, cảnh báo) từ các dòng đã làm sạch."""
     zs = {round(float(n), 4) for line in lines for c, n in _WORD.findall(line.upper()) if c == "Z"}
     has_pen = len(zs) > 1
-    threshold = (min(zs) + max(zs)) / 2 if has_pen else None
+    # Bút xuống = Z sát mức thấp nhất (trong 0,5 mm), không phải "dưới trung điểm": G-code nhấc thấp (Z1, Z2...) cùng với
+    # nhấc cao (Z5) trong một tệp (tờ thử nhấc bút) vẫn phân biệt đúng bút lên / xuống như lib/gcode.js.
+    threshold = min(zs) + min(0.5, (max(zs) - min(zs)) / 2) if has_pen else None
 
     x = y = 0.0
     z = max(zs) if has_pen else 0.0                    # chưa biết thì coi như bút đang nhấc
@@ -113,7 +115,10 @@ def analyse(lines: list[str]) -> tuple[list[list[tuple[float, float]]], dict, li
     return strokes, stats, warnings
 
 
-def import_gcode(name: str, text: str, work_w: float, work_h: float) -> dict:
+def import_gcode(name: str, text: str, work_w: float, work_h: float, source: tuple[str, dict] | None = None,
+                 check_bounds: bool = False) -> dict:
+    """`source` = (mode, thêm) ghi vào params.source của bản thảo (tờ thử máy dùng "testsheet"); `check_bounds` = từ chối
+    nét nằm ngoài vùng máy (tờ thử sinh sẵn tọa độ nên vùng máy nhỏ hơn tờ thì phải báo, không để chạy lố)."""
     try:
         lines = clean_gcode(text.splitlines())
     except JobError as exc:
@@ -122,11 +127,19 @@ def import_gcode(name: str, text: str, work_w: float, work_h: float) -> dict:
         raise DrawError("empty_job", "Tệp không có dòng lệnh nào.")
     strokes, stats, warnings = analyse(lines)
     b = stats["bounds"]
+    if check_bounds:                    # mọi tọa độ X / Y (cả di chuyển G0, không chỉ nét vẽ); chỉ dùng cho tệp tuyệt đối G90 do ta sinh
+        xs = [float(n) for line in lines for c, n in _WORD.findall(line.upper()) if c == "X"]
+        ys = [float(n) for line in lines for c, n in _WORD.findall(line.upper()) if c == "Y"]
+        if (xs and (min(xs) < -1e-6 or max(xs) > work_w + 1e-6)) or (ys and (min(ys) < -1e-6 or max(ys) > work_h + 1e-6)):
+            raise DrawError("out_of_area", f"G-code cần vùng ≥ {max(xs, default=0):.0f} × {max(ys, default=0):.0f} mm, "
+                                           f"vùng máy là {work_w:g} × {work_h:g} mm.")
     result = {"files": [{"layer": "1", "name": "draw", "gcode": "\n".join(lines) + "\n", "stats": stats}],
               "paper": {"x": 0.0, "y": 0.0, "w": work_w, "h": work_h},
               "box": {"x": b["x0"], "y": b["y0"], "w": b["x1"] - b["x0"], "h": b["y1"] - b["y0"]},
               "warnings": warnings}
     machine = {"work_w": work_w, "work_h": work_h}
     params = {"source": {"mode": "gcode_import", "name": name}}
+    if source is not None:
+        params["source"] = {"mode": source[0], "name": name, **source[1]}
     draft = drafts.create((name or "G-code")[:80], result, [Layer("1", strokes)], machine, params)
     return {"draft": draft, "warnings": warnings}

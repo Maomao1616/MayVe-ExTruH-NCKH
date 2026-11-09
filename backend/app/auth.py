@@ -32,6 +32,8 @@ _ADMIN_LINE = re.compile(r"^\s*admin\s*=\s*(\S+)\s*$", re.IGNORECASE)
 GUEST_ROUTES = frozenset({
     ("GET", "/api/health"),            # trang ẩn báo "còn mở"
     ("GET", "/api/status"),            # xem trạng thái chung, chỉ đọc
+    ("POST", "/api/customer"),          # khách gửi ảnh cho chủ máy (api/customer.py); xem / xóa danh sách là việc quản lý
+    ("GET", "/api/events"),            # luồng SSE: khách nhận trạng thái, nhật ký chỉ gửi cho quản lý (api/events.py)
     ("GET", "/api/connection"),
     ("GET", "/api/draw/schema"),       # khai báo tham số để vẽ ô nhập tab Tạo bản vẽ
     ("GET", "/api/auth/me"),

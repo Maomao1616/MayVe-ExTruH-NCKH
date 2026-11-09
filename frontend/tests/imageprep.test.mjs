@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { grayFromRgba, halvingSteps, scaledSize, toneMap, uploadTarget, workSidePx } from "../js/lib/imageprep.js";
+import { fitWithin, grayFromRgba, halvingSteps, scaledSize, toneMap, uploadTarget, workSidePx } from "../js/lib/imageprep.js";
 
 const fixture = (name) => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url), "utf8"));
 
@@ -61,4 +61,12 @@ test("uploadTarget: không cắt thì giống scaledSize(workSidePx); cắt thì
     assert.ok(t.width > scaledSize(6000, 4000, side).width);
     // cắt nhỏ tới mức cần nhiều điểm hơn ảnh gốc: gửi nguyên tệp
     assert.equal(uploadTarget(6000, 4000, { ...opts, crop: { w: 0.05, h: 0.05 } }), null);
+});
+
+test("fitWithin (ảnh khách gửi): vừa trong hình vuông, giữ tỉ lệ, không bao giờ phóng to", () => {
+    assert.deepEqual(fitWithin(4000, 3000, 1600), { width: 1600, height: 1200 });
+    assert.deepEqual(fitWithin(3000, 6000, 1600), { width: 800, height: 1600 });
+    assert.deepEqual(fitWithin(800, 600, 1600), { width: 800, height: 600 });          // đã nhỏ: giữ nguyên
+    assert.deepEqual(fitWithin(5000, 1, 1600), { width: 1600, height: 1 });             // không bao giờ ra 0
+    assert.deepEqual(halvingSteps(4000, 3000, fitWithin(4000, 3000, 1600)).at(-1), { width: 1600, height: 1200 });
 });

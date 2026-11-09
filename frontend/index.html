@@ -11,6 +11,8 @@
   <link href="./css/drawing.css" rel="stylesheet"/>
   <link href="./css/polish.css" rel="stylesheet"/>
   <link href="./css/jobchart.css" rel="stylesheet"/>
+  <link href="./css/testsheet.css" rel="stylesheet"/>
+  <link href="./css/customer.css" rel="stylesheet"/>
   <script src="./js/app.js" type="module"></script>
 </head>
 <body>
@@ -704,6 +706,34 @@
                 <p class="help-text" data-i18n="drawing.source.noFile" id="drawing-file-name">
                   Chưa chọn tệp.
                 </p>
+                <div class="customer-send guest-only" id="customer-send-box">
+                  <h4 data-i18n="customer.send.title">Gửi ảnh cho chủ máy</h4>
+                  <p class="help-text" data-i18n="customer.send.help">Chọn ảnh, cắt, chọn khổ giấy, chỉnh sáng tối và kiểu nét mong muốn (chỉ xem trước ảnh xám). Bấm Gửi: chủ máy sẽ tạo nét và vẽ.</p>
+                  <label for="customer-name"><span data-i18n="customer.send.name">Tên bạn (không bắt buộc)</span>
+                    <input id="customer-name" maxlength="40" type="text"/></label>
+                  <label for="customer-note"><span data-i18n="customer.send.note">Ghi chú cho chủ máy (không bắt buộc)</span>
+                    <textarea id="customer-note" maxlength="200" rows="2"></textarea></label>
+                  <button class="primary-button" data-i18n="customer.send.button" disabled id="customer-send-btn" type="button">Gửi ảnh</button>
+                  <p class="mc-status" id="customer-send-status" role="status"></p>
+                </div>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" id="customer-inbox-panel" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="customer.inbox.title">Ảnh khách gửi</span>
+                <span class="drawing-section-description" data-i18n="customer.inbox.desc">Mở một ảnh: nạp ảnh và điền lại thông số khách chọn; bạn bấm Tạo nét khi sẵn sàng.</span>
+                <span class="drawing-section-badge" id="customer-inbox-badge">—</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="customer-inbox-toolbar">
+                  <button class="secondary-button" data-i18n="common.action.refresh" id="customer-inbox-refresh-btn" type="button">Làm mới</button>
+                  <span class="help-text" data-i18n="customer.inbox.help">Ảnh tự xóa sau số ngày đặt ở Cài đặt → Bản thảo.</span>
+                </div>
+                <p class="help-text" data-i18n="customer.inbox.empty" id="customer-inbox-empty">Chưa có ảnh nào.</p>
+                <ul class="customer-inbox-list" id="customer-inbox-list"></ul>
+                <p class="mc-status" id="customer-inbox-status" role="status"></p>
               </div>
             </details>
 
@@ -950,7 +980,7 @@
               </div>
             </details>
 
-                        <details class="panel drawing-section" open="">
+                        <details class="panel drawing-section" id="drawing-gcode-params-panel" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.params.title">Thông số vẽ</span>
                 <span class="drawing-section-description" data-i18n="drawing.params.desc">Dùng khi tạo G-code.</span>
@@ -1025,7 +1055,7 @@
                 </div>
                 <div class="drawing-canvas-stage" id="drawing-canvas-stage">
                   <canvas aria-label="Khung vẽ" id="drawing-canvas" height="600" width="520"></canvas>
-                  <span class="drawing-canvas-empty" data-i18n="drawing.canvas.empty" id="drawing-canvas-empty">Chưa có bản vẽ. Nạp tệp để bắt đầu.</span>
+                  <span class="drawing-canvas-empty" data-i18n="drawing.canvas.empty" id="drawing-canvas-empty">Chưa có bản vẽ. Nạp ảnh, cắt / chỉnh sáng tối rồi bấm "Tạo nét".</span>
                 </div>
                 <label class="checkbox-inline drawing-tone-toggle" data-i18n="[title]drawing.hint.toneToggle" for="preview-tone-toggle">
                   <input checked="" id="preview-tone-toggle" type="checkbox"/>
@@ -1076,7 +1106,7 @@
                   <button class="danger-button" data-i18n="drawing.progress.cancel" disabled="" id="drawing-cancel-btn" type="button">Hủy</button>
                 </div>
                 <div class="drawing-preview-actions">
-                  <button data-i18n="drawing.action.final" disabled="" id="final-run-btn" type="button">Tạo lại nét</button>
+                  <button disabled="" id="final-run-btn" type="button">Tạo nét</button>
                 </div>
                 <div aria-live="polite" class="drawing-warnings" id="drawing-warnings">
                   <strong data-i18n="drawing.preview.warnings">Cảnh báo</strong>
@@ -1110,10 +1140,6 @@
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
               <div class="drawing-section-body">
-                <div class="draft-tools">
-                  <button class="secondary-button" data-i18n="drawing.toneRamp.button" id="tone-ramp-btn" type="button">Ảnh thử preset (thang xám)</button>
-                  <p class="help-text" data-i18n="drawing.toneRamp.help">Nạp ảnh thang xám 11 bậc trắng → đen. Chọn preset, Lưu bản thảo rồi vẽ: mỗi preset một tờ, xem các bậc có tách rõ không rồi chỉnh preset (docs/07_THU_NGHIEM.md).</p>
-                </div>
                 <p class="muted-text" data-i18n="drawing.drafts.empty" id="drawing-draft-empty">Chưa có bản thảo.</p>
                 <ul class="draft-list" id="drawing-draft-list"></ul>
               </div>
@@ -1223,6 +1249,10 @@
                 <label for="draft-max-count">
                       <span data-i18n="settings.drafts.maxCount">Số bản tối đa</span>
                       <input id="draft-max-count" type="number" min="1" max="1000" step="1" value="50"/>
+                    </label>
+                <label for="customer-days">
+                      <span data-i18n="settings.drafts.customerDays">Ảnh khách gửi giữ (ngày)</span>
+                      <input id="customer-days" type="number" min="1" max="30" step="1" value="5"/>
                     </label>
                 <label for="draft-max-mb">
                       <span data-i18n="settings.drafts.maxMb">Dung lượng tối đa (MB)</span>
@@ -1394,6 +1424,99 @@
               tệp YAML để lần bật sau vẫn còn; bản gốc được sao lưu về máy tính trước.
             </p>
           </article>
+
+          <article class="panel testsheet-panel" id="testsheet-panel">
+            <div class="panel-heading">
+              <div>
+                <h2 data-i18n="sheet.title">Tờ thử / hiệu chỉnh</h2>
+                <p data-i18n="sheet.desc">Mỗi nút tạo một bản thảo trong Hàng đợi (tab Điều khiển): nạp, xem trước, chạy như mọi bản vẽ. Dùng khi thử máy thật, mỗi tờ một tờ giấy.</p>
+              </div>
+            </div>
+
+            <section class="sheet-block">
+              <h3 data-i18n="sheet.lift.title">Tờ nhấc bút</h3>
+              <p class="help-text" data-i18n="sheet.lift.help">Mỗi hàng là một tổ hợp Z nhấc + thời gian chờ + tốc độ hạ, 20 gạch 2 mm; hàng k có k chấm ở đầu hàng. Nhìn giấy: hàng nào gạch đều, không kéo vệt, không hụt đầu nét thì bấm "Dùng" ở bảng bên dưới. Xem thời gian thật từng hàng ở Biểu đồ.</p>
+              <div class="sheet-options">
+                <fieldset>
+                  <legend data-i18n="sheet.lift.ups">Z nhấc (mm)</legend>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="1" checked/><span>1</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="1.5"/><span>1.5</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="2"/><span>2</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="3" checked/><span>3</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="5" checked/><span>5</span></label>
+                </fieldset>
+                <fieldset>
+                  <legend data-i18n="sheet.lift.delays">Chờ (giây)</legend>
+                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.05" checked/><span>0.05</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.1" checked/><span>0.1</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.2"/><span>0.2</span></label>
+                </fieldset>
+                <fieldset>
+                  <legend data-i18n="sheet.lift.downFeeds">Tốc độ hạ (mm/phút)</legend>
+                  <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="1000" checked/><span>1000</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="1500"/><span>1500</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="2000" checked/><span>2000</span></label>
+                </fieldset>
+              </div>
+              <div class="mc-actions">
+                <button class="primary-button" data-i18n="sheet.lift.create" id="sheet-lift-btn" type="button">Tạo tờ nhấc bút</button>
+                <span class="sheet-count" id="sheet-lift-count"></span>
+              </div>
+              <div class="sheet-result" hidden id="sheet-lift-result">
+                <p class="sheet-result-title" id="sheet-lift-result-title"></p>
+                <div class="sheet-table-wrap">
+                  <table class="sheet-table" id="sheet-lift-table"></table>
+                </div>
+              </div>
+            </section>
+
+            <section class="sheet-block">
+              <h3 data-i18n="sheet.pen.title">Tờ hiệu chỉnh bút</h3>
+              <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,25; 1,5; 2; 2,5; 3; 4 lần cỡ bút (bút 0,4 mm: 0,32 → 1,6 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật (bài 1 trong 07_THU_NGHIEM).</p>
+              <div class="mc-actions">
+                <label class="sheet-inline" for="sheet-pen-width"><span data-i18n="sheet.pen.width">Cỡ bút (mm)</span>
+                  <input id="sheet-pen-width" max="2" min="0.1" step="0.05" type="number" value="0.4"/></label>
+                <label class="sheet-inline" for="sheet-pen-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
+                  <select id="sheet-pen-paper"><option value="a5">A5</option><option value="a6">A6</option></select></label>
+                <button class="primary-button" data-i18n="sheet.pen.create" id="sheet-pen-btn" type="button">Tạo tờ hiệu chỉnh bút</button>
+              </div>
+            </section>
+
+            <section class="sheet-block">
+              <h3 data-i18n="sheet.machine.title">Bộ thử máy (bài 7.2 – 7.5)</h3>
+              <p class="help-text" data-i18n="sheet.machine.help">Tốc độ, gia tốc và góc cua đổi ở "Cấu hình máy" phía trên; các tờ này chỉ vẽ mẫu để so. Làm 7.2 trước (mất bước), rồi 7.3.</p>
+              <div class="sheet-buttons">
+                <button class="secondary-button" data-i18n="sheet.machine.lost" data-sheet-kind="lost" type="button">7.2 Mất bước</button>
+                <button class="secondary-button" data-i18n="sheet.machine.accel" data-sheet-kind="accel" type="button">7.3 Gia tốc / góc cua</button>
+              </div>
+              <div class="mc-actions">
+                <label class="sheet-inline" for="sheet-speeds"><span data-i18n="sheet.machine.speeds">Tốc độ vẽ thử (mm/phút, cách nhau dấu phẩy)</span>
+                  <input id="sheet-speeds" type="text" value="5000, 6000, 7000, 8000"/></label>
+                <button class="secondary-button" data-i18n="sheet.machine.speed" data-sheet-kind="speed" type="button">7.4 Tốc độ vẽ</button>
+              </div>
+              <div class="mc-actions">
+                <label class="sheet-inline" for="sheet-drag-delay"><span data-i18n="sheet.machine.dragDelay">Chờ nâng (giây)</span>
+                  <select id="sheet-drag-delay"><option value="0.05">0,05</option><option value="0.1">0,1</option><option value="0.2">0,2</option></select></label>
+                <button class="secondary-button" data-i18n="sheet.machine.drag" data-sheet-kind="drag" type="button">7.5 Vệt kéo</button>
+              </div>
+            </section>
+
+            <section class="sheet-block">
+              <h3 data-i18n="sheet.tone.title">Thang xám (thử preset)</h3>
+              <p class="help-text" data-i18n="sheet.tone.help">Nạp ảnh thang xám 11 bậc trắng → đen vào tab Tạo bản vẽ. Chọn preset, bấm Tạo nét, Lưu bản thảo rồi vẽ: mỗi preset một tờ, xem các bậc có tách rõ không rồi chỉnh preset (07_THU_NGHIEM mục 2).</p>
+              <div class="mc-actions">
+                <label class="sheet-inline" for="sheet-tone-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
+                  <select id="sheet-tone-paper">
+                    <option data-i18n="sheet.tone.keep" value="">Giữ khổ đang chọn</option>
+                    <option value="a6">A6</option><option value="a5">A5</option><option value="a4">A4</option>
+                  </select></label>
+                <button class="secondary-button" data-i18n="sheet.tone.button" id="sheet-tone-btn" type="button">Mở ảnh thang xám ở tab Tạo bản vẽ</button>
+              </div>
+            </section>
+
+            <p class="mc-status" id="sheet-status" role="status"></p>
+          </article>
+
         </div>
       </section>
 

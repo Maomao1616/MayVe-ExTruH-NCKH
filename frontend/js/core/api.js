@@ -53,6 +53,20 @@ export const api = {
     command: (line) => request("POST", "/command", { line }),
     realtime: (action) => request("POST", "/realtime", { action }),
     jobStart: (name, lines, client = null) => request("POST", "/jobs", client ? { name, lines, client } : { name, lines }),
+    drawCalibration: (body) => request("POST", "/draw/calibration", body),
+    drawTestSheet: (body) => request("POST", "/draw/testsheet", body),
+    eventsUrl: (since = 0) => `${BASE}/events?since=${Number(since) || 0}`,          // luồng SSE (core/state.js)
+    customerSend: (form) => request("POST", "/customer", form),                  // khách gửi ảnh (FormData: file + meta)
+    customers: () => request("GET", "/customer"),
+    customerSeen: (id) => request("POST", `/customer/${encodeURIComponent(id)}/seen`),
+    customerDelete: (id) => request("DELETE", `/customer/${encodeURIComponent(id)}`),
+    customerImageUrl: (id) => `${BASE}/customer/${encodeURIComponent(id)}/image`,
+    async customerImage(id) {
+        let response;
+        try { response = await fetch(this.customerImageUrl(id)); } catch { throw new ApiError("backend_unreachable", "Không gọi được backend", 0); }
+        if (!response.ok) throw new ApiError("not_found", "Không có ảnh này", response.status);
+        return response.blob();
+    },
     joblogs: () => request("GET", "/joblogs"),
     // window = chỉ lấy chừng này giây (0 / bỏ trống = cả lần chạy); end = giây kết thúc cửa sổ (bỏ trống = cuối lần chạy)
     joblog: (id, points = 3000, window = 0, end = null) => request("GET",

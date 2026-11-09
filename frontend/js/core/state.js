@@ -1,12 +1,17 @@
 // state.js — NƠI DUY NHẤT nhận dữ liệu từ backend. Không đụng vào DOM.
-// Vòng lặp: /api/status mỗi POLL.statusMs (tọa độ, công tắc, trạng thái: nhanh như backend hỏi máy);
-// /api/log?since=... (terminal) thưa hơn, mỗi POLL.logMs. Nhật ký lấy theo seq nên hỏi thưa không mất dòng nào.
+// Cách chính: luồng SSE /api/events (backend đẩy trạng thái ~10 lần/giây + nhật ký khi có), một kết nối cho cả hai.
+// Dự phòng (tự quay về khi SSE hỏng / chưa nối được / trình duyệt không hỗ trợ): hỏi lặp /api/status mỗi POLL.statusMs
+// và /api/log?since=... mỗi POLL.logMs. Nhật ký lấy theo seq nên hỏi thưa hay nối lại đều không mất, không lặp dòng nào.
 
 import { api } from "./api.js";
 import { isAdmin } from "./auth.js";
 import { POLL } from "./config.js";
 
 const MAX_LOGS = 500;
+// SSE coi là "khỏe" nếu trong chừng này mili giây có ít nhất một sự kiện (backend gửi lại trạng thái mỗi ~2 giây dù máy đứng yên).
+const SSE_HEALTHY_MS = 5000;
+const SSE_CHECK_MS = 1000;           // SSE khỏe: vòng hỏi lặp chỉ kiểm tra lại mỗi chừng này, không gọi mạng
+const SSE_RETRY_MS = 3000;
 // Tab bị ẩn thì ngừng thăm dò, nhưng vẫn báo "trang còn mở" để bản đóng gói không tự tắt server (backend/app/idle.py).
 const HIDDEN_PING_MS = 30000;
 
@@ -30,6 +35,11 @@ let pingId = null;
 let lastBackendStamp = null;   // status.updated_at của lần trước
 let lastLogAt = 0;             // giờ trình duyệt của lần lấy /api/log gần nhất
 let logNow = false;            // refreshNow(): lấy nhật ký ngay, không chờ tới lượt
+let forcePoll = false;         // refreshNow(): hỏi thẳng một lần dù SSE đang khỏe
+let sse = null;                // EventSource đang mở
+let sseLastEventAt = 0;
+let sseFailures = 0;
+let sseRetryId = null;
 
 /* ---------- hàm tiện ích dùng chung (để các view không tự tính lại) ---------- */
 
@@ -111,10 +121,61 @@ function applyLog(result) {
     state.lastLogSeq = Math.max(state.lastLogSeq, serverLastSeq, maxEntrySeq);
 }
 
-/* ---------- vòng thăm dò ---------- */
+/* ---------- luồng SSE ---------- */
+
+const sseHealthy = () => sse !== null && Date.now() - sseLastEventAt < SSE_HEALTHY_MS;
+
+function closeSse() {
+    clearTimeout(sseRetryId);
+    sseRetryId = null;
+    if (sse) { sse.close(); sse = null; }
+}
+
+function startSse() {
+    if (typeof EventSource === "undefined" || sse || !polling || document.hidden) return;
+    const source = new EventSource(api.eventsUrl(state.lastLogSeq));
+    sse = source;
+    const alive = () => { sseLastEventAt = Date.now(); sseFailures = 0; };
+    source.addEventListener("status", (event) => {
+        let status;
+        try { status = JSON.parse(event.data); } catch { return; }
+        alive();
+        applyStatus(status);
+        state.backendOnline = true;
+        state.error = null;
+        state.lastPollAt = Date.now();
+        notify();
+    });
+    source.addEventListener("log", (event) => {
+        let result;
+        try { result = JSON.parse(event.data); } catch { return; }
+        alive();
+        const before = state.logResetCount;
+        applyLog(result);
+        notify();
+        // Backend khởi động lại: seq quay về nhỏ. Nối lại từ đầu (since=0) để lấy lại toàn bộ nhật ký mới.
+        if (state.logResetCount !== before) { closeSse(); startSse(); }
+    });
+    // Lỗi / mất kết nối: tự đóng và nối lại sau vài giây (nối lại bằng since mới, không lặp dòng); trong lúc đó hỏi lặp lo.
+    source.onerror = () => {
+        if (sse !== source) return;
+        closeSse();
+        sseFailures += 1;
+        sseRetryId = window.setTimeout(startSse, Math.min(SSE_RETRY_MS * sseFailures, 15000));
+    };
+}
+
+/* ---------- vòng thăm dò (dự phòng khi SSE không khỏe) ---------- */
 
 async function pollOnce() {
     if (!polling || requestInProgress || document.hidden) return;
+
+    // SSE đang đẩy dữ liệu: không gọi mạng, chỉ kiểm tra lại sau ít lâu (SSE im thì lần kiểm tra sau sẽ hỏi lặp).
+    if (sseHealthy() && !forcePoll) {
+        timerId = window.setTimeout(pollOnce, SSE_CHECK_MS);
+        return;
+    }
+    forcePoll = false;
 
     requestInProgress = true;
 
@@ -156,6 +217,7 @@ async function pollOnce() {
 
 function handleVisibilityChange() {
     if (document.hidden) {
+        closeSse();                       // tab ẩn: không giữ luồng (bản đóng gói còn tự tắt khi không còn trang)
         if (timerId !== null) {
             window.clearTimeout(timerId);
             timerId = null;
@@ -166,6 +228,7 @@ function handleVisibilityChange() {
         return;
     }
     stopPing();
+    startSse();
 
     if (polling && timerId === null && !requestInProgress) {
         pollOnce();
@@ -186,7 +249,10 @@ export function startPolling() {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     if (document.hidden) handleVisibilityChange();   // mở trang ở tab nền: chỉ báo "còn mở"
-    else pollOnce();
+    else {
+        startSse();                                  // hỏi lặp một lần ngay cho nhanh có hình, SSE nối xong thì nó nghỉ
+        pollOnce();
+    }
 }
 
 // Đổi nhịp cập nhật terminal (Cài đặt → Hoạt động). Tọa độ / trạng thái vẫn theo POLL.statusMs.
@@ -199,6 +265,7 @@ export function setPollInterval(ms) {
 export async function refreshNow() {
     if (!polling || requestInProgress) return;
     logNow = true;
+    forcePoll = true;
     if (timerId !== null) {
         window.clearTimeout(timerId);
         timerId = null;
@@ -209,6 +276,7 @@ export async function refreshNow() {
 export function stopPolling() {
     polling = false;
     stopPing();
+    closeSse();
 
     if (timerId !== null) {
         window.clearTimeout(timerId);
