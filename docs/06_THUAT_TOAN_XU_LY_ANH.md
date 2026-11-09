@@ -387,6 +387,8 @@ vpype là thư viện chuyên cho máy vẽ. Phần mềm gọi một chuỗi l�
 | `filter --min-length` | 0,5 mm | bỏ nét quá ngắn |
 | `linesort --two-opt --passes 50` | bật | sắp thứ tự nét cho quãng bút **nhấc lên di chuyển** ngắn nhất. *2-opt*: thử đảo ngược từng đoạn trong thứ tự, giữ lại nếu quãng đi ngắn hơn |
 
+**Thứ tự vẽ giữa các mức (`group_levels`, 09/11/2026).** `linesort` chỉ biết rút ngắn quãng bay nên trộn mọi mức đậm nhạt lẫn nhau: bút vẽ dở mảng này đã nhảy sang mảng khác, và cú nhảy xa dồn ở cuối (nét lẻ bị bỏ lại). Mặc định giờ mỗi **mức** là một lớp vpype riêng (vpype sắp xếp từng lớp độc lập) rồi ghép lại **nhạt → đậm, viền cuối** (`raster._optimize`, `styles.fill_groups`). Đo (ảnh nhiều chi tiết, xoắn ốc, 1071 nét): tổng quãng nhấc bút **1344 mm → 3947 mm** (thêm khoảng 2,6 m ≈ 20–30 s ở 6000–8000 mm/min), số nét không đổi; ảnh chuyển sắc: đổi mức **3 lần** (lý tưởng) thay vì 111 lần. Số lần nhấc bút gần như không đổi. Tắt ô "Vẽ lần lượt từng mức" để quay về cách cũ (quãng bay ngắn nhất, thứ tự lộn xộn). Chưa biết thứ tự nào tốt hơn cho mực: chờ ảnh in thật.
+
 Đo trên laptop (8000 nét): sắp thường 0,85 s → 11,75 m di chuyển; 2-opt 50 lượt 8,5 s → 8,97 m (−24 %); 200 lượt không hơn đáng kể. 2-opt chậm theo bình phương số nét, nên quá 15 000 nét thì chỉ sắp thường.
 
 ---

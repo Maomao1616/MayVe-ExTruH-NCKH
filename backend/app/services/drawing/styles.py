@@ -44,6 +44,10 @@ def level_plan(levels: int, line_w: float, scale: float = 1.0) -> list[tuple[flo
     return [(lo, hi, max(0.1, scale * line_w / c)) for lo, hi, c in zip(lows, highs, cover)]
 
 
+def _flat(groups: list[list[Stroke]]) -> list[Stroke]:
+    return [s for g in groups for s in g]
+
+
 def _clip_out(arrays: list[np.ndarray], f: Field) -> list[Stroke]:
     out: list[Stroke] = []
     for a in arrays:
@@ -74,17 +78,23 @@ def _passes(f: Field, style, pen_mm: float, ctx, angle: float | None = None):
             yield mask, base % 180.0, s
 
 
-@FILLERS.register("zigzag")
-def zigzag(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    out: list[np.ndarray] = []
+# Mỗi kiểu có hai dạng: `*_groups` trả [nhóm của mức nhạt nhất, ..., nhóm của mức đậm nhất] (mỗi nhóm là một danh sách nét),
+# còn hàm đăng ký ở FILLERS trả danh sách phẳng (như cũ). `fill_groups` cho bước tối ưu sắp xếp RIÊNG từng mức, để bút vẽ
+# lần lượt từng mức đậm nhạt thay vì nhảy qua lại giữa các mức (xem raster.py, tùy chọn optimize.group_levels).
+def zigzag_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
+    groups = []
     for mask, a, s in _passes(f, style, pen_mm, ctx, angle):
         d, n, vmin, lines = hatch.scan_runs(mask, f, a, s)
-        out += hatch.serpentine(d, n, vmin, lines, s)
-    return _clip_out(out, f)
+        groups.append(_clip_out(hatch.serpentine(d, n, vmin, lines, s), f))
+    return groups
 
 
-@FILLERS.register("wave")
-def wave(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
+@FILLERS.register("zigzag")
+def zigzag(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
+    return _flat(zigzag_groups(f, style, pen_mm, ctx, angle))
+
+
+def wave_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
     passes = []
     for mask, a, s in _passes(f, style, pen_mm, ctx, angle):
         amp = style.amplitude_mm if style.amplitude_mm is not None else WAVE_AMPLITUDE_RATIO * s
@@ -94,19 +104,31 @@ def wave(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -
     # ngân sách điểm (mỗi chu kỳ 5 điểm). Ảnh đậm nhiều thì sóng thưa hơn chứ không vượt giới hạn G-code.
     total = sum(u1 - u0 for *_, lines in passes for runs in lines for u0, u1 in runs)
     budget_wl = 5.0 * total / hatch.WAVE_POINT_BUDGET
-    out: list[np.ndarray] = []
+    groups = []
     for amp, s, d, n, vmin, lines in passes:
         wavelength = max(6.0 * amp, 6.0 * pen_mm, budget_wl)
-        out += hatch.serpentine(d, n, vmin, lines, s, hatch.sine_shape(amp, wavelength, wavelength / 5))
-    return _clip_out(out, f)
+        groups.append(_clip_out(hatch.serpentine(d, n, vmin, lines, s, hatch.sine_shape(amp, wavelength, wavelength / 5)), f))
+    return groups
+
+
+@FILLERS.register("wave")
+def wave(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
+    return _flat(wave_groups(f, style, pen_mm, ctx, angle))
+
+
+def spiral_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
+    groups = []
+    for mask, _angle, s in _passes(f, style, pen_mm, ctx, angle):
+        groups.append(_clip_out(hatch.spiral_runs(mask, f, s), f))
+    return groups
 
 
 @FILLERS.register("spiral")
 def spiral(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    out: list[np.ndarray] = []
-    for mask, _angle, s in _passes(f, style, pen_mm, ctx, angle):
-        out += hatch.spiral_runs(mask, f, s)
-    return _clip_out(out, f)
+    return _flat(spiral_groups(f, style, pen_mm, ctx, angle))
+
+
+GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_groups}
 
 
 @FILLERS.register("outline")
@@ -118,14 +140,22 @@ def outline(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None
     return trace.to_strokes(skel, f.width_mm / f.w, f.height_mm / f.h, min_len_mm=max(1.0, 3.0 * pen_mm))
 
 
-def fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
-         overlay: bool | None = None) -> list[Stroke]:
-    """`angle` ghi đè góc gạch (mỗi màu một góc); `overlay` ghi đè outline_overlay (đa màu chỉ phủ viền một lần)."""
-    strokes = FILLERS.get(style.kind)(f, style, pen_mm, ctx, angle)
+def fill_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
+                overlay: bool | None = None) -> list[list[Stroke]]:
+    """Nét tô chia nhóm theo mức đậm nhạt (nhạt → đậm), nhóm viền (nếu có) cuối cùng. Nhóm rỗng bị bỏ.
+    `angle` ghi đè góc gạch (mỗi màu một góc); `overlay` ghi đè outline_overlay (đa màu chỉ phủ viền một lần)."""
+    grouper = GROUPERS.get(style.kind)
+    groups = grouper(f, style, pen_mm, ctx, angle) if grouper else [FILLERS.get(style.kind)(f, style, pen_mm, ctx, angle)]
     if overlay is None:
         overlay = style.outline_overlay
     if overlay and style.kind != "outline":     # viền vẽ SAU cùng cho nét rõ
         if ctx:
             ctx.check()
-        strokes = strokes + outline(f, style, pen_mm, ctx)
-    return strokes
+        groups = groups + [outline(f, style, pen_mm, ctx)]
+    return [g for g in groups if g]
+
+
+def fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
+         overlay: bool | None = None) -> list[Stroke]:
+    """Như fill_groups nhưng một danh sách phẳng (thứ tự: mức nhạt → đậm, viền cuối)."""
+    return _flat(fill_groups(f, style, pen_mm, ctx, angle, overlay))

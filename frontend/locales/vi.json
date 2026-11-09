@@ -706,6 +706,8 @@
   "drawing.preprocess.clahe": "Cân bằng sáng cục bộ (ảnh tối/sáng lệch)",
   "drawing.preprocess.denoise": "Khử nhiễu (chậm, chỉ cho ảnh thiếu sáng)",
   "drawing.vectorize.passes": "Số lượt 2-opt",
+  "drawing.vectorize.groupLevels": "Vẽ lần lượt từng mức đậm nhạt (nhạt → đậm, viền cuối)",
+  "drawing.hint.groupLevels": "Bút vẽ hết mức nhạt nhất rồi mới sang mức đậm hơn, viền vẽ sau cùng; mỗi mức tự sắp xếp để ít nhấc bút. Thứ tự dễ theo dõi, mực ở các mảng khác nhau khô lần lượt, nhưng quãng bút bay trên giấy tăng khoảng gấp ba (thêm chừng 20–30 giây cho cả bản vẽ). Tắt thì cả bức sắp xếp chung: quãng bay ngắn nhất, thứ tự nhảy qua lại giữa các mảng.",
   "drawing.vectorize.twoOpt": "Sắp xếp kỹ (2-opt, chậm hơn, ít nhấc bút hơn)",
   "drawing.style.zigzag": "Zigzag (gạch nối liền)",
   "drawing.style.wave": "Sóng",

@@ -45,6 +45,7 @@
 | P6 | Kiểu tô: zigzag (mặc định, 45°), sóng, xoắn ốc, viền; thêm lớp viền tùy chọn | ít nhấc bút; không vượt 200 000 dòng | ✅ |
 | P15 | **Mỗi mức đậm nhạt = một dải, một lượt gạch, khoảng cách riêng** (`level_plan`: độ phủ 0 → 90 % chia đều, s = nét thật ÷ độ phủ; nét thật = 1,375 × cỡ bút). 5 mức mặc định | mô phỏng: sai số 0,174 → 0,071, nét ngắn hơn 45 % so với chồng lớp | ✅ mô phỏng · 🧪 in giấy |
 | P16 | Zigzag / sóng quay đầu bằng **nửa vòng tròn** | góc vuông ép máy ~7 mm/s, mực đọng thành giọt | 🧪 |
+| P17 | **Vẽ lần lượt từng mức đậm nhạt** (nhạt → đậm, viền cuối), mỗi mức sắp xếp riêng; tắt được (`optimize.group_levels`, mặc định bật, 09/11/2026) | thứ tự cũ (sắp xếp chung) cho quãng bay ngắn nhất nhưng bút nhảy qua lại giữa các mảng và để sót nét lẻ phải bay về cuối; chủ dự án muốn thứ tự gọn. Giá: quãng bay ≈ ×3 (≈ +20–30 s). Mực ướt / khô: chưa kiểm | ✅ máy giả · 🧪 in giấy |
 | P13 | Viền: top-hat (nét mực ≤ 4 mm → đường giữa) + Canny trên ảnh làm phẳng màu (mean shift, kênh a / b Lab) + vòng viền chấm + nối khe ≤ 1,5 mm + cắt râu theo bề dày nét + khép vòng. Thay DoG cũ | DoG cho hai đường song song ở nét dày, mất viền mảng không có nét đen | ✅ ảnh mẫu · 🧪 in giấy |
 | P7 | Nhiều màu 2–4: k-means trên Lab có nhấn sắc độ; mỗi màu một tệp G-code, tên có mã màu | để thử; đổi bút giữa các tệp | ✅ |
 | P8 | Trình duyệt thu nhỏ ảnh và xem trước độ sáng; máy chủ luôn tự làm được và kiểm lại | gửi nhẹ; không tin dữ liệu từ trình duyệt | ✅ |

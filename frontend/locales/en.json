@@ -690,6 +690,8 @@
   "drawing.preprocess.clahe": "Local contrast (uneven dark/bright photos)",
   "drawing.preprocess.denoise": "Denoise (slow, dim photos only)",
   "drawing.vectorize.passes": "2-opt passes",
+  "drawing.vectorize.groupLevels": "Draw one tone level at a time (light → dark, outline last)",
+  "drawing.hint.groupLevels": "The pen finishes the lightest level before the next darker one, outline last; each level is ordered on its own to limit pen lifts. Easier to follow, and ink in different patches dries in turn, but the pen-up travel roughly triples (about 20–30 s extra for a whole drawing). Off: the whole picture is ordered together: shortest travel, but the pen hops between patches.",
   "drawing.vectorize.twoOpt": "Careful ordering (2-opt, slower, fewer pen lifts)",
   "drawing.style.zigzag": "Zigzag (connected hatching)",
   "drawing.style.wave": "Wave",

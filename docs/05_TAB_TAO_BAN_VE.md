@@ -130,7 +130,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `layout` | khổ giấy, lề (5 mm), rộng / cao khung, căn giữa, lật, đảo thứ tự, xoay 0/90/180/270 |
 | `gcode` | tốc độ vẽ 5000, di chuyển 6000, nâng bút 3000, hạ bút (trống = như nâng), chờ 0,05 / 0,05 s, độ chính xác 3 chữ số |
 | `machine` | vùng máy 285 × 318, hành trình Z, tốc độ G0, `invert_y` (tắt) |
-| `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt |
+| `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (mặc định bật: vẽ lần lượt từng mức đậm nhạt) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
 | `raster` | bút (0,2 / 0,4 / 0,5), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
 | `style` | kiểu (`outline` / `zigzag` / `wave` / `spiral`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |

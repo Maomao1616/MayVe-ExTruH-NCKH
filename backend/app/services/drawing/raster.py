@@ -69,22 +69,28 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
     field = Field(dark, img.width_mm, img.height_mm, img.rgb if wants_outline else None)
     colors: dict[str, str] = {}
     raw_layers: list[Layer] = []
+    groups_of: dict[str, list[list]] = {}                       # mã lớp -> các nhóm nét theo mức đậm nhạt (xem styles.fill_groups)
     if multi:
         regions = palette.split(img.rgb, pp.colors, pp.skip_background, ctx)
         for i, region in enumerate(regions):
             step("style", 0.3 + 0.4 * i / max(1, len(regions)), f"Tạo nét màu {i + 1}/{len(regions)}")
             f = Field(palette.density(dark, region), img.width_mm, img.height_mm)
             angle = (sp.angle + i * 180.0 / len(regions)) % 180.0       # mỗi màu một góc để dễ phân biệt
-            strokes = styles.fill(f, sp, rp.pen_width_mm, ctx, angle, overlay=False)
-            if strokes:
-                raw_layers.append(Layer(str(len(raw_layers) + 1), strokes))
+            groups = styles.fill_groups(f, sp, rp.pen_width_mm, ctx, angle, overlay=False)
+            if groups:
+                raw_layers.append(Layer(str(len(raw_layers) + 1), [s for g in groups for s in g]))
+                groups_of[raw_layers[-1].id] = groups
                 colors[raw_layers[-1].id] = region.color
         if raw_layers and sp.outline_overlay:                         # viền vẽ bằng bút đậm nhất (lớp 1)
-            raw_layers[0].strokes += styles.outline(field, sp, rp.pen_width_mm, ctx)
+            edge = styles.outline(field, sp, rp.pen_width_mm, ctx)
+            raw_layers[0].strokes += edge
+            if edge:
+                groups_of[raw_layers[0].id].append(edge)
     else:
-        strokes = styles.fill(field, sp, rp.pen_width_mm, ctx)
-        if strokes:
-            raw_layers.append(Layer("1", strokes))
+        groups = styles.fill_groups(field, sp, rp.pen_width_mm, ctx)
+        if groups:
+            raw_layers.append(Layer("1", [s for g in groups for s in g]))
+            groups_of["1"] = groups
     del dark, field
     if not raw_layers:
         raise DrawError("empty_drawing", "Không có vùng nào đủ đậm để vẽ (ảnh quá sáng — thử hạ mức trắng hoặc tăng gamma).")
@@ -93,8 +99,7 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
         raise DrawError("too_many_points", f"{before['points']} điểm, vượt giới hạn {MAX_POINTS} (tăng khoảng cách nét).")
 
     step("optimize", 0.7, "Tối ưu nét")
-    doc = optimize.run(optimize.layers_to_document(raw_layers), op)
-    layers, meta = document_to_layers(doc)
+    layers, meta = _optimize(raw_layers, groups_of, op)
     if not layers:
         raise DrawError("empty_drawing", "Sau khi tối ưu không còn nét nào (thử giảm 'bỏ nét ngắn').")
     for layer, m in zip(layers, meta):                        # mã màu nằm ngay trong tên lớp -> tên tệp G-code
@@ -121,6 +126,26 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
     info["timings"] = {k: round(v, 3) for k, v in timings.items()}
     info["timings"]["total"] = round(sum(timings.values()), 3)
     return layers, frame, info, warnings
+
+
+def _optimize(raw_layers: list[Layer], groups_of: dict[str, list[list]], op):
+    """Tối ưu nét bằng vpype. `group_levels` bật (mặc định) và có nhiều mức thì mỗi MỨC đậm nhạt là một lớp vpype riêng
+    (vpype sắp xếp từng lớp độc lập), rồi ghép lại đúng thứ tự nhạt → đậm, viền cuối: bút vẽ hết mức này mới sang mức
+    khác, không nhảy lẫn giữa các mảng. Tắt thì cả bức sắp xếp chung (quãng nhấc bút ngắn nhất, thứ tự lộn xộn hơn)."""
+    if not (op.group_levels and any(len(g) > 1 for g in groups_of.values())):
+        return document_to_layers(optimize.run(optimize.layers_to_document(raw_layers), op))
+    pieces: list[Layer] = []
+    owner: list[str] = []                                       # vị trí lớp vpype (từ 1) -> mã lớp gốc
+    for layer in raw_layers:
+        for group in groups_of[layer.id]:
+            pieces.append(Layer(str(len(pieces) + 1), group))
+            owner.append(layer.id)
+    tmp_layers, _ = document_to_layers(optimize.run(optimize.layers_to_document(pieces), op))
+    merged: dict[str, list] = {layer.id: [] for layer in raw_layers}
+    for piece in tmp_layers:                                    # đã sắp theo mã tăng dần = thứ tự nhóm
+        merged[owner[int(piece.id) - 1]].extend(piece.strokes)
+    layers = [Layer(lid, strokes) for lid, strokes in merged.items() if strokes]
+    return layers, [{"id": layer.id, "name": None, "color": None} for layer in layers]
 
 
 def import_raster(data: bytes, name: str, opts: dict, token: str | None = None, ctx=None) -> dict:

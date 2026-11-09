@@ -33,6 +33,7 @@ const FIELDS = [
     ["merge-tolerance", "optimize", "merge_tolerance_mm", "num"],
     ["min-path-length", "optimize", "min_length_mm", "num"],
     ["optimize-order", "optimize", "sort", "bool"],
+    ["optimize-group-levels", "optimize", "group_levels", "bool"],
     ["optimize-two-opt", "optimize", "two_opt", "bool"],
     ["optimize-passes", "optimize", "passes", "int"],
     ["image-black-point", "raster", "black_point", "int"],

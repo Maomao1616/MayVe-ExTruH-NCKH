@@ -80,6 +80,7 @@ OPTIMIZE = (
     Param("simplify_tolerance_mm", "float", 0.05, 0, 10, unit="mm"),  # đơn giản hóa (bỏ điểm thừa)
     Param("min_length_mm", "float", 0.5, 0, 100, unit="mm"),          # bỏ nét ngắn hơn mức này
     Param("sort", "bool", True),                                      # sắp xếp để giảm quãng bút nâng
+    Param("group_levels", "bool", True),                              # vẽ lần lượt từng mức đậm nhạt (nhạt → đậm, viền cuối), mỗi mức tự sắp xếp riêng
     Param("two_opt", "bool", True),                                   # 2-opt: giảm thêm ~25% quãng nhấc bút (chậm hơn)
     Param("passes", "int", 50, 10, 2000),                             # số lượt 2-opt; 50 là đủ (200 gần như không hơn)
 )
