@@ -5,7 +5,7 @@
 ## 1. Dự án
 **VMU PlotterPen** (thư mục `ExtruXY`): phần mềm điều khiển máy vẽ bút CoreXY. Mạch **MKS DLC32 V2.1**, firmware **FluidNC v4.1.1** (không sửa), nối USB (CH340, 115200). Vùng làm việc **285 × 318 mm**, Z bút 5 mm (servo, bút hạ bằng trọng lực). Giấy A6 ⊂ A5 ⊂ A4 neo ở O(0,0) góc trên trái, Y xuống. **Hướng trục đã xác nhận đúng 05/11/2026** (`VIEW.flipX/flipY = false`, `invert_y = false`).
 Backend **Python 3.12 / FastAPI**; frontend **JS thuần** (không framework, không build). Chạy trên laptop (bản mang đi Windows); kế hoạch MiniPC Ubuntu + Docker + Cloudflare Tunnel. Dữ liệu ở `data/` cùng cấp `backend/`.
-Bút: Sakura 0,4 (tranh, nét thật ~0,55 mm), bút bi 0,5 (chữ, Word cỡ 14–16). Mặc định vẽ 5000 mm/min, Z3 / Z0, chờ 0,05 s, hạ bút 2000.
+Bút: Sakura 0,4 / Uniball 150 trên giấy Ivory 250 g/m² (tranh; từ 11/11/2026 tính nét thật 0,44 mm, `LINE_WIDTH_RATIO` 1,1; giấy thường từng loang ra 0,55), bút bi 0,5 (chữ, Word cỡ 14–16). Mặc định vẽ 5000 mm/min, Z3 / Z0, chờ 0,05 s, hạ bút 2000; máy thật đang chạy tối đa 8000, gia tốc 3000, junction 0,05, SpreadCycle.
 Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, đề tài cấp trường, mục tiêu sản phẩm IoT chạy thật, demo **không cần Internet**.
 
 ## 2. Tài liệu
@@ -29,7 +29,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 3. **Phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác (trừ `control.js` → `preview.js`). Một phần tử HTML chỉ một chủ ghi.
 4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Thêm tham số = dòng `Param` + ô `index.html` + dòng `FIELDS` trong `views/drawing/params.js` + khóa dịch.
 5. **Dịch:** mọi chữ qua `frontend/locales/vi.json` và `en.json`, hai tệp cùng khóa. Terminal giữ tiếng Anh. `DrawError.code` ↔ khóa `drawing.error.<code>`.
-6. **Test đi cùng mã.** `cd backend && python -m pytest` (~397; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`). Frontend: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` (33). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
+6. **Test đi cùng mã.** `cd backend && python -m pytest` (~500; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`; `test_old_logs_are_pruned` có thể hết giờ khi chạy chung, chạy riêng thì qua). Frontend: `node --test` kèm từng tệp `frontend/tests/*.mjs` (39). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
 7. **Không bịa số máy.** Lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `02_PHAN_CUNG_MAY.md`; ghi rõ điều chưa kiểm chứng.
 8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`). Thêm route cho khách = một dòng trong danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
 9. **Thuật toán tô:** đánh giá thay đổi bằng `tools/ink_sim.py` (sai số tông, chiều dài, thời gian) trước khi đề xuất; nêu số trước / sau.
@@ -87,4 +87,5 @@ Việc hôm nay: <một việc cụ thể>. Cần tệp nào thì nói, tôi g�
 ## 7. Giữ tài liệu đúng
 - Thêm / đổi tệp lớn → `python tools/export_context.py --map`.
 - Xong một việc → `11_VIEC_CAN_LAM.md`. Đổi hành vi đã chốt → `09_QUYET_DINH_THIET_KE.md`. Đổi API tab vẽ → `05_TAB_TAO_BAN_VE.md` mục 7 + `spec.py`. Đổi con số thuật toán → `06_THUAT_TOAN_XU_LY_ANH.md`. Số đo máy mới → `02_PHAN_CUNG_MAY.md`.
+- **Tệp luật cho AI khác:** `CLAUDE.md` (Claude Code) và thư mục `.clinerules/` (Cline, các tệp 00–04) là bản rút gọn của mục 3–5 của tệp này. Đổi luật ở đây thì sửa cả hai nơi cho khớp; `AI_START.md` là bản gốc.
 - Không tạo tệp tài liệu mới nếu nội dung thuộc một tệp đã có. Tệp mới cho người đọc thì đánh số; tệp chỉ cho AI thì đặt tiền tố `AI_` và ghi "FOR AI" ở dòng đầu.
