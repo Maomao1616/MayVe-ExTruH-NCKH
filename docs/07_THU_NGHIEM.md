@@ -16,7 +16,7 @@
 - Tệp G-code thử có sẵn: `python tools/make_test_gcode.py` ghi vào `export\test-gcode\` (không lên Git). Nạp ở tab Điều khiển → Xem trước → Chạy. **Mỗi bài một tờ giấy mới.**
 
 ## 1. Bề rộng nét thật: tờ mẫu hiệu chỉnh bút
-Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và **8 dải gạch** có khoảng cách dòng bằng 0,8 / 1 / 1,25 / 1,5 / 2 / 2,5 / 3 / 4 **lần cỡ bút** (số nhân, không phải mm; bút 0,4 mm thì 0,32 / 0,40 / 0,50 / 0,60 / 0,80 / 1,00 / 1,20 / 1,60 mm). Tạo tờ này ở Cài đặt → **Tờ thử / hiệu chỉnh** → "Tạo tờ hiệu chỉnh bút" (chọn khổ **A5** hoặc **A6**; A6 gọn hơn: dải rộng 95 mm, thước 80 mm, vừa lề 5 mm của A6) (hoặc gọi `POST /api/draw/calibration`, gửi `pen_width_mm`).
+Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và **8 dải gạch** có khoảng cách dòng bằng 0,8 / 1 / 1,125 / 1,25 / 1,5 / 2 / 2,5 / 3 **lần cỡ bút** (số nhân, không phải mm; bút 0,4 mm thì 0,32 / 0,40 / 0,45 / 0,50 / 0,60 / 0,80 / 1,00 / 1,20 mm; từ 11/11/2026 dày quanh 0,4–0,5 để tách nét 0,40 với 0,45). Tạo tờ này ở Cài đặt → **Tờ thử / hiệu chỉnh** → "Tạo tờ hiệu chỉnh bút" (chọn khổ **A5** hoặc **A6**; A6 gọn hơn: dải rộng 95 mm, thước 80 mm, vừa lề 5 mm của A6) (hoặc gọi `POST /api/draw/calibration`, gửi `pen_width_mm`).
 
 | Xem gì | Kết luận |
 |---|---|
@@ -26,7 +26,8 @@ Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và
 | Dải thưa nhất còn đọc thành mảng | mức sáng nhất có ý nghĩa |
 
 ✅ 03/11/2026, Sakura 0,4, tốc độ 3000: dải 0,5 mm đặc, 0,6 mm gần đặc, 0,8 mm còn sợi → nét thật **~0,55 mm** → `LINE_WIDTH_RATIO = 1.375` (`backend/app/services/drawing/styles.py`). Phần mềm tự suy ra mọi khoảng cách nét từ con số này ([06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) mục 6).
-⏳ Bề rộng nét **phụ thuộc tốc độ**: in lại tờ này ở tốc độ đã chốt (bài 7.4), sửa `LINE_WIDTH_RATIO = nét thật ÷ cỡ ngòi` nếu khác.
+🔁 11/11/2026: đổi sang giấy **Ivory 250 g/m²** (ít loang) + Sakura 0,4 / **Uniball 150** (~0,35–0,45 mm khi vẽ nhanh) → tạm đặt `LINE_WIDTH_RATIO = 1.1` (nét **0,44 mm** với bút 0,4; dải đậm nhất cách 0,49 mm). Ảnh vẽ ra **nhiều nét hơn ~25 %** so với khi còn 0,55 (lâu hơn tương ứng).
+⏳ Bề rộng nét **phụ thuộc tốc độ, bút, giấy**: in tờ này trên Ivory ở tốc độ vẽ đang dùng (8000), dải 0,40 / 0,45 / 0,50 cái nào sát nhất còn đặc → sửa `LINE_WIDTH_RATIO = nét thật ÷ cỡ ngòi`.
 
 ## 2. Thang đậm nhạt: ảnh thử preset (thang xám)
 Chỉ làm **một lần cho mỗi bút + loại giấy**, để chốt số cho preset.
@@ -44,7 +45,7 @@ Cần biết: với 5 mức, 11 bậc ảnh được gộp thành **5 bậc trê
 | Bậc đậm nhất bết mực, giấy ướt | giảm `MAX_COVERAGE` (0,9 trong `styles.py`) hoặc tăng `style-spacing` |
 | Cả tờ quá đậm, các bậc giữa gần đen | tăng `image-gamma` 0,1–0,2 |
 | Cả tờ quá nhạt | giảm `image-gamma` 0,1–0,2 (không dưới 0,8) |
-| Vùng nhạt lộ từng sợi, lổn nhổn | giảm `style-spacing` (mm; trống = 1,1 với bút 0,4) |
+| Vùng nhạt lộ từng sợi, lổn nhổn | giảm `style-spacing` (mm; trống = 2 × nét thật = 0,88 với bút 0,4) |
 | Tông giữa lệch so với dải chuyển liền | ghi lại độ đậm nhìn thấy từng bậc → dùng làm **đường cong tông** ([10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md)) |
 
 ## 3. Từng kiểu tô: soi chỗ nào
@@ -85,15 +86,16 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 - **Thông số máy** (gia tốc, `junction_deviation_mm`, tốc độ tối đa): Cài đặt → Cấu hình máy → Áp dụng (chỉ RAM). Chốt được rồi mới Lưu vào mạch.
 - **Thông số G-code** (chờ, tốc độ vẽ / di chuyển / bút): tab Tạo bản vẽ. **Z bút**: Cài đặt → Cấu hình máy, mục App.
 - **Tạo tờ thử bằng giao diện (từ 09/11/2026):** Cài đặt → **Tờ thử / hiệu chỉnh**. Nút **Tạo tờ nhấc bút** (chọn Z nhấc 1 / 1,5 / 2 / 3 / 5, chờ, tốc độ hạ; mỗi hàng một tổ hợp, hàng k có k chấm ở đầu) cho ra bảng hàng ↔ thông số; chạy tờ trên giấy, chọn hàng đẹp nhất, bấm **Dùng** thì Z nhấc ghi vào hồ sơ và chờ / tốc độ hạ vào ô tab Tạo bản vẽ. Có sẵn cả nút tờ hiệu chỉnh bút và bài 7.2 / 7.3 / 7.4 / 7.5; tất cả thành bản thảo trong Hàng đợi (tab Điều khiển).
+- **Từ 11/11/2026:** tờ nhấc bút mặc định chờ **0,02 / 0,05 / 0,1 s** (× Z 1 / 3 / 5 × hạ 1000 / 2000 = 18 hàng). Bài 7.2 / 7.3 / 7.4 dùng chung ô **"Tốc độ thử"** (mặc định **7000, 8000, 9000, 10000**, tối đa 8 số, trần 20000; không còn chặn theo tốc độ tối đa của máy) và chờ = ô chờ ở tab Tạo bản vẽ. **Firmware vẫn tự chặn mọi lệnh ở `max_rate_mm_per_min`**: muốn thử 10000 thật thì Cài đặt → Cấu hình máy → tốc độ tối đa X, Y = 10000 → **Áp dụng** (chỉ RAM, tắt máy là mất) trước khi chạy.
 - Tệp có sẵn (hoặc sinh tay bằng `tools/make_test_gcode.py`): `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z2 / Z1.5`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve` (3000 / 4000 / 5000 / 6000), `7.5-keo-vet-cho-0.05s / 0.10s`. Mặc định Z 3 / 0, nâng 3000, hạ 2000, vẽ 5000; đổi bằng `--up`, `--down`, `--down-feed`, `--draw-feed`.
 
 | # | Bài | Cách làm | Nhìn gì | Tình trạng |
 |---|---|---|---|---|
 | 7.1 | Chi phí nhấc bút | 100 gạch 2 mm; thời gian thật ÷ 100 = một chu kỳ nhấc + hạ + chờ. Đổi chờ 0,2 → 0,1 → 0,05 s; Z nhấc 3 → 2 → 1,5 | bút kéo vệt khi di chuyển (nhấc chưa kịp)? đầu nét hụt (hạ chưa chạm)? bút nảy? | ✅ chờ 0,05 s đủ nét; ⏳ đo thời gian chính xác |
 | 7.2 | Mất bước | vẽ dấu + ở góc → chạy nhanh nhiều lần → vẽ lại dấu + | hai dấu trùng khít = không mất bước | ✅ 03/11 (6000 mm/min, gia tốc 2000, ~20 phút). ⏳ lặp lại ở mức mới (7.2b) |
-| 7.2b | Mất bước ở mức mới | như 7.2 nhưng `$110`/`$111` = **8000**, gia tốc X/Y = **2500** (Z giữ 3000), chạy G0 liên tục 10–20 phút; chạm thử nhiệt động cơ + driver | trùng khít = giữ 8000 / 2500; lệch = hạ gia tốc về 2000 trước, chưa đụng Vref | ⏳ |
-| 7.3 | Gia tốc + góc | cùng đoạn chữ ở gia tốc 1000 / 1500 / 2000 / 2500, rồi `junction_deviation` **0,02 / 0,05 / 0,1** (chạy ở 8000 mm/min, gia tốc 2500) | thời gian; gợn sóng sau góc chữ; giọt mực ở góc. 0,1 không gợn thì dùng cho chữ, ảnh để 0,05 | ⏳ |
-| 7.4 | Tốc độ vẽ từng bút | dải đường thẳng 3000 / 4000 / 5000 / 6000, mỗi bút một tờ, **chụp cận đo bề rộng nét** | tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét ở đó (→ `LINE_WIDTH_RATIO`) | 🧪 6000 vẫn đậm (ảnh xa); ⏳ đo |
+| 7.2b | Mất bước ở mức mới | **(từ 11/11 trong giao diện)** mỗi tốc độ một cặp dấu + xếp hàng ngang từ trái sang (cột k có k chấm bên dưới); giữa hai lần vẽ dấu, bút nâng chạy G1 đúng tốc độ đó 10 vòng (~1,3 m / vòng) khắp vùng; cuối bài vẽ lại dấu đầu tiên lần nữa. Gia tốc 3000, SpreadCycle; chạm thử nhiệt động cơ + driver | cặp nào tách đôi = mất bước ở tốc độ đó; dấu đầu lệch ở lần cuối = tổng lệch cả bài | ⏳ 7000 / 8000 / 9000 / 10000 |
+| 7.3 | Gia tốc + góc | **(từ 11/11)** răng cưa bước 2 mm, **mỗi tốc độ một hàng** từ trên xuống (hàng k có k chấm đầu hàng); đổi gia tốc / `junction_deviation` ở Cấu hình máy rồi chạy lại trên tờ mới | gợn sóng sau góc; giọt mực ở góc; thời gian từng lần (Biểu đồ). Đang dùng gia tốc 3000, junction 0,05 | ⏳ 7000–10000 |
+| 7.4 | Tốc độ vẽ từng bút | dải đường thẳng, mặc định 7000 / 8000 / 9000 / 10000, mỗi bút một tờ, **chụp cận đo bề rộng nét** | tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét ở đó (→ `LINE_WIDTH_RATIO`) | 🧪 6000 vẫn đậm (ảnh xa); 8000 vẽ con mèo OK (11/11); ⏳ đo |
 | 7.5 | Vệt kéo khi đi xa | hai chấm cách 240 mm, G0 qua lại 5 lần, mỗi lần một mức chờ nâng; đổi Z nhấc 3 / 4 / 5. Dán giấy phẳng | vệt mảnh nối hai chấm = bút chưa rời giấy | ⏳ |
 
 **Mức đang nhắm tới (đề xuất 06/11/2026, chưa thử):** tốc độ tối đa X/Y 8000 mm/min (nguồn 12 V, không nên quá 10000), gia tốc X/Y 2500 (3000 là của Z), `junction_deviation` 0,05, Vref giữ 1,4. G0 chạy tới 8000; tốc độ vẽ chốt theo 7.4 (khoảng 5000–7000). Theo công thức góc cua, 0,02 → 0,05 → 0,1 chỉ nhanh thêm ~1–2 % với ảnh tô, ~7–8 % mỗi bậc với chữ nhiều góc vuông đoạn ngắn. Thứ tự thử: 7.2b trước, rồi 7.3.
@@ -105,6 +107,7 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 |---|---|---|---|---|---|---|
 | 03/11/2026 | 0,4 | | tờ mẫu hiệu chỉnh | vẽ 3000 | | nét ~0,55 mm |
 | 03/11/2026 | | | 7.2 mất bước | G0 6000, gia tốc X/Y 2000 (Z 3000), Vref 1,4 V | ~20 phút | không mất bước |
+| 11/11/2026 | Pigma 0,4 | thường | ảnh con mèo, preset Chân dung | max 8000, gia tốc 3000, junction 0,05, Z3, chờ 0,05, SpreadCycle | | máy chạy êm, không thấy mất bước; nền lộ ranh giới các mức (5 mức); đọng mực cuối nét (nghi bút + giấy) |
 | | | | 7.2b mất bước mức mới | G0 8000, gia tốc X/Y 2500, Vref 1,4 V | 10–20 phút | |
 | | | | 7.3 góc cua | junction 0,02 / 0,05 / 0,1 ở 8000, gia tốc 2500 | | |
 | | 0,4 | | tờ mẫu hiệu chỉnh | vẽ 5000 | | |

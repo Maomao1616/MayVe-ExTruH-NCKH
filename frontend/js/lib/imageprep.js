@@ -71,6 +71,14 @@ async function decode(file) {
     }
 }
 
+// Tên tệp gửi lên sau khi mã hóa lại: phần tên gốc rút gọn (tối đa 60 ký tự, bỏ ký tự điều khiển) + đuôi đúng định dạng mới.
+// Tên gốc dài từng làm backend cắt mất đuôi và từ chối ảnh (11/11/2026).
+export function uploadName(original, ext) {
+    const stem = String(original ?? "").normalize("NFC").replace(/\.[^.]{1,5}$/, "")
+        .replace(/[\u0000-\u001f\u007f]+/g, "").replace(/\s+/g, " ").trim().slice(0, 60).trim();
+    return `${stem || "anh"}${ext}`;
+}
+
 // Kích thước ảnh thật (đã xoay EXIF) hoặc null nếu trình duyệt không đọc được.
 export async function imageSize(file) {
     try {
@@ -105,8 +113,8 @@ export async function prepareForUpload(file, { box, pen, override = null, crop =
         }
         const blob = await new Promise((resolve) => source.toBlob(resolve, "image/png"));
         if (!blob) return { file, scaled: false };
-        const name = `${file.name.replace(/\.[^.]+$/, "")}.png`;
-        return { file: new File([blob], name, { type: "image/png" }), scaled: true, from: { width, height }, to: target };
+        return { file: new File([blob], uploadName(file.name, ".png"), { type: "image/png" }), scaled: true,
+                 from: { width, height }, to: target };
     } catch {
         return { file, scaled: false };
     }
@@ -198,7 +206,7 @@ export async function shrinkToJpeg(file, maxSide = 1600, quality = 0.85) {
             source = canvas;
         });
         const blob = await new Promise((resolve) => source.toBlob(resolve, "image/jpeg", quality));
-        return blob ? new File([blob], `${file.name.replace(/\.[^.]+$/, "")}.jpg`, { type: "image/jpeg" }) : null;
+        return blob ? new File([blob], uploadName(file.name, ".jpg"), { type: "image/jpeg" }) : null;
     } catch {
         return null;
     }

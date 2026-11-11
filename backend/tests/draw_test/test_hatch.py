@@ -185,12 +185,15 @@ def test_spiral_bridges_short_white_gaps_to_save_pen_lifts():
     d = np.ones((150, 150), dtype=np.float32)
     d[:, 70:73] = 0.0                                         # dải trắng hẹp (≈ 1 mm) cắt ngang
     f = Field(d, 60.0, 60.0)
-    strokes = styles.fill(f, style(kind="spiral", levels=3), 0.4)
-    gap_free = styles.fill(Field(np.ones((150, 150), dtype=np.float32), 60.0, 60.0), style(kind="spiral", levels=3), 0.4)
-    assert len(strokes) <= len(gap_free) + 2                  # khe hẹp không làm tăng số lần nhấc bút
+    full = Field(np.ones((150, 150), dtype=np.float32), 60.0, 60.0)
+    hard = style(kind="spiral", levels=3, soft_levels=False)
+    assert len(styles.fill(f, hard, 0.4)) <= len(styles.fill(full, hard, 0.4)) + 2     # khe hẹp không làm tăng số lần nhấc bút
+    soft = style(kind="spiral", levels=3)                     # mềm: mỗi vòng một ngưỡng, khe sau làm mờ rộng hẹp khác nhau chút ít
+    assert len(styles.fill(f, soft, 0.4)) <= len(styles.fill(full, soft, 0.4)) * 1.05
 
 
 def test_default_spacing_follows_real_line_width_not_the_nominal_pen():
-    # Sakura 0,4 ra nét ~0,55 mm: một lớp cách 2 × 0,55 = 1,1 mm mới phủ ~50% mực (cách 0,8 mm thì phủ ~69%).
-    assert styles.spacing_of(style(), 0.4) == pytest.approx(1.1)
+    # Bút 0,4 trên giấy Ivory ra nét ~0,44 mm (LINE_WIDTH_RATIO 1,1): một lớp cách 2 × 0,44 = 0,88 mm phủ ~50% mực.
+    assert styles.spacing_of(style(), 0.4) == pytest.approx(2 * styles.LINE_WIDTH_RATIO * 0.4)
+    assert 0.4 <= styles.LINE_WIDTH_RATIO * 0.4 <= 0.45                 # nét giả định cho bút 0,4: 0,40–0,45 mm
     assert styles.spacing_of(style(spacing_mm=0.9), 0.4) == 0.9

@@ -12,7 +12,7 @@ export const MACHINE = {
     penDownZ: 0,         // Z0 = bút xuống
     penFeed: 3000,       // mm/phút
     jogMaxStep: 50,      // mm, bước jog lớn nhất được hiện trong ô chọn
-    rapidFeed: 6000      // mm/phút khi G0
+    rapidFeed: 8000      // mm/phút khi G0 = max_rate X/Y trên mạch; views/settings.js ghi đè bằng số thật khi đọc cấu hình máy
 };
 
 // Tùy chọn "Hoạt động" (Cài đặt). views/settings.js nạp từ trình duyệt và ghi đè các giá trị này.

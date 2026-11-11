@@ -663,8 +663,9 @@ function initMachineConfig() {
         if (backupLoadBtn) backupLoadBtn.disabled = busy || !board || !backupSelect?.value;
         revertBtn.disabled = busy || dirty === 0;
         applyBtn.disabled = busy || dirty === 0 || (Object.keys(boardEdits).length > 0 && blocked !== null);
-        // Chỉ lưu khi máy đang chạy giá trị khác tệp và không còn ô "Máy" chưa áp dụng.
-        saveBtn.disabled = busy || blocked !== null || unsaved.size === 0 || Object.keys(boardEdits).length > 0;
+        // Lưu được bất cứ lúc nào đã đọc cấu hình và không còn ô "Máy" chưa áp dụng: kể cả khi các ô ở đây không khác tệp,
+        // vì mục đổi bằng terminal ($/axes/x/homing/pulloff_mm=...) không có ô nên không hiện chấm "chưa lưu".
+        saveBtn.disabled = busy || blocked !== null || !board || Object.keys(boardEdits).length > 0;
         $("mc-file").textContent = board?.file ?? "—";
         return blocked;
     }
@@ -701,6 +702,10 @@ function initMachineConfig() {
         const y = result?.values?.["axes/y/max_travel_mm"];
         if (Number.isFinite(x)) MACHINE.travelX = x;      // kiểm vượt vùng khi chạy tệp
         if (Number.isFinite(y)) MACHINE.travelY = y;
+        // Tốc độ tối đa thật của máy (G0 chạy ở đây; G1 nhanh hơn cũng bị chặn ở đây): cảnh báo "cao hơn tốc độ tối đa"
+        // và ước tính thời gian dùng số này thay cho số mặc định trong config.js.
+        const rates = ["axes/x/max_rate_mm_per_min", "axes/y/max_rate_mm_per_min"].map((k) => result?.values?.[k]);
+        if (rates.every(Number.isFinite)) MACHINE.rapidFeed = Math.min(...rates);
         render();
     }
 
@@ -946,8 +951,10 @@ function initTestSheets() {
     const machine = () => ({ work_w: MACHINE.travelX, work_h: MACHINE.travelY, z_travel: MACHINE.travelZ, rapid_feed: MACHINE.rapidFeed });
     const gcode = () => {
         const num = (id, fallback) => { const v = Number($(id)?.value); return Number.isFinite(v) && v > 0 ? v : fallback; };
+        const wait = (id) => { const v = Number($(id)?.value); return $(id)?.value.trim() !== "" && v >= 0 && v <= 5 ? v : 0.05; };
         return { pen_up_z: MACHINE.gcodeUpZ, pen_down_z: MACHINE.penDownZ, pen_feed: MACHINE.penFeed,
-                 draw_feed: num("draw-feed", 5000), pen_down_feed: num("pen-down-feed", 2000) };
+                 draw_feed: num("draw-feed", 5000), pen_down_feed: num("pen-down-feed", 2000),
+                 delay_up_s: wait("pen-delay-up"), delay_down_s: wait("pen-delay-down") };   // chờ = ô ở tab Tạo bản vẽ
     };
     const group = (name) => [...panel.querySelectorAll(`[data-sheet-group="${name}"]:checked`)].map((e) => Number(e.value));
 
@@ -1069,7 +1076,7 @@ function initTestSheets() {
         button.addEventListener("click", () => {
             const kind = button.dataset.sheetKind;
             let options = {};
-            if (kind === "speed") {
+            if (kind === "speed" || kind === "lost" || kind === "accel") {
                 const speeds = $("sheet-speeds").value.split(/[,;\s]+/).filter(Boolean).map(Number);
                 if (!speeds.length || speeds.some((v) => !Number.isFinite(v))) return say(t("sheet.error.speeds"), "error");
                 options = { speeds };

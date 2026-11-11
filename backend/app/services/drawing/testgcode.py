@@ -110,50 +110,84 @@ def lift_sheet(rows: list[dict], down: float, pen_feed: float, draw_feed: float)
     return "\n".join(out) + "\n"
 
 
-def lost_steps(up: float, down: float, pen_feed: float, draw_feed: float, *, round_trips: int = 60,
-               down_feed: float | None = None) -> str:
-    """7.2: vẽ dấu + ở góc, di chuyển nhanh qua lại khắp vùng, quay về vẽ lại dấu +. Hai dấu trùng khít = không mất bước."""
-    w = Writer(up, down, pen_feed, draw_feed, delay_up=0.1, delay_down=0.1, down_feed=down_feed)
-    w.comment("7.2 mat buoc: ve dau + o (15,15), chay nhanh qua lai, ve lai dau + o cung cho")
+LOST_TRIPS_PER_SPEED = 10        # 10 vòng ~1,3 m mỗi vòng: ~1,5 phút mỗi tốc độ ở 8000 mm/phút
+LOST_CROSS_PITCH = 25.0          # các cặp dấu + xếp một hàng ngang, cách nhau 25 mm
 
-    def cross() -> None:
-        w.stroke([(8, 15), (22, 15)])
-        w.stroke([(15, 8), (15, 22)])
 
-    cross()
-    for _ in range(round_trips):
-        w.travel(270, 300)
-        w.travel(15, 300)
-        w.travel(270, 15)
-        w.travel(15, 15)
-    cross()
+def _marks(w: Writer, count: int, x0: float, y: float, pitch: float = 2.0) -> None:
+    """`count` chấm ngắn để biết hàng / cột thứ mấy (thứ 1 = 1 chấm)."""
+    for j in range(count):
+        w.stroke([(x0 + j * pitch, y), (x0 + j * pitch + 0.4, y)])
+
+
+def lost_steps(up: float, down: float, pen_feed: float, draw_feed: float, *, speeds=None, round_trips: int | None = None,
+               delay: float = 0.1, down_feed: float | None = None) -> str:
+    """7.2: vẽ dấu +, chạy bút nâng qua lại khắp vùng, quay về vẽ lại dấu + chồng lên. Trùng khít = không mất bước.
+
+    `speeds` None: một cặp dấu ở (15,15), chạy bằng G0 (tốc độ tối đa của máy) 60 vòng (cách cũ).
+    Có `speeds`: mỗi tốc độ một cặp dấu riêng xếp hàng ngang từ trái sang (cột k có k chấm bên dưới), chạy bằng G1 đúng
+    tốc độ đó. Cặp nào tách đôi = mất bước ở tốc độ đó. Cuối bài vẽ dấu đầu tiên lần nữa: lệch = tổng mất bước cả bài.
+    G1 vẫn bị firmware chặn ở max_rate_mm_per_min: muốn thử 10000 thì đặt max_rate >= 10000 trước (Cài đặt → Cấu hình máy)."""
+    w = Writer(up, down, pen_feed, draw_feed, delay_up=delay, delay_down=delay, down_feed=down_feed)
+
+    def cross(cx: float, cy: float = 15.0) -> None:
+        w.stroke([(cx - 7, cy), (cx + 7, cy)])
+        w.stroke([(cx, cy - 7), (cx, cy + 7)])
+
+    def trips(count: int, feed: float | None) -> None:
+        for _ in range(count):
+            for x, y in ((270, 300), (15, 300), (270, 15), (15, 15)):
+                if feed is None:
+                    w.travel(x, y)
+                else:
+                    w.line_to(x, y, feed)          # bút đang nâng: chỉ là di chuyển, nhưng ở đúng tốc độ cần thử
+
+    if not speeds:
+        w.comment("7.2 mat buoc: ve dau + o (15,15), chay nhanh qua lai, ve lai dau + o cung cho")
+        cross(15)
+        trips(round_trips or 60, None)
+        cross(15)
+        return w.text()
+    count = round_trips or LOST_TRIPS_PER_SPEED
+    w.comment("7.2 mat buoc: tu trai sang " + ", ".join(num(s) for s in speeds) + f" mm/phut, moi toc do {count} vong")
+    for k, speed in enumerate(speeds):
+        cx = 15 + k * LOST_CROSS_PITCH
+        _marks(w, k + 1, cx - 7, 27)
+        cross(cx)
+        trips(count, speed)
+        cross(cx)
+    cross(15)
     return w.text()
 
 
-def accel(up: float, down: float, pen_feed: float, draw_feed: float, *, pitch: float = 2.0,
-          down_feed: float | None = None) -> str:
+def accel(up: float, down: float, pen_feed: float, draw_feed: float, *, speeds=None, pitch: float = 2.0,
+          delay: float = 0.1, down_feed: float | None = None) -> str:
     """7.3: răng cưa đoạn ngắn: soi gợn sóng sau góc (rung) và đo thời gian ở các gia tốc khác nhau.
 
-    Vẽ ở vị trí cố định (y 30–90 mm): mỗi lần chạy dùng MỘT tờ giấy mới, đừng chồng với 7.4."""
-    w = Writer(up, down, pen_feed, draw_feed, delay_up=0.1, delay_down=0.1, down_feed=down_feed)
-    w.comment(f"7.3 gia toc: rang cua buoc {num(pitch)} mm, 3 hang")
-    for row in range(3):
+    `speeds` None: 3 hàng cùng tốc độ vẽ. Có `speeds`: mỗi tốc độ một hàng, từ trên xuống, hàng k có k chấm ở đầu.
+    Vẽ ở vị trí cố định (từ y 30 mm): mỗi lần chạy dùng MỘT tờ giấy mới, đừng chồng với 7.4."""
+    w = Writer(up, down, pen_feed, draw_feed, delay_up=delay, delay_down=delay, down_feed=down_feed)
+    feeds = list(speeds) if speeds else [draw_feed] * 3
+    w.comment(f"7.3 gia toc: rang cua buoc {num(pitch)} mm, tu tren xuong " + ", ".join(num(f) for f in feeds) + " mm/phut")
+    for row, feed in enumerate(feeds):
         y0 = 30 + row * 25
+        if speeds:
+            _marks(w, row + 1, 10, y0 + 5)
         pts = [(30.0, y0)]
         x = 30.0
         for i in range(60):
             x += pitch
             pts.append((x, y0 + (10 if i % 2 == 0 else 0)))
-        w.stroke(pts)
+        w.stroke(pts, feed=feed)
     return w.text()
 
 
-def speed_strips(up: float, down: float, pen_feed: float, speeds=(3000, 4000, 5000, 6000),
+def speed_strips(up: float, down: float, pen_feed: float, speeds=(3000, 4000, 5000, 6000), *, delay: float = 0.1,
                  down_feed: float | None = None) -> str:
     """7.4: mỗi tốc độ 3 đường thẳng dài 60 mm. Từ trên xuống: tốc độ tăng dần theo thứ tự trong `speeds`.
 
     Vẽ ở vị trí cố định: dùng MỘT tờ giấy mới, đừng chồng với 7.3."""
-    w = Writer(up, down, pen_feed, speeds[0], delay_up=0.1, delay_down=0.1, down_feed=down_feed)
+    w = Writer(up, down, pen_feed, speeds[0], delay_up=delay, delay_down=delay, down_feed=down_feed)
     w.comment("7.4 toc do ve: tu tren xuong " + ", ".join(str(s) for s in speeds) + " mm/phut, moi toc do 3 duong")
     y = 30.0
     for speed in speeds:

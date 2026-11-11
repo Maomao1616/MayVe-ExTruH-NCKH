@@ -16,7 +16,9 @@ from .errors import DrawError
 from .shapes import Layer
 
 PAPER = "a5"
-BAND_FACTORS = (0.8, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0)     # khoảng cách dòng = bút × hệ số
+# khoảng cách dòng = bút × hệ số; bút 0,4: 0,32 / 0,40 / 0,45 / 0,50 / 0,60 / 0,80 / 1,0 / 1,2 mm (dày ở quanh 0,4–0,5
+# để phân biệt nét 0,40 với 0,45 trên giấy Ivory)
+BAND_FACTORS = (0.8, 1.0, 1.125, 1.25, 1.5, 2.0, 2.5, 3.0)
 WIDTH_MM, BAND_H, GAP = 130.0, 14.0, 2.0
 HEADER_H = 24.0                                              # chữ F + thước
 RULER_X0, RULER_LEN = 28.0, 100.0

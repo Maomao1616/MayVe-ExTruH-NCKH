@@ -45,6 +45,7 @@ const FIELDS = [
     ["image-denoise", "raster", "denoise", "bool"],
     ["style-kind", "style", "kind", "str"],
     ["style-outline", "style", "outline_overlay", "bool"],
+    ["style-soft", "style", "soft_levels", "bool"],
     ["style-invert", "style", "invert", "bool"],
     ["style-levels", "style", "levels", "int"],
     ["style-angle", "style", "angle", "num"],
@@ -228,6 +229,12 @@ export function syncVisibility() {
         const label = $(id)?.closest("label");
         if (label) label.hidden = outlineOnly;
     }
+    // Sóng biến thiên không chia mức: ẩn số mức và ô chuyển mức mềm
+    const levelless = outlineOnly || kind === "wave_am";
+    const levels = $("style-levels")?.closest("label");
+    if (levels) levels.hidden = levelless;
+    const soft = $("style-soft")?.closest("label");
+    if (soft) soft.hidden = levelless;
     const detail = $("style-outline-detail")?.closest("label");
     if (detail) detail.hidden = !(outlineOnly || $("style-outline")?.checked);
     const multi = $("palette-mode")?.value === "multi";
@@ -302,9 +309,8 @@ export function applySchema(data) {
         if (row.min !== null && row.min !== undefined) el.min = String(row.min);
         if (row.max !== null && row.max !== undefined) el.max = String(row.max);
     }
-    // Tốc độ trần theo máy (G0 chạy ở rapid_feed): nhỏ hơn trần của schema.
-    const cap = String(MACHINE.rapidFeed ?? 6000);
-    for (const id of ["draw-feed", "travel-feed"]) if ($(id)) $(id).max = cap;
+    // Ô tốc độ chỉ chặn theo schema (20000), không theo tốc độ tối đa của máy: vượt thì backend cảnh báo
+    // (feed_above_rapid), firmware tự chặn ở max_rate. Để thử tốc độ cao không bị ô nhập báo sai.
 }
 
 function saveForm() {

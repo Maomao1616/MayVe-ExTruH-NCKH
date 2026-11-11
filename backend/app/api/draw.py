@@ -22,7 +22,7 @@ from fastapi.responses import PlainTextResponse, Response
 from pydantic import BaseModel, Field
 
 from ..services.drawing import DrawError, describe, drafts, import_svg, make_gcode, spec
-from ..services.drawing import calibration, gcode_import, isolated, preview, raster, service, testsheets
+from ..services.drawing import calibration, gcode_import, isolated, preview, raster, raster_in, service, testsheets
 from ..services.drawing.shapes import Layer
 from ..services.drawing.store import TASKS
 from ..services.drawing.svg_in import MAX_SVG_BYTES
@@ -32,8 +32,35 @@ from ..services.machine import ServiceError
 router = APIRouter(prefix="/api/draw")
 
 MAX_RASTER_BYTES = 40 * 1024 * 1024
-RASTER_EXT = (".png", ".jpg", ".jpeg", ".webp")
+RASTER_EXT = (".png", ".jpg", ".jpeg", ".jfif", ".jpe", ".webp", ".bmp", ".gif", ".avif")
 IMPORT_KEYS = {"svg", "optimize", "raster", "style", "palette", "layout"}
+NAME_MAX = 60                    # tên hiển thị (bản thảo, tác vụ); tên tệp gốc có thể rất dài / ký tự lạ
+
+
+def file_kind(filename: str, head: bytes) -> str | None:
+    """'svg' / 'raster' / None, xét NỘI DUNG trước (vài byte đầu), đuôi tệp chỉ để nhận SVG.
+
+    Không chỉ tin đuôi: ảnh tải từ mạng hay mang đuôi lạ (.jfif là JPEG), tên dài từng bị cắt mất đuôi. Nội dung không
+    nhận ra thì mới xét đuôi (tệp hỏng mang đuôi ảnh vẫn đi tiếp và báo "không đọc được ảnh" ở bước giải mã)."""
+    lower = filename.lower()
+    if raster_in.sniff(head):
+        return "raster"
+    text = head.lstrip(b"\xef\xbb\xbf \t\r\n")
+    if lower.endswith(".svg") or (text.startswith(b"<") and b"<svg" in head[:4096].lower()):
+        return "svg"
+    if lower.endswith(RASTER_EXT):
+        return "raster"
+    return None
+
+
+def display_name(filename: str | None, fallback: str = "ban-ve") -> str:
+    """Tên gọn để hiện: bỏ đuôi, bỏ ký tự điều khiển, gộp khoảng trắng, chuẩn Unicode NFC, tối đa NAME_MAX ký tự."""
+    import unicodedata
+    name = unicodedata.normalize("NFC", filename or "")
+    name = re.sub(r"\.[A-Za-z0-9]{1,5}$", "", name.strip())
+    name = re.sub(r"[\x00-\x1f\x7f]+", "", name)
+    name = re.sub(r"\s+", " ", name).strip(" .")
+    return name[:NAME_MAX].rstrip() or fallback
 
 
 class LayerIn(BaseModel):
@@ -129,11 +156,14 @@ def import_file(file: UploadFile = File(...), options: str = Form("{}")):
     """SVG -> import_svg; ảnh -> isolated.run_import (tiến trình riêng, ưu tiên thấp). Trả mã tác vụ ngay."""
     def run():
         opts = _options(options, IMPORT_KEYS)
-        name = (file.filename or "ban-ve")[:80]
-        is_svg = name.lower().endswith(".svg")
-        if not is_svg and not name.lower().endswith(RASTER_EXT):
-            raise DrawError("bad_image", "Chỉ nhận SVG, PNG, JPG hoặc WEBP.")
-        data = file.file.read((MAX_SVG_BYTES if is_svg else MAX_RASTER_BYTES) + 1)
+        data = file.file.read(max(MAX_SVG_BYTES, MAX_RASTER_BYTES) + 1)
+        kind = file_kind(file.filename or "", data[:4096])
+        if kind is None:
+            raise DrawError("bad_image", "Không nhận ra định dạng: chỉ nhận SVG hoặc ảnh PNG, JPG (cả .jfif), WEBP, BMP, GIF, AVIF.")
+        is_svg = kind == "svg"
+        name = display_name(file.filename)
+        if is_svg and len(data) > MAX_SVG_BYTES:
+            raise DrawError("file_too_large", f"Tệp SVG lớn hơn {MAX_SVG_BYTES // (1024 * 1024)} MB.", 413)
         if is_svg:
             spec.parse("svg", opts.get("svg")); spec.parse("optimize", opts.get("optimize"))
             work = lambda ctx, token: import_svg(data, opts.get("svg"), opts.get("optimize"), token, ctx)

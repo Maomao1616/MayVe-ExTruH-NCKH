@@ -19,8 +19,9 @@ def gradient_png(w=600, h=400):
 
 
 def build(data, kind="spiral", group=True, **style):
+    # soft_levels tắt: test đoán mức của nét theo vị trí ngang, mà chuyển mức mềm cho các mức đan sâu vào nhau
     opts = {"raster": {"pen_width_mm": 0.4, "auto_levels": False, "gamma": 1.0, "max_side_px": 600},
-            "style": {"kind": kind, "levels": 5, "outline_overlay": False, **style},
+            "style": {"kind": kind, "levels": 5, "outline_overlay": False, "soft_levels": False, **style},
             "optimize": {"group_levels": group}, "layout": {"paper": "a4", "margin_mm": 5}}
     return raster.build_raster(data, "t", opts)
 

@@ -702,7 +702,7 @@
                   <strong data-i18n="drawing.source.choose">Chọn tệp bản vẽ</strong>
                   <span data-i18n="drawing.source.hint">Nhấn để chọn tệp từ máy tính</span>
                 </label>
-                <input accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml" id="drawing-file" name="drawing-file" type="file"/>
+                <input accept=".png,.jpg,.jpeg,.jfif,.webp,.bmp,.gif,.avif,.svg,image/*" id="drawing-file" name="drawing-file" type="file"/>
                 <p class="help-text" data-i18n="drawing.source.noFile" id="drawing-file-name">
                   Chưa chọn tệp.
                 </p>
@@ -900,6 +900,8 @@
                       <option data-i18n="drawing.style.zigzag" selected="" value="zigzag">Zigzag (gạch nối liền)</option>
                       <option data-i18n="drawing.style.wave" value="wave">Sóng</option>
                       <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
+                      <option data-i18n="drawing.style.crosshatch" value="crosshatch">Gạch chéo chồng lớp</option>
+                      <option data-i18n="drawing.style.waveAm" value="wave_am">Sóng biến thiên (tông liền)</option>
                       <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
                     </select>
                   </label>
@@ -943,6 +945,10 @@
                   <label data-i18n="[title]drawing.hint.outlineOverlay">
                     <input id="style-outline" type="checkbox"/>
                     <span data-i18n="drawing.style.outlineOverlay">Thêm lớp viền phác họa lên kiểu tô</span>
+                  </label>
+                  <label data-i18n="[title]drawing.hint.soft">
+                    <input id="style-soft" type="checkbox" checked/>
+                    <span data-i18n="drawing.style.soft">Chuyển mức mềm (ranh giới các mức đan so le)</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.invert">
                     <input id="style-invert" type="checkbox"/>
@@ -1014,11 +1020,11 @@
                   </label>
                   <label for="pen-delay-down">
                     <span data-i18n="drawing.params.delayDown">Chờ sau khi hạ bút (giây)</span>
-                    <input id="pen-delay-down" type="number" min="0" step="0.05" value="0.05"/>
+                    <input id="pen-delay-down" type="number" min="0" step="0.01" value="0.05"/>
                   </label>
                   <label for="pen-delay-up">
                     <span data-i18n="drawing.params.delayUp">Chờ sau khi nâng bút (giây)</span>
-                    <input id="pen-delay-up" type="number" min="0" step="0.05" value="0.05"/>
+                    <input id="pen-delay-up" type="number" min="0" step="0.01" value="0.05"/>
                   </label>
                   <label for="draw-pen-width">
                     <span data-i18n="drawing.params.penWidth">Bút vẽ (độ rộng nét)</span>
@@ -1451,6 +1457,7 @@
                 </fieldset>
                 <fieldset>
                   <legend data-i18n="sheet.lift.delays">Chờ (giây)</legend>
+                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.02" checked/><span>0.02</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.05" checked/><span>0.05</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.1" checked/><span>0.1</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.2"/><span>0.2</span></label>
@@ -1476,7 +1483,7 @@
 
             <section class="sheet-block">
               <h3 data-i18n="sheet.pen.title">Tờ hiệu chỉnh bút</h3>
-              <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,25; 1,5; 2; 2,5; 3; 4 lần cỡ bút (bút 0,4 mm: 0,32 → 1,6 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật (bài 1 trong 07_THU_NGHIEM).</p>
+              <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,125; 1,25; 1,5; 2; 2,5; 3 lần cỡ bút (bút 0,4 mm: 0,32; 0,40; 0,45; 0,50; 0,60; 0,80; 1,0; 1,2 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật (bài 1 trong 07_THU_NGHIEM).</p>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-pen-width"><span data-i18n="sheet.pen.width">Cỡ bút (mm)</span>
                   <input id="sheet-pen-width" max="2" min="0.1" step="0.05" type="number" value="0.4"/></label>
@@ -1489,18 +1496,18 @@
             <section class="sheet-block">
               <h3 data-i18n="sheet.machine.title">Bộ thử máy (bài 7.2 – 7.5)</h3>
               <p class="help-text" data-i18n="sheet.machine.help">Tốc độ, gia tốc và góc cua đổi ở "Cấu hình máy" phía trên; các tờ này chỉ vẽ mẫu để so. Làm 7.2 trước (mất bước), rồi 7.3.</p>
+              <div class="mc-actions">
+                <label class="sheet-inline" for="sheet-speeds"><span data-i18n="sheet.machine.speeds">Tốc độ thử cho 7.2 / 7.3 / 7.4 (mm/phút, cách nhau dấu phẩy, tối đa 8 số)</span>
+                  <input id="sheet-speeds" type="text" value="7000, 8000, 9000, 10000"/></label>
+              </div>
               <div class="sheet-buttons">
                 <button class="secondary-button" data-i18n="sheet.machine.lost" data-sheet-kind="lost" type="button">7.2 Mất bước</button>
                 <button class="secondary-button" data-i18n="sheet.machine.accel" data-sheet-kind="accel" type="button">7.3 Gia tốc / góc cua</button>
-              </div>
-              <div class="mc-actions">
-                <label class="sheet-inline" for="sheet-speeds"><span data-i18n="sheet.machine.speeds">Tốc độ vẽ thử (mm/phút, cách nhau dấu phẩy)</span>
-                  <input id="sheet-speeds" type="text" value="5000, 6000, 7000, 8000"/></label>
                 <button class="secondary-button" data-i18n="sheet.machine.speed" data-sheet-kind="speed" type="button">7.4 Tốc độ vẽ</button>
               </div>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-drag-delay"><span data-i18n="sheet.machine.dragDelay">Chờ nâng (giây)</span>
-                  <select id="sheet-drag-delay"><option value="0.05">0,05</option><option value="0.1">0,1</option><option value="0.2">0,2</option></select></label>
+                  <select id="sheet-drag-delay"><option value="0.02">0,02</option><option value="0.05" selected>0,05</option><option value="0.1">0,1</option><option value="0.2">0,2</option></select></label>
                 <button class="secondary-button" data-i18n="sheet.machine.drag" data-sheet-kind="drag" type="button">7.5 Vệt kéo</button>
               </div>
             </section>

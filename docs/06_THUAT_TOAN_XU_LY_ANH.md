@@ -181,7 +181,7 @@ Kẻ các nét rộng `w` cách nhau `s` (tính từ tâm nét này tới tâm n
 ```
 Với `w` = 0,55 mm: cách 1,1 mm phủ 50 %; cách 0,61 mm phủ 90 %; cách 2,44 mm phủ 22,5 %.
 
-`w` lấy từ bề rộng nét **đo thật**: `w = 1,375 × cỡ bút` (hằng `LINE_WIDTH_RATIO`, đo trên tờ hiệu chỉnh 03/11/2026: Sakura 0,4 ra 0,55 mm vì mực loang).
+`w` lấy từ bề rộng nét **đo thật**: `w = LINE_WIDTH_RATIO × cỡ bút`. 03/11/2026 Sakura 0,4 trên giấy thường ra 0,55 mm (1,375, các bảng số trong mục này tính theo số đó). **Từ 11/11/2026 giấy Ivory: 1,1 → w = 0,44 mm**, khoảng cách 4 mức đậm thành 1,96 / 0,98 / 0,65 / 0,49 mm.
 
 ### 6.2 Chia mức
 "N mức" gồm cả **mức 0 = giấy trắng (không vẽ)**. Với N = 5 thì có 4 mức có mực. Độ phủ mục tiêu **tăng đều** từ 0 tới 90 % (`MAX_COVERAGE = 0.9`). Không lên 100 % vì nét quá sát sẽ nhòe thành một mảng ướt, giấy quăn.
@@ -248,7 +248,7 @@ Các dải **không chồng nhau**. Hàm `styles._passes` trả lần lượt (m
 
 ---
 
-## 8. Bước 5 — Mặt nạ thành nét: zigzag, sóng, xoắn ốc
+## 8. Bước 5 — Mặt nạ thành nét: zigzag, sóng, xoắn ốc, gạch chéo, sóng biến thiên
 
 ### 8.1 Đường quét song song (`hatch.scan_runs`), nền của zigzag và sóng
 Ý tưởng: kẻ các đường thẳng song song cách nhau `s` mm phủ cả ảnh, rồi **chỉ giữ phần đường nằm trong vùng Có của mặt nạ**.
@@ -308,7 +308,29 @@ Mô phỏng: sai số 0,106 → 0,058. Nhưng mỗi bậc cắt xoắn ốc thà
 Bật "Thêm lớp viền" thì sau khi tô xong, phần mềm chạy thêm kiểu Viền (mục 9) và vẽ lớp viền **sau cùng** để nét rõ.
 
 ### 8.6 Thêm kiểu tô mới
-Một hàm có dòng `@FILLERS.register("tên")` trong `styles.py` + thêm tên vào `spec.py` (`kind`). Không phải sửa chỗ khác (`registry.py`).
+Một hàm có dòng `@FILLERS.register("tên")` trong `styles.py` + thêm tên vào `spec.py` (`kind`) + `GROUPERS` nếu muốn vẽ lần lượt từng mức. Không phải sửa chỗ khác (`registry.py`).
+
+### 8.7 Chuyển mức mềm (`soft_levels`, mặc định bật từ 11/11/2026)
+**Vấn đề:** chia N mức thì giữa hai mức có một đường ranh giới: một bên gạch thưa, một bên gạch dày, và mọi dòng gạch quay đầu thẳng hàng trên ranh giới đó (máy chậm lại ở chỗ quay đầu, mực đậm hơn) nên lộ thành **đường viền mảng**. Đây đúng là vệt mảng thấy trên tranh con mèo 11/11.
+
+**Cách làm (ordered dithering theo dòng):** dòng gạch thứ i dùng ngưỡng lệch `δ[i mod 8]`, 8 giá trị trải đều trong ±0,9 × nửa bước độ phủ, xếp theo thứ tự đảo bit (0, 4, 2, 6, 1, 5, 3, 7) để hai dòng kề nhau luôn lệch xa nhau (`hatch.dither_offsets`). Mỗi dải có 8 mặt nạ, dòng i tra mặt nạ i mod 8.
+Ở chỗ giáp ranh, tỷ lệ dòng của mức nhạt còn lại giảm dần từ 1 về 0, tỷ lệ dòng của mức đậm tăng dần từ 0 lên 1: độ phủ nội suy **tuyến tính** giữa hai mức thay vì nhảy bậc. Phía giáp giấy trắng chỉ lệch một nửa (`SOFT_WHITE`) để vùng gần trắng không có dòng lẻ tẻ.
+
+**Nối nét:** các dòng kết thúc so le nên `serpentine` (chỉ nối dòng kề nhau) vỡ thành từng đoạn (thử: 15 → 171 nét). Kiểu mềm dùng `hatch.join_rows`: nối sang dòng cách 1–8 dòng nếu hai đầu lệch ≤ max(2,5 × s, 0,8 mm) và vòng quay đầu cao ≤ 2 mm (`SOFT_TURN_MM`). Vòng quay đầu cắt bớt hai đầu dòng để đỉnh vòng nằm giữa hai đầu cũ (`_trim_turn`), không lòi ra ngoài.
+
+**Đo (mô phỏng, nét 0,44 mm):** dải chuyển liền: sai tông 0,082 → 0,051, bậc lớn nhất 0,099 → 0,049. Ảnh mèo A5: nhấc bút 496 → 648, thời gian (có gia tốc 3000) 5,7 → 6,3 phút. Tắt ô "Chuyển mức mềm" để quay về cách cũ.
+
+### 8.8 Gạch chéo chồng lớp (`crosshatch`)
+Độ phủ mong muốn T tách thành hai lớp a (góc gạch) và b (góc + 90°) sao cho `1 − (1 − a)(1 − b) = T` (`styles.cross_split`): T ≤ 0,45 chỉ lớp a (= T); trên đó a tăng nửa phần, b gánh phần còn lại. T = 0,9: a ≈ b ≈ 0,68, tức mỗi hướng cách ~0,65 mm thay vì một hướng cách 0,49 mm (ít ướt giấy). Mỗi lớp là một lượt zigzag đủ mức (mềm nếu bật); vẽ hết lớp a rồi mới lớp b (mực lớp dưới có thời gian khô). Tốn hơn zigzag ~20 % chiều dài ở ảnh nhiều mảng đậm.
+
+### 8.9 Sóng biến thiên (`wave_am`): tông liền, không chia mức
+Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4: 1,76 mm), bước sóng **cố định** `λ = 2 × nét thật` (0,88 mm), cùng pha (pha tính từ cùng một gốc) nên không bao giờ cắt nhau. Chỉ biên độ đổi theo độ đậm:
+- Đường sóng `v = A·sin(2πu/λ)` dài gấp `F(k)` lần đường thẳng, `k = 2πA/λ` (bảng tra `hatch._F_TAB`). Nét rộng w cách s0 phủ `w·F/s0`. Muốn độ phủ c: `F = c·s0/w` → tra ngược ra k → A. Biên độ tối đa 0,45 × s0 cho độ phủ ~0,9.
+- Sáng hơn mức một lưới đường thẳng phủ được (w/s0 = 25 %) thì bớt đường: còn 1/2 (dòng chẵn), rồi 1/4 (dòng chia hết cho 4); mỗi đường xuất hiện ở ngưỡng lệch so le ±35 % nên không thành ranh giới. Dưới 0,6 × w/(4 s0) để trắng.
+- Chỉ nối hai đường khi thật sự quay đầu và hai đầu lệch ≤ s0 (thường ở mép ảnh); nối chỗ khác ra móc chữ U / Z lạc lõng. Bỏ đoạn ngắn hơn 3 × s0.
+- Lần thử đầu cho bước sóng đổi theo độ đậm: các đường lệch pha cắt nhau thành lưới rối, đã bỏ.
+
+**Đo:** dải chuyển liền: sai tông 0,027, bậc 0,012 (zigzag cũ 0,082 / 0,099). Ảnh mèo A5: 105 nét, 5,4 phút có gia tốc (nhanh nhất vì gần như không nhấc bút) nhưng **16 000 dòng G-code** (zigzag 8 000): nhiều đoạn ngắn 0,2 mm. Ở 8000 mm/phút có thể vượt sức gửi lệnh từng dòng qua USB: xem đường "hàng đợi" ở Biểu đồ (cần `$10=3`); nếu hàng đợi cạn thì hạ tốc độ cho kiểu này.
 
 ---
 

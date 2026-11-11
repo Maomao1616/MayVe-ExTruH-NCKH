@@ -23,7 +23,9 @@ import { initCustomer } from "./customer.js";
 import { initTonePreview, refresh as refreshTone, setFile as showOriginal } from "./drawing/tonepreview.js";
 
 const $ = (id) => document.getElementById(id);
-const EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".webp"];
+// Ảnh tải từ mạng về Windows hay có đuôi .jfif (= JPEG). Backend nhận dạng bằng nội dung tệp, không tin đuôi.
+const EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".jfif", ".jpe", ".webp", ".bmp", ".gif", ".avif"];
+const ACCEPT = `${EXTENSIONS.join(",")},image/png,image/jpeg,image/webp,image/bmp,image/gif,image/avif,image/svg+xml`;
 const MAX_BYTES = { svg: 20 * 1024 * 1024, raster: 40 * 1024 * 1024 };
 const POLL_MS = 350;
 const GCODE_DEBOUNCE_MS = 400;
@@ -108,7 +110,7 @@ function loadSchemaWhenOnline() {
 /* ==================== chọn tệp ==================== */
 function initFile() {
     const input = $("drawing-file");
-    input.accept = ".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml";
+    input.accept = ACCEPT;
     input.addEventListener("change", () => {
         const chosen = input.files?.[0];
         input.value = "";                    // cho phép chọn lại đúng tệp đó
@@ -129,7 +131,9 @@ function initFile() {
 
 function acceptFile(file) {      // trả Promise xong khi đã biết cỡ ảnh (vùng cắt dùng được)
     const name = file.name.toLowerCase();
-    const ext = EXTENSIONS.find((e) => name.endsWith(e));
+    // Đuôi lạ / tên bị cắt mất đuôi nhưng trình duyệt vẫn biết là ảnh (file.type) thì vẫn nhận như ảnh.
+    const ext = EXTENSIONS.find((e) => name.endsWith(e))
+        ?? (file.type.startsWith("image/") && file.type !== "image/svg+xml" ? ".png" : null);
     if (!ext) return void setStatus("drawing.error.bad_image", "", true);
     const limit = ext === ".svg" ? MAX_BYTES.svg : MAX_BYTES.raster;
     if (file.size > limit) return void setStatus("drawing.error.file_too_large", "", true);

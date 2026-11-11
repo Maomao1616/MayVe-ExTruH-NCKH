@@ -22,7 +22,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .. import paths
-from .drawing import drafts
+from .drawing import drafts, raster_in
 from .drawing.errors import DrawError
 
 ID_RE = re.compile(r"^\d{8}-\d{6}-[a-f0-9]{8}$")
@@ -110,7 +110,7 @@ def _clean_params(raw) -> dict:
 def _encode_jpeg(data: bytes) -> tuple[bytes, tuple[int, int]]:
     from PIL import Image, ImageOps
     try:
-        im = Image.open(io.BytesIO(data))
+        im = Image.open(io.BytesIO(data), formats=raster_in.FORMATS)       # chỉ ảnh thường (không EPS, PSD...)
         if im.width * im.height > LIMITS["max_pixels"]:
             raise DrawError("bad_image", "Ảnh có quá nhiều điểm ảnh.", 413)
         im = ImageOps.exif_transpose(im)
@@ -129,6 +129,14 @@ def _encode_jpeg(data: bytes) -> tuple[bytes, tuple[int, int]]:
     out = io.BytesIO()
     im.save(out, "JPEG", quality=85, optimize=True)
     return out.getvalue(), im.size
+
+
+def stored_filename(filename: str | None) -> str:
+    """Tên lưu kèm ảnh: phần tên gọn (tối đa 50 ký tự) + '.jpg' cố định (ảnh luôn được mã hóa lại thành JPEG).
+    Trước 11/11/2026 cắt cả chuỗi còn 60 ký tự: tên dài mất đuôi, mở ảnh khách thì giao diện từ chối."""
+    stem = re.sub(r"\.[A-Za-z0-9]{1,5}$", "", (filename or "").strip())
+    stem = re.sub(r"[^\w.\- ]", "_", stem)[:50].strip(" ._")
+    return f"{stem or 'anh'}.jpg"
 
 
 def create(data: bytes, filename: str, name: str, note: str, params, source: str) -> dict:
@@ -159,7 +167,7 @@ def create(data: bytes, filename: str, name: str, note: str, params, source: str
         try:
             (tmp / "image.jpg").write_bytes(jpeg)
             meta = {"id": item_id, "created": datetime.fromtimestamp(now).isoformat(timespec="seconds"), "created_ts": now,
-                    "name": name, "note": note, "filename": re.sub(r"[^\w.\- ]", "_", filename or "anh")[:60],
+                    "name": name, "note": note, "filename": stored_filename(filename),
                     "width": size[0], "height": size[1], "bytes": len(jpeg), "seen": False, "params": clean}
             (tmp / "meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
             tmp.rename(base / item_id)

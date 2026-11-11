@@ -28,7 +28,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
 | Driver | 2 × **TMC2209**, điện trở đo **R100** (0,1 Ω), Vref **1,4 V** | Irms ≈ 0,766 × Vref ≈ **1,07 A** (đỉnh ≈ 1,5 A). Dải Vref cho phép 0,2–2,2 V |
 | Truyền động | đai **GT2**, puly **20 răng**, vi bước **1/16** | 200 bước × 16 ÷ (20 răng × 2 mm) = **80 bước/mm** |
 | Nguồn tổng | **Mean Well 12 V 6 A** (72 W) | MKS nhận 12–24 V |
-| Bút vẽ tranh | **Sakura 0,4** | nét thật **~0,55 mm** (mực loang, đo 03/11/2026) |
+| Bút vẽ tranh | **Sakura 0,4**, thử thêm **Uniball 150**; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory: tạm tính **0,44 mm** ⏳ đo lại |
 | Bút viết chữ | **bút bi 0,5** | nét bi thường mảnh hơn cỡ bi ⚠ cần đo |
 | Thêm được | ESP32-S3 (kit) | chưa có webcam |
 
@@ -60,7 +60,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Tốc độ nâng bút / hạ bút | 3000 / **2000** mm/min (hạ chậm hơn, đỡ nảy) | tab Tạo bản vẽ; `spec.py` |
 | Chờ sau nâng / sau hạ | **0,05 s** / 0,05 s | tab Tạo bản vẽ |
 | Tốc độ vẽ / di chuyển | **5000** / 6000 mm/min | tab Tạo bản vẽ |
-| Bề rộng nét thật ÷ cỡ ngòi | **1,375** | `LINE_WIDTH_RATIO` trong `styles.py` |
+| Bề rộng nét thật ÷ cỡ ngòi | **1,1** (từ 11/11/2026, giấy Ivory; trước là 1,375 trên giấy thường) | `LINE_WIDTH_RATIO` trong `styles.py` |
 | Gốc giấy | góc trên trái O(0,0), Y hướng xuống; A6 ⊂ A5 ⊂ A4 cùng neo ở O | `layout.py` |
 | Hướng trục X / Y | ✅ **đúng** (chủ dự án xác nhận 05/11/2026) với `VIEW.flipX = flipY = false`, `invert_y = false` | `core/config.js`, `gcode.to_machine` |
 
@@ -77,7 +77,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | F7 | Rút cáp khi đang chạy: máy chạy nốt bộ đệm (vài giây) rồi dừng. Cắm lại báo `PermissionError(13)`, nối lại là được, không cần reset mạch | tác vụ báo `failed`, khóa lại về chỉ đọc, ghi điểm dừng |
 | F8 | Báo cáo trạng thái có đủ `MPos, WPos, WCO, Bf, F, Pn`; dòng `[MSG:Homed:XY]` sau khi Home xong | đoán Home, đèn công tắc |
 | F9 | Chế độ chỉ đọc: `$$ $E $A $Limits $SS $G` đọc được; `$X`, `? ! ~` gửi được | danh sách lệnh chỉ đọc theo `$CMD` thật |
-| F10 | Sửa cấu hình qua USB: `$Config/Filename`, `$CD` (in YAML đang chạy), `$/axes/x/max_rate_mm_per_min[=v]` (ghi vào RAM), `$LocalFS/List`, `$CD=/localfs/<tệp>` (ghi ra tệp). Bộ nhớ trống ~60 KB. Tắt bật nguồn giá trị vẫn còn. `$CD=` viết lại tệp dạng chuẩn (mất chú thích `#`) nhưng máy chạy bình thường | Cài đặt → Cấu hình máy |
+| F10 | Sửa cấu hình qua USB: `$Config/Filename`, `$CD` (**chỉ in** YAML đang chạy, không ghi gì), `$/axes/x/max_rate_mm_per_min[=v]` (ghi vào RAM), `$LocalFS/List`, `$CD=/localfs/<tệp>` (ghi YAML đang chạy ra tệp, = nút "Lưu vào mạch" nhưng không sao lưu). Mục không có ô trên giao diện (vd `$/axes/x/motor0/pulloff_mm=1.5`, `$/axes/x/homing/cycle=2`, `$/axes/x/homing/settle_ms=100`; đường dẫn = vị trí trong tệp YAML, chữ thường) đổi bằng terminal rồi bấm "Lưu vào mạch" (từ 11/11/2026 nút luôn bấm được sau khi đọc cấu hình). `$10` (= `$Report/Status`) không nằm trong YAML: lưu ngay vào bộ nhớ riêng (NVS) khi gõ. Bộ nhớ trống ~60 KB. Tắt bật nguồn giá trị vẫn còn. `$CD=` viết lại tệp dạng chuẩn (mất chú thích `#`) nhưng máy chạy bình thường | Cài đặt → Cấu hình máy |
 | F11 | Dừng êm: chờ Idle → `$J=G90 G21 Z… F…` → xác nhận Z. Dừng gấp: Hold → Reset → Idle → nâng bút. Không alarm | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) mục 6 |
 | F12 | Gửi từng dòng chờ `ok`: 1500 dòng ở F3000 không nhảy Run / Idle | cách gửi hiện tại là đủ |
 
@@ -93,6 +93,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | 03/11/2026 | vệt kéo khi di chuyển xa | vệt mảnh cong từ góc giấy, đuôi + chấm mực cuối nét, chưa rõ nguyên nhân ⏳ bài 7.5. Đường chéo trên tờ mất bước là do bấm Home khi bút chưa nâng (đã sửa: Home tự nâng bút) |
 | 03/11/2026 | ảnh Phong cảnh | lỗ trắng ở khối trái (xem trước cũng có, nhiều khả năng do ảnh); giọt mực lồi ở mép dưới khối (đã đổi quay đầu sang nửa vòng tròn ⏳ chụp lại) |
 | 05/11/2026 | hướng trục X / Y | ✅ đúng |
+| 11/11/2026 | ảnh con mèo (preset Chân dung), Pigma 0,4, giấy thường: tối đa 8000, gia tốc 3000, junction 0,05, Z3, SpreadCycle | chạy êm, không thấy mất bước. Nền lộ ranh giới các mức đậm nhạt; đọng mực cuối nét (nghi bút + giấy, thử lại bằng Ivory + Uniball 150) |
 
 ## 7. Còn phải thử ⏳
 

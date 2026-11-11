@@ -108,7 +108,8 @@ RASTER = (
 
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
-    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral")),
+    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "wave_am")),
+    Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
     Param("outline_detail", "choice", "medium", choices=("low", "medium", "high")),  # viền: ít = khối chính, nhiều = cả nét nhạt
     Param("levels", "int", 5, 3, 5),                                  # số mức sáng tối
@@ -126,7 +127,7 @@ PALETTE = (
 )
 
 PENS = (0.2, 0.4, 0.5)
-STYLES = ("outline", "zigzag", "wave", "spiral")
+STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "wave_am")
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
           "raster": RASTER, "style": STYLE, "palette": PALETTE}

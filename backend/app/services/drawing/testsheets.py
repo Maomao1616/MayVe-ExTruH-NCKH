@@ -16,6 +16,13 @@ KINDS = ("lift", "lost", "accel", "speed", "drag")
 NAMES = {"lift": "Tờ thử nhấc bút", "lost": "Tờ thử 7.2 mất bước", "accel": "Tờ thử 7.3 gia tốc",
          "speed": "Tờ thử 7.4 tốc độ vẽ", "drag": "Tờ thử 7.5 vệt kéo"}
 MAX_LIST = 8
+DEFAULT_DELAYS = (0.02, 0.05, 0.1)                # tờ nhấc bút: chờ thử mặc định (giây)
+DEFAULT_SPEEDS = (7000, 8000, 9000, 10000)        # 7.2 / 7.3 / 7.4: tốc độ thử mặc định (mm/phút)
+SPEED_MIN, SPEED_MAX = 100.0, 20000.0             # = khoảng của gcode.draw_feed trong spec.py
+
+
+def _span(speeds: list[int]) -> str:
+    return f"{speeds[0]}" if len(speeds) == 1 else f"{speeds[0]}–{speeds[-1]}"
 
 
 def _numbers(options: Mapping[str, Any], key: str, default: list[float], lo: float, hi: float, label: str) -> list[float]:
@@ -38,11 +45,16 @@ def make_draft(kind: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str
     gp = spec.parse("gcode", gcode_raw)
     down, pen_feed, draw_feed = gp.pen_down_z, gp.pen_feed, gp.draw_feed
     down_feed = gp.pen_down_feed
+    delay = gp.delay_down_s                 # chờ của các bài 7.2–7.4 = ô "chờ" đang dùng ở tab Tạo bản vẽ
     rows: list[dict] | None = None
+
+    def speeds() -> list[int]:
+        # Không chặn theo tốc độ tối đa của máy: tờ thử là để tìm giới hạn. Firmware vẫn tự chặn ở max_rate_mm_per_min.
+        return [int(s) for s in _numbers(options, "speeds", list(DEFAULT_SPEEDS), SPEED_MIN, SPEED_MAX, "speeds (tốc độ thử)")]
 
     if kind == "lift":
         ups = _numbers(options, "ups", [1.0, 3.0, 5.0], down + 0.3, machine.z_travel, "ups (Z nhấc)")
-        delays = _numbers(options, "delays", [0.05, 0.1], 0.0, 5.0, "delays (chờ, giây)")
+        delays = _numbers(options, "delays", list(DEFAULT_DELAYS), 0.0, 5.0, "delays (chờ, giây)")
         dfeeds = _numbers(options, "down_feeds", [1000.0, 2000.0], 100.0, 20000.0, "down_feeds (tốc độ hạ)")
         if len(ups) * len(delays) * len(dfeeds) > tg.LIFT_MAX_ROWS:
             raise DrawError("too_many_rows", f"Quá nhiều hàng (tối đa {tg.LIFT_MAX_ROWS}). Bớt giá trị ở một nhóm.")
@@ -50,15 +62,17 @@ def make_draft(kind: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str
         text = tg.lift_sheet(rows, down, pen_feed, draw_feed)
         label = f"{NAMES[kind]} ({len(rows)} hàng)"
     elif kind == "lost":
-        text = tg.lost_steps(gp.pen_up_z, down, pen_feed, draw_feed, down_feed=down_feed)
-        label = NAMES[kind]
+        s = speeds()
+        text = tg.lost_steps(gp.pen_up_z, down, pen_feed, draw_feed, speeds=s, delay=delay, down_feed=down_feed)
+        label = f"{NAMES[kind]} ({_span(s)})"
     elif kind == "accel":
-        text = tg.accel(gp.pen_up_z, down, pen_feed, draw_feed, down_feed=down_feed)
-        label = NAMES[kind]
+        s = speeds()
+        text = tg.accel(gp.pen_up_z, down, pen_feed, draw_feed, speeds=s, delay=delay, down_feed=down_feed)
+        label = f"{NAMES[kind]} ({_span(s)})"
     elif kind == "speed":
-        speeds = _numbers(options, "speeds", [5000.0, 6000.0, 7000.0, 8000.0], 100.0, machine.rapid_feed, "speeds (tốc độ vẽ)")
-        text = tg.speed_strips(gp.pen_up_z, down, pen_feed, speeds=[int(s) for s in speeds], down_feed=down_feed)
-        label = NAMES[kind]
+        s = speeds()
+        text = tg.speed_strips(gp.pen_up_z, down, pen_feed, speeds=s, delay=delay, down_feed=down_feed)
+        label = f"{NAMES[kind]} ({_span(s)})"
     else:  # drag
         delay = _numbers(options, "delay", [0.05], 0.0, 5.0, "delay (chờ, giây)")[0]
         text = tg.drag_test(gp.pen_up_z, down, pen_feed, draw_feed, delay=delay, down_feed=down_feed)

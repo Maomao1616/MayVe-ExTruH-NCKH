@@ -25,7 +25,7 @@ from app.services.drawing.hatch import Field           # noqa: E402
 
 W_MM, H_MM, PX = 80.0, 50.0, 0.2          # ảnh nguồn 0,2 mm / điểm
 SC = 20                                    # mô phỏng 20 điểm / mm
-LINE_W = 0.55                              # bề rộng nét thật (Sakura 0,4, đo 03/11/2026)
+LINE_W = styles.LINE_WIDTH_RATIO * 0.4     # bề rộng nét thật của bút 0,4 (theo styles.py)
 DRAW_FEED, LIFT_S = 5000.0, 0.25
 
 
@@ -52,7 +52,13 @@ def metrics(strokes, dark: np.ndarray) -> dict:
     got = cv2.GaussianBlur(ink, (0, 0), sigma)
     want = cv2.GaussianBlur(cv2.resize(dark, (ink.shape[1], ink.shape[0]), interpolation=cv2.INTER_AREA), (0, 0), sigma)
     length = sum(float(np.hypot(*np.diff(np.asarray(s), axis=0).T).sum()) for s in strokes)
-    return {"error": float(np.abs(got - want).mean()), "length_mm": length, "strokes": len(strokes),
+    # "bậc": trên dải chuyển liền (nửa trái, bỏ 3 mm mép trên / dưới), tông nhìn ở ~1 mm nhảy lệch so với mong muốn
+    # nhiều nhất bao nhiêu giữa hai cột cách 1 mm. Lớn = thấy rõ ranh giới mức (vệt mảng).
+    near = cv2.GaussianBlur(ink, (0, 0), 1.0 * SC)
+    band = near[3 * SC:-3 * SC, : int(W_MM * 0.5 * SC)].mean(axis=0)
+    ideal = cv2.resize(dark, (ink.shape[1], ink.shape[0]))[3 * SC:-3 * SC, : int(W_MM * 0.5 * SC)].mean(axis=0)
+    jump = float(np.abs(np.diff(band[::SC]) - np.diff(ideal[::SC])).max())
+    return {"error": float(np.abs(got - want).mean()), "length_mm": length, "strokes": len(strokes), "jump": jump,
             "minutes": (length / (DRAW_FEED / 60) + len(strokes) * LIFT_S) / 60, "ink": ink}
 
 
@@ -61,11 +67,13 @@ def run_style(dark: np.ndarray, pen_mm: float = 0.4, **style) -> list:
 
 
 CASES = {
-    "zigzag (mặc định)": dict(kind="zigzag"),
-    "zigzag cách 1,3 mm": dict(kind="zigzag", spacing_mm=1.3),
-    "sóng (mặc định)": dict(kind="wave"),
-    "sóng biên độ 0,2 mm": dict(kind="wave", amplitude_mm=0.2),
-    "xoắn ốc": dict(kind="spiral"),
+    "zigzag cứng (cũ)": dict(kind="zigzag", soft_levels=False),
+    "zigzag mềm": dict(kind="zigzag"),
+    "sóng cứng (cũ)": dict(kind="wave", soft_levels=False),
+    "sóng mềm": dict(kind="wave"),
+    "xoắn ốc mềm": dict(kind="spiral"),
+    "gạch chéo mềm": dict(kind="crosshatch"),
+    "sóng biến thiên": dict(kind="wave_am"),
 }
 
 
@@ -75,10 +83,10 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     dark = target()
     cv2.imwrite(str(out / "muc-tieu.png"), (255 * (1 - dark)).astype(np.uint8))
-    print(f"{'kiểu tô':24s} {'sai số':>8s} {'dài mm':>8s} {'số nét':>7s} {'phút':>6s}")
+    print(f"{'kiểu tô':24s} {'sai số':>8s} {'bậc':>6s} {'dài mm':>8s} {'số nét':>7s} {'phút':>6s}")
     for i, (name, style) in enumerate(CASES.items()):
         m = metrics(run_style(dark, **style), dark)
-        print(f"{name:24s} {m['error']:8.4f} {m['length_mm']:8.0f} {m['strokes']:7d} {m['minutes']:6.2f}")
+        print(f"{name:24s} {m['error']:8.4f} {m['jump']:6.3f} {m['length_mm']:8.0f} {m['strokes']:7d} {m['minutes']:6.2f}")
         cv2.imwrite(str(out / f"{i}.png"), (255 * (1 - m["ink"])).astype(np.uint8))
     print(f"Ảnh mô phỏng ghi vào {out}")
 

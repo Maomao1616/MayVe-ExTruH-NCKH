@@ -23,6 +23,19 @@ UPSCALE_TO_PX = 720              # ảnh nhỏ được phóng nhẹ tới chừ
 
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
 
+# Định dạng được mở. Chỉ ảnh thường: Pillow còn mở được EPS, PSD, ICNS... (EPS gọi Ghostscript) mà ở đây không cần.
+FORMATS = ("PNG", "JPEG", "WEBP", "BMP", "GIF", "AVIF")
+_MAGIC = (b"\x89PNG\r\n\x1a\n", b"\xff\xd8\xff", b"BM", b"GIF87a", b"GIF89a")
+
+
+def sniff(head: bytes) -> bool:
+    """Vài byte đầu có phải một trong FORMATS không (không tin đuôi tệp)."""
+    if head.startswith(_MAGIC):
+        return True
+    if head[:4] == b"RIFF" and head[8:12] == b"WEBP":
+        return True
+    return head[4:8] == b"ftyp" and head[8:12] in (b"avif", b"avis")
+
 
 @dataclass(frozen=True)
 class Raster:
@@ -50,7 +63,7 @@ def work_side_px(ref_long_mm: float, pen_mm: float, quality: str, override: int 
 def load(data: bytes, p, ref_w_mm: float, ref_h_mm: float, ctx=None, color: bool = False) -> Raster:
     """`p` = tham số nhóm raster; (ref_w_mm, ref_h_mm) = hộp tham chiếu mà ảnh phải nằm gọn trong."""
     try:
-        im = Image.open(io.BytesIO(data))
+        im = Image.open(io.BytesIO(data), formats=FORMATS)
         w0, h0 = im.size
     except Image.DecompressionBombError:
         raise DrawError("bad_image", "Ảnh có quá nhiều điểm ảnh (> 60 triệu).", 413) from None
