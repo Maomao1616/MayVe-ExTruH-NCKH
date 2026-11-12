@@ -15,7 +15,36 @@
 - Làm theo thứ tự: mục trước chốt con số mục sau dùng. **Mỗi bút làm riêng** (UB-155, UM-100, Sakura 0,4, bút bi 0,5).
 - **Từ 11/11/2026 ô "Bút vẽ" ở tab Tạo bản vẽ ghi thẳng bề rộng nét đo trên giấy** (không còn nhân 1,1). Chọn bút theo tên; bút chưa có trong danh sách hoặc vừa đo ra số khác thì chọn **Tùy chọn** và gõ số đo được.
 
-## Kế hoạch ngày 12/11/2026 (làm từ trên xuống, mỗi bước một tờ mới)
+## Kế hoạch ngày 13/11/2026 (làm từ trên xuống; hết giờ thì dừng ở đâu cũng được, bước 1–5 quan trọng nhất)
+Giấy Ivory 250 g/m², cùng một mặt giấy cho cả ngày (mặt đã chọn 12/11). Bút **Sakura 0,5** cho mọi tờ đo tông và so kiểu tô.
+
+**Chuẩn bị (một lần, ~5 phút):**
+1. Tắt phần mềm, mở lại (bản mới có tờ 7.6, tờ tông mới, kiểu "Theo dáng ảnh"). Mở trình duyệt, bấm **Ctrl+F5**.
+2. Bật nguồn máy, nối, **mở khóa chuyển động**.
+3. Terminal gõ `$10` → phải trả `$10=3`. Nếu không: gõ `$10=3` rồi gõ lại `$10`. Không có số này thì Biểu đồ không có đường "hàng đợi".
+4. Tab Tạo bản vẽ, khối G-code: vẽ **8000**, di chuyển 8000, Z nâng 3 / hạ 0, hạ bút 2000, chờ **0,02**. Ô **Bút vẽ** = **Sakura (0,5)**.
+5. Từ 12/11 **không còn** nút Xem trước + ô tích ở tab Điều khiển: nạp bản thảo xong nhìn khung vẽ rồi bấm **▶ Chạy**.
+
+| Bước | Làm gì | Ở đâu / chọn gì | Giấy | Ghi lại |
+|---|---|---|---|---|
+| 1 | **Servo sau khi bật nguồn / Home** | Bật nguồn mạch → nối → bấm **Home** → bấm một lệnh bất kỳ (jog nhỏ). Làm lại 3 lần. Lần cuối: chạy xong một tờ bất kỳ rồi Home | không | sau Home phần mềm tự nhích bút xuống 0,5 mm rồi lên lại (để servo giữ chặt): có thấy nhích không; bút có tự tụt về giữa không; nếu có: lúc nào (sau bật nguồn / sau Home / sau tác vụ), Terminal có dòng "pen re-lift not sent" không |
+| 2 | **Bộ đệm khi chờ nhấc bút = 0** | Cài đặt → Tờ thử → **Tờ nhấc bút**: tích chờ **0** và **0,02** (bỏ tích mức khác), Z nhấc chỉ **3**, hạ chỉ **2000** → 2 hàng. Tạo → tab Điều khiển nạp → Chạy. Xong: khung 2D bấm **Biểu đồ**, chọn lần chạy vừa xong | 1 tờ | hàng chờ 0: đầu nét có hụt / loang không, có kéo vệt không; Biểu đồ "hàng đợi": tụt về 0 ở hàng nào (chụp màn hình); thời gian cả tờ |
+| 3 | **7.6 Đoạn ngắn / cung G2** | Cài đặt → Tờ thử → Bộ thử máy → nút **7.6 Đoạn ngắn / cung G2** (dùng tốc độ vẽ 8000 đang đặt) → nạp → Chạy | 1 tờ | Biểu đồ: tốc độ thật và hàng đợi **từng vòng** (5 vòng từ trái sang: đoạn 1 / 0,5 / 0,25 / 0,1 mm, rồi cung G2), vòng nào có chấm đỏ (cạn); trên giấy: vòng nào có cạnh góc, rung, vệt đậm; máy có kêu khác thường ở vòng nào |
+| 4 | **3 tờ hiệu chỉnh tông** | Cài đặt → Tờ thử → **Tờ hiệu chỉnh tông**: Bề rộng nét **0,5**, khổ **A6**, Kiểu gạch lần lượt **Đan 3 hướng**, **Sóng biên độ**, **Xoắn ốc** (3 bản thảo) | 3 tờ A6 | ô nào bắt đầu bết mực / ướt giấy. Chụp theo mục 2b (thẳng góc, ánh sáng đều, không flash, thấy đủ 3 ô đen + chữ F) |
+| 5 | **So 3 kiểu tô chân dung** | Tab Tạo bản vẽ: ảnh em bé (hoặc một ảnh người rõ mặt), preset **Chân dung**, khổ **A6**. Tạo nét → Lưu bản thảo. Rồi **chỉ đổi ô Kiểu tô**: **Đan 3 hướng (60°)** → Lưu; **Theo dáng ảnh (thử nghiệm)** → Lưu. Vẽ cả 3 | 3 tờ A6 | mỗi tờ: thời gian thật / ước tính (số ở tab Điều khiển), số lần nhấc bút (Biểu đồ → bảng tóm tắt), tờ nào giống ảnh nhất, tờ nào có "hồn" nhất, chỗ nào quá đậm / quá nhạt, nét nối gần có để lại vệt không |
+| 6 | **Theo dáng ảnh với ảnh thú** | ảnh chân dung chó / mèo (lông rõ), preset Chân dung, Kiểu tô **Theo dáng ảnh**, A6 | 1 tờ | nét có chạy theo lông không, chỗ nào rối / quằn quại, chỗ nào trống, so nhanh với Đan chéo nếu còn giấy |
+| 7 | (nếu còn giờ) **Sóng biên độ, đo thời gian** | ảnh phong cảnh, preset **Phong cảnh**, A6 | 1 tờ | thời gian thật / ước tính; Biểu đồ hàng đợi có cạn giữa nét không |
+
+**Về kiểu "Theo dáng ảnh (thử nghiệm)":** nét uốn dọc theo dáng ảnh thay vì gạch chéo cố định, độ đậm liền (không có ô Số mức). Trên ảnh mẫu A5 nó nhấc bút ít hơn đan chéo 40–56 % và nhanh hơn khoảng một nửa, nhưng dùng ít mực hơn nên **có thể nhạt hơn**; chưa có lớp đan thứ hai cho vùng rất đậm. Đây là bản thô để xem nét uốn trông thế nào trên giấy, chưa phải bản cuối. Ô **Góc** vẫn dùng: là hướng nét ở chỗ phẳng không rõ hướng (trán, nền trơn).
+
+**Gửi lại (một lần cuối ngày, theo thứ tự bước):**
+1. Bước 1: một dòng "servo: ổn / tụt lúc …".
+2. Bước 2, 3: ảnh chụp màn hình Biểu đồ mỗi lần chạy + ảnh giấy chụp cận + thư mục `data\job_logs` (nén lại) hoặc tải CSV từ Biểu đồ.
+3. Bước 4: 3 ảnh gốc tờ tông (không chỉnh, không cắt).
+4. Bước 5, 6, 7: ảnh từng tờ (cùng góc, cùng ánh sáng) + bảng: kiểu tô · thời gian thật · ước tính · nhấc bút · nhận xét.
+5. Thêm nếu có: 2–3 ảnh gốc cho XDoG (em bé, ngược sáng, ảnh tối) và 1–2 ảnh 2D (hình vẽ chụp lại bằng điện thoại, có chỗ tối chỗ sáng).
+
+## Kế hoạch ngày 12/11/2026 (đã làm; giữ để tra cứu)
 Giấy Ivory 250 g/m², khổ A6 cho tờ hiệu chỉnh (đỡ tốn mực, tốn giấy). **Bút đỏ không dùng để đánh giá độ đậm** (đỏ trông nhạt hơn đen); chỉ dùng để đo bề rộng nét, loang, đọng mực.
 
 **Chuẩn bị (một lần):**
@@ -131,6 +160,11 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 | 7.3 | Gia tốc + góc | **(từ 11/11)** răng cưa bước 2 mm, **mỗi tốc độ một hàng** từ trên xuống (hàng k có k chấm đầu hàng); đổi gia tốc / `junction_deviation` ở Cấu hình máy rồi chạy lại trên tờ mới | gợn sóng sau góc; giọt mực ở góc; thời gian từng lần (Biểu đồ). Đang dùng gia tốc 3000, junction 0,05 | ⏳ 7000–10000 |
 | 7.4 | Tốc độ vẽ từng bút | dải đường thẳng, mặc định 7000 / 8000 / 9000 / 10000, mỗi bút một tờ, **chụp cận đo bề rộng nét** | tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét ở đó (→ số của bút trong ô "Bút vẽ") | 🧪 6000 vẫn đậm (ảnh xa); 8000 vẽ con mèo OK (11/11); ⏳ đo |
 | 7.5 | Vệt kéo khi đi xa | hai chấm cách 240 mm, G0 qua lại 5 lần, mỗi lần một mức chờ nâng; đổi Z nhấc 3 / 4 / 5. Dán giấy phẳng | vệt mảnh nối hai chấm = bút chưa rời giấy | ⏳ |
+| 7.6 | Đoạn ngắn và cung G2 | **(từ 12/11, nút "7.6 Đoạn ngắn / cung G2")** 5 vòng tròn bán kính 10 mm xếp một hàng, vẽ lần lượt từ trái sang phải: đoạn thẳng G1 dài **1 / 0,5 / 0,25 / 0,1 mm**, rồi **cung G2** (2 dòng mỗi lượt). Mỗi vòng vẽ chồng 12 lần (~6 s) ở tốc độ vẽ đang đặt (8000). Giấy mới. Chạy xong mở **Biểu đồ** của lần chạy đó | từng vòng: tốc độ thật có tụt không, hàng đợi (Bf) có cạn về 0 giữa vòng không (chấm đỏ), thời gian thật mỗi vòng; trên giấy: vòng nào có cạnh góc / rung / vệt đậm chỗ nối. Dự đoán: đoạn 0,1 mm (~1300 dòng/giây ở 8000) vượt cổng USB 115200 baud (~480 dòng/giây) nên cạn bộ đệm và chậm; cung G2 chạy mượt và nhanh nhất | ⏳ |
+
+**Đọc bộ đệm khi chờ nhấc bút = 0 (bài ngày 13/11):** chạy tờ nhấc bút có hàng chờ 0 (ô "0" trong tờ nhấc bút, tạo lại tờ) và hàng chờ 0,02; mở Biểu đồ, xem **hàng đợi lệnh trong máy**. Chờ 0,02 thì mỗi lần nhấc bút có G4 nên hàng đợi tụt về 0; chờ 0 không có G4 thì hàng đợi phải **không tụt** tại chỗ nhấc. Ghi lại: hàng đợi có còn tụt không, thời gian cả tờ, nét đầu sau khi hạ có hụt / loang không. Biểu đồ Độ cao bút Z đã ẩn (không cần để đọc bài này); rê chuột vẫn thấy Z. Cần đã gõ `$10=3` ở Terminal (mục 3 của docs/11).
+
+**Gửi lại sau bài 7.6 và bài chờ 0:** ảnh Biểu đồ từng lần chạy (chụp màn hình), thư mục `data/job_logs` của các lần chạy đó (hoặc tải CSV), ảnh giấy chụp cận từng vòng tròn.
 
 **Mức đang nhắm tới (đề xuất 06/11/2026, chưa thử):** tốc độ tối đa X/Y 8000 mm/min (nguồn 12 V, không nên quá 10000), gia tốc X/Y 2500 (3000 là của Z), `junction_deviation` 0,05, Vref giữ 1,4. G0 chạy tới 8000; tốc độ vẽ chốt theo 7.4 (khoảng 5000–7000). Theo công thức góc cua, 0,02 → 0,05 → 0,1 chỉ nhanh thêm ~1–2 % với ảnh tô, ~7–8 % mỗi bậc với chữ nhiều góc vuông đoạn ngắn. Thứ tự thử: 7.2b trước, rồi 7.3.
 

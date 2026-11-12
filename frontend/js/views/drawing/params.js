@@ -234,8 +234,8 @@ export function syncVisibility() {
         const label = $(id)?.closest("label");
         if (label) label.hidden = outlineOnly;
     }
-    // Sóng biến thiên không chia mức: ẩn số mức và ô chuyển mức mềm
-    const levelless = outlineOnly || kind === "wave_am";
+    // Sóng biến thiên và Theo dáng ảnh không chia mức: ẩn số mức và ô chuyển mức mềm
+    const levelless = outlineOnly || kind === "wave_am" || kind === "flow";
     const levels = $("style-levels")?.closest("label");
     if (levels) levels.hidden = levelless;
     const soft = $("style-soft")?.closest("label");

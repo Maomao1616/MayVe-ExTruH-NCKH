@@ -109,7 +109,8 @@ RASTER = (
 
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
-    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am")),
+    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am",
+                                                          "flow")),
     Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
     Param("outline_detail", "choice", "medium", choices=("low", "medium", "high")),  # viền: ít = khối chính, nhiều = cả nét nhạt
@@ -131,7 +132,7 @@ PALETTE = (
 # Đo 12/11/2026 (tờ hiệu chỉnh A6, Ivory 250, 8000 mm/min): UB-155 0,35–0,4 → 0,38; UM-100 ~0,4; Sakura 0,4 mặt láng
 # 0,45–0,5 → 0,5 (mặt nhám 0,5–0,55: chọn Tùy chọn); bút bi 0,5 chưa đo.
 PENS = (0.38, 0.4, 0.5)
-STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am")
+STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow")   # flow: bản thô 12/11/2026
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
           "raster": RASTER, "style": STYLE, "palette": PALETTE}

@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~484,819 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~492,286 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -108,7 +108,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `auth.py` | ~722 | API đăng nhập quản lý bằng mã PIN. Mỏng: logic ở app/auth.py. |
 | `config.py` | ~663 | API cấu hình máy (YAML trên mạch, services/machine_config.py) và hồ sơ phần mềm |
 | `customer.py` | ~818 | API ảnh khách gửi (services/customer.py). Chỉ POST /api/customer mở cho khách; mọi thứ khác cần quản lý. |
-| `draw.py` | ~4,262 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
+| `draw.py` | ~4,290 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
 | `events.py` | ~1,308 | Luồng sự kiện máy chủ → trình duyệt (SSE, `text/event-stream`): trạng thái máy + nhật ký terminal, thay cho hỏ |
 | `machine.py` | ~1,574 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
 | `storage.py` | ~481 | API lưu trữ: macro (CRUD) và xem/tải nội dung thư mục dữ liệu (chỉ đọc). Mỏng: logic ở services. |
@@ -141,7 +141,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `__init__.py` | ~319 | Tab Tạo bản vẽ: ảnh/SVG -> đường nét -> G-code. Không gọi máy. |
-| `calibration.py` | ~3,065 | Tờ mẫu hiệu chỉnh bút: tạo thành một BẢN THẢO như mọi bản khác (xem trước, nạp sang Điều khiển, chạy). |
+| `calibration.py` | ~3,960 | Tờ mẫu hiệu chỉnh bút: tạo thành một BẢN THẢO như mọi bản khác (xem trước, nạp sang Điều khiển, chạy). |
 | `drafts.py` | ~3,189 | Bản thảo trên đĩa: G-code từng lớp + ảnh minh họa + meta.json, mỗi bản một thư mục con. |
 | `edges.py` | ~3,288 | Nét viền phác họa: ảnh -> mặt nạ đường mảnh 1 điểm ảnh (trace.py dò thành nét liền). |
 | `errors.py` | ~108 | Lỗi của tab Tạo bản vẽ. `code` ổn định để frontend dịch (quy ước E3), `message` chỉ để tra cứu. |
@@ -158,13 +158,13 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `registry.py` | ~379 | Sổ đăng ký: gom các biến thể cùng loại (kiểu vector hóa...). Thêm kiểu mới không sửa chỗ khác. |
 | `service.py` | ~1,353 | Ghép các bước: kiểm tra tham số -> bố trí -> G-code (mỗi lớp một tệp) -> kiểm bằng chính bộ làm sạch |
 | `shapes.py` | ~174 | Kiểu dữ liệu dùng chung. Tọa độ đường nét: (x, y) tính bằng mm, gốc ở góc trên trái, Y xuống. |
-| `spec.py` | ~3,387 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
+| `spec.py` | ~3,419 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
 | `store.py` | ~463 | Bộ nhớ tạm các bản vẽ đã nạp (để đổi tham số bố trí/G-code không phải nạp lại ảnh/SVG). |
-| `styles.py` | ~5,572 | Kiểu tô: zigzag, sóng, xoắn ốc, gạch chéo chồng lớp, sóng biến thiên. Mỗi kiểu nhận Field (độ đậm) -> danh sác |
+| `styles.py` | ~5,809 | Kiểu tô: zigzag, sóng, xoắn ốc, gạch chéo chồng lớp, sóng biến thiên. Mỗi kiểu nhận Field (độ đậm) -> danh sác |
 | `svg_in.py` | ~1,559 | Nạp SVG (nhiều lớp) bằng vpype -> các lớp đường nét tính bằng mm. |
 | `tasks.py` | ~1,287 | Tác vụ nền của tab vẽ: MỘT luồng worker tại một thời điểm, có tiến trình và hủy hợp tác. |
-| `testgcode.py` | ~3,618 | Sinh G-code cho các tờ thử máy (docs/07_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệ |
-| `testsheets.py` | ~1,531 | Tờ thử máy thành BẢN THẢO thường (xem trước, nạp sang Điều khiển, chạy): nhấc bút, mất bước, gia tốc / góc, tố |
+| `testgcode.py` | ~4,472 | Sinh G-code cho các tờ thử máy (docs/07_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệ |
+| `testsheets.py` | ~1,602 | Tờ thử máy thành BẢN THẢO thường (xem trước, nạp sang Điều khiển, chạy): nhấc bút, mất bước, gia tốc / góc, tố |
 | `tone.py` | ~521 | Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất). |
 | `trace.py` | ~1,438 | Mặt nạ nét -> làm mảnh (skeleton) -> dò thành các nét liền (mm). |
 
@@ -197,7 +197,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `test_calibration.py` | ~1,877 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
+| `test_calibration.py` | ~2,302 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
 | `test_draw_contract.py` | ~3,704 | Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay. |
 | `test_draw_gcode.py` | ~2,160 |  |
 | `test_draw_layout.py` | ~1,439 |  |
@@ -215,8 +215,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_outline_cleanup.py` | ~760 | Viền nét đơn: cắt râu của nét dày, khép vòng kín. |
 | `test_palette.py` | ~743 |  |
 | `test_raster_in.py` | ~1,314 |  |
-| `test_soft_styles.py` | ~2,499 | Chuyển mức mềm (soft_levels), gạch chéo chồng lớp (crosshatch), sóng biến thiên (wave_am). Đo bằng mô phỏng mự |
-| `test_testsheets.py` | ~2,525 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
+| `test_soft_styles.py` | ~2,501 | Chuyển mức mềm (soft_levels), gạch chéo chồng lớp (crosshatch), sóng biến thiên (wave_am). Đo bằng mô phỏng mự |
+| `test_testsheets.py` | ~2,822 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
 | `test_upload_names.py` | ~920 | Nạp ảnh: nhận dạng bằng nội dung, tên tệp dài / ký tự lạ không làm hỏng (lỗi thật 11/11/2026: ảnh 200 KB tên d |
 
 ### `backend/tools/`
@@ -234,20 +234,20 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `03_CAU_TRUC_PHAN_MEM.md` | ~5,553 |  |
 | `04_TAB_DIEU_KHIEN.md` | ~5,536 |  |
 | `05_TAB_TAO_BAN_VE.md` | ~4,378 |  |
-| `06_THUAT_TOAN_XU_LY_ANH.md` | ~12,930 |  |
-| `07_THU_NGHIEM.md` | ~5,937 |  |
+| `06_THUAT_TOAN_XU_LY_ANH.md` | ~13,554 |  |
+| `07_THU_NGHIEM.md` | ~7,803 |  |
 | `08_TRIEN_KHAI.md` | ~5,358 |  |
 | `09_QUYET_DINH_THIET_KE.md` | ~4,068 |  |
-| `10_HUONG_PHAT_TRIEN.md` | ~5,489 |  |
-| `11_VIEC_CAN_LAM.md` | ~4,522 |  |
-| `AI_CODEMAP.md` | ~6,104 |  |
+| `10_HUONG_PHAT_TRIEN.md` | ~5,778 |  |
+| `11_VIEC_CAN_LAM.md` | ~4,955 |  |
+| `AI_CODEMAP.md` | ~6,193 |  |
 | `AI_START.md` | ~2,818 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~34,676 |  |
+| `index.html` | ~34,859 |  |
 
 ### `frontend/assets/css/`
 
@@ -312,7 +312,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
 | `drawing.js` | ~9,618 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
-| `jobchart.js` | ~6,163 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
+| `jobchart.js` | ~6,272 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
 | `preview.js` | ~6,685 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
 | `settings.js` | ~14,268 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
 | `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
@@ -324,7 +324,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `canvas.js` | ~5,385 | canvas khung vẽ: tờ giấy (A6/A5/A4 như khung dán thật trên bàn), lề, nét xem nháp |
 | `crop.js` | ~3,033 | cắt ảnh ngay trên khung "ảnh gốc" của tab Tạo bản vẽ. |
-| `params.js` | ~5,198 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
+| `params.js` | ~5,209 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
 | `presets.js` | ~694 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
 | `tonepreview.js` | ~943 | khung "ảnh gốc" của tab Tạo bản vẽ: xem ảnh gốc hoặc ảnh SAU chỉnh sáng |
 
@@ -332,8 +332,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~18,386 |  |
-| `vi.json` | ~17,650 |  |
+| `en.json` | ~18,583 |  |
+| `vi.json` | ~17,807 |  |
 
 ### `frontend/tests/`
 
@@ -342,6 +342,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `chart.test.mjs` | ~904 | Kiểm lib/chart.js (vạch trục, tìm cột theo thời gian, bảng so sánh). Chạy: node --test frontend/tests/chart.te |
 | `gcode.test.mjs` | ~2,794 | Kiểm lib/gcode.js (bộ đọc G-code quyết định xem trước + cảnh báo). Chạy: node --test frontend/tests/gcode.test |
 | `imageprep.test.mjs` | ~1,274 | Đối chiếu lib/imageprep.js với backend: node --test frontend/tests/imageprep.test.mjs |
+| `locales.test.mjs` | ~616 | Kiểm tệp dịch: không trùng khóa (JSON.parse nuốt âm thầm, khóa sau đè khóa trước: từng làm tờ hiệu chỉnh tông  |
 | `paper.test.mjs` | ~1,895 | Đối chiếu lib/paper.js với backend (layout.py). Sinh bởi script từ chính backend — chạy: node --test frontend/ |
 | `preview.test.mjs` | ~561 | Kiểm views/preview.js phần thuần: makeTransform (mapX / mapY phải khớp toScreen, vì vòng lặp vẽ tệp dùng mapX  |
 
@@ -350,5 +351,5 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `export_context.py` | ~4,890 | Xuất mã nguồn thành MỘT tệp markdown gọn để đưa cho AI khác, tiết kiệm token. |
-| `ink_sim.py` | ~1,394 | Mô phỏng mực: nét (mm) -> ảnh độ phủ mực với bề rộng nét thật, so với độ đậm mong muốn. Không cần in giấy. |
-| `make_test_gcode.py` | ~808 | Sinh sẵn các tệp G-code cho các bài thử máy (docs/07_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn. |
+| `ink_sim.py` | ~1,409 | Mô phỏng mực: nét (mm) -> ảnh độ phủ mực với bề rộng nét thật, so với độ đậm mong muốn. Không cần in giấy. |
+| `make_test_gcode.py` | ~845 | Sinh sẵn các tệp G-code cho các bài thử máy (docs/07_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn. |

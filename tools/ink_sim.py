@@ -75,6 +75,7 @@ CASES = {
     "gạch chéo mềm": dict(kind="crosshatch"),
     "đan 3 hướng": dict(kind="crosshatch3"),
     "sóng biến thiên": dict(kind="wave_am"),
+    "theo dáng (flow, thô)": dict(kind="flow"),
 }
 
 

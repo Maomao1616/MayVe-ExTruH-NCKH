@@ -295,8 +295,23 @@ def wave_am(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None
     return _flat(wave_am_groups(f, style, pen_mm, ctx, angle))
 
 
+# --- Theo dáng ảnh (flow field, bản thô 12/11/2026): nét uốn dọc theo dáng ảnh, độ đậm liền. Thuật toán ở flow.py ------
+def flow_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
+    from . import flow
+    line_w = LINE_WIDTH_RATIO * pen_mm
+    scale = spacing_of(style, pen_mm) / (DEFAULT_SPACING_PEN * line_w)      # người dùng đặt khoảng cách khác mặc định
+    base = style.angle if angle is None else angle
+    return [_clip_out(flow.flow_strokes(f, line_w, base, scale, ctx), f)]
+
+
+@FILLERS.register("flow")
+def flow_fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
+    return _flat(flow_groups(f, style, pen_mm, ctx, angle))
+
+
 GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_groups,
-            "crosshatch": crosshatch_groups, "crosshatch3": crosshatch3_groups, "wave_am": wave_am_groups}
+            "crosshatch": crosshatch_groups, "crosshatch3": crosshatch3_groups, "wave_am": wave_am_groups,
+            "flow": flow_groups}
 
 
 @FILLERS.register("outline")

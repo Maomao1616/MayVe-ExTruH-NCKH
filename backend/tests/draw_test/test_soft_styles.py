@@ -137,7 +137,7 @@ def test_join_rows_turn_only_refuses_staircase_links():
 
 
 def test_new_kinds_are_registered_and_accepted():
-    for kind in ("crosshatch", "crosshatch3", "wave_am"):
+    for kind in ("crosshatch", "crosshatch3", "wave_am", "flow"):
         assert kind in spec.STYLES and kind in styles.FILLERS.names() and kind in styles.GROUPERS
         assert style(kind=kind).kind == kind
 

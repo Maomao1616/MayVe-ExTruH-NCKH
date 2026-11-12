@@ -25,7 +25,7 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F, 12/11/2026) đối c
 |---|---|---|---|
 | 1 | **Đường cong tông** (0.3) | ảnh chụp tờ hiệu chỉnh tông | 1 buổi sau khi có ảnh |
 | 2 | **XDoG cho viền ảnh lệch sáng** (0.4) | 2–3 ảnh thật (em bé, ngược sáng, đèn đêm) | 1 buổi |
-| 3 | **Flow field: nét theo dáng ảnh** (0.5) | không (ảnh mẫu có sẵn); in thử từ bước F3 | 2–4 buổi, chia 6 bước |
+| 3 | **Flow field: nét theo dáng ảnh** (0.5) | **bản thô F1–F3 đã có 12/11** (kiểu "Theo dáng ảnh (thử nghiệm)"); chờ in thử A6 + ảnh thú thật | còn F4–F6 |
 | 4 | **Buffer + G2/G3** (0.6) | nhật ký chạy máy thật có `Bf:` | sau khi có số liệu |
 
 ### 0.3 Đường cong tông (ý tưởng D) ✅
@@ -57,6 +57,8 @@ Cách làm (chỉ NumPy + OpenCV đang có):
 5. **Chống râu và nhấc bút**: bỏ đường ngắn hơn 3 × khoảng cách; nối đầu các đường kề nhau bằng vòng quay đầu (như zigzag) khi hai đầu gần nhau; sau đó `optimize` + nối nét gần như mọi kiểu tô.
 6. **Vùng rất đậm**: thêm lớp hai theo hướng vuông góc với trường hướng (như gạch chéo, chia độ phủ bằng `cross_split`) → "đan theo dáng".
 
+**Trạng thái 12/11/2026:** bản thô gộp F1–F3 đã có (`flow.py`, kiểu `flow`, số đo ở [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.10). So với tiêu chí nhận: nhấc bút và thời gian **đạt** (ít hơn đan chéo 40–56 %), xử lý 4–5 s **đạt**, sai tông mô phỏng 0,056 **chưa đạt** (đan chéo 0,042). Chưa in. Hướng phối trộn với đan 3 (lai: lớp 1 theo dáng, lớp 2–3 gạch thẳng; hoặc cong chỗ có hướng rõ, thẳng chỗ phẳng) chỉ quyết sau khi in so sánh.
+
 Các bước giao, mỗi bước có ảnh xem trước để chủ dự án duyệt:
 | Bước | Làm | Duyệt bằng |
 |---|---|---|
@@ -73,6 +75,7 @@ Rủi ro: trường hướng nhiễu → nét rối (chặn bằng làm mờ ten
 ### 0.6 Buffer và cung G2/G3 (ý tưởng E) ⏸ chờ số liệu máy
 - Chủ dự án xác nhận máy **đã từng vẽ được G2/G3** (trước 12/11/2026).
 - Số đo 12/11: buffer chỉ tụt về 0 lúc **nhấc bút** (G4 bắt máy xả hàng đợi), nét dài thì đầy → nghẽn hiện tại **không do USB**. Việc trước: thử **chờ 0** (bỏ G4) trên tờ nhấc bút.
+- B0 (12/11) Tờ thử **7.6 đoạn ngắn / cung G2** đã có sẵn ([07](07_THU_NGHIEM.md) mục 6): cùng một vòng tròn bằng G1 đoạn 1 → 0,1 mm và bằng G2; kết quả quyết định có cần B3 không.
 - B1 Chủ dự án gửi nhật ký chạy (`data/job_logs/*.json` + `.csv`, sau khi gõ `$10=3`) của một bức sóng biên độ và một bức gạch chéo.
 - B2 AI đọc `starved_pct`, `planner_blocks`: nếu máy đói lệnh **giữa các nét dài** (không phải lúc nhấc bút) thì làm B3 hoặc D11 (tăng baud, gửi dồn theo số ký tự bộ đệm).
 - B3 Gộp đoạn thẳng thành cung G2/G3 cho sóng / xoắn ốc / flow field (sai số ≤ 0,01–0,02 mm, giữ G1 khi không khớp); xem trước (`lib/gcode.js` đã đọc được G2/G3) và ước tính phải tính đúng cung.

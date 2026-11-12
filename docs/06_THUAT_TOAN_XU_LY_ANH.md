@@ -332,6 +332,19 @@ Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4
 
 **Đo:** dải chuyển liền: sai tông 0,027, bậc 0,012 (zigzag cũ 0,082 / 0,099). Ảnh mèo A5: 105 nét, 5,4 phút có gia tốc (nhanh nhất vì gần như không nhấc bút) nhưng **16 000 dòng G-code** (zigzag 8 000): nhiều đoạn ngắn 0,2 mm. Ở 8000 mm/phút có thể vượt sức gửi lệnh từng dòng qua USB: xem đường "hàng đợi" ở Biểu đồ (cần `$10=3`); nếu hàng đợi cạn thì hạ tốc độ cho kiểu này.
 
+### 8.10 Theo dáng ảnh (`flow`, `flow.py`): bản thô 12/11/2026
+Nét không đi theo một góc cố định mà **uốn dọc theo dáng ảnh** (má, lông, tóc). Độ đậm liền, không chia mức (ô Số mức và Chuyển mức mềm bị ẩn).
+1. **Trường hướng:** làm mờ ảnh độ đậm σ = 1 mm, lấy đạo hàm Sobel, lập tensor cấu trúc (gx², gx·gy, gy²) rồi làm mờ σ = 4 mm. Hướng nét = vuông góc với hướng đổi độ đậm mạnh nhất, tức là **dọc theo đường cùng độ đậm**. Độ "rõ hướng" 0..1; dưới 0,35 thì trộn dần về góc ở ô "Góc" (mặc định 45°) để chỗ phẳng không bị nét quằn quại.
+2. **Khoảng cách tại mỗi chỗ** = bề rộng nét ÷ độ phủ mong muốn, giới hạn 1,1 × đến 5 × bề rộng nét. Độ phủ dưới 0,1 để giấy trắng.
+3. **Đặt đường đều nhau (Jobard–Lefer):** gieo đường đầu ở chỗ đậm nhất, đi hai phía theo hướng, bước 0,3 mm. Một đường dừng khi ra vùng trắng, cách đường khác dưới 0,5 × khoảng cách, cong gắt hơn bán kính 1,5 mm, hoặc dài quá 250 mm. Xong một đường thì gieo đường mới hai bên, cách đúng một khoảng tính **ở chỗ gieo** (tính ở đường cũ thì lan từ đậm sang nhạt bị dày quá). Bỏ đường ngắn hơn 3 × khoảng cách. Vùng tách rời được gieo bằng lưới 2 mm, đậm trước.
+4. Kiểm "quá gần" bằng ảnh đánh dấu ô 0,1 mm: mỗi đường xong được vẽ vào ảnh đó (`cv2.polylines`), hỏi một ô vuông quanh điểm. Sau đó đi qua tối ưu và nối nét gần như mọi kiểu tô.
+
+**Đo 12/11 (máy tính, chưa in):**
+- Mô phỏng mực: sai tông 0,056 (đan chéo 0,042, đan 3 hướng 0,036), đậm hơn mong muốn khoảng 0,1 đều khắp dải. Zigzag trong cùng mô phỏng cũng đậm hơn 0,06–0,1. Chỉ số "bậc" 0,10 là do nét dọc song song với cột đo, không phải ranh giới mức.
+- Ảnh mẫu A5, bút 0,5, 8000: mèo 160 lần nhấc / 2,4 phút ước tính (đan chéo 365 / 5,5 phút); người 265 / 4,5 phút (đan chéo 438 / 8,7 phút). Dùng ít mực hơn đan chéo khoảng 35 % (đan chéo chồng 2 lớp), nên **trên giấy có thể nhạt hơn**. Xử lý 4–5 s.
+
+**Chưa có:** lớp hai cho vùng rất đậm (F4), nối đầu các đường kề nhau, chỉnh theo ảnh thật (F5), preset (F6). Kế hoạch: [10](10_HUONG_PHAT_TRIEN.md) mục 0.5.
+
 ---
 
 ## 9. Kiểu Viền: ảnh thành đường nét một lượt (`edges.py`, `trace.py`)
