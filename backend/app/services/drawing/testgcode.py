@@ -2,11 +2,12 @@
 
 Chỉ dùng thư viện chuẩn và KHÔNG import gì của dự án: `tools/make_test_gcode.py` nạp thẳng tệp này (chạy được khi chưa cài
 thư viện ảnh), còn backend (`POST /api/draw/testsheet`, tab Cài đặt → "Tờ thử / hiệu chỉnh") dùng cùng các hàm để tạo bản thảo.
-Mọi tệp nằm trong vùng máy, chỉ dùng G0 / G1 / G4, không đổi gốc tọa độ, không Home.
+Mọi tệp nằm trong vùng máy, chỉ dùng G0 / G1 / G4 (riêng bài 7.6 còn G2 để thử cung tròn), không đổi gốc tọa độ, không Home.
 """
 from __future__ import annotations
 
 import itertools
+import math
 
 WORK_W, WORK_H = 285.0, 318.0
 
@@ -44,6 +45,10 @@ class Writer:
 
     def line_to(self, x: float, y: float, feed: float | None = None) -> None:
         self.lines.append(f"G1 X{num(x)} Y{num(y)} F{num(feed or self.draw_feed)}")
+
+    def arc_to(self, x: float, y: float, i: float, j: float, *, clockwise: bool = True, feed: float | None = None) -> None:
+        """Cung tròn G2 (cùng chiều kim đồng hồ) / G3: (i, j) = tâm so với điểm bắt đầu cung."""
+        self.lines.append(f"G{2 if clockwise else 3} X{num(x)} Y{num(y)} I{num(i)} J{num(j)} F{num(feed or self.draw_feed)}")
 
     def stroke(self, points: list[tuple[float, float]], feed: float | None = None) -> None:
         self.travel(*points[0])
@@ -213,6 +218,46 @@ def drag_test(up: float, down: float, pen_feed: float, draw_feed: float, *, dela
     return w.text()
 
 
+# 7.6: cùng một vòng tròn, vẽ bằng đoạn thẳng G1 ngắn dần rồi bằng cung G2. Đoạn càng ngắn thì càng nhiều dòng lệnh trên
+# mỗi mm: ở 8000 mm/phút (133 mm/s) đoạn 0,1 mm là ~1300 dòng/giây, vượt khả năng cổng USB 115200 baud (~480 dòng/giây
+# với dòng ~24 ký tự), nên bộ đệm cạn và máy chậm lại. Cung G2 chỉ ~2 dòng cho cả vòng.
+ARC_RADIUS = 10.0
+ARC_STEPS = (1.0, 0.5, 0.25, 0.1)     # độ dài đoạn thẳng (mm) của các vòng tròn G1, từ trái sang phải
+ARC_TURNS = 12                        # mỗi vòng tròn vẽ chồng 12 lần: ~6 giây ở 8000, đủ dài để biểu đồ (10 lần/giây) thấy rõ
+ARC_PITCH = 30.0                      # khoảng cách tâm các vòng tròn (mm)
+ARC_CENTER = (30.0, 40.0)             # tâm vòng đầu
+
+
+def arc_test(up: float, down: float, pen_feed: float, draw_feed: float, *, delay: float, turns: int = ARC_TURNS,
+             down_feed: float | None = None) -> str:
+    """7.6: đoạn ngắn và cung G2. Năm vòng tròn bán kính 10 mm xếp một hàng, vẽ lần lượt từ trái sang phải: G1 đoạn 1,0 /
+    0,5 / 0,25 / 0,1 mm rồi G2 (hai nửa vòng). Nhìn biểu đồ tốc độ + hàng đợi từng vòng: vòng nào máy chạy chậm lại /
+    hàng đợi cạn (chấm đỏ) là vòng đó dòng lệnh quá dày so với cổng USB."""
+    w = Writer(up, down, pen_feed, draw_feed, delay_up=delay, delay_down=delay, down_feed=down_feed)
+    w.comment(f"7.6 doan ngan va cung: ban kinh {num(ARC_RADIUS)} mm, {turns} vong chong, doan " +
+              " / ".join(num(s) for s in ARC_STEPS) + " mm roi G2")
+    cx0, cy = ARC_CENTER
+    r = ARC_RADIUS
+    for k, step in enumerate(ARC_STEPS):
+        cx = cx0 + k * ARC_PITCH
+        n = max(8, round(2 * math.pi * r / step))
+        pts = [(cx + r * math.cos(2 * math.pi * i / n), cy + r * math.sin(2 * math.pi * i / n)) for i in range(n + 1)]
+        w.travel(*pts[0])
+        w.pen_down()
+        for _ in range(turns):
+            for x, y in pts[1:]:
+                w.line_to(x, y)
+        w.pen_up()
+    cx = cx0 + len(ARC_STEPS) * ARC_PITCH
+    w.travel(cx + r, cy)
+    w.pen_down()
+    for _ in range(turns):
+        w.arc_to(cx - r, cy, -r, 0.0)                     # nửa vòng đầu: từ phải qua trái
+        w.arc_to(cx + r, cy, r, 0.0)                      # nửa vòng sau: từ trái về phải
+    w.pen_up()
+    return w.text()
+
+
 def build_all(up: float, down: float, pen_feed: float, draw_feed: float, down_feed: float | None = None) -> dict[str, str]:
     kw = {"down_feed": down_feed}
     files = {
@@ -224,6 +269,7 @@ def build_all(up: float, down: float, pen_feed: float, draw_feed: float, down_fe
         "7.4-toc-do-ve.gcode": speed_strips(up, down, pen_feed, **kw),
         "7.5-keo-vet-cho-0.05s.gcode": drag_test(up, down, pen_feed, draw_feed, delay=0.05, **kw),
         "7.5-keo-vet-cho-0.10s.gcode": drag_test(up, down, pen_feed, draw_feed, delay=0.1, **kw),
+        "7.6-doan-ngan-cung-g2.gcode": arc_test(up, down, pen_feed, draw_feed, delay=0.05, **kw),
     }
     # Z nhấc thấp hơn (chỉ khi còn khoảng hở hợp lý giữa Z nhấc và Z hạ)
     for z in (2.0, 1.5):

@@ -12,9 +12,9 @@ from typing import Any, Mapping
 from . import gcode_import, spec, testgcode as tg
 from .errors import DrawError
 
-KINDS = ("lift", "lost", "accel", "speed", "drag")
+KINDS = ("lift", "lost", "accel", "speed", "drag", "arc")
 NAMES = {"lift": "Tờ thử nhấc bút", "lost": "Tờ thử 7.2 mất bước", "accel": "Tờ thử 7.3 gia tốc",
-         "speed": "Tờ thử 7.4 tốc độ vẽ", "drag": "Tờ thử 7.5 vệt kéo"}
+         "speed": "Tờ thử 7.4 tốc độ vẽ", "drag": "Tờ thử 7.5 vệt kéo", "arc": "Tờ thử 7.6 đoạn ngắn và cung G2"}
 MAX_LIST = 8
 DEFAULT_DELAYS = (0.02, 0.05, 0.1)                # tờ nhấc bút: chờ thử mặc định (giây)
 DEFAULT_SPEEDS = (7000, 8000, 9000, 10000)        # 7.2 / 7.3 / 7.4: tốc độ thử mặc định (mm/phút)
@@ -75,6 +75,9 @@ def make_draft(kind: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str
         s = speeds()
         text = tg.speed_strips(gp.pen_up_z, down, pen_feed, speeds=s, delay=delay, down_feed=down_feed)
         label = f"{NAMES[kind]} ({_span(s)})"
+    elif kind == "arc":
+        text = tg.arc_test(gp.pen_up_z, down, pen_feed, draw_feed, delay=delay, down_feed=down_feed)
+        label = f"{NAMES[kind]} ({tg.num(draw_feed)})"
     else:  # drag
         delay = _numbers(options, "delay", [0.05], 0.0, 5.0, "delay (chờ, giây)")[0]
         text = tg.drag_test(gp.pen_up_z, down, pen_feed, draw_feed, delay=delay, down_feed=down_feed)

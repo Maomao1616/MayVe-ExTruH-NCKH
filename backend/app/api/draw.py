@@ -279,7 +279,7 @@ def calibration_create(req: CalibrationRequest):
 
 @router.post("/testsheet", status_code=201)
 def testsheet_create(req: TestSheetRequest):
-    """Tờ thử máy thành bản thảo: kind = lift | lost | accel | speed | drag. Xem services/drawing/testsheets.py."""
+    """Tờ thử máy thành bản thảo: kind = lift | lost | accel | speed | drag | arc. Xem services/drawing/testsheets.py."""
     return _wrap(testsheets.make_draft, req.kind, req.machine, req.gcode, req.options)
 
 

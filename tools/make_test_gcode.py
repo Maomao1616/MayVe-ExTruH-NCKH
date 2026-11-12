@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +38,7 @@ def main() -> None:
     ap.add_argument("--draw-feed", type=float, default=5000.0, help="tốc độ vẽ (mm/phút), mặc định 5000")
     ap.add_argument("--out", default=str(ROOT / "export" / "test-gcode"), help="thư mục ghi (mặc định export/test-gcode)")
     args = ap.parse_args()
+    sys.stdout.reconfigure(encoding="utf-8")          # console Windows (cp1252) không in được tiếng Việt
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     for name, text in build_all(args.up, args.down, args.pen_feed, args.draw_feed, args.down_feed).items():

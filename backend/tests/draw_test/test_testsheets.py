@@ -61,8 +61,24 @@ def test_drag_accepts_a_single_delay_number(client):
         assert "G4 P0.02" in drafts.read_gcode(r.json()["draft"]["id"], "draw")
 
 
+def test_arc_sheet_has_four_g1_circles_of_shrinking_segments_and_one_g2_circle(client):
+    import math
+    from app.services.drawing import testgcode as tg
+    r = post(client, "arc")
+    assert r.status_code == 201, r.text
+    lines = drafts.read_gcode(r.json()["draft"]["id"], "draw").splitlines()
+    g2 = [ln for ln in lines if ln.startswith("G2 ")]
+    assert len(g2) == 2 * tg.ARC_TURNS and all(" I" in ln and " J" in ln for ln in g2)       # hai nửa vòng mỗi lượt
+    g1 = [ln for ln in lines if ln.startswith("G1 X")]
+    # số dòng G1 mỗi vòng ~ chu vi / đoạn × số lượt: đoạn càng ngắn càng nhiều dòng, và ít nhất gấp 100 lần cung G2
+    assert len(g1) > 100 * len(g2)
+    expect = sum(round(2 * math.pi * tg.ARC_RADIUS / s) for s in tg.ARC_STEPS) * tg.ARC_TURNS
+    assert abs(len(g1) - expect) <= 4 * tg.ARC_TURNS
+    assert "arcs_approximated" in [w["code"] for w in r.json()["warnings"]]                  # xem trước xấp xỉ cung
+
+
 def test_every_kind_is_inside_the_work_area_and_clean(client):
-    for kind in ("lift", "lost", "accel", "speed", "drag"):
+    for kind in ("lift", "lost", "accel", "speed", "drag", "arc"):
         r = post(client, kind)
         assert r.status_code == 201, (kind, r.text)
         text = drafts.read_gcode(r.json()["draft"]["id"], "draw")
