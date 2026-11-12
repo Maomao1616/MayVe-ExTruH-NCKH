@@ -153,12 +153,28 @@ def test_home_lifts_pen_first_when_idle(svc):
 def test_home_skips_lift_when_pen_already_up_or_alarm(svc):
     svc.connect("sim", sim_speed=100)
     assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("state") == "Alarm")
-    svc.send_line("$H")                                  # đang Alarm: firmware không nhận jog -> không gửi
+    svc.send_line("$H")                                  # đang Alarm: firmware không nhận jog -> không gửi trước Home
     assert wait_for(lambda: svc.snapshot()["homed_guess"])
-    assert not any(t.startswith("$J=") for t in _tx(svc))
-    svc.send_line("$J=G90 G21 Z5 F3000")
-    assert wait_for(lambda: svc.snapshot()["machine"]["wpos"][2] == 5.0)
+    sent = _tx(svc)
+    assert not any(t.startswith("$J=") for t in sent[:sent.index("$H")])
+    assert wait_for(lambda: "$J=G90 G21 Z5 F3000" in _tx(svc))     # nhắc servo sau Home (test riêng bên dưới)
+    assert wait_for(lambda: svc.snapshot()["machine"]["wpos"][2] == 5.0 and svc.snapshot()["machine"]["state"] == "Idle")
     before = _tx(svc).count("$J=G90 G21 Z5 F3000")
-    svc.send_line("$H")                                  # bút đã ở Z5: không gửi thêm lệnh nâng
-    assert wait_for(lambda: svc.snapshot()["machine"]["state"] == "Idle")
-    assert _tx(svc).count("$J=G90 G21 Z5 F3000") == before
+    svc.send_line("$H")                                  # bút đã ở Z5: không gửi lệnh nâng TRƯỚC Home
+    sent = _tx(svc)
+    second = len(sent) - 1 - sent[::-1].index("$H")
+    assert sent[:second].count("$J=G90 G21 Z5 F3000") == before
+
+
+def test_home_relifts_pen_once_after_homing(svc):
+    # Servo thật có lúc tụt về giữa sau Home dù Z báo vẫn là 5: Home xong thì nhích Z4.5 rồi Z5 (một lần).
+    svc.connect("sim", sim_speed=100)
+    assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("state") == "Alarm")
+    svc.send_line("$H")
+    assert wait_for(lambda: "$J=G90 G21 Z5 F3000" in _tx(svc))
+    time.sleep(0.5)                                      # đủ để các tín hiệu "Home xong" còn lại đến
+    sent = _tx(svc)
+    dip = sent.index("$J=G90 G21 Z4.5 F3000")
+    assert sent.index("$H") < dip and sent[dip + 1] == "$J=G90 G21 Z5 F3000"
+    assert sent.count("$J=G90 G21 Z4.5 F3000") == 1
+    assert wait_for(lambda: svc.snapshot()["machine"]["wpos"][2] == 5.0)

@@ -17,6 +17,7 @@ def homed_service(speed=20):
     svc.send_line("$H")
     assert wait_for(lambda: svc._homed_guess, 8.0), "sim không Home xong"
     # `[MSG:Homed:XY]` đến trước báo cáo Idle (giống board thật): chờ thêm Idle.
+    assert wait_for(lambda: not svc._relifting, 8.0)   # Home xong máy tự nhích Z (nhắc servo): chờ xong
     assert wait_for(lambda: (svc._status or {}).get("state") == "Idle", 3.0)
     return svc
 

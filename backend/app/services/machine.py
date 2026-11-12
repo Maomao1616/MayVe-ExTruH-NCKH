@@ -48,6 +48,8 @@ _LOSE_HOME = {1, 3, 6, 7, 8, 9, 12, 13, 14, 16}
 PEN_TOL_MM = 0.05          # sai số chấp nhận khi xác nhận Z đã tới đích
 PEN_LIFT_MAX_S = 120.0     # chờ xác nhận nâng bút tối đa
 HOME_LIFT_SETTLE_S = 0.3   # chờ thêm sau khi nâng bút trước Home (servo quay chậm hơn trục Z mô phỏng)
+RELIFT_DIP_MM = 0.5        # Home xong: nhích Z xuống 0,5 mm rồi lên lại để servo nhận xung bút lên (lỗi servo tụt 12/11/2026)
+RELIFT_MAX_S = 5.0         # chờ lần nhích đó xong tối đa 5 s (start_job chờ cùng mức)
 
 
 class ServiceError(Exception):
@@ -125,6 +127,8 @@ class MachineService:
         self._homing_axes = "XY"             # trục của lệnh Home gần nhất ($H, $HX, $HY)
         self._saw_home = False
         self._homing_pending = False
+        self._relift_after_home = False      # Home xong thì nhắc servo nâng bút lại (xem _relift_pen_after_home)
+        self._relifting = False              # đang nhắc servo: start_job chờ
         # Số dòng đã gửi (ngoài tác vụ) chưa nhận `ok`/`error`. FluidNC trả đúng một
         # `ok`/`error` cho mỗi dòng; query() chờ số này về 0 để không nhận nhầm `ok`.
         self._pending_acks = 0
@@ -389,6 +393,10 @@ class MachineService:
         """Ghi nhận trục vừa Home xong; chỉ coi là đã Home khi đủ cả X và Y."""
         self._homed_axes |= set(self._homing_axes)
         self._homed_guess = {"X", "Y"} <= self._homed_axes
+        if self._relift_after_home:                # ba tín hiệu "Home xong" có thể cùng đến: chỉ nhắc một lần
+            self._relift_after_home = False
+            self._relifting = True
+            threading.Thread(target=self._relift_pen_after_home, name="home-relift", daemon=True).start()
 
     def _update_status(self, st: dict) -> None:
         if st["wco"]:
@@ -488,6 +496,51 @@ class MachineService:
             return
         time.sleep(HOME_LIFT_SETTLE_S)                    # servo còn quay thêm sau khi trục Z báo tới nơi
 
+    def _relift_pen_after_home(self) -> None:
+        """Home xong: nhích Z xuống RELIFT_DIP_MM rồi lên lại Z bút lên (chạy ở luồng riêng).
+
+        Máy thật (12/11/2026): sau khi bật mạch hoặc sau Home, servo có lúc không giữ vị trí bút lên (tụt về giữa,
+        ~1250 µs) dù Z báo cáo vẫn là Z bút lên; phải bấm "Bút lên" một lần mới hết. Jog tới đúng Z đang báo cáo
+        không sinh chuyển động nên có thể không làm servo nhận xung lại: vì vậy nhích xuống một chút rồi lên.
+        Không chạy khi đang có tác vụ / đang dừng / máy thật đang chỉ đọc. Lỗi chỉ ghi nhật ký.
+        Trong lúc làm, `_relifting` bật: start_job chờ xong mới chạy (không thì `ok` của jog bị tác vụ đếm nhầm).
+        """
+        try:
+            if self._wait_state(lambda st: st.get("state") == "Idle", timeout=10.0) is None:
+                return
+            with self._lock:
+                if (self._link is None or self._job.active or self._stop_token is not None
+                        or (self._info["mode"] == "serial" and not self.allow_motion)):
+                    return
+                marker = self._status_seq
+            prof = profile.load()
+            up, feed = prof["pen_up_z"], prof["pen_feed"]
+            try:
+                self._send_line(f"$J=G90 G21 Z{_num(max(0.0, up - RELIFT_DIP_MM))} F{_num(feed)}", "system")
+                self._send_line(f"$J=G90 G21 Z{_num(up)} F{_num(feed)}", "system")
+            except ServiceError as exc:
+                self.log_system(f"Home: pen re-lift not sent ({exc.code}).")
+                return
+
+            def done(st: dict) -> bool:
+                z = _work_z(st)
+                return (st.get("state") == "Idle" and self._pending_acks == 0
+                        and z is not None and abs(z - up) <= PEN_TOL_MM)
+            self._wait_state(done, timeout=RELIFT_MAX_S, after=marker)
+        finally:
+            with self._lock:
+                self._relifting = False
+
+    def _wait_relift(self) -> None:
+        """Chờ lần nhắc servo sau Home làm xong (tối đa RELIFT_MAX_S) trước khi chạy tác vụ."""
+        deadline = time.monotonic() + RELIFT_MAX_S
+        while time.monotonic() < deadline:
+            with self._lock:
+                if not self._relifting:
+                    return
+            time.sleep(0.02)
+        raise ServiceError("busy", "Máy đang nâng bút sau Home, thử lại sau giây lát.", 409)
+
     def _send_line(self, text: str, source: str, token: object | None = None) -> dict:
         text = text.strip()
         if not text or "\n" in text or "\r" in text:
@@ -516,6 +569,7 @@ class MachineService:
             if axes is not None:
                 self._homing_pending = True
                 self._homing_axes = axes
+                self._relift_after_home = True
             try:
                 link.write_line(text)
             except LinkError as exc:
@@ -542,6 +596,8 @@ class MachineService:
                 # Reset hủy mọi thứ đang chờ: không để `ok` đến muộn làm homed_guess bật sai.
                 self._homing_pending = False
                 self._saw_home = False
+                self._relift_after_home = False
+                self._relifting = False
                 self._reset_required = False
                 self._pending_acks = 0            # Reset xóa bộ đệm: không còn `ok` nào sắp tới
                 self._overrides = [100, 100, 100]  # FluidNC: Reset đưa ghi đè về 100 %
@@ -561,6 +617,7 @@ class MachineService:
             cleaned = clean_gcode(lines)           # ngoài khóa: tệp lớn có thể mất một lúc
         except JobError as exc:
             raise ServiceError(exc.code, exc.message, exc.status) from exc
+        self._wait_relift()
         with self._lock:
             self._require_link()
             self._guard_stop(None)
@@ -606,6 +663,7 @@ class MachineService:
             cleaned = clean_gcode(run)
         except JobError as exc:
             raise ServiceError(exc.code, exc.message, exc.status) from exc
+        self._wait_relift()
         with self._lock:
             self._require_link()
             self._guard_stop(None)

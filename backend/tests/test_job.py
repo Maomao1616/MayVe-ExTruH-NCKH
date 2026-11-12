@@ -19,6 +19,7 @@ def homed(svc, speed=100):
     svc.connect("sim", sim_speed=speed)
     svc.send_line("$H")
     assert wait_for(lambda: svc.snapshot()["homed_guess"])
+    assert wait_for(lambda: not svc._relifting)       # Home xong máy tự nhích Z (nhắc servo): chờ xong
     assert wait_for(lambda: (svc.snapshot()["machine"] or {}).get("state") == "Idle")
 
 
