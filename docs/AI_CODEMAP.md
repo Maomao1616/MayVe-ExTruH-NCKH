@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~481,646 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~483,201 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -216,7 +216,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_palette.py` | ~743 |  |
 | `test_raster_in.py` | ~1,314 |  |
 | `test_soft_styles.py` | ~2,499 | Chuyển mức mềm (soft_levels), gạch chéo chồng lớp (crosshatch), sóng biến thiên (wave_am). Đo bằng mô phỏng mự |
-| `test_testsheets.py` | ~2,298 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
+| `test_testsheets.py` | ~2,525 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
 | `test_upload_names.py` | ~920 | Nạp ảnh: nhận dạng bằng nội dung, tên tệp dài / ký tự lạ không làm hỏng (lỗi thật 11/11/2026: ảnh 200 KB tên d |
 
 ### `backend/tools/`
@@ -237,9 +237,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `06_THUAT_TOAN_XU_LY_ANH.md` | ~12,930 |  |
 | `07_THU_NGHIEM.md` | ~5,937 |  |
 | `08_TRIEN_KHAI.md` | ~5,358 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~3,710 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~3,834 |  |
 | `10_HUONG_PHAT_TRIEN.md` | ~5,489 |  |
-| `11_VIEC_CAN_LAM.md` | ~4,075 |  |
+| `11_VIEC_CAN_LAM.md` | ~4,261 |  |
 | `AI_CODEMAP.md` | ~6,104 |  |
 | `AI_START.md` | ~2,781 |  |
 
@@ -313,7 +313,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `drawing.js` | ~9,618 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
 | `jobchart.js` | ~6,163 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
-| `preview.js` | ~5,667 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
+| `preview.js` | ~6,685 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
 | `settings.js` | ~14,268 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
 | `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
 | `terminal.js` | ~3,882 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |

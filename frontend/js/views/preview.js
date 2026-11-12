@@ -26,6 +26,8 @@ export function makeTransform(width, height, travelX, travelY, zoom, panX, panY,
     const oy = (height - travelY * scale) / 2 + panY;
     return {
         scale,
+        mapX: (x) => ox + (flipX ? travelX - x : x) * scale,      // không tạo mảng: dùng trong vòng lặp hàng chục nghìn đoạn
+        mapY: (y) => oy + (flipY ? travelY - y : y) * scale,
         toScreen: (x, y) => [
             ox + (flipX ? travelX - x : x) * scale,
             oy + (flipY ? travelY - y : y) * scale
@@ -104,13 +106,55 @@ export function initPreview() {
     let frame = 0;
     let lastSeen = "";             // dữ liệu máy của lần vẽ trước: không đổi thì không vẽ lại
 
-    /* --- vẽ --- */
+    /* --- vẽ ---
+       12/11/2026: trạng thái máy đến tới 10 lần/giây; vẽ lại CẢ tệp (hàng chục nghìn đoạn, ba lượt, nét đứt) mỗi lần thì
+       tab Điều khiển đơ trên máy yếu khi chạy tác vụ. Nay các lớp tĩnh nằm trong khung ẩn (offscreen), mỗi lần chỉ dán lại
+       rồi vẽ vài nét động:
+         base   = vùng làm việc, lưới, đường của tệp: vẽ lại khi đổi tệp / thu phóng / kéo / cỡ khung / tùy chọn;
+         done   = phần máy đã vẽ xong (xanh): chỉ vẽ THÊM các đoạn mới;
+         replay = phần đã phát lại: như done. */
     const requestDraw = () => {
         if (frame) return;
         frame = requestAnimationFrame(() => { frame = 0; draw(); });
     };
 
     const color = (css, name, fallback) => css.getPropertyValue(name).trim() || fallback;
+
+    const makeLayer = () => {
+        const cv = document.createElement("canvas");
+        return { cv, cx: cv.getContext("2d"), key: "", upto: 0 };
+    };
+    const layers = { base: makeLayer(), done: makeLayer(), replay: makeLayer() };
+    let fileSerial = 0;                // tăng mỗi khi đổi tệp: làm mới mọi lớp
+
+    function syncLayer(layer) {
+        if (layer.cv.width !== canvas.width || layer.cv.height !== canvas.height) {
+            layer.cv.width = canvas.width;       // đặt cỡ cũng xóa nội dung
+            layer.cv.height = canvas.height;
+            layer.key = "";
+            layer.upto = 0;
+        }
+    }
+
+    // Vẽ thêm các đoạn "draw" từ layer.upto tới end vào lớp rồi dán lớp lên khung chính (ctx đang ở hệ điểm ảnh thiết bị).
+    function advance(layer, key, T, segments, end, strokeColor, lineWidth) {
+        syncLayer(layer);
+        if (layer.key !== key || end < layer.upto) {
+            layer.cx.setTransform(1, 0, 0, 1, 0, 0);
+            layer.cx.clearRect(0, 0, layer.cv.width, layer.cv.height);
+            layer.key = key;
+            layer.upto = 0;
+        }
+        if (end > layer.upto) {
+            layer.cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            layer.cx.strokeStyle = strokeColor;
+            layer.cx.lineWidth = lineWidth;
+            layer.cx.lineJoin = "round";
+            strokeSegments(layer.cx, T, segments, "draw", "draw", layer.upto, end);
+            layer.upto = end;
+        }
+        ctx.drawImage(layer.cv, 0, 0);
+    }
 
     function draw() {
         if (!ctx || width === 0) return;
@@ -126,95 +170,129 @@ export function initPreview() {
         };
         const T = makeTransform(width, height, travelX, travelY,
                                 view.zoom, view.panX, view.panY, VIEW.flipX, VIEW.flipY);
+        const replay = Boolean(file) && (clock > 0 || playing);
+        const baseKey = [canvas.width, canvas.height, dpr, view.zoom, view.panX, view.panY, travelX, travelY,
+            VIEW.flipX, VIEW.flipY, fileSerial, wco.join(), el.grid?.checked, el.travel?.checked, replay,
+            c.border, c.muted, c.path].join("|");
+        const base = layers.base;
+        syncLayer(base);
+        if (base.key !== baseKey) {
+            renderBase(base.cx, T, c, replay);
+            base.key = baseKey;
+        }
+
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(base.cv, 0, 0);
+
+        let where = null;
+        if (file) {
+            const { segments } = file.parsed;
+            if (replay) {
+                where = positionAt(segments, clock);
+                if (where) advance(layers.replay, baseKey, T, segments, where.index + 1, c.path, 1.6);
+            }
+            if (!progress.hidden && progress.index >= 0) {
+                const end = progress.done ? segments.length : progress.index;
+                advance(layers.done, `${baseKey}|${progress.jobId}`, T, segments, end, c.live, 2);
+            }
+        }
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, width, height);
-
-        // vùng làm việc
-        const [ax, ay] = T.toScreen(0, 0);
-        const [bx, by] = T.toScreen(travelX, travelY);
-        const rx = Math.min(ax, bx), ry = Math.min(ay, by);
-        const rw = Math.abs(bx - ax), rh = Math.abs(by - ay);
-        ctx.fillStyle = "rgba(255,255,255,0.03)";
-        ctx.fillRect(rx, ry, rw, rh);
-
-        if (el.grid?.checked) drawGrid(T, c);
-
-        ctx.setLineDash([6, 4]);
-        ctx.strokeStyle = c.muted;
-        ctx.lineWidth = 1;
-        ctx.strokeRect(rx, ry, rw, rh);
-        ctx.setLineDash([]);
-        ctx.fillStyle = c.muted;
-        ctx.font = "11px sans-serif";
-        ctx.fillText("O (0, 0)", ax + (ax <= bx ? 6 : -50), ay + (ay <= by ? 14 : -6));
-        ctx.fillText(`${travelX} × ${travelY} mm`, bx + (bx >= ax ? -86 : 6), by + (by >= ay ? -6 : 14));
-
-        if (file) drawFile(T, c);
+        if (file) drawDynamic(T, c, where);
         drawTrail(T, c);
         drawHeads(T, c);
         updateLabels();
     }
 
-    function drawGrid(T, c) {
-        ctx.lineWidth = 1;
+    // Lớp nền: vùng làm việc, lưới, khung, đường của tệp (xám). Tốn nhất nên chỉ vẽ khi thật sự đổi.
+    function renderBase(cx, T, c, replay) {
+        cx.setTransform(1, 0, 0, 1, 0, 0);
+        cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height);
+        cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        const [ax, ay] = T.toScreen(0, 0);
+        const [bx, by] = T.toScreen(travelX, travelY);
+        const rx = Math.min(ax, bx), ry = Math.min(ay, by);
+        const rw = Math.abs(bx - ax), rh = Math.abs(by - ay);
+        cx.fillStyle = "rgba(255,255,255,0.03)";
+        cx.fillRect(rx, ry, rw, rh);
+
+        if (el.grid?.checked) drawGrid(cx, T, c);
+
+        cx.setLineDash([6, 4]);
+        cx.strokeStyle = c.muted;
+        cx.lineWidth = 1;
+        cx.strokeRect(rx, ry, rw, rh);
+        cx.setLineDash([]);
+        cx.fillStyle = c.muted;
+        cx.font = "11px sans-serif";
+        cx.fillText("O (0, 0)", ax + (ax <= bx ? 6 : -50), ay + (ay <= by ? 14 : -6));
+        cx.fillText(`${travelX} × ${travelY} mm`, bx + (bx >= ax ? -86 : 6), by + (by >= ay ? -6 : 14));
+
+        if (!file) return;
+        const { segments } = file.parsed;
+        if (el.travel?.checked) {
+            cx.setLineDash([3, 4]);
+            cx.strokeStyle = c.muted;
+            cx.lineWidth = 1;
+            cx.globalAlpha = replay ? 0.35 : 0.7;
+            strokeSegments(cx, T, segments, "rapid", "travel");
+            cx.setLineDash([]);
+        }
+        cx.strokeStyle = c.path;
+        cx.lineWidth = 1.6;
+        cx.globalAlpha = replay ? 0.25 : 1;
+        strokeSegments(cx, T, segments, "draw", "draw");
+        cx.globalAlpha = 1;
+    }
+
+    function drawGrid(cx, T, c) {
+        cx.lineWidth = 1;
         const levels = [[10, 0.08], [50, 0.16]];
         for (const [step, alpha] of levels) {
             if (T.scale * step < 7) continue;
-            ctx.strokeStyle = c.muted;
-            ctx.globalAlpha = alpha;
-            ctx.beginPath();
+            cx.strokeStyle = c.muted;
+            cx.globalAlpha = alpha;
+            cx.beginPath();
             for (let x = 0; x <= travelX; x += step) {
                 const [p, q] = T.toScreen(x, 0), [, r] = T.toScreen(x, travelY);
-                ctx.moveTo(p, q); ctx.lineTo(p, r);
+                cx.moveTo(p, q); cx.lineTo(p, r);
             }
             for (let y = 0; y <= travelY; y += step) {
                 const [p, q] = T.toScreen(0, y), [r] = T.toScreen(travelX, y);
-                ctx.moveTo(p, q); ctx.lineTo(r, q);
+                cx.moveTo(p, q); cx.lineTo(r, q);
             }
-            ctx.stroke();
+            cx.stroke();
         }
-        ctx.globalAlpha = 1;
+        cx.globalAlpha = 1;
     }
 
-    function strokeSegments(T, segments, kinds, limit) {
+    // Các đoạn có kind = kindA hoặc kindB trong [from, to), một lần stroke. Không tạo mảng / Set cho từng đoạn.
+    function strokeSegments(cx, T, segments, kindA, kindB, from = 0, to = segments.length) {
         const [ox, oy] = wco;
-        ctx.beginPath();
-        const end = limit === undefined ? segments.length : limit;
-        for (let i = 0; i < end; i++) {
+        cx.beginPath();
+        for (let i = from; i < to; i++) {
             const s = segments[i];
-            if (!kinds.has(s.kind)) continue;
-            const [x0, y0] = T.toScreen(s.x0 + ox, s.y0 + oy);
-            const [x1, y1] = T.toScreen(s.x1 + ox, s.y1 + oy);
-            ctx.moveTo(x0, y0); ctx.lineTo(x1, y1);
+            if (s.kind !== kindA && s.kind !== kindB) continue;
+            cx.moveTo(T.mapX(s.x0 + ox), T.mapY(s.y0 + oy));
+            cx.lineTo(T.mapX(s.x1 + ox), T.mapY(s.y1 + oy));
         }
-        ctx.stroke();
+        cx.stroke();
     }
 
-    function drawFile(T, c) {
+    // Phần động mỗi khung: đoạn máy đang vẽ dở (theo đúng hình học của tệp) và đầu bút phát lại.
+    function drawDynamic(T, c, where) {
         const { segments } = file.parsed;
-        const replay = clock > 0 || playing;
-        const where = replay ? positionAt(segments, clock) : null;
-
-        if (el.travel?.checked) {
-            ctx.setLineDash([3, 4]);
-            ctx.strokeStyle = c.muted;
-            ctx.lineWidth = 1;
-            ctx.globalAlpha = replay ? 0.35 : 0.7;
-            strokeSegments(T, segments, new Set(["rapid", "travel"]));
-            ctx.setLineDash([]);
+        const s = segments[progress.index];
+        if (!progress.hidden && progress.index >= 0 && !progress.done && s?.kind === "draw") {
+            const [ox, oy] = wco;
+            const [x0, y0] = T.toScreen(s.x0 + ox, s.y0 + oy);
+            const [x1, y1] = T.toScreen(progress.x + ox, progress.y + oy);
+            ctx.strokeStyle = c.live;
+            ctx.lineWidth = 2;
+            ctx.lineJoin = "round";
+            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
         }
-        ctx.strokeStyle = c.path;
-        ctx.lineWidth = 1.6;
-        ctx.globalAlpha = replay ? 0.25 : 1;
-        strokeSegments(T, segments, new Set(["draw"]));
-        if (replay && where) {
-            ctx.globalAlpha = 1;
-            strokeSegments(T, segments, new Set(["draw"]), where.index + 1);
-        }
-        ctx.globalAlpha = 1;
-        drawProgress(T, c, segments);
-
         if (where) {                          // đầu bút phát lại
             const [px, py] = T.toScreen(where.x + wco[0], where.y + wco[1]);
             ctx.strokeStyle = c.head;
@@ -222,23 +300,6 @@ export function initPreview() {
             ctx.lineWidth = 2;
             ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2);
             ctx.fill(); ctx.stroke();
-        }
-    }
-
-    // Phần máy đã vẽ của tác vụ, theo đúng hình học của tệp (cung tròn vẫn tròn).
-    function drawProgress(T, c, segments) {
-        if (progress.hidden || progress.index < 0) return;
-        const end = progress.done ? segments.length : progress.index;
-        ctx.strokeStyle = c.live;
-        ctx.lineWidth = 2;
-        ctx.lineJoin = "round";
-        strokeSegments(T, segments, new Set(["draw"]), end);
-        const s = segments[progress.index];
-        if (!progress.done && s?.kind === "draw") {          // đoạn đang vẽ dở
-            const [ox, oy] = wco;
-            const [x0, y0] = T.toScreen(s.x0 + ox, s.y0 + oy);
-            const [x1, y1] = T.toScreen(progress.x + ox, progress.y + oy);
-            ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
         }
     }
 
@@ -397,6 +458,7 @@ export function initPreview() {
         file = store.file;
         total = file ? file.parsed.seconds : 0;
         if (changed) {
+            fileSerial += 1;
             clock = 0;
             playing = false;
             Object.assign(progress, { jobId: null, index: -1, done: false, hidden: false });
