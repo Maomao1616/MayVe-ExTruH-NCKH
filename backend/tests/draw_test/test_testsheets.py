@@ -53,6 +53,14 @@ def test_lift_sheet_preview_separates_pen_up_from_pen_down_even_with_low_lifts(c
     assert stats["strokes"] == 2 * 20 + 3
 
 
+def test_drag_accepts_a_single_delay_number(client):
+    # nút 7.5 gửi {"delay": 0.02} (một số, không phải danh sách): trước đây báo "cần 1–8 giá trị"
+    for delay in (0.02, [0.02]):
+        r = post(client, "drag", {"delay": delay})
+        assert r.status_code == 201, r.text
+        assert "G4 P0.02" in drafts.read_gcode(r.json()["draft"]["id"], "draw")
+
+
 def test_every_kind_is_inside_the_work_area_and_clean(client):
     for kind in ("lift", "lost", "accel", "speed", "drag"):
         r = post(client, kind)

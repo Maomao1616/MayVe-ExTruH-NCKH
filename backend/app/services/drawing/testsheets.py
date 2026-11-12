@@ -27,6 +27,8 @@ def _span(speeds: list[int]) -> str:
 
 def _numbers(options: Mapping[str, Any], key: str, default: list[float], lo: float, hi: float, label: str) -> list[float]:
     raw = options.get(key, default)
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+        raw = [raw]                         # một số lẻ (vd ô "Chờ nâng" của bài 7.5) = danh sách một giá trị
     if not isinstance(raw, (list, tuple)) or not 1 <= len(raw) <= MAX_LIST:
         raise DrawError("bad_param", f"{label}: cần 1–{MAX_LIST} giá trị.")
     out = []
