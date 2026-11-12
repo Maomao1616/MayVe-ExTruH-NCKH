@@ -53,14 +53,14 @@ LAYOUT = (
 
 # Thông số vẽ (khớp các ô trong tab).
 GCODE = (
-    Param("draw_feed", "float", 5000.0, 10, 20000, unit="mm/min"),
-    Param("travel_feed", "float", 6000.0, 10, 20000, unit="mm/min"),
+    Param("draw_feed", "float", 8000.0, 10, 20000, unit="mm/min"),
+    Param("travel_feed", "float", 8000.0, 10, 20000, unit="mm/min"),
     Param("pen_up_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_down_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_feed", "float", 3000.0, 10, 20000, unit="mm/min"),
     Param("pen_down_feed", "float", None, 10, 20000, unit="mm/min"),   # None = hạ bút cùng tốc độ nâng (pen_feed); ô trên giao diện mặc định 2000 (hạ chậm đỡ nảy, đỡ loang mực)
-    Param("delay_up_s", "float", 0.05, 0, 60, unit="s"),
-    Param("delay_down_s", "float", 0.05, 0, 60, unit="s"),
+    Param("delay_up_s", "float", 0.02, 0, 60, unit="s"),
+    Param("delay_down_s", "float", 0.02, 0, 60, unit="s"),
     Param("precision", "int", 3, 1, 4),
 )
 
@@ -80,7 +80,8 @@ OPTIMIZE = (
     Param("simplify_tolerance_mm", "float", 0.05, 0, 10, unit="mm"),  # đơn giản hóa (bỏ điểm thừa)
     Param("min_length_mm", "float", 0.5, 0, 100, unit="mm"),          # bỏ nét ngắn hơn mức này
     Param("sort", "bool", True),                                      # sắp xếp để giảm quãng bút nâng
-    Param("group_levels", "bool", True),                              # vẽ lần lượt từng mức đậm nhạt (nhạt → đậm, viền cuối), mỗi mức tự sắp xếp riêng
+    Param("group_levels", "bool", False),                             # vẽ lần lượt từng mức đậm nhạt (nhạt → đậm, viền cuối); tắt từ 12/11/2026 (thêm nhấc bút, lâu hơn)
+    Param("bridge", "bool", True),                                    # ảnh: nối nét gần trong vùng đậm thay vì nhấc bút (optimize.bridge)
     Param("two_opt", "bool", True),                                   # 2-opt: giảm thêm ~25% quãng nhấc bút (chậm hơn)
     Param("passes", "int", 50, 10, 2000),                             # số lượt 2-opt; 50 là đủ (200 gần như không hơn)
 )
@@ -93,7 +94,7 @@ SVG = (
 
 # Ảnh raster (độ phân giải xử lý tự tính từ khung vẽ ÷ độ rộng bút; max_side_px chỉ để ghi đè).
 RASTER = (
-    Param("pen_width_mm", "float", 0.4, 0.1, 2, unit="mm"),           # bề rộng nét đo trên giấy (xem PENS)
+    Param("pen_width_mm", "float", 0.5, 0.1, 2, unit="mm"),           # bề rộng nét đo trên giấy (xem PENS)
     Param("max_side_px", "int", None, 400, 4000, unit="px"),          # None = tự tính
     Param("quality", "choice", "final", choices=("draft", "final")),  # nháp (nhỏ, nhanh) hay chính thức
     Param("crop_x", "float", 0.0, 0, 1), Param("crop_y", "float", 0.0, 0, 1),   # cắt ảnh: tỷ lệ 0..1 của ảnh gốc
@@ -108,7 +109,7 @@ RASTER = (
 
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
-    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "wave_am")),
+    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am")),
     Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
     Param("outline_detail", "choice", "medium", choices=("low", "medium", "high")),  # viền: ít = khối chính, nhiều = cả nét nhạt
@@ -126,10 +127,11 @@ PALETTE = (
     Param("skip_background", "bool", True),
 )
 
-# Bề rộng nét đo trên giấy (mm) của các bút dựng sẵn. Tên bút nằm ở index.html (ô draw-pen-width); số chưa đo thì
-# là ước tính (UB-155 / UM-100 vẽ nhanh ~0,3; Sakura 0,4 trên Ivory ~0,45), sửa cả hai nơi sau khi đo tờ hiệu chỉnh.
-PENS = (0.3, 0.45, 0.5)
-STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "wave_am")
+# Bề rộng nét đo trên giấy (mm) của các bút dựng sẵn. Tên bút nằm ở index.html (ô draw-pen-width); sửa cả hai nơi.
+# Đo 12/11/2026 (tờ hiệu chỉnh A6, Ivory 250, 8000 mm/min): UB-155 0,35–0,4 → 0,38; UM-100 ~0,4; Sakura 0,4 mặt láng
+# 0,45–0,5 → 0,5 (mặt nhám 0,5–0,55: chọn Tùy chọn); bút bi 0,5 chưa đo.
+PENS = (0.38, 0.4, 0.5)
+STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am")
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
           "raster": RASTER, "style": STYLE, "palette": PALETTE}

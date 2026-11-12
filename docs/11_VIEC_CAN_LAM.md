@@ -16,6 +16,8 @@ Test tự động: máy chủ ~397 bài (`python -m pytest` trong `backend`), gi
 Mục tiêu trước mắt cho phần web điều khiển: chốt thông số chuẩn bằng bản in → đo thời gian thật → (nếu có) tab Beta → MiniPC + Docker + Cloudflare. Camera, nút cứng, ESP32 thêm lúc nào cũng được.
 
 ## 2. Đã xong gần đây
+- [x] 12/11 (2): kiểu tô **Đan 3 hướng (60°)**; **tờ hiệu chỉnh tông** (16 ô độ phủ × 3 kiểu gạch, Cài đặt → Tờ thử); lộ trình thuật toán ảnh chi tiết ở [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) mục 0 (đường cong tông, XDoG, flow field, G2/G3; bỏ dithering 2D và tối ưu theo chi phí).
+- [x] 12/11: theo kết quả in thật: **nối nét gần** thay vì nhấc bút (ô "Nối nét gần", mặc định bật; ảnh mẫu A5 bớt 55–82 % lần nhấc, nhanh 30–50 %); **ước tính thời gian có gia tốc** + 0,15 s mỗi lần nhấc (khớp tỷ lệ 1,7–1,9); mặc định vẽ / di chuyển **8000**, chờ **0,02**; "Vẽ lần lượt từng mức" mặc định **tắt**; preset bỏ nét viền, Chân dung → **đan chéo**, Phong cảnh → **sóng biên độ**; bút UB-155 **0,38**, UM-100 **0,40**, Sakura **0,50**; Home xong tự nhích Z để servo giữ bút lên; nút 7.5 hết lỗi "cần 1–8 giá trị"; tờ nhấc bút có ô chờ 0.
 - [x] 11/11 (2): **chuyển mức mềm** (mặc định bật, ô "Chuyển mức mềm"), kiểu **Gạch chéo chồng lớp** và **Sóng biến thiên (tông liền)** ([06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.7–8.9). Mới thử bằng mô phỏng mực, **chưa in**.
 - [x] 11/11: đổi sang giấy Ivory + Sakura / Uniball 150: nét giả định **0,44 mm** (`LINE_WIDTH_RATIO` 1,1, trước 1,375 = 0,55); tờ hiệu chỉnh có dải 0,40 / 0,45 / 0,50. Tờ nhấc bút chờ 0,02 / 0,05 / 0,1. Bài 7.2 / 7.3 / 7.4 dùng chung ô tốc độ thử (mặc định 7000–10000, trần 20000), chờ = ô chờ tab Tạo bản vẽ; 7.2 mỗi tốc độ một cặp dấu +, 7.3 mỗi tốc độ một hàng. Tốc độ tối đa của máy đọc từ mạch (max_rate X/Y) thay cho số cứng 6000 (hết cảnh báo "cao hơn tốc độ tối đa" sai); ô tốc độ không còn bị chặn ở 6000. Nút "Lưu vào mạch" bấm được cả khi chỉ đổi bằng terminal.
 - [x] 11/11 (tối): ô **"Bút vẽ"** chọn theo tên bút (Uniball UB-155 đỏ / đen, UM-100, Sakura Pigma Micron 0,4, bút bi 0,5) + **Tùy chọn** để gõ nét đo được; số trong ô là **bề rộng nét trên giấy** (`LINE_WIDTH_RATIO` 1,1 → 1,0). Số mỗi bút đang là ước tính: 0,30 / 0,30 / 0,45 / 0,50 ⏳ đo ngày 12/11. Bản thảo / tùy chọn đã lưu với giá trị cũ (0,2 / 0,4 / 0,5) tự quay về Sakura.
@@ -33,12 +35,11 @@ Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép
 - [ ] **Thử luồng khách** (cần đã đặt PIN): mở trang bằng điện thoại (không đăng nhập) → tab Tạo bản vẽ → chọn ảnh, cắt, khổ giấy, bấm **Gửi ảnh**; trên laptop (đăng nhập) mở hộp thư "Ảnh khách gửi" → **Mở** → kiểm thông số → **Tạo nét**. Xem cảnh báo gửi quá 6 ảnh / giờ và ảnh tự xóa sau 5 ngày.
 - [ ] **Thử tờ thử mới**: Cài đặt → Tờ thử / hiệu chỉnh → tạo tờ nhấc bút, nạp ở Điều khiển, chạy, chọn hàng đẹp → **Dùng**; kiểm tab Tạo bản vẽ có đổi Z nhấc / chờ / tốc độ hạ.
 - [ ] Bật báo bộ đệm: terminal gõ `$10=3` (11/11 đã gõ), rồi gõ `$10` xem máy trả `$10=3`. **Chạy một bản vẽ MỚI** rồi mở Biểu đồ của lần chạy đó: có đường "hàng đợi" = đã có `Bf`. Lần chạy trước khi gõ `$10=3` (vd con mèo) vĩnh viễn không có. Tắt bật máy, gõ lại `$10` xem còn 3 không.
-- [ ] **Ngày 12/11: làm theo "Kế hoạch ngày 12/11/2026" trong `07_THU_NGHIEM.md`** (8 bước: tờ hiệu chỉnh A6 cho UB-155 đỏ hai mặt giấy, UM-100, Sakura hai mặt; 7.4 tốc độ; tờ nhấc bút; 7.2 / 7.3 ở 7000–10000; con mèo A6 bốn kiểu tô). Gửi số đo → AI sửa bề rộng nét từng bút trong ô "Bút vẽ".
-- [ ] **Kiểu tô mới** (11/11): cùng một ảnh (con mèo), giấy Ivory, preset Chân dung, vẽ 4 tờ A6 (bước 8 kế hoạch 12/11): (1) zigzag tắt "Chuyển mức mềm", (2) zigzag bật, (3) Gạch chéo chồng lớp, (4) Sóng biến thiên. So vệt mảng, độ mịn tông, thời gian thật. Với (4) mở Biểu đồ xem hàng đợi có cạn không (16 000 dòng ngắn).
-- [ ] **Tốc độ cao** (11/11): đặt tốc độ tối đa X, Y = 10000 → Áp dụng (chỉ RAM) → bài 7.2 rồi 7.3 ở 7000 / 8000 / 9000 / 10000, gia tốc 3000, junction 0,05. Sờ nhiệt driver / động cơ sau 7.2.
+- [ ] **Tờ hiệu chỉnh tông** (07 mục 2b): A6, Sakura 0,5 × 3 kiểu gạch (zigzag, gạch chéo, đan 3 hướng), cùng mặt giấy / tốc độ 8000; chụp thẳng, sáng đều, gửi ảnh gốc → AI dựng đường cong tông.
+- [ ] Gửi 2–3 ảnh thật cho XDoG (ảnh em bé, ngược sáng, đèn đêm) và ảnh chân dung động vật cho flow field; gửi nhật ký chạy `data/job_logs` (sau `$10=3`) của một bức sóng biên độ và một bức gạch chéo cho phần buffer / G2-G3.
+- [ ] **Sau bản 12/11 (khởi động lại phần mềm trước):** (1) bật mạch → Home → bấm thử jog X/Y: bút có còn tụt không (log có hai dòng `$J=… Z4.5` rồi `Z5` sau `$H`); (2) tờ nhấc bút tick thêm ô **chờ 0**, Z3, hạ 2000: hàng chờ 0 có kéo vệt / hụt đầu nét không; (3) vẽ lại ảnh em bé (Chân dung = đan chéo) A5 Sakura 0,5: so thời gian thật với ước tính mới, soi chỗ nối nét có lộ không (bật / tắt ô "Nối nét gần" nếu cần so); (4) một bức sóng biên độ: thời gian thật / ước tính.
+- [ ] Tốc độ tối đa 10000 (đoạn dài): nếu muốn giữ thì Cấu hình máy → Lưu vào mạch; ô Tốc độ di chuyển có thể lên 10000 khi đó.
 - [ ] Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng.
-- [ ] Bài 7.4: chụp cận đo bề rộng nét ở 7000 / 8000 / 9000 / 10000 → in lại tờ hiệu chỉnh ở tốc độ đã chốt → sửa số của bút đó trong ô "Bút vẽ".
-- [ ] Thang xám 3 preset (Chân dung, Phong cảnh, Cận cảnh).
 - [ ] Vẽ lại Phong cảnh với mặc định mới; chụp cận mép khối xem còn giọt mực ở chỗ quay đầu không.
 - [ ] Bài 7.1 (đo thời gian một chu kỳ nhấc bút), 7.3 (gia tốc), 7.5 (vệt kéo), mỗi bài một tờ.
 - [ ] Thời gian Home, Z nâng / hạ thật, cung G2 / G3.
@@ -53,7 +54,7 @@ Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép
 | Khoảng cách nét / số mức / gamma từng preset | thang xám + ảnh thật ([07_THU_NGHIEM.md](07_THU_NGHIEM.md)) |
 | Quay đầu nửa vòng tròn có hết giọt mực | chụp cận |
 | `G4 P` tính bằng giây trên FluidNC 4.1.1 | đo |
-| Thời gian ước tính (chưa tính gia tốc) | so với thời gian thật, thêm hệ số |
+| Thời gian ước tính (có gia tốc + 0,15 s / lần nhấc, 12/11) | so từng kiểu tô, nhất là sóng biên độ (ước tính chậm ×3,4 vì sóng dày) |
 | Biên lùi 64 dòng khi tiếp tục có đủ | hủy bản vẽ dài, tiếp tục |
 | Xử lý ảnh trên MiniPC i5-3210M; giới hạn RAM trên Ubuntu | `info.timings`, `htop` |
 | Chia màu với ảnh có màu rất nhỏ | ảnh nhiều màu nền sáng |

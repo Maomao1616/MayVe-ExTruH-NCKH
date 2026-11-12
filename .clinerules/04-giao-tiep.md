@@ -11,8 +11,8 @@
 - Mục tiêu: sản phẩm máy vẽ tích hợp IoT chạy thật; tối ưu tối đa cho sản phẩm, báo cáo đề tài để sau.
 - Demo **không phụ thuộc Internet** (máy tự phát Wi-Fi). Mọi tính năng phải chạy được offline.
 - Ưu tiên: **vẽ ra đẹp** hơn là nhanh; thời gian xử lý không quan trọng. Tốc độ chỉ cần tối ưu, không đổi lấy nét xấu.
-- Bút / giấy hiện tại (11/11/2026): Sakura 0,4 và Uniball 150 trên giấy Ivory 250 g/m²; ô "Bút vẽ" chọn theo tên bút và ghi thẳng nét đo trên giấy (UB-155 / UM-100 0,30, Sakura 0,45; ước tính chờ đo; `LINE_WIDTH_RATIO` = 1,0). Chữ: bút bi 0,5, Word cỡ 14–16.
-- Máy thật đang chạy: tối đa 8000 mm/phút, gia tốc 3000, junction 0,05, SpreadCycle.
+- Bút / giấy hiện tại (11/11/2026): Sakura 0,4 và Uniball 150 trên giấy Ivory 250 g/m²; ô "Bút vẽ" chọn theo tên bút và ghi thẳng nét đo trên giấy (đo 12/11/2026: UB-155 0,38, UM-100 0,40, Sakura 0,50; `LINE_WIDTH_RATIO` = 1,0). Chữ: bút bi 0,5, Word cỡ 14–16.
+- Máy thật đang chạy: vẽ 8000 mm/phút (10000 ở đoạn dài), gia tốc 3000, junction 0,05, Z3, chờ 0,02, SpreadCycle.
 
 ## Xuất mã gọn cho AI khác (tiết kiệm token)
 `python tools/export_context.py --list` liệt kê các gói; ví dụ `python tools/export_context.py docs` (~12 000 token), `draw-backend --budget 35000`, `--files <tệp>`. Kết quả ở `export/` (gitignored). Đừng gửi cả `index.html` (~28 000 token): dùng `--html panel-<tab>`.

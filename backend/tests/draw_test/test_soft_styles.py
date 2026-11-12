@@ -137,6 +137,35 @@ def test_join_rows_turn_only_refuses_staircase_links():
 
 
 def test_new_kinds_are_registered_and_accepted():
-    for kind in ("crosshatch", "wave_am"):
+    for kind in ("crosshatch", "crosshatch3", "wave_am"):
         assert kind in spec.STYLES and kind in styles.FILLERS.names() and kind in styles.GROUPERS
         assert style(kind=kind).kind == kind
+
+
+def test_cross3_split_keeps_total_coverage_and_adds_layers_in_turn():
+    t = np.linspace(0.0, 0.9, 91, dtype=np.float32)
+    a, b, c = styles.cross3_split(t)
+    total = 1 - (1 - a) * (1 - b) * (1 - c)
+    assert np.allclose(total, t, atol=1e-5)                                  # đúng độ phủ mong muốn
+    assert (b[t <= styles.CROSS3_START2] == 0).all() and (c[t <= styles.CROSS3_START3] == 0).all()
+    assert (np.diff(a) >= -1e-6).all() and (np.diff(b) >= -1e-6).all() and (np.diff(c) >= -1e-6).all()
+    assert max(a.max(), b.max(), c.max()) < 0.7                              # mỗi hướng thưa hơn một lớp đặc (đỡ ướt giấy)
+
+
+def test_crosshatch3_draws_three_directions_only_where_dark():
+    f = ramp()
+    strokes = styles.crosshatch3(f, style(kind="crosshatch3", angle=0), PEN)
+    angles = set()
+    for s in strokes:
+        a = np.asarray(s)
+        d = np.diff(a, axis=0)
+        long = np.hypot(d[:, 0], d[:, 1]) > 3.0                             # bỏ đoạn quay đầu
+        for dx, dy in d[long]:
+            angles.add(int(round(np.degrees(np.arctan2(dy, dx)) % 180.0)) % 180)
+    assert {0, 60, 120} <= angles
+    light = [s for s in strokes if max(x for x, _ in s) < 0.3 * f.width_mm]   # phần nhạt của dải: chỉ một hướng
+    for s in light:
+        d = np.diff(np.asarray(s), axis=0)
+        long = np.hypot(d[:, 0], d[:, 1]) > 3.0
+        assert all(abs(dy) < 1e-6 for _, dy in d[long])
+

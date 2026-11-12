@@ -86,3 +86,99 @@ def make_draft(name: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str
               "source": {"mode": "calibration", "pen_width_mm": pen_width_mm, "paper": paper,
                          "band_factors": list(BAND_FACTORS)}}
     return {"draft": drafts.create(name, result, placed, machine, params), "warnings": result["warnings"]}
+
+
+# --- Tờ hiệu chỉnh TÔNG (12/11/2026): đo độ đậm nhìn thấy theo độ phủ, để dựng đường cong tông cho từng bút + giấy ----
+# 16 ô vuông xếp 4 × 4, đọc từ trái sang phải, trên xuống dưới; ô i có độ phủ danh định TONE_STEPS[i] (ô 0 = giấy trắng).
+# Độ phủ = bề rộng nét ÷ khoảng cách dòng, đúng công thức các kiểu tô dùng (styles.level_plan); ô gạch chéo / đan 3 hướng
+# chia độ phủ cho các lớp đúng như kiểu tô thật (styles.cross_split / cross3_split). Ba ô vuông đen đặc ở góc trên phải,
+# dưới trái, dưới phải là mốc ĐEN chuẩn + mốc căn ảnh chụp; góc trên trái là chữ F (biết tờ có bị xoay không).
+TONE_STEPS = (0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.70, 0.80, 0.90)
+TONE_STYLES = ("zigzag", "crosshatch", "crosshatch3")
+TONE_ANGLE = 45.0                # góc gạch như mặc định của kiểu tô
+TONE_GRID = 4                    # 4 × 4 ô
+TONE_TOP = 24.0                  # phần đầu: chữ F + mốc góc trên
+TONE_MARK = 4.0                  # cạnh ô mốc đen (mm)
+TONE_SOLID = 0.8                 # ô mốc: khoảng cách dòng = 0,8 × nét (đặc hẳn)
+TONE_SIZES = {
+    "a6": {"patch": 20.0, "gap": 3.0},       # 4 × 20 + 3 × 3 = 89 mm ≤ 95 (A6 trừ lề)
+    "a5": {"patch": 30.0, "gap": 4.0},       # 132 mm ≤ 138; ô to hơn: dải thưa (5 %) vẫn có nhiều dòng để đo
+}
+
+
+def _tone_size(paper: str) -> dict:
+    if paper not in TONE_SIZES:
+        raise DrawError("bad_param", f"paper: chỉ nhận {', '.join(TONE_SIZES)}.")
+    return TONE_SIZES[paper]
+
+
+def tone_layer_covers(cover: float, style: str) -> list[tuple[float, float]]:
+    """Độ phủ danh định của một ô -> [(độ phủ từng lớp, góc)] theo đúng cách chia lớp của kiểu tô."""
+    import numpy as np
+    from . import styles
+    if style not in TONE_STYLES:
+        raise DrawError("bad_param", f"style: chỉ nhận {', '.join(TONE_STYLES)}.")
+    if cover <= 0:
+        return []
+    if style == "zigzag":
+        parts = [cover]
+        step = 0.0
+    elif style == "crosshatch":
+        parts = [float(x[0]) for x in styles.cross_split(np.array([cover], np.float32))]
+        step = styles.CROSS_ANGLE
+    else:
+        parts = [float(x[0]) for x in styles.cross3_split(np.array([cover], np.float32))]
+        step = styles.CROSS3_ANGLE
+    return [(p, (TONE_ANGLE + i * step) % 180.0) for i, p in enumerate(parts) if p > 1e-4]
+
+
+def _hatch_square(x0: float, y0: float, size: float, spacing: float, angle: float) -> list[list[tuple[float, float]]]:
+    """Một ô vuông gạch zigzag (quay đầu nửa vòng tròn) bằng đúng hàm gạch của kiểu tô."""
+    import numpy as np
+    from . import hatch, styles
+    px = 0.1
+    n = int(round(size / px))
+    f = hatch.Field(np.ones((n, n), np.float32), size, size)
+    d, nv, vmin, lines = hatch.scan_runs(np.ones((n, n), bool), f, angle, spacing)
+    out = styles._clip_out(styles._link(d, nv, vmin, lines, spacing, False), f)
+    return [[(x0 + x, y0 + y) for x, y in s] for s in out]
+
+
+def tone_layers(pen_width_mm: float, paper: str = "a6", style: str = "zigzag") -> tuple[list[Layer], dict]:
+    z = _tone_size(paper)
+    patch, gap = z["patch"], z["gap"]
+    width = TONE_GRID * patch + (TONE_GRID - 1) * gap
+    grid_bottom = TONE_TOP + TONE_GRID * patch + (TONE_GRID - 1) * gap
+    height = grid_bottom + 3.0 + TONE_MARK
+    strokes: list[list[tuple[float, float]]] = [[(2, 22), (2, 2)], [(2, 2), (14, 2)], [(2, 12), (11, 12)]]   # chữ F
+    solid = TONE_SOLID * pen_width_mm
+    for mx, my in ((width - TONE_MARK, 0.0), (0.0, height - TONE_MARK), (width - TONE_MARK, height - TONE_MARK)):
+        strokes += _hatch_square(mx, my, TONE_MARK, solid, 0.0)
+    cells = []
+    for i, cover in enumerate(TONE_STEPS):
+        row, col = divmod(i, TONE_GRID)
+        x0, y0 = col * (patch + gap), TONE_TOP + row * (patch + gap)
+        parts = tone_layer_covers(cover, style)
+        for part, angle in parts:
+            strokes += _hatch_square(x0, y0, patch, pen_width_mm / part, angle)
+        cells.append({"n": i, "cover": cover, "x": round(x0, 3), "y": round(y0, 3),
+                      "layers": [{"cover": round(p, 4), "angle": a, "spacing_mm": round(pen_width_mm / p, 4)}
+                                 for p, a in parts]})
+    info = {"width": width, "height": height, "patch_mm": patch, "gap_mm": gap, "cells": cells}
+    return [Layer("1", strokes)], info
+
+
+def make_tone_draft(name: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str, Any], pen_width_mm: float,
+                    paper_x_mm: float = 0.0, paper_y_mm: float = 0.0, paper: str = "a6", style: str = "zigzag") -> dict:
+    if not 0.1 <= pen_width_mm <= 2:
+        raise DrawError("bad_param", "pen_width_mm: ngoài khoảng 0,1–2 mm.")
+    layers_, info = tone_layers(pen_width_mm, paper, style)
+    w, h = info["width"], info["height"]
+    layout = {"paper": paper, "paper_x_mm": paper_x_mm, "paper_y_mm": paper_y_mm,
+              "width_mm": w, "height_mm": h, "fit": "contain", "center": True}
+    result, placed = service.build(layers_, machine_raw, layout, gcode_raw, (0.0, 0.0, w, h))
+    machine = spec.parse("machine", machine_raw).as_dict()
+    params = {"machine": dict(machine_raw), "layout": layout, "gcode": dict(gcode_raw),
+              "source": {"mode": "calibration", "sheet": "tone", "style": style, "pen_width_mm": pen_width_mm,
+                         "paper": paper, "steps": list(TONE_STEPS), **info}}
+    return {"draft": drafts.create(name, result, placed, machine, params), "warnings": result["warnings"]}

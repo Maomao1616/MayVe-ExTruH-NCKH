@@ -22,7 +22,7 @@ def build(data, kind="spiral", group=True, **style):
     # soft_levels tắt: test đoán mức của nét theo vị trí ngang, mà chuyển mức mềm cho các mức đan sâu vào nhau
     opts = {"raster": {"pen_width_mm": 0.4, "auto_levels": False, "gamma": 1.0, "max_side_px": 600},
             "style": {"kind": kind, "levels": 5, "outline_overlay": False, "soft_levels": False, **style},
-            "optimize": {"group_levels": group}, "layout": {"paper": "a4", "margin_mm": 5}}
+            "optimize": {"group_levels": group, "bridge": False}, "layout": {"paper": "a4", "margin_mm": 5}}
     return raster.build_raster(data, "t", opts)
 
 
@@ -46,9 +46,9 @@ def total_length(layers):
     return sum(math.dist(a, b) for l in layers for s in l.strokes for a, b in zip(s, s[1:]))
 
 
-def test_default_is_on_and_can_be_turned_off():
-    assert spec.parse("optimize", {}).group_levels is True
-    assert spec.parse("optimize", {"group_levels": False}).group_levels is False
+def test_default_is_off_and_can_be_turned_on():
+    assert spec.parse("optimize", {}).group_levels is False
+    assert spec.parse("optimize", {"group_levels": True}).group_levels is True
 
 
 def test_spiral_draws_one_level_after_another_light_to_dark():
@@ -99,7 +99,7 @@ def test_multi_colour_keeps_one_layer_per_colour_with_grouping():
     out = {}
     for group in (True, False):
         opts = {"raster": {"pen_width_mm": 0.4, "max_side_px": 400}, "style": {"kind": "spiral", "levels": 4, "outline_overlay": False},
-                "palette": {"mode": "multi", "colors": 2}, "optimize": {"group_levels": group}, "layout": {"paper": "a5"}}
+                "palette": {"mode": "multi", "colors": 2}, "optimize": {"group_levels": group, "bridge": False}, "layout": {"paper": "a5"}}
         layers, _, info, _ = raster.build_raster(buf.getvalue(), "t", opts)
         out[group] = [(l.id, len(l.strokes) > 0) for l in layers]
         assert info["layers"] and all(m["color"] for m in info["layers"])     # mã màu vẫn gắn đúng lớp

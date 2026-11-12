@@ -47,7 +47,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
 | **Thang xám** (nay nằm ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang xám ở tab Tạo bản vẽ") | nạp ảnh 11 bậc trắng → đen để in thử từng preset ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2) |
 
-Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (chưa tính gia tốc), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
+Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (có gia tốc + ~0,15 s mỗi lần nhấc bút, từ 12/11/2026), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
 
 ---
 
@@ -130,9 +130,9 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `layout` | khổ giấy, lề (5 mm), rộng / cao khung, căn giữa, lật, đảo thứ tự, xoay 0/90/180/270 |
 | `gcode` | tốc độ vẽ 5000, di chuyển 6000, nâng bút 3000, hạ bút (trống = như nâng), chờ 0,05 / 0,05 s, độ chính xác 3 chữ số |
 | `machine` | vùng máy 285 × 318, hành trình Z, tốc độ G0, `invert_y` (tắt) |
-| `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (mặc định bật: vẽ lần lượt từng mức đậm nhạt) |
+| `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (vẽ lần lượt từng mức đậm nhạt; mặc định **tắt** từ 12/11/2026), **`bridge`** (mặc định bật: ảnh tô đơn sắc, nối nét gần ≤ 4 × bề rộng nét trong vùng đậm thay vì nhấc bút) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
-| `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 / UM-100 0,30, Sakura 0,45, bút bi 0,50, hoặc Tùy chọn), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
+| `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 0,38, UM-100 0,40, Sakura 0,50, bút bi 0,50, hoặc Tùy chọn; đo 12/11/2026), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
 | `style` | kiểu (`outline` / `zigzag` / `wave` / `spiral`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |
 | `palette` | đơn sắc / nhiều màu, số màu (2–4), bỏ nền |
 

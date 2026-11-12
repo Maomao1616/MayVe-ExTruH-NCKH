@@ -4,7 +4,7 @@ from app.services.drawing import layout as lo, spec
 from app.services.drawing.errors import DrawError
 from app.services.drawing.shapes import Box, Layer
 
-M = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000})
+M = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 8000})
 
 
 def L(**kw):

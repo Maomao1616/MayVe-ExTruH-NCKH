@@ -71,6 +71,17 @@ Cần biết: với 5 mức, 11 bậc ảnh được gộp thành **5 bậc trê
 | Vùng nhạt lộ từng sợi, lổn nhổn | giảm `style-spacing` (mm; trống = 2 × nét thật = 0,88 với bút 0,4) |
 | Tông giữa lệch so với dải chuyển liền | ghi lại độ đậm nhìn thấy từng bậc → dùng làm **đường cong tông** ([10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md)) |
 
+## 2b. Tờ hiệu chỉnh tông (đường cong tông theo bút + giấy)
+Làm **một lần cho mỗi bút + loại giấy + tốc độ**. Kết quả dùng để chia các mức đậm nhạt cho đều theo mắt (kế hoạch ở [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) mục 0.3).
+
+1. Cài đặt → **Tờ thử / hiệu chỉnh** → khối **Tờ hiệu chỉnh tông**: nhập **bề rộng nét** đúng số ở ô Bút vẽ (Sakura 0,50), chọn **khổ A6**, chọn kiểu gạch, bấm **Tạo**.
+2. Làm 3 tờ giấy cho Sakura (mỗi kiểu một tờ): **Zigzag**, **Gạch chéo**, **Đan 3 hướng**. Nếu còn mực, thêm UB-155 (0,38) kiểu zigzag. Cùng mặt giấy, cùng tốc độ 8000, Z3, chờ 0,02 như khi vẽ thật.
+3. Nạp ở tab Điều khiển → Xem trước → Chạy.
+4. Chụp bằng điện thoại: **thẳng góc**, ánh sáng đều (cửa sổ hoặc đèn trần, tránh đèn chiếu một phía), không chụp có flash, giấy phẳng, thấy đủ 3 ô đen ở góc và chữ F. Mặt giấy láng hay bóng: nghiêng nhẹ để không phản chiếu đèn. Không chỉnh sáng / lọc ảnh. Gửi ảnh gốc.
+5. Tờ có 16 ô, đọc từ trái sang phải, trên xuống dưới: độ phủ 0 (giấy trắng) · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 45 · 50 · 55 · 60 · 70 · 80 · 90 %. Dải đậm nhất bết mực hay ướt giấy thì ghi chú ô nào.
+
+**Gửi lại:** ảnh từng tờ + một dòng: bút · giấy (láng / nhám) · tốc độ · kiểu gạch · ô nào bắt đầu bết mực. AI đọc độ xám từng ô và dựng bảng *độ phủ → độ đậm nhìn thấy* cho bút đó.
+
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |
 |---|---|---|
@@ -131,6 +142,7 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 | 03/11/2026 | 0,4 | | tờ mẫu hiệu chỉnh | vẽ 3000 | | nét ~0,55 mm |
 | 03/11/2026 | | | 7.2 mất bước | G0 6000, gia tốc X/Y 2000 (Z 3000), Vref 1,4 V | ~20 phút | không mất bước |
 | 11/11/2026 | Pigma 0,4 | thường | ảnh con mèo, preset Chân dung | max 8000, gia tốc 3000, junction 0,05, Z3, chờ 0,05, SpreadCycle | | máy chạy êm, không thấy mất bước; nền lộ ranh giới các mức (5 mức); đọng mực cuối nét (nghi bút + giấy) |
+| 12/11/2026 | UB-155 đỏ, UM-100, Sakura 0,4 | Ivory 250 | tờ hiệu chỉnh A6, nhấc bút, 7.2 / 7.3 / 7.4, thang xám A6, ảnh thật | vẽ 8000, Z3 / Z0, chờ 0,02, hạ 2000, gia tốc 3000 | 1,7–1,9 | nét: Sakura 0,45–0,5 láng / 0,5–0,55 nhám, UB-155 0,35–0,4, UM-100 ~0,4; 8000 ổn, 10000 được ở đoạn dài; Z3 đẹp; chờ 0,02 ổn. Preset: đan chéo đẹp nhất cho chân dung, sóng biên độ chuyển tông mượt nhất, xoắn ốc nhấc bút nhiều, zigzag / sóng thường ít dùng; vẽ lần lượt từng mức và nét viền nên tắt |
 | | | | 7.2b mất bước mức mới | G0 8000, gia tốc X/Y 2500, Vref 1,4 V | 10–20 phút | |
 | | | | 7.3 góc cua | junction 0,02 / 0,05 / 0,1 ở 8000, gia tốc 2500 | | |
 | | 0,4 | | tờ mẫu hiệu chỉnh | vẽ 5000 | | |

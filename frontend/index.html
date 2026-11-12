@@ -901,6 +901,7 @@
                       <option data-i18n="drawing.style.wave" value="wave">Sóng</option>
                       <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
                       <option data-i18n="drawing.style.crosshatch" value="crosshatch">Gạch chéo chồng lớp</option>
+                      <option data-i18n="drawing.style.crosshatch3" value="crosshatch3">Đan 3 hướng (60°)</option>
                       <option data-i18n="drawing.style.waveAm" value="wave_am">Sóng biến thiên (tông liền)</option>
                       <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
                     </select>
@@ -979,8 +980,12 @@
                     <span data-i18n="drawing.vectorize.optimize">Sắp xếp đường đi để giảm quãng di chuyển</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.groupLevels">
-                    <input checked="" id="optimize-group-levels" type="checkbox"/>
+                    <input id="optimize-group-levels" type="checkbox"/>
                     <span data-i18n="drawing.vectorize.groupLevels">Vẽ lần lượt từng mức đậm nhạt (nhạt → đậm, viền cuối)</span>
+                  </label>
+                  <label data-i18n="[title]drawing.hint.bridge">
+                    <input checked="" id="optimize-bridge" type="checkbox"/>
+                    <span data-i18n="drawing.vectorize.bridge">Nối nét gần trong vùng đậm (bớt nhấc bút)</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.twoOpt">
                     <input checked="" id="optimize-two-opt" type="checkbox"/>
@@ -1000,11 +1005,11 @@
                 <div class="form-grid">
                   <label for="draw-feed">
                     <span data-i18n="drawing.params.drawFeed">Tốc độ vẽ (mm/phút)</span>
-                    <input id="draw-feed" type="number" min="10" step="50" value="5000"/>
+                    <input id="draw-feed" type="number" min="10" step="50" value="8000"/>
                   </label>
                   <label for="travel-feed">
                     <span data-i18n="drawing.params.travelFeed">Tốc độ di chuyển không vẽ (mm/phút)</span>
-                    <input id="travel-feed" type="number" min="10" step="50" value="6000"/>
+                    <input id="travel-feed" type="number" min="10" step="50" value="8000"/>
                   </label>
                   <label for="draw-pen-up-z">
                     <span data-i18n="drawing.params.penUp">Z khi nâng bút</span>
@@ -1020,18 +1025,18 @@
                   </label>
                   <label for="pen-delay-down">
                     <span data-i18n="drawing.params.delayDown">Chờ sau khi hạ bút (giây)</span>
-                    <input id="pen-delay-down" type="number" min="0" step="0.01" value="0.05"/>
+                    <input id="pen-delay-down" type="number" min="0" step="0.01" value="0.02"/>
                   </label>
                   <label for="pen-delay-up">
                     <span data-i18n="drawing.params.delayUp">Chờ sau khi nâng bút (giây)</span>
-                    <input id="pen-delay-up" type="number" min="0" step="0.01" value="0.05"/>
+                    <input id="pen-delay-up" type="number" min="0" step="0.01" value="0.02"/>
                   </label>
                   <label for="draw-pen-width">
                     <span data-i18n="drawing.params.penWidth">Bút vẽ (độ rộng nét)</span>
                     <select id="draw-pen-width">
-                      <option data-mm="0.3" data-i18n="drawing.params.penUb155" value="ub155">Uniball UB-155 đỏ / đen (nét 0,30)</option>
-                      <option data-mm="0.3" data-i18n="drawing.params.penUm100" value="um100">Uniball UM-100 (nét 0,30)</option>
-                      <option data-mm="0.45" data-i18n="drawing.params.penSakura" selected="" value="sakura04">Sakura Pigma Micron 0,4 (nét 0,45)</option>
+                      <option data-mm="0.38" data-i18n="drawing.params.penUb155" value="ub155">Uniball UB-155 đỏ / đen (nét 0,38)</option>
+                      <option data-mm="0.4" data-i18n="drawing.params.penUm100" value="um100">Uniball UM-100 (nét 0,40)</option>
+                      <option data-mm="0.5" data-i18n="drawing.params.penSakura" selected="" value="sakura04">Sakura Pigma Micron 0,4 (nét 0,50)</option>
                       <option data-mm="0.5" data-i18n="drawing.params.penBallpoint" value="ballpoint05">Bút bi 0,5, viết chữ (nét 0,50)</option>
                       <option data-i18n="drawing.params.penCustom" value="custom">Tùy chọn (nhập nét đo được)</option>
                     </select>
@@ -1458,6 +1463,7 @@
                 </fieldset>
                 <fieldset>
                   <legend data-i18n="sheet.lift.delays">Chờ (giây)</legend>
+                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0"/><span>0</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.02" checked/><span>0.02</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.05" checked/><span>0.05</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.1" checked/><span>0.1</span></label>
@@ -1491,6 +1497,24 @@
                 <label class="sheet-inline" for="sheet-pen-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
                   <select id="sheet-pen-paper"><option value="a5">A5</option><option value="a6">A6</option></select></label>
                 <button class="primary-button" data-i18n="sheet.pen.create" id="sheet-pen-btn" type="button">Tạo tờ hiệu chỉnh bút</button>
+              </div>
+            </section>
+
+            <section class="sheet-block">
+              <h3 data-i18n="sheet.tone.title">Tờ hiệu chỉnh tông</h3>
+              <p class="help-text" data-i18n="sheet.tone.help">16 ô vuông, đọc từ trái sang phải, trên xuống dưới, độ phủ 0 (giấy trắng) · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 45 · 50 · 55 · 60 · 70 · 80 · 90 %. Ba ô đen nhỏ ở góc là mốc đen chuẩn, chữ F ở góc trên trái. Vẽ bằng đúng bút, giấy, tốc độ sẽ dùng; chụp thẳng, đủ sáng, không bóng loáng rồi gửi ảnh (07_THU_NGHIEM mục 2b).</p>
+              <div class="mc-actions">
+                <label class="sheet-inline" for="sheet-tone-width"><span data-i18n="sheet.tone.width">Bề rộng nét (mm, như ô Bút vẽ)</span>
+                  <input id="sheet-tone-width" max="2" min="0.1" step="0.01" type="number" value="0.5"/></label>
+                <label class="sheet-inline" for="sheet-tone-style"><span data-i18n="sheet.tone.style">Kiểu gạch</span>
+                  <select id="sheet-tone-style">
+                    <option data-i18n="sheet.tone.zigzag" value="zigzag">Zigzag (một hướng)</option>
+                    <option data-i18n="sheet.tone.crosshatch" value="crosshatch">Gạch chéo</option>
+                    <option data-i18n="sheet.tone.crosshatch3" value="crosshatch3">Đan 3 hướng</option>
+                  </select></label>
+                <label class="sheet-inline" for="sheet-tone-sheet-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
+                  <select id="sheet-tone-sheet-paper"><option value="a6">A6</option><option value="a5">A5</option></select></label>
+                <button class="primary-button" data-i18n="sheet.tone.create" id="sheet-tonecal-btn" type="button">Tạo tờ hiệu chỉnh tông</button>
               </div>
             </section>
 

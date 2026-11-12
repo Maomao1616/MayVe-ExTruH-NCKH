@@ -192,6 +192,46 @@ def crosshatch(f: Field, style, pen_mm: float, ctx=None, angle: float | None = N
     return _flat(crosshatch_groups(f, style, pen_mm, ctx, angle))
 
 
+# --- Đan 3 hướng: như gạch chéo nhưng ba lớp lệch nhau 60° (12/11/2026, chủ dự án đề xuất) --------------------------
+CROSS3_START2 = 0.35             # độ phủ bắt đầu thêm lớp hai (sớm hơn gạch chéo 0,45: ba hướng chia nhau gánh tông)
+CROSS3_START3 = 0.65             # độ phủ bắt đầu thêm lớp ba
+CROSS3_SLOPE = 0.5               # sau khi lớp kế tiếp vào, lớp trước chỉ tăng nửa phần
+CROSS3_ANGLE = 60.0              # ba lớp ở góc gạch, +60°, +120°
+
+
+def cross3_split(dark: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Độ phủ mong muốn T -> (a, b, c) của ba lớp sao cho 1 - (1 - a)(1 - b)(1 - c) = T.
+
+    T = 0,9 (đậm nhất): a ≈ 0,63, b ≈ 0,43, c ≈ 0,54 — mỗi hướng thưa hơn gạch chéo (~0,68): mực ít đọng hơn, mặt đậm
+    nhìn như lưới tam giác thay vì ô vuông."""
+    t = np.minimum(dark, MAX_COVERAGE)
+    s2, s3, k = CROSS3_START2, CROSS3_START3, CROSS3_SLOPE
+    a = np.where(t <= s2, t, s2 + (t - s2) * k)
+    a3 = s2 + (s3 - s2) * k                                       # lớp một tại lúc lớp ba bắt đầu
+    b_at3 = 1.0 - (1.0 - s3) / (1.0 - a3)                         # lớp hai tại lúc lớp ba bắt đầu
+    b = np.where(t <= s2, 0.0,
+                 np.where(t <= s3, 1.0 - (1.0 - t) / np.maximum(1.0 - a, 1e-6), b_at3 + (t - s3) * k))
+    c = np.where(t <= s3, 0.0, 1.0 - (1.0 - t) / np.maximum((1.0 - a) * (1.0 - b), 1e-6))
+    return tuple(np.clip(x, 0.0, 1.0).astype(np.float32) for x in (a, b, c))
+
+
+def crosshatch3_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
+    """Ba lượt zigzag (mỗi lượt đủ các mức, chuyển mức mềm nếu bật), lớp sau chỉ ở vùng đậm hơn; vẽ hết lớp này mới
+    sang lớp kia."""
+    base = style.angle if angle is None else angle
+    groups: list[list[Stroke]] = []
+    for i, part in enumerate(cross3_split(f.dark)):
+        if part.max() > 0:
+            groups += zigzag_groups(Field(part, f.width_mm, f.height_mm), style, pen_mm, ctx,
+                                    (base + i * CROSS3_ANGLE) % 180.0)
+    return groups
+
+
+@FILLERS.register("crosshatch3")
+def crosshatch3(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
+    return _flat(crosshatch3_groups(f, style, pen_mm, ctx, angle))
+
+
 # --- Sóng biến thiên: một lưới sóng, độ đậm đổi liền (không chia mức) ---------------------------------------------
 AM_SPACING_LINES = 4.0           # khoảng cách các đường sóng = 4 × nét thật (bút 0,4: 1,76 mm); đường thẳng phủ 25 %
 AM_AMPLITUDE = 0.45              # biên độ tối đa = 0,45 × khoảng cách đường: hai đường kề nhau gần chạm nhau ở chỗ đậm nhất
@@ -256,7 +296,7 @@ def wave_am(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None
 
 
 GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_groups,
-            "crosshatch": crosshatch_groups, "wave_am": wave_am_groups}
+            "crosshatch": crosshatch_groups, "crosshatch3": crosshatch3_groups, "wave_am": wave_am_groups}
 
 
 @FILLERS.register("outline")

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import time
 
-from . import optimize, palette, raster_in, spec, styles, tone
+from . import hatch, optimize, palette, raster_in, spec, styles, tone
 from .errors import DrawError
 from .hatch import Field
 from .layout import content_bounds, paper_size
@@ -91,6 +91,9 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
         if groups:
             raw_layers.append(Layer("1", [s for g in groups for s in g]))
             groups_of["1"] = groups
+    # nối nét gần: chỉ ảnh đơn sắc có tô (nhiều màu thì đoạn nối có thể lấn sang mảng màu khác; viền thì kẻ ngang mép)
+    bridge_dark = (hatch.blur(field, styles.LINE_WIDTH_RATIO * rp.pen_width_mm * 2)
+                   if op.bridge and not multi and sp.kind != "outline" else None)
     del dark, field
     if not raw_layers:
         raise DrawError("empty_drawing", "Không có vùng nào đủ đậm để vẽ (ảnh quá sáng — thử hạ mức trắng hoặc tăng gamma).")
@@ -100,6 +103,13 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
 
     step("optimize", 0.7, "Tối ưu nét")
     layers, meta = _optimize(raw_layers, groups_of, op)
+    bridged = 0
+    if bridge_dark is not None:
+        reach = optimize.BRIDGE_PEN * styles.LINE_WIDTH_RATIO * rp.pen_width_mm
+        for layer in layers:
+            layer.strokes, n = optimize.bridge(layer.strokes, bridge_dark, img.width_mm, img.height_mm, reach)
+            bridged += n
+    del bridge_dark
     if not layers:
         raise DrawError("empty_drawing", "Sau khi tối ưu không còn nét nào (thử giảm 'bỏ nét ngắn').")
     for layer, m in zip(layers, meta):                        # mã màu nằm ngay trong tên lớp -> tên tệp G-code
@@ -119,7 +129,7 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
         "page_mm": {"w": img.width_mm, "h": img.height_mm},
         "bounds": {"x": b.x, "y": b.y, "w": b.w, "h": b.h},
         "layers": [dict(m, color=colors.get(l.id), **layer_stats([l])) for m, l in zip(meta, layers)],
-        "optimize": {"before": before, "after": layer_stats(layers),
+        "optimize": {"before": before, "after": layer_stats(layers), "bridged": bridged,
                      "pipeline": optimize.build_pipeline(op, before["strokes"])},
     }
     timings[clock["key"]] = timings.get(clock["key"], 0.0) + time.perf_counter() - clock["t"]

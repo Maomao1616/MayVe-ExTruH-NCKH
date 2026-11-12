@@ -11,7 +11,7 @@ from app.main import app
 from app.services.drawing import drafts, layout as lo, raster, spec
 from app.services.drawing.shapes import Box, Layer
 
-MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000}
+MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 8000}
 GCODE = {"pen_up_z": 5, "pen_down_z": 0}
 SVG = (b'<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">'
        b'<path d="M0 0 L100 0 L100 100 Z" stroke="black" fill="none"/></svg>')
@@ -57,7 +57,7 @@ def import_svg(client):
 def test_schema_has_the_new_groups(client):
     body = client.get("/api/draw/schema").json()
     assert {"raster", "style", "palette"} <= set(body["params"])
-    assert body["pens"] == [0.3, 0.45, 0.5] and "spiral" in body["styles"]
+    assert body["pens"] == [0.38, 0.4, 0.5] and "spiral" in body["styles"]
     layout = {r["name"]: r for r in body["params"]["layout"]}
     assert layout["rotate"]["choices"] == [0, 90, 180, 270]
 

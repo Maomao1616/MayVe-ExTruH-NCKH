@@ -4,7 +4,7 @@ from app.services.drawing import make_gcode
 from app.services.drawing.errors import DrawError
 from app.services.drawing.shapes import Layer
 
-MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000}
+MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 8000}
 GCODE = {"pen_up_z": 5, "pen_down_z": 0}
 SQ = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0)]
 

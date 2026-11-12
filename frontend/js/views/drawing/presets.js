@@ -9,18 +9,20 @@ const BASE = {                   // mặc định chung, từng preset ghi đè
     "style-outline": false, "style-outline-detail": "medium", "style-invert": false, "style-soft": true, "palette-mode": "mono"
 };
 
+// 12/11/2026 (in thật Sakura / UB-155 trên Ivory, 8000 mm/min): viền tắt ở mọi preset tô (thêm nhấc bút, ít khi cần);
+// Chân dung đổi sang đan chéo (ra giống ảnh thật nhất), Phong cảnh sang sóng biên độ (chuyển tông mượt nhất).
 export const PRESETS = {
-    portrait: {                  // chân dung / ảnh tự chụp: mịn, nhiều mức, viền ít (mắt, mũi, miệng, tóc)
+    portrait: {                  // chân dung / ảnh tự chụp: đan chéo, mịn, nhiều mức
         ...BASE, "image-denoise": true, "image-gamma": "1.15",
-        "style-kind": "zigzag", "style-levels": "5", "style-outline": true, "style-outline-detail": "low"
+        "style-kind": "crosshatch", "style-levels": "5"
     },
-    landscape: {                 // phong cảnh, trời mây, nhà cửa, cảnh đêm: tăng chi tiết cục bộ, sóng cho mảng trời
+    landscape: {                 // phong cảnh, trời mây, nhà cửa, cảnh đêm: tăng chi tiết cục bộ, sóng biên độ cho tông mượt
         ...BASE, "image-clahe": true,
-        "style-kind": "wave", "style-angle": "30", "style-outline": true, "style-outline-detail": "low"
+        "style-kind": "wave_am", "style-angle": "30"
     },
-    closeup: {                   // cận cảnh: đồ ăn, cốc, đồ vật: xoắn ốc mềm + viền khối rõ
+    closeup: {                   // cận cảnh: đồ ăn, cốc, đồ vật: xoắn ốc mềm
         ...BASE, "image-gamma": "1.25",
-        "style-kind": "spiral", "style-levels": "4", "style-outline": true, "style-outline-detail": "low"
+        "style-kind": "spiral", "style-levels": "4"
     },
     flat2d: {                    // ảnh 2D: hình vẽ, sticker, hoạt hình, truyện tranh (kể cả dán lên ảnh chụp): chỉ viền
         ...BASE,

@@ -3,7 +3,7 @@ import pytest
 from app.services.drawing import spec
 from app.services.drawing.errors import DrawError
 
-MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000}
+MACHINE = {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 8000}
 
 
 def code(fn, *a):

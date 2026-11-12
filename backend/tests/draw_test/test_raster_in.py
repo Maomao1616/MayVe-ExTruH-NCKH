@@ -15,6 +15,7 @@ def png(w, h, fill=128, mode="L", fmt="PNG"):
 
 
 def rp(**kw):
+    kw.setdefault("pen_width_mm", 0.4)            # số chuẩn bên dưới tính với bút 0,4 (mặc định cũ)
     return spec.parse("raster", kw)
 
 

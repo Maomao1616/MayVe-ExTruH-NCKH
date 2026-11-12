@@ -98,6 +98,8 @@ class CalibrationRequest(BaseModel):
     paper_x_mm: float = Field(0.0, ge=0, le=5000, allow_inf_nan=False)
     paper_y_mm: float = Field(0.0, ge=0, le=5000, allow_inf_nan=False)
     paper: str = Field("a5", max_length=4)           # a5 (mặc định) hoặc a6
+    sheet: str = Field("pen", max_length=8)          # pen = tờ hiệu chỉnh bút; tone = tờ hiệu chỉnh tông (16 ô độ phủ)
+    style: str = Field("zigzag", max_length=16)      # tờ tông: zigzag / crosshatch / crosshatch3
 
 
 class TestSheetRequest(BaseModel):
@@ -261,7 +263,15 @@ def draft_import_gcode(file: UploadFile = File(...), work_w: float = Form(285.0)
 
 @router.post("/calibration", status_code=201)
 def calibration_create(req: CalibrationRequest):
-    """Tạo bản thảo tờ mẫu hiệu chỉnh bút (chữ F, thước 100 mm, 8 dải tô). Xem services/drawing/calibration.py."""
+    """Tạo bản thảo tờ mẫu hiệu chỉnh bút (chữ F, thước 100 mm, 8 dải tô) hoặc, với sheet = tone, tờ hiệu chỉnh tông
+    (16 ô độ phủ, kiểu gạch `style`). Xem services/drawing/calibration.py."""
+    if req.sheet == "tone":
+        names = {"zigzag": "zigzag", "crosshatch": "gạch chéo", "crosshatch3": "đan 3 hướng"}
+        name = f"Thang tông {names.get(req.style, req.style)} · nét {req.pen_width_mm:g}" + (" A5" if req.paper == "a5" else "")
+        return _wrap(calibration.make_tone_draft, name, req.machine, req.gcode, req.pen_width_mm,
+                     req.paper_x_mm, req.paper_y_mm, req.paper, req.style)
+    if req.sheet != "pen":
+        raise ServiceError("bad_param", "sheet: chỉ nhận pen hoặc tone.", 400)
     return _wrap(calibration.make_draft, "Mẫu hiệu chỉnh bút" + (" A6" if req.paper == "a6" else ""), req.machine, req.gcode,
                  req.pen_width_mm, req.paper_x_mm, req.paper_y_mm, req.paper)
 

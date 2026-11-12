@@ -409,7 +409,7 @@ vpype là thư viện chuyên cho máy vẽ. Phần mềm gọi một chuỗi l�
 | `filter --min-length` | 0,5 mm | bỏ nét quá ngắn |
 | `linesort --two-opt --passes 50` | bật | sắp thứ tự nét cho quãng bút **nhấc lên di chuyển** ngắn nhất. *2-opt*: thử đảo ngược từng đoạn trong thứ tự, giữ lại nếu quãng đi ngắn hơn |
 
-**Thứ tự vẽ giữa các mức (`group_levels`, 09/11/2026).** `linesort` chỉ biết rút ngắn quãng bay nên trộn mọi mức đậm nhạt lẫn nhau: bút vẽ dở mảng này đã nhảy sang mảng khác, và cú nhảy xa dồn ở cuối (nét lẻ bị bỏ lại). Mặc định giờ mỗi **mức** là một lớp vpype riêng (vpype sắp xếp từng lớp độc lập) rồi ghép lại **nhạt → đậm, viền cuối** (`raster._optimize`, `styles.fill_groups`). Đo (ảnh nhiều chi tiết, xoắn ốc, 1071 nét): tổng quãng nhấc bút **1344 mm → 3947 mm** (thêm khoảng 2,6 m ≈ 20–30 s ở 6000–8000 mm/min), số nét không đổi; ảnh chuyển sắc: đổi mức **3 lần** (lý tưởng) thay vì 111 lần. Số lần nhấc bút gần như không đổi. Tắt ô "Vẽ lần lượt từng mức" để quay về cách cũ (quãng bay ngắn nhất, thứ tự lộn xộn). Chưa biết thứ tự nào tốt hơn cho mực: chờ ảnh in thật.
+**Thứ tự vẽ giữa các mức (`group_levels`, 09/11/2026).** `linesort` chỉ biết rút ngắn quãng bay nên trộn mọi mức đậm nhạt lẫn nhau: bút vẽ dở mảng này đã nhảy sang mảng khác, và cú nhảy xa dồn ở cuối (nét lẻ bị bỏ lại). Khi bật, mỗi **mức** là một lớp vpype riêng (vpype sắp xếp từng lớp độc lập) rồi ghép lại **nhạt → đậm, viền cuối** (`raster._optimize`, `styles.fill_groups`). Đo (ảnh nhiều chi tiết, xoắn ốc, 1071 nét): tổng quãng nhấc bút **1344 mm → 3947 mm** (thêm khoảng 2,6 m ≈ 20–30 s ở 6000–8000 mm/min), số nét không đổi; ảnh chuyển sắc: đổi mức **3 lần** (lý tưởng) thay vì 111 lần. Số lần nhấc bút gần như không đổi. Tắt ô "Vẽ lần lượt từng mức" để quay về cách cũ (quãng bay ngắn nhất, thứ tự lộn xộn). 🔁 12/11/2026: in thật thấy thêm nhấc bút, vẽ lâu hơn rõ → **mặc định tắt**.
 
 Đo trên laptop (8000 nét): sắp thường 0,85 s → 11,75 m di chuyển; 2-opt 50 lượt 8,5 s → 8,97 m (−24 %); 200 lượt không hơn đáng kể. 2-opt chậm theo bình phương số nét, nên quá 15 000 nét thì chỉ sắp thường.
 
@@ -432,7 +432,28 @@ G1 X13.7 Y31.0
 …
 G1 Z3 F3000              ; nhấc bút, sang nét 2 …
 ```
-`F` chỉ ghi khi đổi. Điểm trùng liền nhau bị bỏ. Ước tính thời gian = quãng vẽ ÷ tốc độ vẽ + quãng di chuyển ÷ tốc độ di chuyển + thời gian nâng/hạ Z + chờ (chưa tính gia tốc nên thường ngắn hơn thật).
+`F` chỉ ghi khi đổi. Điểm trùng liền nhau bị bỏ. Ước tính thời gian (từ 12/11/2026, `gcode.path_time` / `move_time`, frontend `lib/gcode.js` tính giống hệt): mỗi đoạn chạy hình thang tăng tốc – đều – giảm tốc với gia tốc `EST_ACCEL_MM_S2` = 3000 mm/s²; qua góc giảm tốc theo công thức junction của Grbl (`EST_JUNCTION_MM` = 0,05); mỗi nét dừng ở đầu / cuối; cộng thời gian nâng / hạ Z, chờ G4, và `EST_LIFT_OVERHEAD_S` = **0,15 s mỗi lần nhấc bút** (G4 bắt máy chạy hết hàng đợi, buffer tụt về 0 rồi phải nạp lại).
+
+| Ảnh mẫu A5, bút 0,45, vẽ 8000 / di chuyển 6000, chờ 0,02 | Cách cũ (quãng ÷ tốc độ) | Có gia tốc | Có gia tốc + nhấc bút |
+|---|---|---|---|
+| zigzag (1031 nét) | 7,0 phút | 10,1 (×1,44) | 12,7 (×1,81) |
+| đan chéo (1279 nét) | 8,9 | 12,6 (×1,41) | 15,8 (×1,78) |
+| xoắn ốc (1725 nét) | 9,3 | 12,2 (×1,31) | 16,5 (×1,77) |
+| sóng biên độ (99 nét) | 3,0 | 10,2 (×3,4) | 10,4 |
+
+Chủ dự án đo thực tế / ước tính cũ = 1,7–1,9 (12/11/2026) → hằng số 0,15 s chọn để khớp ba kiểu đầu. Sóng biên độ chậm hẳn vì sóng dày (bước sóng 2 × nét): máy phải giảm tốc ở mỗi đỉnh sóng, cũng là lý do máy rung ⏳ đo thời gian thật một bức sóng biên độ để kiểm.
+
+**Nối nét gần (`optimize.bridge`, 12/11/2026).** Sau khi sắp xếp, nếu đầu nét sau cách cuối nét trước ≤ `BRIDGE_PEN` × bề rộng nét (4 × 0,5 = 2 mm) và mọi điểm trên đoạn nối có độ đậm ≥ `BRIDGE_MIN_DARK` (0,2; ảnh độ đậm làm mờ 2 × nét) thì nối luôn thay vì nhấc bút (`optimize.bridge`, gọi trong `raster.build_raster`). Không dùng cho Viền và nhiều màu. Đo (ảnh mẫu skimage, A5, bút 0,5, vẽ 8000, chưa cộng 0,15 s / lần nhấc):
+
+| Ảnh / kiểu | Nhấc bút trước → sau | Ước tính trước → sau |
+|---|---|---|
+| chân dung, zigzag | 1047 → 464 | 6,2 → 4,4 phút |
+| chân dung, đan chéo | 1245 → 438 | 7,6 → 5,0 |
+| chân dung, xoắn ốc | 1457 → 261 | 7,7 → 3,9 |
+| mèo, xoắn ốc | 780 → 218 | 4,3 → 2,5 |
+| sóng biên độ | không đổi (khoảng cách giữa các nét đã > 2 mm) | |
+
+Mực vẽ thêm ~3 % (đoạn nối nằm trong vùng đậm, ảnh mô phỏng gần như không khác). Trước khi nối: 55–80 % lần nhấc bút chỉ bay ≤ 2–3 mm.
 
 ---
 

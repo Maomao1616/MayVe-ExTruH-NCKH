@@ -73,6 +73,7 @@ CASES = {
     "sóng mềm": dict(kind="wave"),
     "xoắn ốc mềm": dict(kind="spiral"),
     "gạch chéo mềm": dict(kind="crosshatch"),
+    "đan 3 hướng": dict(kind="crosshatch3"),
     "sóng biến thiên": dict(kind="wave_am"),
 }
 

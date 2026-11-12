@@ -28,7 +28,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
 | Driver | 2 × **TMC2209**, điện trở đo **R100** (0,1 Ω), Vref **1,4 V** | Irms ≈ 0,766 × Vref ≈ **1,07 A** (đỉnh ≈ 1,5 A). Dải Vref cho phép 0,2–2,2 V |
 | Truyền động | đai **GT2**, puly **20 răng**, vi bước **1/16** | 200 bước × 16 ÷ (20 răng × 2 mm) = **80 bước/mm** |
 | Nguồn tổng | **Mean Well 12 V 6 A** (72 W) | MKS nhận 12–24 V |
-| Bút vẽ tranh | **Sakura 0,4**, thử thêm **Uniball 150**; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory: tạm tính **0,45 mm** (Sakura), **0,30 mm** (UB-155 / UM-100 vẽ nhanh) ⏳ đo lại |
+| Bút vẽ tranh | **Sakura 0,4**, thử thêm **Uniball 150**; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory, 8000 mm/min (tờ hiệu chỉnh 12/11/2026): Sakura **0,45–0,5** mặt láng, **0,5–0,55** mặt nhám (phần mềm dùng 0,50); UB-155 **0,35–0,4** (dùng 0,38); UM-100 **~0,4** |
 | Bút viết chữ | **bút bi 0,5** | nét bi thường mảnh hơn cỡ bi ⚠ cần đo |
 | Thêm được | ESP32-S3 (kit) | chưa có webcam |
 
@@ -94,12 +94,15 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | 03/11/2026 | ảnh Phong cảnh | lỗ trắng ở khối trái (xem trước cũng có, nhiều khả năng do ảnh); giọt mực lồi ở mép dưới khối (đã đổi quay đầu sang nửa vòng tròn ⏳ chụp lại) |
 | 05/11/2026 | hướng trục X / Y | ✅ đúng |
 | 11/11/2026 | ảnh con mèo (preset Chân dung), Pigma 0,4, giấy thường: tối đa 8000, gia tốc 3000, junction 0,05, Z3, SpreadCycle | chạy êm, không thấy mất bước. Nền lộ ranh giới các mức đậm nhạt; đọng mực cuối nét (nghi bút + giấy, thử lại bằng Ivory + Uniball 150) |
+| 12/11/2026 | tờ hiệu chỉnh A6 (UB-155, UM-100, Sakura), nhấc bút, 7.2 / 7.3 / 7.4 ở 7000–10000, thang xám A6 các kiểu, ảnh thật | vẽ **8000** ổn, đoạn dài lên được **10000**; gia tốc **3000** ổn (không tăng: sợ gãy ngòi); Z nhấc **3** đẹp (2,5 / 2 gần như không khác, dễ không nhấc khỏi giấy); chờ **0,02 s** chưa thấy lỗi. Thời gian thật = 1,7–1,9 × ước tính cũ; buffer tụt về 0 ở mỗi lần nhấc bút. ⚠ Servo: bật mạch xong phải bấm Bút lên một lần, không thì lệnh đầu tiên làm bút tụt về giữa; sau Home thỉnh thoảng tụt (~1250 µs) → phần mềm tự nhích Z xuống 0,5 rồi lên lại sau mỗi lần Home (`machine._relift_pen_after_home`) ⏳ kiểm trên máy |
 
 ## 7. Còn phải thử ⏳
 
 - Thời gian Home (X, Y, XY).
 - Cung `G2 / G3` trên máy thật (phần mềm hiện chỉ sinh `G0 / G1`).
 - `G4 P` tính bằng giây trên FluidNC 4.1.1 (đang giả định giây).
+- Chờ **0** (bỏ hẳn G4): tờ nhấc bút có ô 0. Nếu không kéo vệt thì bỏ được ~0,15 s mỗi lần nhấc (G4 bắt máy xả hết hàng đợi).
+- Servo sau khi bật mạch / sau Home: xem bút có còn tụt không sau bản sửa 12/11.
 - Z3 có đủ trên giấy cong không (bài 7.5).
 - Bề rộng nét ở 5000 mm/min, đường cong tông bằng thang xám in thật.
 

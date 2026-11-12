@@ -34,6 +34,7 @@ const FIELDS = [
     ["min-path-length", "optimize", "min_length_mm", "num"],
     ["optimize-order", "optimize", "sort", "bool"],
     ["optimize-group-levels", "optimize", "group_levels", "bool"],
+    ["optimize-bridge", "optimize", "bridge", "bool"],
     ["optimize-two-opt", "optimize", "two_opt", "bool"],
     ["optimize-passes", "optimize", "passes", "int"],
     ["image-black-point", "raster", "black_point", "int"],
@@ -91,7 +92,7 @@ export function papers() {
 
 // Bề rộng nét ĐO TRÊN GIẤY (mm). Mỗi bút dựng sẵn ghi số đó ở data-mm của <option> (index.html, khớp spec.PENS);
 // "custom" lấy ô nhập tay. Backend dùng thẳng số này làm bề rộng nét (styles.LINE_WIDTH_RATIO = 1).
-const PEN_FALLBACK_MM = 0.45;
+const PEN_FALLBACK_MM = 0.5;
 export function penWidthMm() {
     const select = $("draw-pen-width");
     if (select?.value === "custom") {
