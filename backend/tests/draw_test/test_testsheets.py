@@ -139,3 +139,15 @@ def test_tool_wrapper_and_backend_share_the_same_generators():
     tool = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(tool)
     assert tool.build_all(3.0, 0.0, 3000.0, 5000.0, 2000.0) == testgcode.build_all(3.0, 0.0, 3000.0, 5000.0, 2000.0)
+
+
+def test_lift_sheet_accepts_zero_wait_and_writes_no_g4_for_those_rows(client):
+    # 12/11/2026: thử bỏ hẳn lệnh G4 (chờ 0) để buffer không tụt về 0 ở mỗi lần nhấc bút
+    r = post(client, "lift", {"ups": [3], "delays": [0, 0.02], "down_feeds": [2000]})
+    assert r.status_code == 201, r.text
+    rows = r.json()["rows"]
+    assert [row["delay"] for row in rows] == [0.0, 0.02]
+    lines = drafts.read_gcode(r.json()["draft"]["id"], "draw").splitlines()
+    assert "G4 P0.02" in lines                                    # hàng chờ 0,02 vẫn có G4
+    # hàng chờ 0: nâng bút xong đi thẳng tới nét kế (G0), không có G4 nào xen giữa
+    assert any(a.startswith("G1 Z3") and b.startswith("G0") for a, b in zip(lines, lines[1:]))
