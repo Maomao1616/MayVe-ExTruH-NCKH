@@ -20,7 +20,7 @@
 | Làm | Không làm |
 |---|---|
 | Kết nối máy, xem trạng thái và vị trí, jog, Home, đặt gốc (Zero), nâng hạ bút | Không tạo nét từ ảnh (việc của tab Tạo bản vẽ) |
-| Nạp tệp G-code, xem trước, chạy, chỉnh tốc độ khi đang chạy, hủy an toàn, tiếp tục từ điểm dừng | Không chạy tệp nào khi chưa xem trước và tích xác nhận |
+| Nạp tệp G-code (khung 2D hiện ngay đường chạy + vùng vẽ), chạy, chỉnh tốc độ khi đang chạy, hủy an toàn, tiếp tục từ điểm dừng | Không chạy khi máy chưa nối / chưa mở khóa chuyển động / chưa Idle / tệp có dòng bị cấm. **Không còn bước Xem trước + tích xác nhận** (bỏ từ 12/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C9) |
 | Terminal gửi lệnh tay, macro, hàng đợi bản thảo | Nút Reset trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V |
 
 ---
@@ -41,7 +41,7 @@
 | Di chuyển | Mũi tên, ô bước | jog theo bước đã chọn (tối đa 50 mm) | `$J=G91 G21 X10 F…` |
 | | Nút giữa | về gốc làm việc | `$J=G90 G21 X0 Y0 F…` |
 | Bút | Lên / Giữa / Xuống | Z5 / Z1,5 / Z0 (sửa ở Cài đặt → Cấu hình máy, mục App). Z nhấc của G-code (mặc định 3) là giá trị khác, chỉnh ở cùng mục; nhấc của G-code vẫn hiện là "Lên" | `$J=G90 G21 Z5 F3000` |
-| Tệp G-code | Chọn tệp → **Xem trước** → tích xác nhận → **▶ Chạy** | phải xem trước trước khi chạy; đổi tệp là phải xem trước lại. Dòng bị cấm hiện đỏ kèm số dòng và lý do, khóa nút Chạy | gửi từng dòng |
+| Tệp G-code | Chọn tệp → nhìn khung 2D → **▶ Chạy** | nút Xem trước và ô tích xác nhận đang **ẩn** (công tắc `REQUIRE_PREVIEW_CONFIRM` ở đầu `views/control.js`; đặt `true` để hiện lại: lúc đó phải xem trước + tích, đổi tệp là làm lại). Dòng bị cấm hiện đỏ kèm số dòng và lý do, khóa nút Chạy | gửi từng dòng |
 | | Hủy tác vụ | hộp thoại: Tiếp tục chạy / **Dừng êm** / **Dừng gấp** | xem mục 6 |
 | | −10 −1 100% +1 +10 | ghi đè tốc độ (10–200 %) | byte `0x90`…`0x94` |
 | | Lưu vào bản thảo | lưu tệp đang nạp thành một bản thảo để ghim, chạy lại nhanh | |
@@ -50,7 +50,7 @@
 | Hàng đợi công việc | Làm mới, Nạp, Ghim, Đẩy ưu tiên, Mở xem | đọc thẳng các bản thảo đã lưu | |
 | Terminal | Gửi, Xóa log hiển thị | gửi lệnh tay; giữ tiếng Anh để dễ tra mã lỗi | nguyên văn |
 | Dock trái | Macro | lệnh lưu sẵn (thêm / sửa / xóa), lưu ở máy chủ | |
-| | Tệp nhanh | các bản thảo đã ghim, bấm để nạp (vẫn phải Xem trước + xác nhận) | |
+| | Tệp nhanh | các bản thảo đã ghim, bấm để nạp (khung vẽ hiện ngay, rồi bấm Chạy) | |
 
 ---
 

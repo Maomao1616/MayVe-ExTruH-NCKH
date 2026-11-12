@@ -24,7 +24,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 **Mã khác tài liệu thì mã là sự thật**; sửa tài liệu cho khớp. Tài liệu 01–11 viết cho **người không học code**: giữ văn phong đó khi sửa (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
 
 ## 3. Quy tắc bắt buộc
-1. **An toàn máy trước hết.** Máy thật mặc định chỉ đọc (`allow_motion`); không bao giờ tự chạy G-code, luôn qua xem trước + xác nhận; tab vẽ **không bao giờ gọi máy**; nút web không phải dừng khẩn cấp. Không nới các chốt này nếu chưa được yêu cầu rõ.
+1. **An toàn máy trước hết.** Máy thật mặc định chỉ đọc (`allow_motion`); không bao giờ tự chạy G-code (người bấm ▶ Chạy; từ 12/11/2026 không còn bước bắt buộc Xem trước + tích xác nhận, công tắc `REQUIRE_PREVIEW_CONFIRM` ở `views/control.js`, xem 09 C9); tab vẽ **không bao giờ gọi máy**; nút web không phải dừng khẩn cấp. Không nới các chốt này nếu chưa được yêu cầu rõ.
 2. **Frontend không chạm serial.** `core/api.js` là nơi duy nhất gọi mạng, `core/state.js` là nơi duy nhất thăm dò.
 3. **Phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác (trừ `control.js` → `preview.js`). Một phần tử HTML chỉ một chủ ghi.
 4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Thêm tham số = dòng `Param` + ô `index.html` + dòng `FIELDS` trong `views/drawing/params.js` + khóa dịch.

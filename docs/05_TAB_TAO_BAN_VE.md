@@ -20,7 +20,7 @@
 
 | Làm | Không làm |
 |---|---|
-| Nạp ảnh (PNG / JPG / WEBP) hoặc SVG → tạo nét → đặt lên giấy A6 / A5 / A4 → ra G-code → lưu **bản thảo** | **Không bao giờ gọi máy vẽ.** Muốn vẽ phải sang tab Điều khiển, xem trước, xác nhận rồi mới chạy |
+| Nạp ảnh (PNG / JPG / WEBP) hoặc SVG → tạo nét → đặt lên giấy A6 / A5 / A4 → ra G-code → lưu **bản thảo** | **Không bao giờ gọi máy vẽ.** Muốn vẽ phải sang tab Điều khiển, nhìn khung vẽ rồi bấm Chạy |
 
 Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh minh họa + thông tin). Không có đường tắt nào khác.
 

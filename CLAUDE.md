@@ -19,7 +19,7 @@ launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git)
 - Thêm kiểu tô = hàm `@FILLERS.register("tên")` + `spec.STYLES` + `GROUPERS` (không sửa `registry.py`).
 
 ## An toàn máy (không nới nếu chủ dự án chưa yêu cầu rõ)
-1. Máy thật mặc định **chỉ đọc**; không tự chạy G-code; luôn xem trước + xác nhận. Tab Tạo bản vẽ **không bao giờ gọi máy**. Nút web không phải dừng khẩn cấp.
+1. Máy thật mặc định **chỉ đọc**; không tự chạy G-code (người bấm ▶ Chạy; bước bắt buộc Xem trước + tích xác nhận đã ẩn từ 12/11/2026 theo yêu cầu chủ dự án, `REQUIRE_PREVIEW_CONFIRM` ở `views/control.js`). Tab Tạo bản vẽ **không bao giờ gọi máy**. Nút web không phải dừng khẩn cấp.
 2. Route API mới mặc định **chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`); thêm route cho khách = một dòng ở đó **và** sửa `tests/test_auth.py`.
 3. **PIN thật không bao giờ vào Git, tài liệu, hay câu trả lời**: nằm ở `data\pin.txt` (gitignored). Chỉ nhắc tên khóa (`admin`, `unlock`).
 4. Không bịa số máy: lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `docs/02_PHAN_CUNG_MAY.md`; điều chưa đo thì ghi "chưa kiểm chứng".

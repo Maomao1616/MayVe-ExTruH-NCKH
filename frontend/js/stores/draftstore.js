@@ -60,7 +60,7 @@ export function reorderDrafts(ids) {
     return change(() => api.drawDraftReorder(ids));
 }
 
-// Nạp G-code của một lớp trong bản thảo vào tab Điều khiển (còn phải Xem trước + xác nhận mới chạy được).
+// Nạp G-code của một lớp trong bản thảo vào tab Điều khiển (khung vẽ hiện ngay ở đó; không còn bước Xem trước + tích xác nhận).
 export async function loadIntoControl(draft, file) {
     const text = await api.drawDraftGcode(draft.id, file.name);
     const parsed = parseGcode(text, {

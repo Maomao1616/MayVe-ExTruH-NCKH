@@ -15,7 +15,7 @@
 | A6 | Giao tiếp (09/11/2026): **lệnh** giữ HTTP POST; **trạng thái + terminal** sẽ đổi từ hỏi lặp sang **SSE** (đẩy một chiều) khi lên Cloudflare; **không dùng WebSocket** | trên cùng máy / mạng nội bộ hỏi lặp đã đủ (trễ chủ yếu do backend hỏi `?` 10 lần/s, không do HTTP). Qua Internet mỗi lần hỏi tốn một vòng đi–về → SSE nhanh gần gấp đôi, mượt hơn. SSE chạy trên HTTP, tự nối lại, dùng được cookie PIN; WebSocket phải tự lo nối lại, kiểm Origin, nối luồng với async → dễ lỗi mà lệnh chỉ nhanh thêm 1–2 ms | ✅ SSE (máy giả, 09/11/2026) · ⏳ qua Cloudflare thật |
 | A7 | Mỗi tab một tệp view. Bỏ tab Công việc (gộp vào Điều khiển). **Bỏ thẻ SD / Flash** | thực tế chỉ stream từ máy tính; MKS đọc thẻ dễ lỗi | ✅ |
 | P1 | Mọi tham số vẽ khai báo **một chỗ** (`spec.py`), giao diện lấy qua `/api/draw/schema` | không rải số cứng; đổi một dòng | ✅ |
-| P2 | Tab vẽ **không bao giờ gọi máy**; hai tab chỉ nối qua bản thảo; chạy phải qua xem trước + xác nhận | an toàn | ✅ |
+| P2 | Tab vẽ **không bao giờ gọi máy**; hai tab chỉ nối qua bản thảo. ~~Chạy phải qua xem trước + xác nhận~~ → **bỏ từ 12/11/2026 (xem C9)** | an toàn | ✅ |
 
 ## 2. Điều khiển máy và an toàn
 | # | Quyết định | Vì sao | |
@@ -28,6 +28,7 @@
 | C6 | Nút Tạm dừng chỉ cho tác vụ; nút Hủy jog riêng | đúng bản chất firmware (Hold hủy jog, không resume được) | ✅ |
 | C7 | Cấu hình máy một panel: "Máy" (YAML trên mạch: Áp dụng vào RAM, Lưu vào mạch sau khi sao lưu) và "App" (hồ sơ phần mềm). Không cho sửa chân GPIO, kinematics | chỉnh thông số không cần WebUI / Wi-Fi | ✅ |
 | C8 | **Home tự nâng bút trước** (03/11/2026) | bút hạ bằng trọng lực, quên nâng thì kéo vệt chéo qua giấy | ✅ |
+| C9 | **Bỏ bước bắt buộc "Xem trước" + ô tích "Tôi đã xem trước đường chạy và vùng vẽ"** trước nút ▶ Chạy (12/11/2026, chủ dự án yêu cầu). Nạp tệp là khung 2D hiện ngay đường chạy + vùng làm việc. Nút Chạy vẫn cần: máy nối và dữ liệu mới, đã mở khóa chuyển động, máy Idle, tệp không có dòng bị cấm / ngoài hành trình. Là một công tắc `REQUIRE_PREVIEW_CONFIRM` ở đầu `views/control.js` (đổi `true` là có lại nút + ô tích, đổi tệp lại phải làm lại) | xem trước phát lại chậm, người vận hành đã nhìn khung vẽ ngay khi nạp; việc chống chạy nhầm do khóa chuyển động (mặc định chỉ đọc, tự khóa sau 15 phút) và Idle đảm nhận. Chỉ chặn ở giao diện, máy chủ chưa từng kiểm "đã xem trước" | ✅ (ẩn) · ⏳ chủ dự án dùng thử |
 | D4 | Hủy 3 chế độ: `soft` (mặc định: chạy hết bộ đệm, nâng bút), `hard` (Hold → Reset → `$X` → nâng bút), `reset`. Chỉ báo "đã nâng bút" khi báo cáo xác nhận Z | giữ được Home khi có thể; không báo an toàn giả | ✅ |
 | D10 | Gửi từng dòng, chờ `ok` | FluidNC trả `ok` khi dòng vào hàng đợi, nên hàng đợi luôn đầy; thử 1500 dòng ở F3000 không giật | ✅ |
 | D11 | Giữ **115200 baud** cho tới khi đo được máy "đói lệnh" (`Bf:` trong số liệu tác vụ) | baud cao hơn (tới 921600) giúp hỏi `?` dày hơn và gửi đoạn ngắn nhanh hơn, nhưng phải đổi cả YAML lẫn app; đặt sai khi Wi-Fi mạch đã tắt thì khó nối lại. Nếu đói lệnh: nâng baud + gửi dồn nhiều dòng (đếm ký tự bộ đệm) thay D10 | ⏳ đo |

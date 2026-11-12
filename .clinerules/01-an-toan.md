@@ -1,6 +1,6 @@
 # 01 — An toàn (không nới nếu chủ dự án chưa yêu cầu rõ)
 
-1. Máy thật mặc định **chỉ đọc** (`allow_motion`). Không bao giờ tự chạy G-code: luôn xem trước + xác nhận.
+1. Máy thật mặc định **chỉ đọc** (`allow_motion`). Không bao giờ tự chạy G-code: người bấm ▶ Chạy (bước bắt buộc Xem trước + tích xác nhận đã ẩn từ 12/11/2026 theo yêu cầu chủ dự án, công tắc `REQUIRE_PREVIEW_CONFIRM` ở `views/control.js`).
 2. Tab Tạo bản vẽ **không bao giờ gọi máy**. Nút web không phải dừng khẩn cấp (đừng viết chữ gợi ý ngược lại).
 3. Frontend **không chạm serial**. Chỉ `frontend/js/core/api.js` gọi mạng; chỉ `frontend/js/core/state.js` thăm dò trạng thái.
 4. Route API mới mặc định **chỉ quản lý**. Thêm route cho khách = một dòng trong `GUEST_ROUTES` (`backend/app/auth.py`) **và** sửa `backend/tests/test_auth.py`. Ẩn nút bằng `body.role-guest` chỉ là giao diện, không phải bảo mật.

@@ -943,6 +943,11 @@ label select {
     margin-top: 12px;
 }
 
+/* Nut Xem truoc dang an (control.js REQUIRE_PREVIEW_CONFIRM = false): nut ke ben chiem het hang */
+.gcode-actions > [hidden] + .primary-button {
+    grid-column: 1 / -1;
+}
+
 /* Canh bao ngan trong khoi (vd: may chua Home, can than goc vi tri) */
 .inline-warning {
     display: flex;

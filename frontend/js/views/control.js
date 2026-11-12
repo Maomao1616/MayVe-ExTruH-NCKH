@@ -19,6 +19,11 @@ import { initJobChart } from "./jobchart.js";
 
 const $ = (id) => document.getElementById(id);
 
+// Bắt buộc bấm "Xem trước" rồi tích "Tôi đã xem trước đường chạy và vùng vẽ" mới cho bấm ▶ Chạy?
+// false (từ 12/11/2026, theo yêu cầu chủ dự án): ẩn nút Xem trước + ô tích; nạp tệp là hiện luôn khung vẽ,
+// nút Chạy chỉ còn cần: máy nối, đã mở khóa chuyển động, đang Idle, tệp không lỗi. Muốn bật lại: đổi thành true.
+const REQUIRE_PREVIEW_CONFIRM = false;
+
 let lastConnection = null;
 
 const setText = (id, value) => {
@@ -451,6 +456,11 @@ function initGcodePanel() {
     let lastSnapshot = null;
     let lastJob = { id: null, state: null };
 
+    // Tắt bắt buộc xem trước: ẩn cả nút lẫn ô tích (khung vẽ vẫn hiện ngay khi nạp tệp).
+    previewButton.hidden = !REQUIRE_PREVIEW_CONFIRM;
+    const confirmLabel = confirmBox.closest("label");
+    if (confirmLabel) confirmLabel.hidden = !REQUIRE_PREVIEW_CONFIRM;
+
     /* --- nạp tệp --- */
     fileInput.addEventListener("change", async () => {
         const chosen = fileInput.files?.[0];
@@ -646,7 +656,7 @@ function initGcodePanel() {
             ? "outOfRange" : null;
     }
 
-    let seenFile = null;         // tệp đã xem trước/xác nhận là của tệp NÀY; tệp mới (kể cả từ bản thảo) làm lại từ đầu
+    let seenFile = null;         // tệp đã xem trước/xác nhận là của tệp NÀY; tệp mới (kể cả từ bản thảo) làm lại từ đầu (chỉ có nghĩa khi REQUIRE_PREVIEW_CONFIRM = true)
 
     function render() {
         const snapshot = lastSnapshot;
@@ -685,7 +695,8 @@ function initGcodePanel() {
         confirmBox.disabled = !file || !previewed || active;
         if (confirmBox.disabled && !active) confirmBox.checked = false;
 
-        const canRun = Boolean(file) && !problem && previewed && confirmBox.checked &&
+        const previewOk = !REQUIRE_PREVIEW_CONFIRM || (previewed && confirmBox.checked);
+        const canRun = Boolean(file) && !problem && previewOk &&
             isConnected() && !isStale() && connection?.motion_unlocked !== false &&
             machineState === "Idle" && !active;
         runButton.disabled = !canRun;

@@ -1,7 +1,7 @@
 // views/dock.js — khối tiện ích bên trái, luôn có mặt ở mọi tab.
 //  - Macro: nút chạy nhanh + thêm/sửa/xóa ngay tại đây (lưu qua macros.js).
 //  - Tệp nhanh: các bản thảo đã GHIM (ghim ở tab Tạo bản vẽ); bấm để nạp sang tab Điều khiển.
-//    Nạp xong vẫn phải Xem trước + xác nhận mới chạy được.
+//    Nạp xong khung vẽ hiện ngay ở tab Điều khiển (từ 12/11/2026 không còn bước Xem trước + tích xác nhận).
 // Chạy macro đi qua api.js: loại gcode = tác vụ (có tiến trình ở tab Điều khiển),
 // loại command = một lệnh đơn. Backend vẫn là lớp chặn cuối cùng.
 

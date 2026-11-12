@@ -44,7 +44,7 @@ Quy tắc quan trọng nhất: **giao diện không bao giờ tự nói chuyện
 
 Hai tab chính nối nhau qua **bản thảo trên đĩa**:
 ```
-Tạo bản vẽ  ──lưu──►  bản thảo (G-code + ảnh minh họa)  ──nạp──►  Điều khiển  ──xem trước + xác nhận──►  chạy
+Tạo bản vẽ  ──lưu──►  bản thảo (G-code + ảnh minh họa)  ──nạp──►  Điều khiển  ──nhìn khung vẽ, bấm Chạy──►  chạy
 ```
 
 ## 4. Hai vai trò người dùng
