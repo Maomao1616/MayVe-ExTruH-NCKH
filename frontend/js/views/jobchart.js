@@ -21,6 +21,9 @@ const S = { logs: [], runId: null, compareId: null, a: null, b: null, liveId: nu
 const LIVE_WINDOW_S = 60;                      // đang chạy: chỉ hiện chừng này giây gần nhất, biểu đồ "chạy" thay vì thu nhỏ dần
 // Mốc Z hay dùng (nhấc 1 / 3 / 5 mm) thay cho 0, 2, 4, 6
 const Z_TICKS = [0, 1, 3, 5];
+// Hiện biểu đồ "Độ cao bút Z"? false (từ 12/11/2026, chủ dự án thấy không cần: đọc không ra gì, số lần nhấc đã có ở bảng tóm tắt).
+// Ẩn thì khỏi vẽ luôn. Muốn bật lại: đổi thành true.
+const SHOW_PEN_CHART = false;
 
 export function initJobChart() {
     const panel = document.querySelector(".preview-panel");
@@ -31,6 +34,8 @@ export function initJobChart() {
         return;
     }
     panel.dataset.view = "path";
+    const penFigure = $("chart-pen")?.closest("figure");
+    if (penFigure) penFigure.hidden = !SHOW_PEN_CHART;
 
     for (const button of document.querySelectorAll("#preview-view-switch [data-view]")) {
         button.addEventListener("click", () => setView(button.dataset.view));
@@ -291,7 +296,7 @@ function draw() {
         ...(b && S.b.summary?.has_bf !== false ? [{ kind: "line", t: b.t, y: filled(b), color: colors.b, width: 1.1, dash: [5, 3] }] : [])
     ] : [] });
 
-    plot($("chart-pen"), { tMin, tMax, yMin: 0, yMaxMin: 5, yTicks: Z_TICKS, colors, layers: [
+    if (SHOW_PEN_CHART) plot($("chart-pen"), { tMin, tMax, yMin: 0, yMaxMin: 5, yTicks: Z_TICKS, colors, layers: [
         { kind: "line", t: a.t, y: a.z_max, color: colors.a + "88", width: 1 },
         { kind: "band", t: a.t, lo: a.z_min, hi: a.z_max, color: colors.a },
         ...(b ? [{ kind: "line", t: b.t, y: b.z_max, color: colors.b, width: 1, dash: [4, 3] }] : [])
