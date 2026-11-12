@@ -66,7 +66,8 @@ export async function loadIntoControl(draft, file) {
     const parsed = parseGcode(text, {
         penUpZ: MACHINE.penUpZ,
         penDownZ: MACHINE.penDownZ,
-        rapidFeed: MACHINE.rapidFeed ?? 6000
+        rapidFeed: MACHINE.rapidFeed ?? 6000,
+        accel: MACHINE.accel, junction: MACHINE.junction, liftOverheadS: MACHINE.liftOverheadS
     });
     const layered = (draft.files?.length ?? 0) > 1 ? ` · ${file.layer}` : "";
     setFile({ name: `${draft.name}${layered}.gcode`, parsed });

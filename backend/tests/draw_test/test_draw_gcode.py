@@ -4,7 +4,7 @@ from app.services.drawing import gcode as gc, spec
 from app.services.drawing.errors import DrawError
 from app.services.job import MAX_LINE_LEN, clean_gcode
 
-M = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000})
+M = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 8000})
 
 
 def G(**kw):
@@ -54,7 +54,7 @@ def test_feed_present_on_first_g1_and_only_when_changed():
 
 
 def test_travel_uses_g0_at_machine_rapid_else_g1_with_feed():
-    lines, _, _ = build(travel_feed=6000)
+    lines, _, _ = build(travel_feed=8000)
     assert any(l.startswith("G0 ") for l in lines)
     lines, _, _ = build(travel_feed=2000)
     assert not any(l.startswith("G0") for l in lines)
@@ -107,7 +107,7 @@ def test_precision_controls_decimals():
 
 
 def test_invert_y_flips_only_in_to_machine():
-    m = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 6000, "invert_y": True})
+    m = spec.parse("machine", {"work_w": 285, "work_h": 318, "z_travel": 5, "rapid_feed": 8000, "invert_y": True})
     lines, stats, _ = build([[(10, 10), (20, 10)]], machine=m)
     assert "Y308" in " ".join(lines)                 # 318 - 10
     assert stats["bounds"]["y0"] == 10               # thống kê vẫn theo tọa độ bản vẽ
@@ -138,3 +138,26 @@ def test_too_many_lines_is_rejected(monkeypatch):
     with pytest.raises(DrawError) as e:
         build([[(i, 0) for i in range(30)]])
     assert e.value.code == "too_many_lines"
+
+
+# --- ước tính thời gian có gia tốc ---------------------------------------------------------------------------------
+def test_move_time_trapezoid_and_triangle():
+    # 100 mm ở 100 mm/s, gia tốc 1000: tăng tốc 5 mm / 0,1 s, giảm tốc như vậy, giữa 90 mm / 0,9 s
+    assert gc.move_time(100, 0, 0, 100, 1000) == pytest.approx(1.1)
+    # 1 mm quá ngắn để đạt 100 mm/s: tam giác, đỉnh √(1000 × 1) ≈ 31,6 mm/s
+    assert gc.move_time(1, 0, 0, 100, 1000) == pytest.approx(2 * (1000 ** 0.5) / 1000)
+
+
+def test_path_time_slows_at_sharp_corners_not_on_straight_lines():
+    straight = gc.path_time([(0, 0), (50, 0), (100, 0)], 100, 1000)
+    hairpin = gc.path_time([(0, 0), (50, 0), (0, 0.5)], 100, 1000)                  # quay đầu gần như ngược hẳn
+    assert straight == pytest.approx(gc.move_time(100, 0, 0, 100, 1000))
+    assert hairpin > gc.path_time([(0, 0), (50, 0), (100, 0.5)], 100, 1000)
+
+
+def test_estimate_counts_acceleration_and_lift_overhead():
+    # 200 nét ngắn 2 mm: chia quãng đường cho tốc độ thì ~0,06 s vẽ; thật ra mỗi nét phải tăng / giảm tốc + nhấc bút
+    strokes = [[(10 + i % 20 * 5, 10 + i // 20 * 5), (12 + i % 20 * 5, 10 + i // 20 * 5)] for i in range(200)]
+    _, stats, _ = build(strokes, draw_feed=8000, travel_feed=8000, delay_up_s=0, delay_down_s=0)
+    flat = stats["draw_mm"] / 8000 * 60 + stats["travel_mm"] / 8000 * 60 + 200 * 5 * (2 / 3000) * 60
+    assert stats["est_seconds"] > flat + 200 * gc.EST_LIFT_OVERHEAD_S

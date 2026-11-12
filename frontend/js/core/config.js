@@ -12,7 +12,12 @@ export const MACHINE = {
     penDownZ: 0,         // Z0 = bút xuống
     penFeed: 3000,       // mm/phút
     jogMaxStep: 50,      // mm, bước jog lớn nhất được hiện trong ô chọn
-    rapidFeed: 8000      // mm/phút khi G0 = max_rate X/Y trên mạch; views/settings.js ghi đè bằng số thật khi đọc cấu hình máy
+    rapidFeed: 8000,     // mm/phút khi G0 = max_rate X/Y trên mạch; views/settings.js ghi đè bằng số thật khi đọc cấu hình máy
+    // Chỉ để ƯỚC TÍNH thời gian (lib/gcode.js; = backend drawing/gcode.py EST_*). Đo 12/11/2026: gia tốc 3000 chạy ổn,
+    // junction 0,05; mỗi lần nâng bút thêm ~0,15 s (G4 xả hết hàng đợi) -> khớp tỷ lệ thực tế / ước tính cũ 1,7–1,9.
+    accel: 3000,         // mm/s²
+    junction: 0.05,      // mm
+    liftOverheadS: 0.15  // s
 };
 
 // Tùy chọn "Hoạt động" (Cài đặt). views/settings.js nạp từ trình duyệt và ghi đè các giá trị này.

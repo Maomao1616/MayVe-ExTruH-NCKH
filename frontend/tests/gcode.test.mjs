@@ -148,3 +148,22 @@ test("G-code nhấc thấp (Z2) vẫn là bút lên dù Z điều khiển là 5:
     near(p.drawLength, 10);                        // chỉ nét Z0 tính là vẽ
     near(p.travelLength, Math.hypot(10, 10) + Math.hypot(10, 20));
 });
+
+// --- ước tính có gia tốc (opts.accel > 0; = backend drawing/gcode.py) ------------------------------------------
+test("moveTime: hình thang và tam giác giống backend", async () => {
+    const { moveTime } = await import("../js/lib/gcode.js");
+    near(moveTime(100, 0, 0, 100, 1000), 1.1);
+    near(moveTime(1, 0, 0, 100, 1000), 2 * Math.sqrt(1000) / 1000);
+});
+
+test("accel > 0: tính gia tốc + thời gian nâng bút; accel = 0 giữ cách tính cũ", () => {
+    const text = ["G90 G21", "G1 Z3 F3000", "G4 P0.02", "G0 X10 Y10", "G1 Z0 F2000", "G4 P0.02",
+                  "G1 X60 Y10 F8000", "G1 X60 Y11", "G1 X10 Y11", "G1 Z3 F3000", "G4 P0.02"].join("\n");
+    const flat = parseGcode(text, { penUpZ: 3, rapidFeed: 8000 });
+    const acc = parseGcode(text, { penUpZ: 3, rapidFeed: 8000, accel: 3000, junction: 0.05, liftOverheadS: 0.15 });
+    assert.ok(acc.seconds > flat.seconds + 0.15);
+    // t0 tăng dần và cộng lại đúng tổng
+    const last = acc.segments.at(-1);
+    near(last.t0 + last.dur, acc.seconds);
+    assert.ok(acc.segments.every((s, i) => i === 0 || s.t0 >= acc.segments[i - 1].t0));
+});

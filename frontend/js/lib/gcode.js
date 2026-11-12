@@ -20,7 +20,10 @@ export const DEFAULT_OPTIONS = {
     penDownZ: 0,         // Z bút xuống
     rapidFeed: 6000,     // mm/phút khi G0
     defaultFeed: 1000,   // dùng khi G1 thiếu F
-    arcTolerance: 0.05   // sai số khi chia cung tròn (mm)
+    arcTolerance: 0.05,  // sai số khi chia cung tròn (mm)
+    accel: 0,            // mm/s²; 0 = thời gian = quãng đường ÷ tốc độ (không tính gia tốc). Màn hình truyền MACHINE.accel
+    junction: 0.05,      // junction_deviation_mm (chỉ dùng khi accel > 0)
+    liftOverheadS: 0     // giây cộng thêm mỗi lần nâng bút (chỉ dùng khi accel > 0)
 };
 
 // Làm sạch một dòng giống backend (services/job.py): bỏ chú thích, rút gọn khoảng trắng.
@@ -177,7 +180,7 @@ export function parseGcode(text, options = {}) {
             const length = Math.abs(target.z - pos.z);
             if (length > 0) {
                 push({ kind: "z", x0: pos.x, y0: pos.y, x1: pos.x, y1: pos.y,
-                       dur: timeFor(length), line: lineNo, penDown });
+                       dur: timeFor(length), zLen: length, line: lineNo, penDown });
             }
         } else if (motion === 2 || motion === 3) {
             features.arcs += 1;
@@ -206,6 +209,8 @@ export function parseGcode(text, options = {}) {
         pos.x = target.x; pos.y = target.y; pos.z = target.z;
     });
 
+    if (opts.accel > 0) time = applyAcceleration(segments, opts);
+
     // Thống kê
     let drawLength = 0, travelLength = 0;
     const bboxDraw = emptyBox(), bboxAll = emptyBox();
@@ -223,6 +228,60 @@ export function parseGcode(text, options = {}) {
         blocked: warnings.filter((w) => BLOCKING.has(w.key)),
         bbox: finishBox(bboxDraw), bboxAll: finishBox(bboxAll)
     };
+}
+
+// Thời gian đi một đoạn dài L (mm), vào v0, ra v1, tối đa vmax (mm/s), gia tốc a (mm/s²): hình thang hoặc tam giác.
+// = backend services/drawing/gcode.py move_time.
+export function moveTime(L, v0, v1, vmax, a) {
+    if (!(L > 0)) return 0;
+    const dAcc = (vmax * vmax - v0 * v0) / (2 * a);
+    const dDec = (vmax * vmax - v1 * v1) / (2 * a);
+    if (dAcc + dDec <= L) return (vmax - v0) / a + (vmax - v1) / a + (L - dAcc - dDec) / vmax;
+    const peak = Math.sqrt(Math.max(v0 * v0, v1 * v1, (2 * a * L + v0 * v0 + v1 * v1) / 2));
+    return Math.max(0, (peak - v0) / a) + Math.max(0, (peak - v1) / a);
+}
+
+// Tính lại thời gian từng đoạn có gia tốc, như bộ lập kế hoạch Grbl / FluidNC (= backend gcode.py path_time):
+// chuỗi đoạn X/Y liền nhau chạy nối tiếp, qua góc giảm tốc theo junction_deviation; đổi Z hay G4 thì dừng hẳn.
+// Mỗi lần nâng bút cộng thêm opts.liftOverheadS (máy chạy hết hàng đợi ở G4 rồi mới nạp lại). Trả tổng thời gian.
+function applyAcceleration(segments, opts) {
+    const a = opts.accel, jd = opts.junction ?? 0.05;
+    const flush = (run) => {
+        const n = run.length;
+        if (!n) return;
+        const vj = new Array(n + 1).fill(0);
+        for (let i = 1; i < n; i++) {
+            const p = run[i - 1], q = run[i];
+            const cos = -(p.ux * q.ux + p.uy * q.uy);
+            const vcap = Math.min(p.v, q.v);
+            if (cos > 0.999999) continue;
+            if (cos < -0.999999) { vj[i] = vcap; continue; }
+            const sinHalf = Math.sqrt(0.5 * (1 - cos));
+            vj[i] = Math.min(vcap, Math.sqrt(a * jd * sinHalf / (1 - sinHalf)));
+        }
+        for (let i = 1; i <= n; i++) vj[i] = Math.min(vj[i], Math.sqrt(vj[i - 1] ** 2 + 2 * a * run[i - 1].L));
+        for (let i = n - 1; i >= 0; i--) vj[i] = Math.min(vj[i], Math.sqrt(vj[i + 1] ** 2 + 2 * a * run[i].L));
+        run.forEach((r, i) => { r.s.dur = moveTime(r.L, vj[i], vj[i + 1], r.v, a); });
+        run.length = 0;
+    };
+    const run = [];
+    for (const s of segments) {
+        const L = Math.hypot(s.x1 - s.x0, s.y1 - s.y0);
+        if (s.kind === "dwell" || s.kind === "z" || !(L > 0) || !(s.dur > 0)) {
+            flush(run);
+            if (s.kind === "z" && s.dur > 0) {
+                const dz = s.zLen ?? 0;
+                const base = dz > 0 ? moveTime(dz, 0, 0, dz / s.dur, a) : s.dur;
+                s.dur = base + (s.penDown ? 0 : (opts.liftOverheadS ?? 0));
+            }
+            continue;
+        }
+        run.push({ s, L, v: L / s.dur, ux: (s.x1 - s.x0) / L, uy: (s.y1 - s.y0) / L });
+    }
+    flush(run);
+    let t = 0;
+    for (const s of segments) { s.t0 = t; t += s.dur; }
+    return t;
 }
 
 function emptyBox() { return { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }; }

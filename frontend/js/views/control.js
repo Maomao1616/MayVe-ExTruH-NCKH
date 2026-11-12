@@ -55,7 +55,8 @@ const codeText = (prefix, item) => {
    const parseOptions = () => ({
        penUpZ: MACHINE.penUpZ,
        penDownZ: MACHINE.penDownZ,
-       rapidFeed: MACHINE.rapidFeed ?? 6000
+       rapidFeed: MACHINE.rapidFeed ?? 6000,
+       accel: MACHINE.accel, junction: MACHINE.junction, liftOverheadS: MACHINE.liftOverheadS
    });
    const message = (detail) => window.dispatchEvent(new CustomEvent("extruxy:message", { detail }));
 
