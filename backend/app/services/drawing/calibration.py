@@ -94,7 +94,10 @@ def make_draft(name: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str
 # chia độ phủ cho các lớp đúng như kiểu tô thật (styles.cross_split / cross3_split). Ba ô vuông đen đặc ở góc trên phải,
 # dưới trái, dưới phải là mốc ĐEN chuẩn + mốc căn ảnh chụp; góc trên trái là chữ F (biết tờ có bị xoay không).
 TONE_STEPS = (0.0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.70, 0.80, 0.90)
-TONE_STYLES = ("zigzag", "crosshatch", "crosshatch3")
+TONE_STYLES = ("zigzag", "crosshatch", "crosshatch3", "wave_am", "spiral")
+# Sóng biên độ và xoắn ốc không chia lớp như gạch: ô sóng chạy ĐÚNG hàm tô thật (styles.wave_am_groups) trên một ô đậm đều
+# bằng độ phủ của ô, ô xoắn ốc là xoắn ốc từ tâm ô có bước = bề rộng nét ÷ độ phủ (hatch.spiral_runs).
+TONE_PIXEL_MM = 0.1              # độ phân giải ô đậm đều dùng cho sóng biên độ
 TONE_ANGLE = 45.0                # góc gạch như mặc định của kiểu tô
 TONE_GRID = 4                    # 4 × 4 ô
 TONE_TOP = 24.0                  # phần đầu: chữ F + mốc góc trên
@@ -120,7 +123,7 @@ def tone_layer_covers(cover: float, style: str) -> list[tuple[float, float]]:
         raise DrawError("bad_param", f"style: chỉ nhận {', '.join(TONE_STYLES)}.")
     if cover <= 0:
         return []
-    if style == "zigzag":
+    if style in ("zigzag", "wave_am", "spiral"):                 # một lớp (sóng biên độ: độ phủ là mức đậm của ô)
         parts = [cover]
         step = 0.0
     elif style == "crosshatch":
@@ -144,6 +147,56 @@ def _hatch_square(x0: float, y0: float, size: float, spacing: float, angle: floa
     return [[(x0 + x, y0 + y) for x, y in s] for s in out]
 
 
+def _uniform_field(size: float, cover: float):
+    import numpy as np
+    from . import hatch
+    n = int(round(size / TONE_PIXEL_MM))
+    return hatch.Field(np.full((n, n), cover, np.float32), size, size)
+
+
+def _spiral_square(x0: float, y0: float, size: float, pitch: float) -> list[list[tuple[float, float]]]:
+    """Xoắn ốc từ tâm ô (hatch.spiral_runs như kiểu tô thật). Đoạn nằm ngoài ô bị CẮT BỎ, không kẹp vào mép (kẹp sẽ ra
+    các cạnh thẳng thừa mực quanh ô); chỗ xoắn ốc ra khỏi ô ở góc rồi quay lại thành nét riêng."""
+    import numpy as np
+    from . import hatch
+    f = _uniform_field(size, 1.0)
+    out: list[list[tuple[float, float]]] = []
+    for a in hatch.spiral_runs(np.ones(f.dark.shape, bool), f, pitch):
+        inside = (a[:, 0] >= 0) & (a[:, 0] <= size) & (a[:, 1] >= 0) & (a[:, 1] <= size)
+        edges = np.flatnonzero(np.diff(np.concatenate(([0], inside.astype(np.int8), [0]))))
+        for start, stop in zip(edges[0::2], edges[1::2]):
+            if stop - start >= 2:
+                out.append([(x0 + round(float(x), 3), y0 + round(float(y), 3)) for x, y in a[start:stop]])
+    return out
+
+
+def _wave_am_square(x0: float, y0: float, size: float, pen_width_mm: float, cover: float,
+                    angle: float) -> list[list[tuple[float, float]]]:
+    """Một ô sóng biên độ: chạy đúng styles.wave_am_groups trên ô đậm đều = `cover` (khoảng cách đường mặc định)."""
+    from types import SimpleNamespace
+    from . import styles
+    f = _uniform_field(size, cover)
+    style = SimpleNamespace(spacing_mm=None, angle=angle)
+    groups = styles.wave_am_groups(f, style, pen_width_mm, None, angle)
+    return [[(x0 + x, y0 + y) for x, y in s] for g in groups for s in g]
+
+
+def _spacing_of(style: str, pen_width_mm: float, cover: float) -> float:
+    """Khoảng cách đường ghi vào thông tin ô: gạch / xoắn ốc = bề rộng ÷ độ phủ; sóng biên độ cố định (đổi biên độ)."""
+    if style == "wave_am":
+        from . import styles
+        return styles.AM_SPACING_LINES * pen_width_mm
+    return pen_width_mm / cover
+
+
+def _tone_square(style: str, x0: float, y0: float, patch: float, pen_width_mm: float, cover: float, angle: float):
+    if style == "wave_am":
+        return _wave_am_square(x0, y0, patch, pen_width_mm, cover, angle)
+    if style == "spiral":
+        return _spiral_square(x0, y0, patch, pen_width_mm / cover)
+    return _hatch_square(x0, y0, patch, pen_width_mm / cover, angle)
+
+
 def tone_layers(pen_width_mm: float, paper: str = "a6", style: str = "zigzag") -> tuple[list[Layer], dict]:
     z = _tone_size(paper)
     patch, gap = z["patch"], z["gap"]
@@ -160,9 +213,9 @@ def tone_layers(pen_width_mm: float, paper: str = "a6", style: str = "zigzag") -
         x0, y0 = col * (patch + gap), TONE_TOP + row * (patch + gap)
         parts = tone_layer_covers(cover, style)
         for part, angle in parts:
-            strokes += _hatch_square(x0, y0, patch, pen_width_mm / part, angle)
+            strokes += _tone_square(style, x0, y0, patch, pen_width_mm, part, angle)
         cells.append({"n": i, "cover": cover, "x": round(x0, 3), "y": round(y0, 3),
-                      "layers": [{"cover": round(p, 4), "angle": a, "spacing_mm": round(pen_width_mm / p, 4)}
+                      "layers": [{"cover": round(p, 4), "angle": a, "spacing_mm": round(_spacing_of(style, pen_width_mm, p), 4)}
                                  for p, a in parts]})
     info = {"width": width, "height": height, "patch_mm": patch, "gap_mm": gap, "cells": cells}
     return [Layer("1", strokes)], info

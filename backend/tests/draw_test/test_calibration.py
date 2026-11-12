@@ -97,8 +97,32 @@ def test_tone_sheet_spacing_is_pen_over_cover_and_patches_stay_in_their_square()
     assert min(xs) >= -1e-6 and max(xs) <= info["width"] + 1e-6 and max(ys) <= info["height"] + 1e-6
 
 
+def test_wave_am_and_spiral_tone_sheets_stay_in_their_squares_and_get_darker():
+    for style in ("wave_am", "spiral"):
+        [layer], info = calibration.tone_layers(0.5, "a6", style)
+        assert [c["cover"] for c in info["cells"]] == list(calibration.TONE_STEPS)
+        xs = [x for s in layer.strokes for x, _ in s]
+        ys = [y for s in layer.strokes for _, y in s]
+        assert min(xs) >= -1e-6 and max(xs) <= info["width"] + 1e-6 and max(ys) <= info["height"] + 1e-6   # không tràn ô
+        patch = info["patch_mm"]
+
+        def length(cell: dict) -> float:
+            """Tổng chiều dài nét nằm trong ô (mm): ô đậm hơn thì phải vẽ nhiều hơn."""
+            x0, y0 = cell["x"], cell["y"]
+            total = 0.0
+            for s in layer.strokes:
+                for (ax, ay), (bx, by) in zip(s, s[1:]):
+                    if x0 - 1e-6 <= ax <= x0 + patch + 1e-6 and y0 - 1e-6 <= ay <= y0 + patch + 1e-6:
+                        total += ((bx - ax) ** 2 + (by - ay) ** 2) ** 0.5
+            return total
+        lengths = [length(c) for c in info["cells"]]
+        assert lengths[0] == 0.0                                      # ô 0 % = giấy trắng
+        assert lengths[-1] > lengths[8] > lengths[4]                  # đậm dần theo độ phủ
+        assert info["cells"][8]["layers"][0]["spacing_mm"] > 0
+
+
 def test_tone_sheet_draft_via_api_is_one_to_one():
-    for paper, style in (("a6", "crosshatch3"), ("a5", "zigzag")):
+    for paper, style in (("a6", "crosshatch3"), ("a5", "zigzag"), ("a6", "wave_am"), ("a6", "spiral")):
         r = client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "pen_width_mm": 0.5,
                                                        "paper": paper, "sheet": "tone", "style": style})
         assert r.status_code == 201, r.text
@@ -107,6 +131,6 @@ def test_tone_sheet_draft_via_api_is_one_to_one():
         assert src["sheet"] == "tone" and src["style"] == style and len(src["cells"]) == 16
         b = draft["files"][0]["stats"]["bounds"]
         assert abs((b["x1"] - b["x0"]) - src["width"]) < 0.01                 # không co giãn
-    bad = client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "sheet": "tone", "style": "spiral"})
+    bad = client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "sheet": "tone", "style": "hexagon"})
     assert bad.status_code == 400
     assert client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "sheet": "x"}).status_code == 400

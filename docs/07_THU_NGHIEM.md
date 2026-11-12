@@ -75,8 +75,8 @@ Cần biết: với 5 mức, 11 bậc ảnh được gộp thành **5 bậc trê
 Làm **một lần cho mỗi bút + loại giấy + tốc độ**. Kết quả dùng để chia các mức đậm nhạt cho đều theo mắt (kế hoạch ở [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) mục 0.3).
 
 1. Cài đặt → **Tờ thử / hiệu chỉnh** → khối **Tờ hiệu chỉnh tông**: nhập **bề rộng nét** đúng số ở ô Bút vẽ (Sakura 0,50), chọn **khổ A6**, chọn kiểu gạch, bấm **Tạo**.
-2. Làm 3 tờ giấy cho Sakura (mỗi kiểu một tờ): **Zigzag**, **Gạch chéo**, **Đan 3 hướng**. Nếu còn mực, thêm UB-155 (0,38) kiểu zigzag. Cùng mặt giấy, cùng tốc độ 8000, Z3, chờ 0,02 như khi vẽ thật.
-3. Nạp ở tab Điều khiển → Xem trước → Chạy.
+2. Làm **3 tờ** cho Sakura 0,5 (chủ dự án chốt 12/11/2026): **Đan 3 hướng**, **Sóng biên độ**, **Xoắn ốc**. Zigzag và Gạch chéo **không làm riêng**: dùng tạm đường cong của đan 3 hướng (đan 3 là bản nâng cấp của hai kiểu đó, chênh đậm nhạt chút ít không sao); nhìn bản vẽ thật thấy lệch rõ mới làm thêm (nút vẫn còn trong khối). Cùng mặt giấy, cùng tốc độ 8000, Z3, chờ 0,02 như khi vẽ thật. Sóng biên độ chạy đúng hàm tô thật trên ô đậm đều nên ô nhạt có thể trống / thưa; xoắn ốc tròn nên bốn góc mỗi ô để trống, đo ở giữa ô.
+3. Nạp ở tab Điều khiển (khung vẽ hiện ngay) → Chạy.
 4. Chụp bằng điện thoại: **thẳng góc**, ánh sáng đều (cửa sổ hoặc đèn trần, tránh đèn chiếu một phía), không chụp có flash, giấy phẳng, thấy đủ 3 ô đen ở góc và chữ F. Mặt giấy láng hay bóng: nghiêng nhẹ để không phản chiếu đèn. Không chỉnh sáng / lọc ảnh. Gửi ảnh gốc.
 5. Tờ có 16 ô, đọc từ trái sang phải, trên xuống dưới: độ phủ 0 (giấy trắng) · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 45 · 50 · 55 · 60 · 70 · 80 · 90 %. Dải đậm nhất bết mực hay ướt giấy thì ghi chú ô nào.
 

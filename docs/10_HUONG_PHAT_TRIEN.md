@@ -18,7 +18,7 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F, 12/11/2026) đối c
 | Nối nét gần thay vì nhấc bút | `optimize.bridge` | ảnh mẫu A5: −55–82 % lần nhấc, −30–50 % thời gian |
 | Ước tính thời gian có gia tốc | `gcode.path_time`, `lib/gcode.js` | khớp tỷ lệ thật 1,7–1,9 |
 | **Đan 3 hướng** (ba lớp lệch 60°) | `styles.crosshatch3` | mô phỏng mực: sai tông 0,036 (gạch chéo 0,042); số nhấc bút gần bằng gạch chéo |
-| **Tờ hiệu chỉnh tông** (16 ô độ phủ × 3 kiểu gạch) | `calibration.tone_layers`; Cài đặt → Tờ thử | chờ in + chụp ([07](07_THU_NGHIEM.md) mục 2b) |
+| **Tờ hiệu chỉnh tông** (16 ô độ phủ × 5 kiểu: zigzag, gạch chéo, đan 3 hướng, sóng biên độ, xoắn ốc) | `calibration.tone_layers`; Cài đặt → Tờ thử | chờ in + chụp ([07](07_THU_NGHIEM.md) mục 2b) |
 
 ### 0.2 Bước tiếp, theo thứ tự
 | # | Việc | Chờ gì | Ước lượng |
@@ -30,7 +30,7 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F, 12/11/2026) đối c
 
 ### 0.3 Đường cong tông (ý tưởng D) ✅
 Mục tiêu: các mức đậm nhạt **trông cách đều nhau bằng mắt** trên đúng bút + giấy, thay vì cách đều theo độ phủ tính toán (mực loang, giấy hút, mắt nhạy ở vùng sáng hơn vùng tối).
-- T1 ✅ Tờ hiệu chỉnh tông: 16 ô độ phủ 0–90 % (0 = giấy trắng), 3 ô đen đặc làm mốc đen + mốc căn ảnh, chữ F chỉ hướng. Ba kiểu gạch (zigzag / gạch chéo / đan 3 hướng) chia lớp **đúng như kiểu tô thật**. Thông số từng ô (độ phủ, góc, khoảng cách) lưu trong bản thảo (`params.source.cells`).
+- T1 ✅ Tờ hiệu chỉnh tông: 16 ô độ phủ 0–90 % (0 = giấy trắng), 3 ô đen đặc làm mốc đen + mốc căn ảnh, chữ F chỉ hướng. Ba kiểu gạch (zigzag / gạch chéo / đan 3 hướng) chia lớp **đúng như kiểu tô thật**; sóng biên độ chạy đúng `wave_am_groups` trên ô đậm đều, xoắn ốc là `spiral_runs` bước = nét ÷ độ phủ (thêm 12/11/2026). Chỉ cần vẽ 3 tờ: đan 3 hướng, sóng biên độ, xoắn ốc (zigzag / gạch chéo mượn đường cong đan 3). Thông số từng ô (độ phủ, góc, khoảng cách) lưu trong bản thảo (`params.source.cells`).
 - T2 Chủ dự án vẽ A6: Sakura 0,5 × 3 kiểu gạch (Ivory, 8000), UB-155 0,38 zigzag nếu còn mực; chụp thẳng, ánh sáng đều (07 mục 2b).
 - T3 AI đo ảnh: cắt phần giữa 60 % mỗi ô, lấy độ xám trung bình, quy về 0 = ô giấy trắng, 1 = trung bình 3 ô đen → bảng *độ phủ danh định → độ đậm nhìn thấy*.
 - T4 Sửa mã: `level_plan` chọn độ phủ cho từng mức bằng **hàm ngược** của bảng (nội suy tuyến tính từng đoạn, đơn điệu) để các mức cách đều theo độ đậm nhìn thấy. Bảng lưu là **hằng số HOA** theo từng bút trong `styles.py` (kèm ngày đo), chọn theo bút ở ô "Bút vẽ" (cần thêm mã bút vào yêu cầu, hiện chỉ gửi bề rộng). Không có bảng thì giữ cách tính hiện tại. Đo trước / sau bằng `tools/ink_sim.py` + in lại thang xám.

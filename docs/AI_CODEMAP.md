@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~483,201 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~484,819 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -78,7 +78,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `CLAUDE.md` | ~1,723 |  |
+| `CLAUDE.md` | ~1,762 |  |
 | `README.md` | ~1,563 |  |
 
 ### `.clinerules/`
@@ -86,7 +86,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `00-bat-dau.md` | ~397 |  |
-| `01-an-toan.md` | ~391 |  |
+| `01-an-toan.md` | ~433 |  |
 | `02-cau-truc.md` | ~712 |  |
 | `03-quy-trinh.md` | ~869 |  |
 | `04-giao-tiep.md` | ~556 |  |
@@ -229,25 +229,25 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `01_TONG_QUAN.md` | ~2,197 |  |
+| `01_TONG_QUAN.md` | ~2,198 |  |
 | `02_PHAN_CUNG_MAY.md` | ~3,271 |  |
 | `03_CAU_TRUC_PHAN_MEM.md` | ~5,553 |  |
-| `04_TAB_DIEU_KHIEN.md` | ~5,451 |  |
-| `05_TAB_TAO_BAN_VE.md` | ~4,380 |  |
+| `04_TAB_DIEU_KHIEN.md` | ~5,536 |  |
+| `05_TAB_TAO_BAN_VE.md` | ~4,378 |  |
 | `06_THUAT_TOAN_XU_LY_ANH.md` | ~12,930 |  |
 | `07_THU_NGHIEM.md` | ~5,937 |  |
 | `08_TRIEN_KHAI.md` | ~5,358 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~3,834 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~4,068 |  |
 | `10_HUONG_PHAT_TRIEN.md` | ~5,489 |  |
-| `11_VIEC_CAN_LAM.md` | ~4,261 |  |
+| `11_VIEC_CAN_LAM.md` | ~4,522 |  |
 | `AI_CODEMAP.md` | ~6,104 |  |
-| `AI_START.md` | ~2,781 |  |
+| `AI_START.md` | ~2,818 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~34,669 |  |
+| `index.html` | ~34,676 |  |
 
 ### `frontend/assets/css/`
 
@@ -263,7 +263,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `drawing.css` | ~2,556 | 9. TAB TAO BAN VE |
 | `jobchart.css` | ~1,592 | Biểu đồ số liệu chạy máy (views/jobchart.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
 | `polish.css` | ~12,739 | POLISH: lop tinh chinh giao dien |
-| `style.css` | ~13,036 |  |
+| `style.css` | ~13,090 |  |
 | `testsheet.css` | ~649 | Tờ thử / hiệu chỉnh (Cài đặt, views/settings.js initTestSheets). Chỉ dùng biến màu có sẵn ở tokens.css. |
 
 ### `frontend/js/`
@@ -296,7 +296,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `draftstore.js` | ~848 | danh sách bản thảo (GET /api/draw/drafts), dùng chung cho tab Tạo bản vẽ và Hàng đợi |
+| `draftstore.js` | ~855 | danh sách bản thảo (GET /api/draw/drafts), dùng chung cho tab Tạo bản vẽ và Hàng đợi |
 | `jobstore.js` | ~253 | tệp G-code đang nạp ở trình duyệt. control.js ghi, preview.js đọc. |
 | `macros.js` | ~1,253 | dữ liệu macro dùng chung (Dock đọc/ghi, không import view nào). |
 
@@ -306,9 +306,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `auth.js` | ~695 | khung "Khách / Quản lý" ở đầu trang: chủ ghi #auth-box và các phần tử con. |
 | `confirm.js` | ~810 | hộp xác nhận chung của app (cùng kiểu "Bỏ điểm dừng"), thay cho window.confirm của trình duyệt. |
-| `control.js` | ~10,731 | Tab Điều khiển. |
+| `control.js` | ~10,964 | Tab Điều khiển. |
 | `customer.js` | ~2,416 | ảnh khách gửi (backend: api/customer.py, services/customer.py). |
-| `dock.js` | ~2,818 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
+| `dock.js` | ~2,833 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
 | `drawing.js` | ~9,618 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
@@ -332,8 +332,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~18,359 |  |
-| `vi.json` | ~17,633 |  |
+| `en.json` | ~18,386 |  |
+| `vi.json` | ~17,650 |  |
 
 ### `frontend/tests/`
 
@@ -343,6 +343,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `gcode.test.mjs` | ~2,794 | Kiểm lib/gcode.js (bộ đọc G-code quyết định xem trước + cảnh báo). Chạy: node --test frontend/tests/gcode.test |
 | `imageprep.test.mjs` | ~1,274 | Đối chiếu lib/imageprep.js với backend: node --test frontend/tests/imageprep.test.mjs |
 | `paper.test.mjs` | ~1,895 | Đối chiếu lib/paper.js với backend (layout.py). Sinh bởi script từ chính backend — chạy: node --test frontend/ |
+| `preview.test.mjs` | ~561 | Kiểm views/preview.js phần thuần: makeTransform (mapX / mapY phải khớp toScreen, vì vòng lặp vẽ tệp dùng mapX  |
 
 ### `tools/`
 
