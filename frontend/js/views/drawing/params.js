@@ -89,13 +89,17 @@ export function papers() {
     return schema?.papers ?? PAPERS_FALLBACK;
 }
 
+// Bề rộng nét ĐO TRÊN GIẤY (mm). Mỗi bút dựng sẵn ghi số đó ở data-mm của <option> (index.html, khớp spec.PENS);
+// "custom" lấy ô nhập tay. Backend dùng thẳng số này làm bề rộng nét (styles.LINE_WIDTH_RATIO = 1).
+const PEN_FALLBACK_MM = 0.45;
 export function penWidthMm() {
     const select = $("draw-pen-width");
     if (select?.value === "custom") {
         const v = Number($("draw-pen-width-custom")?.value);
-        return Number.isFinite(v) && v > 0 ? v : 0.4;
+        return Number.isFinite(v) && v > 0 ? v : PEN_FALLBACK_MM;
     }
-    return Number(select?.value) || 0.4;
+    const mm = Number(select?.selectedOptions?.[0]?.dataset.mm);
+    return Number.isFinite(mm) && mm > 0 ? mm : PEN_FALLBACK_MM;
 }
 
 export function paperSize() {

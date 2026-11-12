@@ -13,10 +13,10 @@ from .hatch import Field
 from .registry import FILLERS
 from .shapes import Stroke
 
-# Nét thật ÷ cỡ ngòi. 03/11/2026 Sakura 0,4 trên giấy thường loang ra ~0,55 mm (1,375). Từ 11/11/2026 dùng giấy Ivory
-# 250 g/m² (ít loang) + Sakura 0,4 / Uniball 150 (~0,35–0,45 mm khi vẽ nhanh): đặt 1,1 → nét 0,44 mm. Đo lại bằng tờ
-# hiệu chỉnh (dải 0,40 / 0,45 / 0,50 mm) rồi sửa số này; mọi khoảng cách nét tự tính lại theo nó.
-LINE_WIDTH_RATIO = 1.1
+# Nét thật ÷ số trong ô "Bút vẽ". Từ 11/11/2026 ô đó ghi thẳng BỀ RỘNG NÉT ĐO TRÊN GIẤY của từng bút (đo bằng tờ hiệu
+# chỉnh), nên hệ số = 1,0. Lịch sử: 1,375 (Sakura 0,4 loang 0,55 trên giấy thường), 1,1 (ước tính trên Ivory 250 g/m²).
+# Muốn đổi bề rộng nét của một bút thì sửa danh sách bút (index.html, ô draw-pen-width), không sửa số này.
+LINE_WIDTH_RATIO = 1.0
 DEFAULT_SPACING_PEN = 2.0        # khoảng cách nét mặc định = 2 × bề rộng nét thật (một lớp phủ ~50% mực)
 WAVE_AMPLITUDE_RATIO = 0.18      # biên độ sóng = 0,18 × khoảng cách nét (nhỏ hơn thì ít nét hơn, đúng tông hơn; mô phỏng 03/11/2026)
 

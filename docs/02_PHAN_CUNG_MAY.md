@@ -28,7 +28,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
 | Driver | 2 × **TMC2209**, điện trở đo **R100** (0,1 Ω), Vref **1,4 V** | Irms ≈ 0,766 × Vref ≈ **1,07 A** (đỉnh ≈ 1,5 A). Dải Vref cho phép 0,2–2,2 V |
 | Truyền động | đai **GT2**, puly **20 răng**, vi bước **1/16** | 200 bước × 16 ÷ (20 răng × 2 mm) = **80 bước/mm** |
 | Nguồn tổng | **Mean Well 12 V 6 A** (72 W) | MKS nhận 12–24 V |
-| Bút vẽ tranh | **Sakura 0,4**, thử thêm **Uniball 150**; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory: tạm tính **0,44 mm** ⏳ đo lại |
+| Bút vẽ tranh | **Sakura 0,4**, thử thêm **Uniball 150**; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory: tạm tính **0,45 mm** (Sakura), **0,30 mm** (UB-155 / UM-100 vẽ nhanh) ⏳ đo lại |
 | Bút viết chữ | **bút bi 0,5** | nét bi thường mảnh hơn cỡ bi ⚠ cần đo |
 | Thêm được | ESP32-S3 (kit) | chưa có webcam |
 
@@ -60,7 +60,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Tốc độ nâng bút / hạ bút | 3000 / **2000** mm/min (hạ chậm hơn, đỡ nảy) | tab Tạo bản vẽ; `spec.py` |
 | Chờ sau nâng / sau hạ | **0,05 s** / 0,05 s | tab Tạo bản vẽ |
 | Tốc độ vẽ / di chuyển | **5000** / 6000 mm/min | tab Tạo bản vẽ |
-| Bề rộng nét thật ÷ cỡ ngòi | **1,1** (từ 11/11/2026, giấy Ivory; trước là 1,375 trên giấy thường) | `LINE_WIDTH_RATIO` trong `styles.py` |
+| Bề rộng nét thật ÷ số trong ô "Bút vẽ" | **1,0** (từ 11/11/2026 ô đó ghi thẳng nét đo trên giấy của từng bút; trước là 1,1 và 1,375) | `LINE_WIDTH_RATIO` trong `styles.py`; số từng bút ở `index.html` ô `draw-pen-width` + `spec.PENS` |
 | Gốc giấy | góc trên trái O(0,0), Y hướng xuống; A6 ⊂ A5 ⊂ A4 cùng neo ở O | `layout.py` |
 | Hướng trục X / Y | ✅ **đúng** (chủ dự án xác nhận 05/11/2026) với `VIEW.flipX = flipY = false`, `invert_y = false` | `core/config.js`, `gcode.to_machine` |
 

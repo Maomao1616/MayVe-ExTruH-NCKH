@@ -132,7 +132,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `machine` | vùng máy 285 × 318, hành trình Z, tốc độ G0, `invert_y` (tắt) |
 | `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (mặc định bật: vẽ lần lượt từng mức đậm nhạt) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
-| `raster` | bút (0,2 / 0,4 / 0,5), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
+| `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 / UM-100 0,30, Sakura 0,45, bút bi 0,50, hoặc Tùy chọn), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
 | `style` | kiểu (`outline` / `zigzag` / `wave` / `spiral`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |
 | `palette` | đơn sắc / nhiều màu, số màu (2–4), bỏ nền |
 

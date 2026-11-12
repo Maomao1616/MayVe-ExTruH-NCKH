@@ -43,7 +43,7 @@ launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git)
 - Tài liệu 01–11 viết cho người không học code: giữ văn phong (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
 - Báo kèm: lỗi / tối ưu tìm thấy trong lúc làm, tiến độ, và những bài thử còn phải làm.
 - Chủ dự án thử trên giấy rồi gửi ảnh và số; AI sửa mã và tài liệu theo đó. Nêu số trước / sau khi đề xuất đổi.
-- Thông số bút hiện tại (từ 11/11/2026): Sakura 0,4 / Uniball 150, giấy Ivory 250 g/m², nét tính 0,44 mm; chữ dùng bút bi 0,5, Word cỡ 14–16.
+- Thông số bút hiện tại (từ 11/11/2026): Sakura 0,4 / Uniball 150, giấy Ivory 250 g/m², ô "Bút vẽ" chọn theo tên bút, ghi thẳng nét đo trên giấy (UB-155 / UM-100 0,30, Sakura 0,45, ước tính chờ đo; `LINE_WIDTH_RATIO` = 1,0); chữ dùng bút bi 0,5, Word cỡ 14–16.
 
 ## Bẫy đã gặp (chi tiết ở `AI_START.md` mục 5)
 - Python **3.12** (3.15 thiếu gói). Console Windows cp1252 không in được tiếng Việt: script gọi `sys.stdout.reconfigure(encoding="utf-8")`.

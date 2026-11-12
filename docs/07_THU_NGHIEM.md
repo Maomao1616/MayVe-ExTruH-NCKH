@@ -12,7 +12,29 @@
 - **Mọi quyết định về độ đậm phải nhìn tờ giấy.** Khung xem trước trên web chỉ để kiểm hình học (đủ nét, đúng chỗ, không vượt khổ).
 - **Mỗi lần chỉ đổi một thông số.** Cùng giấy, cùng bút, cùng tốc độ.
 - **Ghi số ở góc tờ** (bút, khoảng cách, số mức, gamma, preset, tốc độ, ngày) rồi chụp ảnh.
-- Làm theo thứ tự: mục trước chốt con số mục sau dùng. Mỗi bút (0,2 / 0,4 / 0,5) làm riêng.
+- Làm theo thứ tự: mục trước chốt con số mục sau dùng. **Mỗi bút làm riêng** (UB-155, UM-100, Sakura 0,4, bút bi 0,5).
+- **Từ 11/11/2026 ô "Bút vẽ" ở tab Tạo bản vẽ ghi thẳng bề rộng nét đo trên giấy** (không còn nhân 1,1). Chọn bút theo tên; bút chưa có trong danh sách hoặc vừa đo ra số khác thì chọn **Tùy chọn** và gõ số đo được.
+
+## Kế hoạch ngày 12/11/2026 (làm từ trên xuống, mỗi bước một tờ mới)
+Giấy Ivory 250 g/m², khổ A6 cho tờ hiệu chỉnh (đỡ tốn mực, tốn giấy). **Bút đỏ không dùng để đánh giá độ đậm** (đỏ trông nhạt hơn đen); chỉ dùng để đo bề rộng nét, loang, đọng mực.
+
+**Chuẩn bị (một lần):**
+1. Tab Tạo bản vẽ, khối G-code: tốc độ vẽ **8000**, Z nâng 3 / hạ 0, hạ bút 2000, chờ 0,05 s.
+2. Kẹp giấy phẳng, **mặt láng lên trên** trước.
+3. Dừng gấp làm bút tụt về giữa (lỗi 11/11, chưa rõ nguyên nhân): nếu gặp lại, ghi lúc đó máy đang làm gì và bấm "Bút lên" bút có lên lại không.
+
+| Bước | Bút | Làm gì (Cài đặt → Tờ thử / hiệu chỉnh) | Ghi lại |
+|---|---|---|---|
+| 1 | UB-155 đỏ, **mặt láng** | Tờ hiệu chỉnh bút, A6, **cỡ nét đoán 0,3** (dải 0,24 / 0,30 / 0,34 / 0,38 / 0,45 / 0,60 / 0,75 / 0,90 mm) | dải sát nhất còn đặc mà chưa ướt (mm); thước đúng 80 mm? nét có đứt / đọng cuối nét? |
+| 2 | UB-155 đỏ, **mặt nhám** | như bước 1, lật giấy | như bước 1 → chọn mặt đẹp hơn, các bước sau dùng mặt đó |
+| 3 | UB-155 đỏ | Bài **7.4** tốc độ vẽ, ô "Tốc độ thử" 7000, 8000, 9000, 10000 (trước đó: Cấu hình máy → tốc độ tối đa X, Y = **10000** → **Áp dụng**, chỉ RAM) | tốc độ cao nhất mà nét còn đều, chưa nhạt / đứt. Nếu chốt tốc độ khác 8000 thì làm lại bước 1 ở tốc độ đó (bề rộng nét đổi theo tốc độ) |
+| 4 | UB-155 đỏ | Tờ **nhấc bút** (chờ 0,02 / 0,05 / 0,1 × Z 1 / 3 / 5 × hạ 1000 / 2000) | hàng đẹp nhất (đầu nét không hụt, cuối nét không đọng, không kéo vệt) → bấm **Dùng** |
+| 5 | UM-100 xanh | Tờ hiệu chỉnh bút, A6, cỡ nét đoán **0,3**, mặt đã chọn ở bước 2 | dải sát nhất còn đặc (mm) |
+| 6 | Sakura 0,4 | Tờ hiệu chỉnh bút, A6, cỡ nét đoán **0,4** (dải 0,32 / 0,40 / 0,45 / 0,50 …), làm **cả hai mặt** giấy | dải sát nhất còn đặc mỗi mặt; mặt nào nét đều, không đứt |
+| 7 | Sakura 0,4 | Bài **7.2** mất bước rồi **7.3** gia tốc + góc (ô "Tốc độ thử" 7000–10000, max_rate 10000 đã Áp dụng ở bước 3); xong chạm thử động cơ, driver | 7.2: cặp dấu + nào tách đôi; 7.3: hàng nào gợn sau góc / giọt mực ở góc; động cơ nóng tay không |
+| 8 | Sakura 0,4 | Tab Tạo bản vẽ: ô **Bút vẽ** = Sakura (hoặc Tùy chọn + số đo ở bước 6), ảnh con mèo, preset Chân dung, **A6**, vẽ 4 tờ: Zigzag tắt "Chuyển mức mềm" · Zigzag bật · Đan chéo · Sóng mật độ | tờ nào đẹp nhất, ranh giới mức còn lộ không, chỗ nào loang / bết |
+
+**Gửi lại:** ảnh chụp cận từng tờ (thẳng góc, đủ sáng) + bảng ngắn: bút · mặt giấy · tốc độ · dải còn đặc (mm) · hàng nhấc bút chọn · ghi chú. AI sẽ sửa bề rộng nét trong danh sách bút (`index.html` ô `draw-pen-width` + `spec.PENS`) theo số đo. Tắt máy thì max_rate quay về số trong mạch; muốn giữ 10000 thì bấm **Lưu vào mạch** sau khi bước 7 không mất bước.
 - Tệp G-code thử có sẵn: `python tools/make_test_gcode.py` ghi vào `export\test-gcode\` (không lên Git). Nạp ở tab Điều khiển → Xem trước → Chạy. **Mỗi bài một tờ giấy mới.**
 
 ## 1. Bề rộng nét thật: tờ mẫu hiệu chỉnh bút
@@ -27,7 +49,8 @@ Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và
 
 ✅ 03/11/2026, Sakura 0,4, tốc độ 3000: dải 0,5 mm đặc, 0,6 mm gần đặc, 0,8 mm còn sợi → nét thật **~0,55 mm** → `LINE_WIDTH_RATIO = 1.375` (`backend/app/services/drawing/styles.py`). Phần mềm tự suy ra mọi khoảng cách nét từ con số này ([06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) mục 6).
 🔁 11/11/2026: đổi sang giấy **Ivory 250 g/m²** (ít loang) + Sakura 0,4 / **Uniball 150** (~0,35–0,45 mm khi vẽ nhanh) → tạm đặt `LINE_WIDTH_RATIO = 1.1` (nét **0,44 mm** với bút 0,4; dải đậm nhất cách 0,49 mm). Ảnh vẽ ra **nhiều nét hơn ~25 %** so với khi còn 0,55 (lâu hơn tương ứng).
-⏳ Bề rộng nét **phụ thuộc tốc độ, bút, giấy**: in tờ này trên Ivory ở tốc độ vẽ đang dùng (8000), dải 0,40 / 0,45 / 0,50 cái nào sát nhất còn đặc → sửa `LINE_WIDTH_RATIO = nét thật ÷ cỡ ngòi`.
+🔁 11/11/2026 (tối): bỏ cách nhân hệ số. `LINE_WIDTH_RATIO = 1.0`, ô **"Bút vẽ"** chọn theo tên bút, mỗi bút mang sẵn bề rộng nét **đo trên giấy**: UB-155 0,30 · UM-100 0,30 · Sakura 0,4 0,45 · bút bi 0,5 0,50 (ba số đầu là ước tính ⏳). Ô "Cỡ nét đoán trước" của tờ hiệu chỉnh chỉ để đặt các dải quanh số đoán.
+⏳ Bề rộng nét **phụ thuộc tốc độ, bút, giấy**: in tờ này trên Ivory ở tốc độ vẽ đang dùng (8000) cho từng bút (kế hoạch 12/11 ở trên) → dải sát nhất còn đặc = bề rộng nét → sửa số của bút đó trong danh sách (hoặc chọn Tùy chọn và gõ).
 
 ## 2. Thang đậm nhạt: ảnh thử preset (thang xám)
 Chỉ làm **một lần cho mỗi bút + loại giấy**, để chốt số cho preset.
@@ -95,7 +118,7 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 | 7.2 | Mất bước | vẽ dấu + ở góc → chạy nhanh nhiều lần → vẽ lại dấu + | hai dấu trùng khít = không mất bước | ✅ 03/11 (6000 mm/min, gia tốc 2000, ~20 phút). ⏳ lặp lại ở mức mới (7.2b) |
 | 7.2b | Mất bước ở mức mới | **(từ 11/11 trong giao diện)** mỗi tốc độ một cặp dấu + xếp hàng ngang từ trái sang (cột k có k chấm bên dưới); giữa hai lần vẽ dấu, bút nâng chạy G1 đúng tốc độ đó 10 vòng (~1,3 m / vòng) khắp vùng; cuối bài vẽ lại dấu đầu tiên lần nữa. Gia tốc 3000, SpreadCycle; chạm thử nhiệt động cơ + driver | cặp nào tách đôi = mất bước ở tốc độ đó; dấu đầu lệch ở lần cuối = tổng lệch cả bài | ⏳ 7000 / 8000 / 9000 / 10000 |
 | 7.3 | Gia tốc + góc | **(từ 11/11)** răng cưa bước 2 mm, **mỗi tốc độ một hàng** từ trên xuống (hàng k có k chấm đầu hàng); đổi gia tốc / `junction_deviation` ở Cấu hình máy rồi chạy lại trên tờ mới | gợn sóng sau góc; giọt mực ở góc; thời gian từng lần (Biểu đồ). Đang dùng gia tốc 3000, junction 0,05 | ⏳ 7000–10000 |
-| 7.4 | Tốc độ vẽ từng bút | dải đường thẳng, mặc định 7000 / 8000 / 9000 / 10000, mỗi bút một tờ, **chụp cận đo bề rộng nét** | tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét ở đó (→ `LINE_WIDTH_RATIO`) | 🧪 6000 vẫn đậm (ảnh xa); 8000 vẽ con mèo OK (11/11); ⏳ đo |
+| 7.4 | Tốc độ vẽ từng bút | dải đường thẳng, mặc định 7000 / 8000 / 9000 / 10000, mỗi bút một tờ, **chụp cận đo bề rộng nét** | tốc độ cao nhất mà nét chưa nhạt / đứt; bề rộng nét ở đó (→ số của bút trong ô "Bút vẽ") | 🧪 6000 vẫn đậm (ảnh xa); 8000 vẽ con mèo OK (11/11); ⏳ đo |
 | 7.5 | Vệt kéo khi đi xa | hai chấm cách 240 mm, G0 qua lại 5 lần, mỗi lần một mức chờ nâng; đổi Z nhấc 3 / 4 / 5. Dán giấy phẳng | vệt mảnh nối hai chấm = bút chưa rời giấy | ⏳ |
 
 **Mức đang nhắm tới (đề xuất 06/11/2026, chưa thử):** tốc độ tối đa X/Y 8000 mm/min (nguồn 12 V, không nên quá 10000), gia tốc X/Y 2500 (3000 là của Z), `junction_deviation` 0,05, Vref giữ 1,4. G0 chạy tới 8000; tốc độ vẽ chốt theo 7.4 (khoảng 5000–7000). Theo công thức góc cua, 0,02 → 0,05 → 0,1 chỉ nhanh thêm ~1–2 % với ảnh tô, ~7–8 % mỗi bậc với chữ nhiều góc vuông đoạn ngắn. Thứ tự thử: 7.2b trước, rồi 7.3.

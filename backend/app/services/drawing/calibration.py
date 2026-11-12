@@ -3,8 +3,9 @@
 Một tờ A5 đặt đứng, tỷ lệ 1:1 (không co giãn), gồm:
   * chữ "F" ở góc trên trái: bất đối xứng nên nhìn là biết bản vẽ có bị lật / xoay trục không;
   * thước 100 mm có vạch mỗi 10 mm: đo bằng thước thật để kiểm tra bước/mm của máy;
-  * 8 dải tô zigzag có khoảng cách dòng = độ rộng bút × hệ số khác nhau (từ trên xuống), để chọn
-    khoảng cách đẹp nhất cho loại bút đang dùng (dải dày quá thì loang, thưa quá thì lộ giấy).
+  * 8 dải tô zigzag có khoảng cách dòng = cỡ nét đoán × hệ số khác nhau (từ trên xuống, dày → thưa), để ĐO bề
+    rộng nét thật: dải thưa nhất mà vẫn đen kín (chưa ướt / bóng mực) có khoảng cách ≈ bề rộng nét. Dải thưa hơn lộ
+    khe trắng; dải dày hơn chồng nét, thừa mực. Số đo đó ghi vào ô "Bút vẽ" (Tùy chọn) ở tab Tạo bản vẽ.
 Chỉ dùng cho thử máy thật; tab Tạo bản vẽ vẫn không gọi máy.
 """
 from __future__ import annotations

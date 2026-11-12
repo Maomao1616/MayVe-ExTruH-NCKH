@@ -181,7 +181,7 @@ Kẻ các nét rộng `w` cách nhau `s` (tính từ tâm nét này tới tâm n
 ```
 Với `w` = 0,55 mm: cách 1,1 mm phủ 50 %; cách 0,61 mm phủ 90 %; cách 2,44 mm phủ 22,5 %.
 
-`w` lấy từ bề rộng nét **đo thật**: `w = LINE_WIDTH_RATIO × cỡ bút`. 03/11/2026 Sakura 0,4 trên giấy thường ra 0,55 mm (1,375, các bảng số trong mục này tính theo số đó). **Từ 11/11/2026 giấy Ivory: 1,1 → w = 0,44 mm**, khoảng cách 4 mức đậm thành 1,96 / 0,98 / 0,65 / 0,49 mm.
+`w` lấy từ bề rộng nét **đo thật**: `w = LINE_WIDTH_RATIO × số trong ô "Bút vẽ"`. 03/11/2026 Sakura 0,4 trên giấy thường ra 0,55 mm (1,375, các bảng số trong mục này tính theo số đó). 11/11/2026 giấy Ivory: 1,1 → w = 0,44 mm. **Cùng ngày (tối): `LINE_WIDTH_RATIO = 1,0`, ô "Bút vẽ" chọn theo tên bút và mang sẵn nét đo trên giấy** (UB-155 / UM-100 0,30 · Sakura 0,45 · bút bi 0,50, ước tính chờ đo). Sakura 0,45: 4 mức cách 2,0 / 1,0 / 0,67 / 0,50 mm; nét 0,30: 1,33 / 0,67 / 0,44 / 0,33 mm (nhiều đường hơn ~50 %, vẽ lâu hơn tương ứng).
 
 ### 6.2 Chia mức
 "N mức" gồm cả **mức 0 = giấy trắng (không vẽ)**. Với N = 5 thì có 4 mức có mực. Độ phủ mục tiêu **tăng đều** từ 0 tới 90 % (`MAX_COVERAGE = 0.9`). Không lên 100 % vì nét quá sát sẽ nhòe thành một mảng ướt, giấy quăn.
@@ -453,7 +453,7 @@ Hai đường kề nhau cách nhau 1,22 mm vì **tọa độ trong G-code cách 
 
 Vì khoảng cách gắn với mm thật, **kéo khung to/nhỏ hơn 12 %** so với lúc tạo nét thì giao diện tự tạo lại nét (nếu chỉ phóng hình học, nét sẽ thưa ra hoặc dày đặc so với bút).
 
-**Con số dễ sai nhất là w = 0,55 mm**: phụ thuộc bút, giấy, tốc độ vẽ, độ loang. Đổi bút hay giấy thì đo lại (tờ hiệu chỉnh, [07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 1) và sửa `LINE_WIDTH_RATIO` ở đầu `styles.py`; mọi khoảng cách tự cập nhật.
+**Con số dễ sai nhất là w = 0,55 mm**: phụ thuộc bút, giấy, tốc độ vẽ, độ loang. Đổi bút hay giấy thì đo lại (tờ hiệu chỉnh, [07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 1) và sửa số của bút đó trong ô "Bút vẽ" (`index.html` + `spec.PENS`), hoặc chọn Tùy chọn và gõ số đo; mọi khoảng cách tự cập nhật.
 
 ---
 

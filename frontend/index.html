@@ -1029,15 +1029,16 @@
                   <label for="draw-pen-width">
                     <span data-i18n="drawing.params.penWidth">Bút vẽ (độ rộng nét)</span>
                     <select id="draw-pen-width">
-                      <option value="0.2">0,2 mm</option>
-                      <option selected="" value="0.4">0,4 mm</option>
-                      <option value="0.5">0,5 mm</option>
-                      <option data-i18n="drawing.params.penCustom" value="custom">Tùy chọn</option>
+                      <option data-mm="0.3" data-i18n="drawing.params.penUb155" value="ub155">Uniball UB-155 đỏ / đen (nét 0,30)</option>
+                      <option data-mm="0.3" data-i18n="drawing.params.penUm100" value="um100">Uniball UM-100 (nét 0,30)</option>
+                      <option data-mm="0.45" data-i18n="drawing.params.penSakura" selected="" value="sakura04">Sakura Pigma Micron 0,4 (nét 0,45)</option>
+                      <option data-mm="0.5" data-i18n="drawing.params.penBallpoint" value="ballpoint05">Bút bi 0,5, viết chữ (nét 0,50)</option>
+                      <option data-i18n="drawing.params.penCustom" value="custom">Tùy chọn (nhập nét đo được)</option>
                     </select>
                   </label>
                   <label for="draw-pen-width-custom" hidden="">
-                    <span data-i18n="drawing.params.penWidthCustom">Độ rộng bút tùy chọn (mm)</span>
-                    <input id="draw-pen-width-custom" type="number" min="0.1" max="2" step="0.05" value="0.3"/>
+                    <span data-i18n="drawing.params.penWidthCustom">Bề rộng nét đo trên giấy (mm)</span>
+                    <input id="draw-pen-width-custom" type="number" min="0.1" max="2" step="0.01" value="0.3"/>
                   </label>
                 </div>
                 <p class="help-text" data-i18n="drawing.params.help">
@@ -1483,9 +1484,9 @@
 
             <section class="sheet-block">
               <h3 data-i18n="sheet.pen.title">Tờ hiệu chỉnh bút</h3>
-              <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,125; 1,25; 1,5; 2; 2,5; 3 lần cỡ bút (bút 0,4 mm: 0,32; 0,40; 0,45; 0,50; 0,60; 0,80; 1,0; 1,2 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật (bài 1 trong 07_THU_NGHIEM).</p>
+              <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,125; 1,25; 1,5; 2; 2,5; 3 lần cỡ bút (bút 0,4 mm: 0,32; 0,40; 0,45; 0,50; 0,60; 0,80; 1,0; 1,2 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật; ghi số đó vào ô Bút vẽ ở tab vẽ (Tùy chọn) (bài 1 trong 07_THU_NGHIEM).</p>
               <div class="mc-actions">
-                <label class="sheet-inline" for="sheet-pen-width"><span data-i18n="sheet.pen.width">Cỡ bút (mm)</span>
+                <label class="sheet-inline" for="sheet-pen-width"><span data-i18n="sheet.pen.width">Cỡ nét đoán trước (mm)</span>
                   <input id="sheet-pen-width" max="2" min="0.1" step="0.05" type="number" value="0.4"/></label>
                 <label class="sheet-inline" for="sheet-pen-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
                   <select id="sheet-pen-paper"><option value="a5">A5</option><option value="a6">A6</option></select></label>

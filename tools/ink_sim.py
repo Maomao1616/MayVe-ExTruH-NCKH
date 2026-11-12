@@ -25,7 +25,7 @@ from app.services.drawing.hatch import Field           # noqa: E402
 
 W_MM, H_MM, PX = 80.0, 50.0, 0.2          # ảnh nguồn 0,2 mm / điểm
 SC = 20                                    # mô phỏng 20 điểm / mm
-LINE_W = styles.LINE_WIDTH_RATIO * 0.4     # bề rộng nét thật của bút 0,4 (theo styles.py)
+LINE_W = styles.LINE_WIDTH_RATIO * 0.45    # bề rộng nét Sakura 0,4 trên Ivory (ô "Bút vẽ" mặc định, spec.PENS)
 DRAW_FEED, LIFT_S = 5000.0, 0.25
 
 
@@ -62,7 +62,7 @@ def metrics(strokes, dark: np.ndarray) -> dict:
             "minutes": (length / (DRAW_FEED / 60) + len(strokes) * LIFT_S) / 60, "ink": ink}
 
 
-def run_style(dark: np.ndarray, pen_mm: float = 0.4, **style) -> list:
+def run_style(dark: np.ndarray, pen_mm: float = 0.45, **style) -> list:
     return styles.fill(Field(dark, W_MM, H_MM), spec.parse("style", style), pen_mm, None)
 
 

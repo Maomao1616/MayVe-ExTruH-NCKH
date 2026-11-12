@@ -57,7 +57,7 @@ def import_svg(client):
 def test_schema_has_the_new_groups(client):
     body = client.get("/api/draw/schema").json()
     assert {"raster", "style", "palette"} <= set(body["params"])
-    assert body["pens"] == [0.2, 0.4, 0.5] and "spiral" in body["styles"]
+    assert body["pens"] == [0.3, 0.45, 0.5] and "spiral" in body["styles"]
     layout = {r["name"]: r for r in body["params"]["layout"]}
     assert layout["rotate"]["choices"] == [0, 90, 180, 270]
 

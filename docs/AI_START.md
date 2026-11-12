@@ -5,7 +5,7 @@
 ## 1. Dự án
 **VMU PlotterPen** (thư mục `ExtruXY`): phần mềm điều khiển máy vẽ bút CoreXY. Mạch **MKS DLC32 V2.1**, firmware **FluidNC v4.1.1** (không sửa), nối USB (CH340, 115200). Vùng làm việc **285 × 318 mm**, Z bút 5 mm (servo, bút hạ bằng trọng lực). Giấy A6 ⊂ A5 ⊂ A4 neo ở O(0,0) góc trên trái, Y xuống. **Hướng trục đã xác nhận đúng 05/11/2026** (`VIEW.flipX/flipY = false`, `invert_y = false`).
 Backend **Python 3.12 / FastAPI**; frontend **JS thuần** (không framework, không build). Chạy trên laptop (bản mang đi Windows); kế hoạch MiniPC Ubuntu + Docker + Cloudflare Tunnel. Dữ liệu ở `data/` cùng cấp `backend/`.
-Bút: Sakura 0,4 / Uniball 150 trên giấy Ivory 250 g/m² (tranh; từ 11/11/2026 tính nét thật 0,44 mm, `LINE_WIDTH_RATIO` 1,1; giấy thường từng loang ra 0,55), bút bi 0,5 (chữ, Word cỡ 14–16). Mặc định vẽ 5000 mm/min, Z3 / Z0, chờ 0,05 s, hạ bút 2000; máy thật đang chạy tối đa 8000, gia tốc 3000, junction 0,05, SpreadCycle.
+Bút: Sakura 0,4 / Uniball 150 trên giấy Ivory 250 g/m² (tranh; từ 11/11/2026 ô "Bút vẽ" chọn theo tên bút và ghi thẳng nét đo trên giấy: UB-155 / UM-100 0,30, Sakura 0,45, ước tính chờ đo; `LINE_WIDTH_RATIO` 1,0; giấy thường từng loang ra 0,55), bút bi 0,5 (chữ, Word cỡ 14–16). Mặc định vẽ 5000 mm/min, Z3 / Z0, chờ 0,05 s, hạ bút 2000; máy thật đang chạy tối đa 8000, gia tốc 3000, junction 0,05, SpreadCycle.
 Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, đề tài cấp trường, mục tiêu sản phẩm IoT chạy thật, demo **không cần Internet**.
 
 ## 2. Tài liệu

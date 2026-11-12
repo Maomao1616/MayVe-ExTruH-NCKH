@@ -93,7 +93,7 @@ SVG = (
 
 # Ảnh raster (độ phân giải xử lý tự tính từ khung vẽ ÷ độ rộng bút; max_side_px chỉ để ghi đè).
 RASTER = (
-    Param("pen_width_mm", "float", 0.4, 0.1, 2, unit="mm"),           # bút dựng sẵn: 0,2 / 0,4 / 0,5 (xem PENS)
+    Param("pen_width_mm", "float", 0.4, 0.1, 2, unit="mm"),           # bề rộng nét đo trên giấy (xem PENS)
     Param("max_side_px", "int", None, 400, 4000, unit="px"),          # None = tự tính
     Param("quality", "choice", "final", choices=("draft", "final")),  # nháp (nhỏ, nhanh) hay chính thức
     Param("crop_x", "float", 0.0, 0, 1), Param("crop_y", "float", 0.0, 0, 1),   # cắt ảnh: tỷ lệ 0..1 của ảnh gốc
@@ -126,7 +126,9 @@ PALETTE = (
     Param("skip_background", "bool", True),
 )
 
-PENS = (0.2, 0.4, 0.5)
+# Bề rộng nét đo trên giấy (mm) của các bút dựng sẵn. Tên bút nằm ở index.html (ô draw-pen-width); số chưa đo thì
+# là ước tính (UB-155 / UM-100 vẽ nhanh ~0,3; Sakura 0,4 trên Ivory ~0,45), sửa cả hai nơi sau khi đo tờ hiệu chỉnh.
+PENS = (0.3, 0.45, 0.5)
 STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "wave_am")
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
