@@ -514,7 +514,7 @@ function initButtons() {
             select.value = paper;
             select.dispatchEvent(new Event("change"));                            // đặt khổ giấy TRƯỚC khi nạp: khung vừa lề khổ đó
             const rotate = $("drawing-rotate");
-            if (rotate) { rotate.value = "90"; rotate.dispatchEvent(new Event("change")); }   // ảnh thang xám ngang, giấy dọc: xoay cho to
+            if (rotate) { rotate.value = "0"; rotate.dispatchEvent(new Event("change")); }    // ảnh thang tông dọc như giấy
         }
         run(loadToneRamp);
     });
@@ -544,28 +544,37 @@ const baseName = () => {
     return S.fileName.replace(/\.[^.]+$/, "") || "Bản vẽ";
 };
 
-// Ảnh thang xám 11 bậc (0, 10 … 100 % đen) + dải chuyển liền bên dưới, vẽ ngay trong trình duyệt
-// rồi nạp như tệp người dùng chọn. Dùng để thử từng preset trên cùng một ảnh (docs/07_THU_NGHIEM.md mục 2).
-const RAMP_NAME = "thang-xam.png";
+// Ảnh thang tông (13/11/2026, gộp "thang xám" + "tờ hiệu chỉnh tông"): 16 ô xám độ đậm TONE_STEPS xếp 4 × 4, 3 ô mốc
+// đen ở góc (trên phải, dưới trái, dưới phải), chữ F ở góc trên trái. Hình học GIỐNG HỆT tờ tông A6 của backend
+// (calibration.tone_layers: ô 20 mm, khe 3 mm, phần đầu 24 mm, mốc 4 mm) để AI đo ảnh chụp bằng cùng công cụ.
+// Vẽ ngay trong trình duyệt rồi nạp như tệp người dùng chọn; bút / kiểu tô / preset chọn ở tab này như ảnh thường.
+// Ô vẽ ra đi qua đường cong tông của kiểu tô (backend styles.TONE_CURVES): đo được kết quả cuối cùng mắt thấy.
+const RAMP_NAME = "thang-tong.png";
+const TONE_STEPS = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.8, 0.9];
 async function loadToneRamp() {
-    const W = 1400, H = 560, M = 20, STEPS = 11, STEP_H = 300;
+    const K = 12, PATCH = 20, GAP = 3, TOP = 24, MARK = 4, GRID = 4;      // K điểm ảnh / mm
+    const wMm = GRID * PATCH + (GRID - 1) * GAP;
+    const hMm = TOP + GRID * PATCH + (GRID - 1) * GAP + 3 + MARK;
     const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
+    canvas.width = Math.round(wMm * K);
+    canvas.height = Math.round(hMm * K);
     const g = canvas.getContext("2d");
     g.fillStyle = "#fff";
-    g.fillRect(0, 0, W, H);
-    const cell = (W - 2 * M) / STEPS;
-    for (let i = 0; i < STEPS; i++) {
-        const v = Math.round(255 * (1 - i / (STEPS - 1)));
+    g.fillRect(0, 0, canvas.width, canvas.height);
+    const rect = (x, y, w, h, dark) => {
+        const v = Math.round(255 * (1 - dark));
         g.fillStyle = `rgb(${v},${v},${v})`;
-        g.fillRect(Math.round(M + i * cell), M, Math.ceil(cell), STEP_H);
-    }
-    const ramp = g.createLinearGradient(M, 0, W - M, 0);
-    ramp.addColorStop(0, "#fff");
-    ramp.addColorStop(1, "#000");
-    g.fillStyle = ramp;
-    g.fillRect(M, M + STEP_H + 30, W - 2 * M, H - STEP_H - 30 - 2 * M);
+        g.fillRect(Math.round(x * K), Math.round(y * K), Math.round(w * K), Math.round(h * K));
+    };
+    TONE_STEPS.forEach((dark, i) => {
+        const row = Math.floor(i / GRID), col = i % GRID;
+        rect(col * (PATCH + GAP), TOP + row * (PATCH + GAP), PATCH, PATCH, dark);
+    });
+    for (const [x, y] of [[wMm - MARK, 0], [0, hMm - MARK], [wMm - MARK, hMm - MARK]]) rect(x, y, MARK, MARK, 1);
+    const bar = 1.5;                                                        // chữ F nét 1,5 mm (đủ dày để tô được)
+    rect(2, 2, bar, 20, 1);
+    rect(2, 2, 12, bar, 1);
+    rect(2, 11.25, 9, bar, 1);
     const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
     if (!blob) throw new Error("canvas");
     acceptFile(new File([blob], RAMP_NAME, { type: "image/png" }));

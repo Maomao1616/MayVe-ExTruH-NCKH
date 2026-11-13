@@ -16,8 +16,12 @@ KINDS = ("lift", "lost", "accel", "speed", "drag", "arc")
 NAMES = {"lift": "Tờ thử nhấc bút", "lost": "Tờ thử 7.2 mất bước", "accel": "Tờ thử 7.3 gia tốc",
          "speed": "Tờ thử 7.4 tốc độ vẽ", "drag": "Tờ thử 7.5 vệt kéo", "arc": "Tờ thử 7.6 đoạn ngắn và cung G2"}
 MAX_LIST = 8
-DEFAULT_DELAYS = (0.02, 0.05, 0.1)                # tờ nhấc bút: chờ thử mặc định (giây)
-DEFAULT_SPEEDS = (7000, 8000, 9000, 10000)        # 7.2 / 7.3 / 7.4: tốc độ thử mặc định (mm/phút)
+# Mặc định theo số đã chốt 13/11/2026 (chờ 0 / 0,02, Z3, hạ 2000, vẽ 8000; không tăng tốc thêm để giữ tuổi thọ linh kiện).
+# Giao diện chỉ còn tờ nhấc bút, 7.2, 7.5 (7.3 / 7.4 / 7.6 đã xong; kind vẫn nhận để tạo bằng API / test).
+DEFAULT_DELAYS = (0.0, 0.02)                      # tờ nhấc bút: chờ thử mặc định (giây)
+DEFAULT_SPEEDS = (8000,)                          # 7.2 / 7.3 / 7.4: tốc độ thử mặc định (mm/phút)
+DEFAULT_UPS = (3.0,)                              # tờ nhấc bút: Z nhấc mặc định
+DEFAULT_DOWN_FEEDS = (2000.0,)                    # tờ nhấc bút: tốc độ hạ mặc định
 SPEED_MIN, SPEED_MAX = 100.0, 20000.0             # = khoảng của gcode.draw_feed trong spec.py
 
 
@@ -55,9 +59,9 @@ def make_draft(kind: str, machine_raw: Mapping[str, Any], gcode_raw: Mapping[str
         return [int(s) for s in _numbers(options, "speeds", list(DEFAULT_SPEEDS), SPEED_MIN, SPEED_MAX, "speeds (tốc độ thử)")]
 
     if kind == "lift":
-        ups = _numbers(options, "ups", [1.0, 3.0, 5.0], down + 0.3, machine.z_travel, "ups (Z nhấc)")
+        ups = _numbers(options, "ups", list(DEFAULT_UPS), down + 0.3, machine.z_travel, "ups (Z nhấc)")
         delays = _numbers(options, "delays", list(DEFAULT_DELAYS), 0.0, 5.0, "delays (chờ, giây)")
-        dfeeds = _numbers(options, "down_feeds", [1000.0, 2000.0], 100.0, 20000.0, "down_feeds (tốc độ hạ)")
+        dfeeds = _numbers(options, "down_feeds", list(DEFAULT_DOWN_FEEDS), 100.0, 20000.0, "down_feeds (tốc độ hạ)")
         if len(ups) * len(delays) * len(dfeeds) > tg.LIFT_MAX_ROWS:
             raise DrawError("too_many_rows", f"Quá nhiều hàng (tối đa {tg.LIFT_MAX_ROWS}). Bớt giá trị ở một nhóm.")
         rows = tg.lift_rows(ups, delays, dfeeds, pen_feed=pen_feed, down=down, draw_feed=draw_feed)

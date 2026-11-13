@@ -35,7 +35,7 @@ def main() -> None:
     ap.add_argument("--down", type=float, default=0.0, help="Z khi hạ bút (mm), mặc định 0")
     ap.add_argument("--pen-feed", type=float, default=3000.0, help="tốc độ nâng bút (mm/phút), mặc định 3000")
     ap.add_argument("--down-feed", type=float, default=2000.0, help="tốc độ hạ bút (mm/phút), mặc định 2000")
-    ap.add_argument("--draw-feed", type=float, default=5000.0, help="tốc độ vẽ (mm/phút), mặc định 5000")
+    ap.add_argument("--draw-feed", type=float, default=8000.0, help="tốc độ vẽ (mm/phút), mặc định 8000")
     ap.add_argument("--out", default=str(ROOT / "export" / "test-gcode"), help="thư mục ghi (mặc định export/test-gcode)")
     args = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")          # console Windows (cp1252) không in được tiếng Việt

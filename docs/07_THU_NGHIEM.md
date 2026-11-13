@@ -15,6 +15,27 @@
 - Làm theo thứ tự: mục trước chốt con số mục sau dùng. **Mỗi bút làm riêng** (UB-155, UM-100, Sakura 0,4, bút bi 0,5).
 - **Từ 11/11/2026 ô "Bút vẽ" ở tab Tạo bản vẽ ghi thẳng bề rộng nét đo trên giấy** (không còn nhân 1,1). Chọn bút theo tên; bút chưa có trong danh sách hoặc vừa đo ra số khác thì chọn **Tùy chọn** và gõ số đo được.
 
+## Kế hoạch tuần sau (từ 16/11/2026; làm từ trên xuống, bước 1–4 quan trọng nhất)
+Giấy Ivory, mặt bóng như 13/11. Bút **Sakura 0,5** trừ khi ghi khác. Kết quả 13/11 và lý do từng thay đổi: [09](09_QUYET_DINH_THIET_KE.md) C10, D10–D12, P19–P26.
+
+**Chuẩn bị (một lần):**
+1. Tắt phần mềm, mở lại, trình duyệt **Ctrl+F5** (bản mới: G2/G3, chờ 0, đường cong tông, kiểu "Đan chéo + theo dáng", XDoG, Thang tông).
+2. Tab Tạo bản vẽ, khối G-code: ô **chờ** gõ **0** (trình duyệt còn nhớ 0,02). Vẽ / di chuyển 8000, Z3, hạ 2000.
+3. Terminal gõ `$10` → phải là `$10=3` (để Biểu đồ có hàng đợi).
+4. Chọn lại preset sau khi mở (preset Chân dung, Cận cảnh đổi gamma về 1).
+
+| Bước | Làm gì | Ở đâu / chọn gì | Giấy | Ghi lại |
+|---|---|---|---|---|
+| 1 | **Chân dung kiểu mới** | ảnh em bé, preset **Chân dung** (= Đan chéo + theo dáng, gamma 1), **A6** rồi **A4** | 2 tờ | so với tờ đan chéo 13/11: mắt / mũi / mép mặt có tách khỏi nền không; đường cong có lạc lõng như viền dán không; **có quá đậm không** (đường cong tông làm vùng trung bình đậm hơn → quá đậm thì gamma 1,1–1,2 và báo lại); thời gian thật / ước tính; Terminal có `error` nào không (bản vẽ thật đầu tiên có G2/G3) |
+| 2 | **Thêm lớp viền XDoG** | như bước 1, **A4**, tích **"Thêm lớp viền phác họa lên kiểu tô"** | 1 tờ | có che bớt móc chữ U ở vùng sáng không, có rối không; thiếu nét → Chi tiết viền "Nhiều", vụn → "Ít" |
+| 3 | **Phác họa ảnh** | preset **Phác họa ảnh** (Nét viền + XDoG), ảnh em bé + ảnh thú, **A5**; nếu còn giấy: cùng ảnh, kiểu Nét viền **bỏ tích** XDoG | 2–3 tờ | XDoG có rõ mắt / mũi / miệng hơn không, có mất viền nào (mũ trắng trên nền sáng: XDoG chỉ nhìn độ sáng) |
+| 4 | **Sóng biên độ có lớp đậm** | Cài đặt → Tờ thử → **Thang tông** → tab vẽ: kiểu **Sóng biên độ**, gamma 1, tắt CLAHE / khử nhiễu, **A6**; rồi ảnh phong cảnh tối, preset **Phong cảnh**, **A5** | 2 tờ | ô đậm nhất đã gần đen chưa (bản cũ ~0,71); lớp gạch thẳng ở vùng đậm có làm mất vẻ mượt không (không thích → AI tắt `AM_DARK_LAYER`); máy có rung ở sóng dày không; thời gian / số lần nhấc (Biểu đồ, nay đếm theo Z) |
+| 5 | **Kiểm đường cong tông** | **Thang tông**, kiểu **Đan chéo + theo dáng** rồi **Xoắn ốc**, gamma 1, tắt CLAHE / khử nhiễu, Số mức 5, **A6** | 2 tờ | 5 bậc đậm nhạt có cách đều nhau không (16 ô gom thành ~5 bậc là đúng). Chụp như mục 2b, gửi ảnh gốc → AI đo, lệch thì sửa bảng |
+| 6 | (nếu còn giờ) **UB-155 đen** | **Thang tông**, kiểu Đan chéo + theo dáng, ô Bút vẽ UB-155 (0,38), **A6** | 1 tờ | như bước 5: đạt thì dùng chung đường cong, lệch thì AI thêm bảng riêng cho bút này |
+| 7 | (nếu gặp) **Servo sau Home** | — | — | bút tụt sau Home: Terminal có dòng `pen re-lift not sent` không |
+
+**Gửi lại:** ảnh từng tờ (thẳng góc, đủ sáng, không flash; tờ Thang tông thấy đủ 3 ô mốc đen) + bảng: bước · kiểu / preset · khổ · thời gian thật / ước tính · số lần nhấc · nhận xét. Có `error` ở Terminal thì chụp lại.
+
 ## Kế hoạch ngày 13/11/2026 (làm từ trên xuống; hết giờ thì dừng ở đâu cũng được, bước 1–5 quan trọng nhất)
 Giấy Ivory 250 g/m², cùng một mặt giấy cho cả ngày (mặt đã chọn 12/11). Bút **Sakura 0,5** cho mọi tờ đo tông và so kiểu tô.
 
@@ -85,11 +106,11 @@ Tờ có chữ F (kiểm hướng X / Y), thước 100 mm (kiểm tỷ lệ) và
 🔁 11/11/2026 (tối): bỏ cách nhân hệ số. `LINE_WIDTH_RATIO = 1.0`, ô **"Bút vẽ"** chọn theo tên bút, mỗi bút mang sẵn bề rộng nét **đo trên giấy**: UB-155 0,30 · UM-100 0,30 · Sakura 0,4 0,45 · bút bi 0,5 0,50 (ba số đầu là ước tính ⏳). Ô "Cỡ nét đoán trước" của tờ hiệu chỉnh chỉ để đặt các dải quanh số đoán.
 ⏳ Bề rộng nét **phụ thuộc tốc độ, bút, giấy**: in tờ này trên Ivory ở tốc độ vẽ đang dùng (8000) cho từng bút (kế hoạch 12/11 ở trên) → dải sát nhất còn đặc = bề rộng nét → sửa số của bút đó trong danh sách (hoặc chọn Tùy chọn và gõ).
 
-## 2. Thang đậm nhạt: ảnh thử preset (thang xám)
+## 2. Thang đậm nhạt: ảnh thử preset (thang tông)
 Chỉ làm **một lần cho mỗi bút + loại giấy**, để chốt số cho preset.
 
-1. Cài đặt → **Tờ thử / hiệu chỉnh** → chọn khổ giấy (A6 / A5 / A4, hoặc giữ khổ đang chọn) → **"Mở ảnh thang xám ở tab Tạo bản vẽ"** (tự chuyển sang tab vẽ, đặt khổ giấy, xoay 90° cho ảnh to hơn rồi nạp; sau đó bấm Tạo nét): nạp ảnh 11 bậc (0, 10 … 100 % đen) + một dải chuyển liền.
-2. Chọn preset **Chân dung** → chờ tạo nét → **Lưu bản thảo** (tên tự thành "Thang xám · Chân dung") → vẽ.
+1. Cài đặt → **Tờ thử / hiệu chỉnh** → khối **Thang tông** → chọn khổ giấy (A6 / A5 / A4, hoặc giữ khổ đang chọn) → **"Mở ảnh thang tông ở tab Tạo bản vẽ"** (tự chuyển sang tab vẽ, đặt khổ giấy rồi nạp; sau đó bấm Tạo nét): nạp ảnh 16 ô xám 0 → 90 % đen + 3 ô mốc đen + chữ F (từ 13/11/2026 thay ảnh thang xám 11 bậc).
+2. Chọn preset **Chân dung** → chờ tạo nét → **Lưu bản thảo** (tên tự thành "Thang tông · Chân dung") → vẽ.
 3. Làm tương tự với **Phong cảnh** và **Cận cảnh**. Ba tờ là đủ (Ảnh 2D và Schematic chỉ vẽ viền, thang xám không nói lên gì).
 4. Nhìn từng tờ, sửa đúng preset đó theo bảng dưới.
 
@@ -105,6 +126,7 @@ Cần biết: với 5 mức, 11 bậc ảnh được gộp thành **5 bậc trê
 | Tông giữa lệch so với dải chuyển liền | ghi lại độ đậm nhìn thấy từng bậc → dùng làm **đường cong tông** ([10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md)) |
 
 ## 2b. Tờ hiệu chỉnh tông (đường cong tông theo bút + giấy)
+**Từ 13/11/2026:** tờ tông không còn khối riêng trong Cài đặt: dùng **Thang tông** (mục 2) ở tab Tạo bản vẽ, chọn bút + kiểu tô ở đó (kết quả đã qua đường cong tông, tức đo đúng cái mắt thấy khi vẽ thật). Để đo: tắt CLAHE / khử nhiễu, gamma 1, Số mức 5; chụp như bước 4 dưới. Các bước 1–3 dưới là cách cũ (route `POST /api/draw/calibration` sheet = "tone" vẫn còn).
 Làm **một lần cho mỗi bút + loại giấy + tốc độ**. Kết quả dùng để chia các mức đậm nhạt cho đều theo mắt (kế hoạch ở [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) mục 0.3).
 
 1. Cài đặt → **Tờ thử / hiệu chỉnh** → khối **Tờ hiệu chỉnh tông**: nhập **bề rộng nét** đúng số ở ô Bút vẽ (Sakura 0,50), chọn **khổ A6**, chọn kiểu gạch, bấm **Tạo**.
@@ -156,6 +178,7 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước.
 - **Thông số G-code** (chờ, tốc độ vẽ / di chuyển / bút): tab Tạo bản vẽ. **Z bút**: Cài đặt → Cấu hình máy, mục App.
 - **Tạo tờ thử bằng giao diện (từ 09/11/2026):** Cài đặt → **Tờ thử / hiệu chỉnh**. Nút **Tạo tờ nhấc bút** (chọn Z nhấc 1 / 1,5 / 2 / 3 / 5, chờ, tốc độ hạ; mỗi hàng một tổ hợp, hàng k có k chấm ở đầu) cho ra bảng hàng ↔ thông số; chạy tờ trên giấy, chọn hàng đẹp nhất, bấm **Dùng** thì Z nhấc ghi vào hồ sơ và chờ / tốc độ hạ vào ô tab Tạo bản vẽ. Có sẵn cả nút tờ hiệu chỉnh bút và bài 7.2 / 7.3 / 7.4 / 7.5; tất cả thành bản thảo trong Hàng đợi (tab Điều khiển).
 - **Từ 11/11/2026:** tờ nhấc bút mặc định chờ **0,02 / 0,05 / 0,1 s** (× Z 1 / 3 / 5 × hạ 1000 / 2000 = 18 hàng). Bài 7.2 / 7.3 / 7.4 dùng chung ô **"Tốc độ thử"** (mặc định **7000, 8000, 9000, 10000**, tối đa 8 số, trần 20000; không còn chặn theo tốc độ tối đa của máy) và chờ = ô chờ ở tab Tạo bản vẽ. **Firmware vẫn tự chặn mọi lệnh ở `max_rate_mm_per_min`**: muốn thử 10000 thật thì Cài đặt → Cấu hình máy → tốc độ tối đa X, Y = 10000 → **Áp dụng** (chỉ RAM, tắt máy là mất) trước khi chạy.
+- **Từ 13/11/2026:** tờ nhấc bút chỉ còn ô chờ **0 / 0,02** (mặc định tích cả hai, Z3, hạ 2000 → 2 hàng). Bộ thử máy trên giao diện chỉ còn **7.2** (tốc độ thử mặc định 8000) và **7.5** (chờ 0 / 0,02); 7.3 / 7.4 / 7.6 đã xong nên bỏ nút (tạo bằng API / `tools/make_test_gcode.py` vẫn được, mặc định vẽ 8000).
 - Tệp có sẵn (hoặc sinh tay bằng `tools/make_test_gcode.py`): `7.1-cho-0.20s / 0.10s / 0.05s`, `7.1-nhac-Z2 / Z1.5`, `7.2-mat-buoc`, `7.3-gia-toc-rang-cua`, `7.4-toc-do-ve` (3000 / 4000 / 5000 / 6000), `7.5-keo-vet-cho-0.05s / 0.10s`. Mặc định Z 3 / 0, nâng 3000, hạ 2000, vẽ 5000; đổi bằng `--up`, `--down`, `--down-feed`, `--draw-feed`.
 
 | # | Bài | Cách làm | Nhìn gì | Tình trạng |

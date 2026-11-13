@@ -1066,26 +1066,9 @@ function initTestSheets() {
         }
     });
 
-    // Tờ hiệu chỉnh tông: 16 ô độ phủ, cùng đường API với tờ hiệu chỉnh bút (sheet = "tone").
-    const toneCalButton = $("sheet-tonecal-btn");
-    toneCalButton.addEventListener("click", async () => {
-        const width = Number($("sheet-tone-width").value);
-        if (!(width >= 0.1 && width <= 2)) return say(t("sheet.error.pen"), "error");
-        toneCalButton.disabled = true;
-        try {
-            const body = { machine: machine(), gcode: gcode(), pen_width_mm: width, sheet: "tone",
-                           style: $("sheet-tone-style").value, paper: $("sheet-tone-sheet-paper").value };
-            const result = await api.drawCalibration(body);
-            refreshDrafts();
-            say(t("sheet.created").replace("{name}", result.draft?.name ?? ""), "success");
-        } catch (error) {
-            say(errorText(error), "error");
-        } finally {
-            toneCalButton.disabled = false;
-        }
-    });
-
-    // Thang xám nạp ở tab Tạo bản vẽ (cần đi qua preset): chuyển tab rồi nhờ drawing.js nạp ảnh.
+    // Thang tông nạp ở tab Tạo bản vẽ (chọn bút / kiểu tô / preset ở đó): chuyển tab rồi nhờ drawing.js nạp ảnh.
+    // 13/11/2026: gộp "Thang xám" và "Tờ hiệu chỉnh tông" (tờ tông sinh thẳng nét theo kiểu gạch, nay bỏ khỏi giao diện;
+    // route POST /api/draw/calibration sheet = "tone" vẫn còn).
     $("sheet-tone-btn").addEventListener("click", () => {
         document.getElementById("tab-drawing")?.click();
         window.dispatchEvent(new CustomEvent("extruxy:tone-ramp", { detail: { paper: $("sheet-tone-paper").value } }));

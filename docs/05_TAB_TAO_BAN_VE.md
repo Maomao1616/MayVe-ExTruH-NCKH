@@ -45,7 +45,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |
 | **Chuyển sang Điều khiển** | cần tích "Tôi đã kiểm tra…". Tự lưu bản thảo (không tạo trùng) rồi nạp vào tab Điều khiển. **Không tự chạy** |
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
-| **Thang xám** (nay nằm ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang xám ở tab Tạo bản vẽ") | nạp ảnh 11 bậc trắng → đen để in thử từng preset ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2) |
+| **Thang tông** (ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang tông ở tab Tạo bản vẽ"; từ 13/11/2026 thay "Thang xám" + "Tờ hiệu chỉnh tông") | nạp ảnh 16 ô xám 0 → 90 % + 3 ô mốc đen + chữ F; chọn bút / kiểu tô / preset ở tab này rồi vẽ, để thử preset và đo tông ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2, 2b) |
 
 Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (có gia tốc, thời gian nhấc bút và giới hạn ~125 dòng/giây; [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 12), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
 

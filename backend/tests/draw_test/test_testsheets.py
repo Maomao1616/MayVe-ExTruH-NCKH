@@ -98,13 +98,13 @@ def test_speed_strips_follow_the_requested_speeds_and_are_not_capped_by_the_mach
 
 
 @pytest.mark.parametrize("kind", ["lost", "accel", "speed"])
-def test_machine_sheets_default_to_7000_10000_and_use_the_form_delay(client, kind):
+def test_machine_sheets_default_to_8000_and_use_the_form_delay(client, kind):
+    # 13/11/2026: chốt vẽ 8000, không tăng tốc thêm (giữ tuổi thọ linh kiện) -> tốc độ thử mặc định chỉ 8000
     r = post(client, kind, gcode={**GCODE, "delay_up_s": 0.02, "delay_down_s": 0.02})
     assert r.status_code == 201, r.text
-    assert r.json()["draft"]["name"].endswith("(7000–10000)")
+    assert r.json()["draft"]["name"].endswith("(8000)")
     text = drafts.read_gcode(r.json()["draft"]["id"], "draw")
-    for speed in (7000, 8000, 9000, 10000):
-        assert f"F{speed}" in text, (kind, speed)
+    assert "F8000" in text and "F10000" not in text, kind
     assert "G4 P0.02" in text and "G4 P0.1\n" not in text
 
 
@@ -126,7 +126,7 @@ def test_accel_draws_one_row_per_speed():
 
 @pytest.mark.parametrize("options", [
     {"ups": [1, 2, 3, 4, 5], "delays": [0.05, 0.1, 0.2], "down_feeds": [1000, 2000]},     # 30 hàng > 24
-    {"ups": [1, 2, 3], "down_feeds": [1000, 1500, 2000]},                                    # chờ mặc định 3 mức: 27 hàng > 24
+    {"ups": [1, 2, 3, 4], "down_feeds": [1000, 1500, 2000, 2500]},                           # chờ mặc định 2 mức (0 / 0,02): 32 hàng > 24
     {"ups": []}, {"ups": [0.1]}, {"ups": [9]}, {"delays": [-1]}, {"down_feeds": [50]},
     {"ups": ["a"]}, {"ups": [True]}, {"ups": "3"}, {"ups": [None]},
 ])

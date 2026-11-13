@@ -1458,23 +1458,20 @@
               <div class="sheet-options">
                 <fieldset>
                   <legend data-i18n="sheet.lift.ups">Z nhấc (mm)</legend>
-                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="1" checked/><span>1</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="1"/><span>1</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="1.5"/><span>1.5</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="2"/><span>2</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="3" checked/><span>3</span></label>
-                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="5" checked/><span>5</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="ups" type="checkbox" value="5"/><span>5</span></label>
                 </fieldset>
                 <fieldset>
                   <legend data-i18n="sheet.lift.delays">Chờ (giây)</legend>
-                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0"/><span>0</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0" checked/><span>0</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.02" checked/><span>0.02</span></label>
-                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.05" checked/><span>0.05</span></label>
-                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.1" checked/><span>0.1</span></label>
-                  <label class="checkbox-inline"><input data-sheet-group="delays" type="checkbox" value="0.2"/><span>0.2</span></label>
                 </fieldset>
                 <fieldset>
                   <legend data-i18n="sheet.lift.downFeeds">Tốc độ hạ (mm/phút)</legend>
-                  <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="1000" checked/><span>1000</span></label>
+                  <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="1000"/><span>1000</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="1500"/><span>1500</span></label>
                   <label class="checkbox-inline"><input data-sheet-group="down_feeds" type="checkbox" value="2000" checked/><span>2000</span></label>
                 </fieldset>
@@ -1496,30 +1493,10 @@
               <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,125; 1,25; 1,5; 2; 2,5; 3 lần cỡ bút (bút 0,4 mm: 0,32; 0,40; 0,45; 0,50; 0,60; 0,80; 1,0; 1,2 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật; ghi số đó vào ô Bút vẽ ở tab vẽ (Tùy chọn) (bài 1 trong 07_THU_NGHIEM).</p>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-pen-width"><span data-i18n="sheet.pen.width">Cỡ nét đoán trước (mm)</span>
-                  <input id="sheet-pen-width" max="2" min="0.1" step="0.05" type="number" value="0.4"/></label>
+                  <input id="sheet-pen-width" max="2" min="0.1" step="0.05" type="number" value="0.5"/></label>
                 <label class="sheet-inline" for="sheet-pen-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
-                  <select id="sheet-pen-paper"><option value="a5">A5</option><option value="a6">A6</option></select></label>
+                  <select id="sheet-pen-paper"><option value="a6">A6</option><option value="a5">A5</option></select></label>
                 <button class="primary-button" data-i18n="sheet.pen.create" id="sheet-pen-btn" type="button">Tạo tờ hiệu chỉnh bút</button>
-              </div>
-            </section>
-
-            <section class="sheet-block">
-              <h3 data-i18n="sheet.tonecal.title">Tờ hiệu chỉnh tông</h3>
-              <p class="help-text" data-i18n="sheet.tonecal.help">16 ô vuông, đọc từ trái sang phải, trên xuống dưới, độ phủ 0 (giấy trắng) · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 45 · 50 · 55 · 60 · 70 · 80 · 90 %. Ba ô đen nhỏ ở góc là mốc đen chuẩn, chữ F ở góc trên trái. Vẽ bằng đúng bút, giấy, tốc độ sẽ dùng; chụp thẳng, đủ sáng, không bóng loáng rồi gửi ảnh (07_THU_NGHIEM mục 2b).</p>
-              <div class="mc-actions">
-                <label class="sheet-inline" for="sheet-tone-width"><span data-i18n="sheet.tonecal.width">Bề rộng nét (mm, như ô Bút vẽ)</span>
-                  <input id="sheet-tone-width" max="2" min="0.1" step="0.01" type="number" value="0.5"/></label>
-                <label class="sheet-inline" for="sheet-tone-style"><span data-i18n="sheet.tonecal.style">Kiểu gạch</span>
-                  <select id="sheet-tone-style">
-                    <option data-i18n="sheet.tonecal.zigzag" value="zigzag">Zigzag (một hướng)</option>
-                    <option data-i18n="sheet.tonecal.crosshatch" value="crosshatch">Gạch chéo</option>
-                    <option data-i18n="sheet.tonecal.crosshatch3" value="crosshatch3">Đan 3 hướng</option>
-                    <option data-i18n="sheet.tonecal.wave_am" value="wave_am">Sóng biên độ</option>
-                    <option data-i18n="sheet.tonecal.spiral" value="spiral">Xoắn ốc</option>
-                  </select></label>
-                <label class="sheet-inline" for="sheet-tone-sheet-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
-                  <select id="sheet-tone-sheet-paper"><option value="a6">A6</option><option value="a5">A5</option></select></label>
-                <button class="primary-button" data-i18n="sheet.tonecal.create" id="sheet-tonecal-btn" type="button">Tạo tờ hiệu chỉnh tông</button>
               </div>
             </section>
 
@@ -1528,31 +1505,28 @@
               <p class="help-text" data-i18n="sheet.machine.help">Tốc độ, gia tốc và góc cua đổi ở "Cấu hình máy" phía trên; các tờ này chỉ vẽ mẫu để so. Làm 7.2 trước (mất bước), rồi 7.3.</p>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-speeds"><span data-i18n="sheet.machine.speeds">Tốc độ thử cho 7.2 / 7.3 / 7.4 (mm/phút, cách nhau dấu phẩy, tối đa 8 số)</span>
-                  <input id="sheet-speeds" type="text" value="7000, 8000, 9000, 10000"/></label>
+                  <input id="sheet-speeds" type="text" value="8000"/></label>
               </div>
               <div class="sheet-buttons">
                 <button class="secondary-button" data-i18n="sheet.machine.lost" data-sheet-kind="lost" type="button">7.2 Mất bước</button>
-                <button class="secondary-button" data-i18n="sheet.machine.accel" data-sheet-kind="accel" type="button">7.3 Gia tốc / góc cua</button>
-                <button class="secondary-button" data-i18n="sheet.machine.speed" data-sheet-kind="speed" type="button">7.4 Tốc độ vẽ</button>
-                <button class="secondary-button" data-i18n="sheet.machine.arc; [title]sheet.machine.arcHelp" data-sheet-kind="arc" title="Năm vòng tròn: đoạn thẳng 1 / 0,5 / 0,25 / 0,1 mm rồi cung G2. Xem hàng đợi và tốc độ từng vòng." type="button">7.6 Đoạn ngắn / cung G2</button>
               </div>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-drag-delay"><span data-i18n="sheet.machine.dragDelay">Chờ nâng (giây)</span>
-                  <select id="sheet-drag-delay"><option value="0.02">0,02</option><option value="0.05" selected>0,05</option><option value="0.1">0,1</option><option value="0.2">0,2</option></select></label>
+                  <select id="sheet-drag-delay"><option value="0" selected>0</option><option value="0.02">0,02</option></select></label>
                 <button class="secondary-button" data-i18n="sheet.machine.drag" data-sheet-kind="drag" type="button">7.5 Vệt kéo</button>
               </div>
             </section>
 
             <section class="sheet-block">
-              <h3 data-i18n="sheet.tone.title">Thang xám (thử preset)</h3>
-              <p class="help-text" data-i18n="sheet.tone.help">Nạp ảnh thang xám 11 bậc trắng → đen vào tab Tạo bản vẽ. Chọn preset, bấm Tạo nét, Lưu bản thảo rồi vẽ: mỗi preset một tờ, xem các bậc có tách rõ không rồi chỉnh preset (07_THU_NGHIEM mục 2).</p>
+              <h3 data-i18n="sheet.tone.title">Thang tông (thử preset, đo tông)</h3>
+              <p class="help-text" data-i18n="sheet.tone.help">Nạp ảnh 16 ô xám (0 → 90 % đen) + 3 ô mốc đen + chữ F vào tab Tạo bản vẽ. Ở đó chọn bút, kiểu tô / preset như vẽ ảnh thường, bấm Tạo nét, Lưu bản thảo rồi vẽ. Nhìn các ô có tách đều không; muốn đo tông thì chụp thẳng, đủ sáng, thấy đủ 3 ô mốc, gửi ảnh gốc (07_THU_NGHIEM mục 2b).</p>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-tone-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
                   <select id="sheet-tone-paper">
                     <option data-i18n="sheet.tone.keep" value="">Giữ khổ đang chọn</option>
                     <option value="a6">A6</option><option value="a5">A5</option><option value="a4">A4</option>
                   </select></label>
-                <button class="secondary-button" data-i18n="sheet.tone.button" id="sheet-tone-btn" type="button">Mở ảnh thang xám ở tab Tạo bản vẽ</button>
+                <button class="secondary-button" data-i18n="sheet.tone.button" id="sheet-tone-btn" type="button">Mở ảnh thang tông ở tab Tạo bản vẽ</button>
               </div>
             </section>
 
