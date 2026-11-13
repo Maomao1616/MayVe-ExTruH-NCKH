@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~509,510 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~515,753 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -78,7 +78,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `CLAUDE.md` | ~1,774 |  |
+| `CLAUDE.md` | ~1,789 |  |
 | `README.md` | ~1,563 |  |
 
 ### `.clinerules/`
@@ -141,6 +141,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `__init__.py` | ~319 | Tab Tạo bản vẽ: ảnh/SVG -> đường nét -> G-code. Không gọi máy. |
+| `arcs.py` | ~1,576 | Gộp chuỗi điểm của một nét thành ít lệnh hơn: cung tròn G2/G3 và đoạn thẳng G1 dài (bỏ điểm gần thẳng hàng). |
 | `calibration.py` | ~3,960 | Tờ mẫu hiệu chỉnh bút: tạo thành một BẢN THẢO như mọi bản khác (xem trước, nạp sang Điều khiển, chạy). |
 | `drafts.py` | ~3,189 | Bản thảo trên đĩa: G-code từng lớp + ảnh minh họa + meta.json, mỗi bản một thư mục con. |
 | `edges.py` | ~3,816 | Nét viền phác họa: ảnh -> mặt nạ đường mảnh 1 điểm ảnh (trace.py dò thành nét liền). |
@@ -198,6 +199,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
+| `test_arcs.py` | ~1,813 | Gộp chuỗi điểm thành cung G2/G3 + đoạn G1 dài (arcs.py) và chỗ dùng nó trong gcode.build_gcode. |
 | `test_calibration.py` | ~2,302 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
 | `test_draw_contract.py` | ~3,704 | Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay. |
 | `test_draw_gcode.py` | ~2,183 |  |
@@ -219,7 +221,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_raster_in.py` | ~1,314 |  |
 | `test_soft_styles.py` | ~2,837 | Chuyển mức mềm (soft_levels), gạch chéo chồng lớp (crosshatch), sóng biến thiên (wave_am). Đo bằng mô phỏng mự |
 | `test_testsheets.py` | ~2,845 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
+| `test_tone_curve.py` | ~1,104 | Đường cong tông (styles.TONE_CURVES, đo 13/11/2026) và kiểu Đan chéo + theo dáng (crosshatch_flow). |
 | `test_upload_names.py` | ~920 | Nạp ảnh: nhận dạng bằng nội dung, tên tệp dài / ký tự lạ không làm hỏng (lỗi thật 11/11/2026: ảnh 200 KB tên d |
+| `test_xdog.py` | ~678 | XDoG cho lớp ranh giới mảng (edges.xdog_edges, 13/11/2026): Nét viền tích "Dùng XDoG", lớp viền phủ lên kiểu t |
 
 ### `backend/tools/`
 
@@ -237,13 +241,13 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `04_TAB_DIEU_KHIEN.md` | ~5,536 |  |
 | `05_TAB_TAO_BAN_VE.md` | ~4,680 |  |
 | `06_THUAT_TOAN_XU_LY_ANH.md` | ~15,805 |  |
-| `07_THU_NGHIEM.md` | ~8,728 |  |
+| `07_THU_NGHIEM.md` | ~9,643 |  |
 | `08_TRIEN_KHAI.md` | ~5,358 |  |
 | `09_QUYET_DINH_THIET_KE.md` | ~5,813 |  |
 | `10_HUONG_PHAT_TRIEN.md` | ~6,377 |  |
 | `11_VIEC_CAN_LAM.md` | ~5,973 |  |
 | `AI_CODEMAP.md` | ~6,263 |  |
-| `AI_START.md` | ~2,832 |  |
+| `AI_START.md` | ~2,974 |  |
 
 ### `frontend/`
 

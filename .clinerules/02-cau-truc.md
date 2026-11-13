@@ -4,7 +4,7 @@
 docs/        tài liệu 01–11 (cho người, đánh số) + AI_* (chỉ cho AI, dòng đầu ghi "FOR AI")
 frontend/    index.html · css/ · locales/{vi,en}.json · js/{core,lib,stores,views}/ · tests/
 backend/     app/{api,links,services,auth.py,main.py} · tests/ · tests/draw_test/
-tools/       export_context.py · ink_sim.py · make_test_gcode.py · dong_goi.ps1
+tools/       export_context.py · ink_sim.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1
 launcher/    bật / tắt bằng icon (Windows)
 data/        không lên Git: bản thảo, macro, hồ sơ, sao lưu, PIN
 ```

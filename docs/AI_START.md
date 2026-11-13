@@ -33,6 +33,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 7. **Không bịa số máy.** Lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `02_PHAN_CUNG_MAY.md`; ghi rõ điều chưa kiểm chứng.
 8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`). Thêm route cho khách = một dòng trong danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
 9. **Thuật toán tô:** đánh giá thay đổi bằng `tools/ink_sim.py` (sai số tông, chiều dài, thời gian) trước khi đề xuất; nêu số trước / sau.
+   Công cụ có sẵn (chạy bằng `backend\.venv`, đừng viết lại): `tools/tone_read.py` đọc ảnh chụp Thang tông / tờ tông ra 16 ô độ đậm (`--crop` khi nhiều tờ một ảnh, `--kind` so với đường cong, `--out` ảnh kiểm tra); `tools/log_read.py` đọc `data/job_logs/*.csv` (hàng đợi cạn, tốc độ thật theo vị trí, `--split-x` tách vùng); `tools/style_preview.py` vẽ thử ảnh với nhiều kiểu tô ra PNG (`--kinds`, `--set nhóm.tham_số=giá_trị`; đường theo dáng tô đỏ).
 10. **Báo trung thực:** test fail, bước bỏ qua, điều chưa chạy trên Ubuntu / máy thật / giấy.
 
 ## 4. Làm việc với chủ dự án
