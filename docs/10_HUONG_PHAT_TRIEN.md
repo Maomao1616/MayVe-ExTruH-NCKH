@@ -23,7 +23,7 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F, 12/11/2026) đối c
 ### 0.2 Bước tiếp, theo thứ tự
 | # | Việc | Chờ gì | Ước lượng |
 |---|---|---|---|
-| 1 | **Đường cong tông** (0.3) | ảnh chụp tờ hiệu chỉnh tông | 1 buổi sau khi có ảnh |
+| 1 ✅ | **Đường cong tông** (0.3) | xong 13/11/2026 cho đan chéo + xoắn ốc ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12); sóng biên độ chờ in lại | — |
 | 2 | **XDoG cho viền ảnh lệch sáng** (0.4) | 2–3 ảnh thật (em bé, ngược sáng, đèn đêm) | 1 buổi |
 | 3 | **Flow field: nét theo dáng ảnh** (0.5) | **bản thô F1–F3 đã có 12/11** (kiểu "Theo dáng ảnh (thử nghiệm)"); chờ in thử A6 + ảnh thú thật | còn F4–F6 |
 | 3b ✅ | **Đan chéo + theo dáng** (kiểu lai, mặc định Chân dung) | xong 13/11/2026 ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.11); chờ in A6 / A4 | — |
@@ -35,11 +35,13 @@ Mục tiêu: các mức đậm nhạt **trông cách đều nhau bằng mắt** 
 - T2 Chủ dự án vẽ A6: Sakura 0,5 × 3 kiểu gạch (Ivory, 8000), UB-155 0,38 zigzag nếu còn mực; chụp thẳng, ánh sáng đều (07 mục 2b).
 - T3 AI đo ảnh: cắt phần giữa 60 % mỗi ô, lấy độ xám trung bình, quy về 0 = ô giấy trắng, 1 = trung bình 3 ô đen → bảng *độ phủ danh định → độ đậm nhìn thấy*.
 - T4 Sửa mã: `level_plan` chọn độ phủ cho từng mức bằng **hàm ngược** của bảng (nội suy tuyến tính từng đoạn, đơn điệu) để các mức cách đều theo độ đậm nhìn thấy. Bảng lưu là **hằng số HOA** theo từng bút trong `styles.py` (kèm ngày đo), chọn theo bút ở ô "Bút vẽ" (cần thêm mã bút vào yêu cầu, hiện chỉ gửi bề rộng). Không có bảng thì giữ cách tính hiện tại. Đo trước / sau bằng `tools/ink_sim.py` + in lại thang xám.
+- **Kết quả 13/11/2026:** T3 ✅ (4 kiểu, bảng ở [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12). T4 ✅ làm khác dự tính: không sửa `level_plan` mà đổi trường độ đậm trước khi chia mức (`styles.tone_cover`), áp 75 % (mô phỏng: áp đủ làm dải chuyển liền đậm quá); một bảng chung, chưa chọn theo bút. Chỉ đan chéo, xoắn ốc, kiểu lai (chủ dự án chọn).
 - T5 (sau) Tự đo từ ảnh: tìm 3 ô đen + F, nắn phối cảnh (OpenCV có sẵn), đọc 16 ô. Chỉ làm khi phải hiệu chỉnh nhiều bút / giấy.
 - Rủi ro: điện thoại tự cân sáng / màu → luôn chuẩn hóa theo ô trắng và ô đen **trên cùng tờ**; giấy láng phản chiếu → chụp xiên nhẹ, tránh đèn chiếu thẳng.
 
-### 0.4 XDoG cho viền ảnh lệch sáng (ý tưởng B) ✅ là lựa chọn, không phải mặc định
+### 0.4 XDoG cho viền ảnh lệch sáng (ý tưởng B) ✅ xong 13/11/2026 (X1–X3; X4 chờ in thật)
 Thử nhanh 12/11 (ảnh mẫu chân dung + mèo, A5, bút 0,5): Canny mức "ít" 199 nét, mặt gần như trống; Canny "nhiều" 341 nét, vụn như vết nứt; **XDoG 215 nét, mắt / mũi / miệng hiện rõ**, đường gọn hơn. Lý do: XDoG so mỗi điểm với vùng quanh nó (hiệu hai bản làm mờ σ và 1,6σ), không dùng một ngưỡng cho cả ảnh như Canny.
+- **Làm 13/11/2026 (khác dự tính ở X1):** không có ô chọn "Cách tìm viền" mà là ô tích **"Dùng XDoG"** chỉ ở kiểu Nét viền (`style.outline_xdog`), còn lớp viền phủ lên kiểu tô **luôn** XDoG; thêm preset "Phác họa ảnh". Hằng số `XDOG_*` ở `edges.py`, σ 0,7 mm (không phải 0,35: mất viền đầu). Chi tiết [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 9.1, [09](09_QUYET_DINH_THIET_KE.md) P26. Còn: móc chữ U vùng sáng — thử bật "Thêm lớp viền" ở Chân dung xem có che bớt không.
 - X1 Thêm tham số `style.outline_method` = `canny` (mặc định) | `xdog` (ô chọn "Cách tìm viền" cạnh "Mức chi tiết viền"; `spec.py` + `index.html` + `FIELDS` + vi/en). Chỉ thay lớp **ranh giới mảng** (`edges.region_edges`); lớp **nét mực top-hat** (chữ, nét hoạt hình → đường giữa) giữ nguyên, nên chữ không thành hai mép.
 - X2 Hằng số đầu tệp `edges.py`: `XDOG_SIGMA_MM` 0,35, `XDOG_K` 1,6, `XDOG_TAU` 0,98, ngưỡng theo mức chi tiết (ít / vừa / nhiều). Không thêm thư viện (OpenCV `GaussianBlur`).
 - X3 Test: ảnh tổng hợp nửa sáng nửa tối có cạnh ở cả hai nửa → XDoG tìm được cạnh ở nửa tối, Canny "ít" thì không; số nét không vượt Canny "vừa"; nét mực dày vẫn là một đường giữa.
@@ -59,6 +61,8 @@ Cách làm (chỉ NumPy + OpenCV đang có):
 6. **Vùng rất đậm**: thêm lớp hai theo hướng vuông góc với trường hướng (như gạch chéo, chia độ phủ bằng `cross_split`) → "đan theo dáng".
 
 **Trạng thái 12/11/2026:** bản thô gộp F1–F3 đã có (`flow.py`, kiểu `flow`, số đo ở [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.10). So với tiêu chí nhận: nhấc bút và thời gian **đạt** (ít hơn đan chéo 40–56 %), xử lý 4–5 s **đạt**, sai tông mô phỏng 0,056 **chưa đạt** (đan chéo 0,042). Chưa in. Hướng phối trộn với đan 3 (lai: lớp 1 theo dáng, lớp 2–3 gạch thẳng; hoặc cong chỗ có hướng rõ, thẳng chỗ phẳng) chỉ quyết sau khi in so sánh.
+
+**13/11/2026 (in thật):** theo dáng thuần ra hình ở A4 (mèo 6:21), không ra hình ở A6; đan 3 không đẹp hơn đan chéo. Chủ dự án chốt hướng lai "cong ở viền, thẳng gánh tông": kiểu `crosshatch_flow` ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.11), mặc định Chân dung. Đan 3 và theo dáng thuần bỏ khỏi danh sách kiểu tô (mã giữ lại). Móc chữ U ở chỗ quay đầu vùng sáng (thấy rõ trên em bé A4): **tạm giữ**; chủ dự án định xử lý bằng XDoG + thêm lớp nét viền (0.4) thay vì nhấc bút thêm.
 
 Các bước giao, mỗi bước có ảnh xem trước để chủ dự án duyệt:
 | Bước | Làm | Duyệt bằng |

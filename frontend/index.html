@@ -845,6 +845,7 @@
                       <option value="portrait" data-i18n="drawing.preset.portrait">Chân dung</option>
                       <option value="landscape" data-i18n="drawing.preset.landscape">Phong cảnh</option>
                       <option value="closeup" data-i18n="drawing.preset.closeup">Cận cảnh / Đồ vật</option>
+                      <option value="sketch" data-i18n="drawing.preset.sketch">Phác họa ảnh (chỉ nét viền)</option>
                       <option value="flat2d" data-i18n="drawing.preset.flat2d">Ảnh 2D / Hình vẽ</option>
                       <option value="schematic" data-i18n="drawing.preset.schematic">Schematic / Bản vẽ kỹ thuật</option>
                     </select>
@@ -897,13 +898,10 @@
                   <label for="style-kind" data-i18n="[title]drawing.hint.kind">
                     <span data-i18n="drawing.vectorize.mode">Kiểu nét vẽ</span>
                     <select id="style-kind">
-                      <option data-i18n="drawing.style.zigzag" selected="" value="zigzag">Zigzag (gạch nối liền)</option>
-                      <option data-i18n="drawing.style.wave" value="wave">Sóng</option>
-                      <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
+                      <option data-i18n="drawing.style.crosshatchFlow" selected="" value="crosshatch_flow">Đan chéo + theo dáng</option>
                       <option data-i18n="drawing.style.crosshatch" value="crosshatch">Gạch chéo chồng lớp</option>
-                      <option data-i18n="drawing.style.crosshatch3" value="crosshatch3">Đan 3 hướng (60°)</option>
                       <option data-i18n="drawing.style.waveAm" value="wave_am">Sóng biến thiên (tông liền)</option>
-                      <option data-i18n="drawing.style.flow" value="flow">Theo dáng ảnh (thử nghiệm)</option>
+                      <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
                       <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
                     </select>
                   </label>
@@ -944,6 +942,10 @@
                   </label>
                 </div>
                 <div class="checkbox-list">
+                  <label data-i18n="[title]drawing.hint.xdog">
+                    <input id="style-xdog" type="checkbox"/>
+                    <span data-i18n="drawing.style.xdog">Dùng XDoG (viền rõ hơn ở ảnh chụp, ảnh tối / ngược sáng)</span>
+                  </label>
                   <label data-i18n="[title]drawing.hint.outlineOverlay">
                     <input id="style-outline" type="checkbox"/>
                     <span data-i18n="drawing.style.outlineOverlay">Thêm lớp viền phác họa lên kiểu tô</span>

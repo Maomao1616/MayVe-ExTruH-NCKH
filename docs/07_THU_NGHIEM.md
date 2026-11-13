@@ -115,6 +115,8 @@ Làm **một lần cho mỗi bút + loại giấy + tốc độ**. Kết quả d
 
 **Gửi lại:** ảnh từng tờ + một dòng: bút · giấy (láng / nhám) · tốc độ · kiểu gạch · ô nào bắt đầu bết mực. AI đọc độ xám từng ô và dựng bảng *độ phủ → độ đậm nhìn thấy* cho bút đó.
 
+**Kết quả 13/11/2026:** 4 tờ (đan chéo, đan 3, xoắn ốc, sóng biên độ), Sakura 0,5, **mặt bóng** Ivory, 8000, chụp chung một ảnh. Bảng độ đậm mắt thấy và cách áp ở [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.12: vùng trung bình trông nhạt hơn độ phủ, đan 3 ≈ đan chéo, xoắn ốc chạm trần từ 70 %, sóng biên độ ô 90 % chỉ 0,71. → đường cong tông cho đan chéo + xoắn ốc, bỏ đan 3, thêm lớp đậm cho sóng biên độ ([09](09_QUYET_DINH_THIET_KE.md) P21–P24). Công cụ đọc ảnh tờ tông hiện là script tạm của AI (chưa đưa vào `tools/`). Chụp nhiều tờ một ảnh vẫn đo được, miễn mỗi tờ thấy đủ 3 ô mốc.
+
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |
 |---|---|---|

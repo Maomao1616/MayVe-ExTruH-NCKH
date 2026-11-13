@@ -53,6 +53,7 @@ const FIELDS = [
     ["style-spacing", "style", "spacing_mm", "optnum"],
     ["style-amplitude", "style", "amplitude_mm", "optnum"],
     ["style-outline-detail", "style", "outline_detail", "str"],
+    ["style-xdog", "style", "outline_xdog", "bool"],
     ["palette-mode", "palette", "mode", "str"],
     ["palette-colors", "palette", "colors", "int"]
 ];
@@ -240,6 +241,8 @@ export function syncVisibility() {
     if (levels) levels.hidden = levelless;
     const soft = $("style-soft")?.closest("label");
     if (soft) soft.hidden = levelless;
+    const xdog = $("style-xdog")?.closest("label");
+    if (xdog) xdog.hidden = !outlineOnly;                         // lớp viền phủ lên kiểu tô luôn dùng XDoG (backend)
     const detail = $("style-outline-detail")?.closest("label");
     if (detail) detail.hidden = !(outlineOnly || $("style-outline")?.checked);
     const multi = $("palette-mode")?.value === "multi";

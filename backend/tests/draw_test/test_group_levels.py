@@ -51,7 +51,9 @@ def test_default_is_off_and_can_be_turned_on():
     assert spec.parse("optimize", {"group_levels": True}).group_levels is True
 
 
-def test_spiral_draws_one_level_after_another_light_to_dark():
+def test_spiral_draws_one_level_after_another_light_to_dark(monkeypatch):
+    # Kiểm THỨ TỰ vẽ; mức đoán từ vị trí trên dải xám nên tắt đường cong tông (nó dời ranh giới mức, 13/11/2026)
+    monkeypatch.setattr(styles, "USE_TONE_CURVE", False)
     layers, _, info, _ = build(gradient_png(), group=True)
     seq = level_sequence(layers, info)
     assert len(seq) > 100 and seq == sorted(seq)                          # mức chỉ tăng dần: nhạt → đậm

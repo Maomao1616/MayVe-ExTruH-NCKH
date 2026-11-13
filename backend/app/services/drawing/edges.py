@@ -8,6 +8,9 @@ Ba lớp, gộp lại rồi nối khe hở:
 2. Ranh giới mảng (hai vùng khác sáng tối HOẶC khác màu, không cần nét đen): Canny trên ảnh đã làm mịn
    giữ cạnh (bilateral), thêm hai kênh màu a/b của Lab nên đỏ cạnh xanh cùng độ sáng vẫn có viền.
    Bỏ phần nằm sát nét mực (Canny cho hai mép của một nét mực, lớp 1 đã có đường giữa).
+   Hoặc (13/11/2026) XDoG thay Canny cho lớp này (`method="xdog"`): so mỗi điểm với vùng quanh nó (hiệu hai bản làm
+   mờ σ và 1,6σ) thay vì một ngưỡng cho cả ảnh, nên ảnh ngược sáng / ảnh tối vẫn ra viền mắt, mũi, miệng. Dùng cho lớp
+   viền phủ lên kiểu tô (luôn) và kiểu Nét viền khi tích "Dùng XDoG".
 3. Nối khe hở: mỗi đầu mút nhìn về phía trước (trong góc 55°), gặp nét khác trong ~1,5 mm thì kẻ nối.
 
 Ảnh vào là độ đậm 0..1 (1 = đen) và (tùy chọn) ảnh màu RGB cùng cỡ. `detail` = low / medium / high.
@@ -31,6 +34,14 @@ INK_MAX_MM = 4.0         # nét mực / chấm dày tới chừng này thì lấ
 LIGHT_MAX_MM = 1.2       # vạch sáng mảnh hơn chừng này thì lấy đường giữa
 GAP_MM = 1.5             # khe hở được nối (tính cả phần đầu nét co lại khi làm mảnh nét dày)
 GAP_ANGLE = 55.0         # độ lệch hướng tối đa khi nối (độ)
+# XDoG (docs/10 mục 0.4). Thử 12/11/2026 trên ảnh mẫu A5 bút 0,5: Canny "ít" 199 nét, mặt gần như trống; Canny "nhiều"
+# 341 nét, vụn như vết nứt; XDoG 215 nét, mắt / mũi / miệng rõ.
+# Chỉnh 13/11/2026 (ảnh mèo + em bé của chủ dự án, A5, bút 0,5, khử nhiễu): σ 0,35 / ngưỡng 2 chỉ còn mắt, mũi (72 nét),
+# mất viền đầu; σ 0,7 / ngưỡng 2 có viền đầu, mặt, vai, chưa vụn (112–119 nét); ngưỡng 1 thêm miệng nhưng lông vụn (155).
+XDOG_SIGMA_MM = 0.7      # bản mờ nhỏ (mm): chi tiết nhỏ hơn chừng này không lấy
+XDOG_K = 1.6             # bản mờ lớn = 1,6 × bản nhỏ (tỷ lệ chuẩn của DoG)
+XDOG_TAU = 0.98          # trừ 98 % bản mờ lớn: vùng phẳng ra ~0, phía tối của cạnh ra âm
+XDOG_THRESHOLD = {"low": 3.0, "medium": 2.0, "high": 1.0}   # mức xám (0..255) âm hơn chừng này mới là viền; nhỏ = nhiều nét
 
 
 def _odd(n: float) -> int:
@@ -82,6 +93,14 @@ def region_edges(ds: np.ndarray, rgb: np.ndarray | None, lo: int, hi: int) -> np
         for c in (1, 2):                                   # a (xanh lá - đỏ), b (xanh dương - vàng)
             edges |= cv2.Canny(np.ascontiguousarray(lab[..., c]), lo, hi, L2gradient=True) > 0
     return edges
+
+
+def xdog_edges(ds: np.ndarray, px_mm: float, detail: str = "medium") -> np.ndarray:
+    """Phía tối của mọi cạnh (dải hẹp, làm mảnh ở bước gộp), so với vùng quanh nó chứ không theo ngưỡng toàn ảnh."""
+    gray = (255.0 * (1.0 - ds)).astype(np.float32)
+    s = max(0.8, XDOG_SIGMA_MM / px_mm)
+    d = cv2.GaussianBlur(gray, (0, 0), s) - XDOG_TAU * cv2.GaussianBlur(gray, (0, 0), s * XDOG_K)
+    return d < -XDOG_THRESHOLD.get(detail, XDOG_THRESHOLD["medium"])
 
 
 def blob_rings(ink: np.ndarray, skel: np.ndarray) -> np.ndarray:
@@ -189,8 +208,8 @@ def prune_spurs(skel: np.ndarray, min_px: float, rounds: int = 2, radius: np.nda
 
 
 def outline_mask(dark: np.ndarray, rgb: np.ndarray | None, px_mm: float, detail: str = "medium",
-                 ctx=None) -> np.ndarray:
-    """Mặt nạ đường mảnh 1 điểm ảnh, sẵn sàng cho trace.to_strokes."""
+                 ctx=None, method: str = "canny") -> np.ndarray:
+    """Mặt nạ đường mảnh 1 điểm ảnh, sẵn sàng cho trace.to_strokes. `method` = canny | xdog (lớp ranh giới mảng)."""
     from skimage.morphology import skeletonize
 
     lo, hi, threshold, min_mm = DETAIL.get(detail, DETAIL["medium"])
@@ -200,7 +219,7 @@ def outline_mask(dark: np.ndarray, rgb: np.ndarray | None, px_mm: float, detail:
     rings = blob_rings(ink, ink_skel)
     if ctx:
         ctx.check()
-    reg = region_edges(ds, rgb, lo, hi)
+    reg = xdog_edges(ds, px_mm, detail) if method == "xdog" else region_edges(ds, rgb, lo, hi)
     reg &= ~(cv2.dilate(ink.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
     reg = _drop_short(reg, min_mm / px_mm)
     if ctx:

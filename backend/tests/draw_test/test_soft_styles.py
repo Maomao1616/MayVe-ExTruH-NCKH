@@ -102,7 +102,8 @@ def test_wave_am_reproduces_flat_tones(tone):
     assert got == pytest.approx(tone, abs=0.1)
 
 
-def test_wave_am_is_smooth_with_few_pen_lifts_and_white_stays_white():
+def test_wave_am_is_smooth_with_few_pen_lifts_and_white_stays_white(monkeypatch):
+    monkeypatch.setattr(styles, "AM_DARK_LAYER", False)        # phần sóng; lớp gạch vùng đậm kiểm ở test dưới
     f = ramp()
     strokes = styles.fill(f, style(kind="wave_am"), PEN)
     zig = styles.fill(f, style(kind="zigzag", soft_levels=False), PEN)
@@ -110,6 +111,18 @@ def test_wave_am_is_smooth_with_few_pen_lifts_and_white_stays_white():
     assert len(strokes) < 40
     white = Field(np.zeros((100, 100), np.float32), 20.0, 20.0)
     assert styles.fill(white, style(kind="wave_am"), PEN) == []
+
+
+def test_wave_am_dark_layer_only_in_dark_areas_and_adds_ink(monkeypatch):
+    """13/11/2026: ô 90 % sóng biên độ chỉ phủ ~0,78 mực; lớp gạch vuông góc bù ở vùng đậm, vùng nhạt không đổi."""
+    light = Field(np.full((100, 100), 0.3, np.float32), 20.0, 20.0)
+    dark = Field(np.full((100, 100), 0.9, np.float32), 20.0, 20.0)
+    monkeypatch.setattr(styles, "AM_DARK_LAYER", False)
+    light_old, dark_old = styles.fill_groups(light, style(kind="wave_am"), PEN), styles.fill_groups(dark, style(kind="wave_am"), PEN)
+    monkeypatch.setattr(styles, "AM_DARK_LAYER", True)
+    light_new, dark_new = styles.fill_groups(light, style(kind="wave_am"), PEN), styles.fill_groups(dark, style(kind="wave_am"), PEN)
+    assert light_new == light_old                                  # 0,3: dưới AM_EFF_KNEE, không thêm gì
+    assert len(dark_new) > len(dark_old) and dark_new[:1] == dark_old[:1]   # 0,9: thêm lớp gạch thẳng (1–2 mức) sau sóng
 
 
 def test_wave_am_lines_are_parallel_waves_inside_the_frame():
@@ -137,7 +150,7 @@ def test_join_rows_turn_only_refuses_staircase_links():
 
 
 def test_new_kinds_are_registered_and_accepted():
-    for kind in ("crosshatch", "crosshatch3", "wave_am", "flow"):
+    for kind in ("crosshatch", "crosshatch3", "wave_am", "flow", "crosshatch_flow"):
         assert kind in spec.STYLES and kind in styles.FILLERS.names() and kind in styles.GROUPERS
         assert style(kind=kind).kind == kind
 

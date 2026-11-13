@@ -329,6 +329,7 @@ Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4
 - Sáng hơn mức một lưới đường thẳng phủ được (w/s0 = 25 %) thì bớt đường: còn 1/2 (dòng chẵn), rồi 1/4 (dòng chia hết cho 4); mỗi đường xuất hiện ở ngưỡng lệch so le ±35 % nên không thành ranh giới. Dưới 0,6 × w/(4 s0) để trắng.
 - Chỉ nối hai đường khi thật sự quay đầu và hai đầu lệch ≤ s0 (thường ở mép ảnh); nối chỗ khác ra móc chữ U / Z lạc lõng. Bỏ đoạn ngắn hơn 3 × s0.
 - Lần thử đầu cho bước sóng đổi theo độ đậm: các đường lệch pha cắt nhau thành lưới rối, đã bỏ.
+- **Lớp đậm (13/11/2026, `AM_DARK_LAYER`):** tờ tông in thật: ô 90 % chỉ trông 0,71. Vẽ lại tờ trên máy tính (nét 0,5 mm), mực hình học của sóng chỉ 0,47 / 0,54 / 0,62 / 0,70 / 0,78 ở ô 50 / 60 / 70 / 80 / 90 %: sườn sóng dốc (λ 1 mm, nét 0,5 mm) đè lên nhau. Đổi biên độ (bị chặn trước bởi độ dài cần thiết), bước sóng 2,5 × nét, khoảng cách 3 × nét: tối đa 0,83. Nên thêm **một lượt zigzag vuông góc** ở vùng đậm: sóng coi như phủ `min(c, 0,45 + (c − 0,45) × 0,78)`, gạch bù `1 − (1 − c) ÷ (1 − sóng)`. Ô 90 %: 0,78 → 0,89 (đan chéo 0,93); dưới 0,45 không đổi. Mô phỏng sai mắt 0,071 → 0,049. Giá: phi hành gia A5 79 → 267 lần nhấc, 8,9 → 11 phút.
 
 **Đo:** dải chuyển liền: sai tông 0,027, bậc 0,012 (zigzag cũ 0,082 / 0,099). Ảnh mèo A5: 105 nét, 5,4 phút có gia tốc (nhanh nhất vì gần như không nhấc bút) nhưng **16 000 dòng G-code** (zigzag 8 000): nhiều đoạn ngắn 0,2 mm. Ở 8000 mm/phút có thể vượt sức gửi lệnh từng dòng qua USB: xem đường "hàng đợi" ở Biểu đồ (cần `$10=3`); nếu hàng đợi cạn thì hạ tốc độ cho kiểu này.
 
@@ -344,6 +345,33 @@ Nét không đi theo một góc cố định mà **uốn dọc theo dáng ảnh*
 - Ảnh mẫu A5, bút 0,5, 8000: mèo 160 lần nhấc / 2,4 phút ước tính (đan chéo 365 / 5,5 phút); người 265 / 4,5 phút (đan chéo 438 / 8,7 phút). Dùng ít mực hơn đan chéo khoảng 35 % (đan chéo chồng 2 lớp), nên **trên giấy có thể nhạt hơn**. Xử lý 4–5 s.
 
 **Chưa có:** lớp hai cho vùng rất đậm (F4), nối đầu các đường kề nhau, chỉnh theo ảnh thật (F5), preset (F6). Kế hoạch: [10](10_HUONG_PHAT_TRIEN.md) mục 0.5.
+
+**In thật 13/11:** A4 mèo 6:21 (ước 7:16): ra hình, nét ôm theo lông / mắt rất có "hồn" nhưng trông "nghệ thuật"; A6 độ phân giải thấp gần như không ra hình. → giữ làm kiểu riêng, phần "dáng" đưa vào kiểu lai (8.11).
+
+### 8.11 Đan chéo + theo dáng (`crosshatch_flow`, 13/11/2026): mặc định preset Chân dung
+Đan chéo gánh tông, đường theo dáng chỉ vẽ ở **dải viền** để mắt / mũi / mép mặt tách khỏi nền ([09](09_QUYET_DINH_THIET_KE.md) P22).
+1. **Dải viền** (`styles.edge_band`): làm mờ σ 1 mm, độ dốc độ đậm g (mỗi mm). `e = trơn((g − 0,04) ÷ (0,12 − 0,04)) × trơn(độ rõ hướng ÷ 0,3)`, nới ra 1,5 mm mỗi phía (giãn nở hình tròn) rồi làm mờ 0,5 mm → 0..1.
+2. **Đường theo dáng** (`flow.flow_strokes`) trên độ phủ mong muốn × 0,5 × dải viền: ở viền chúng gánh tối đa một nửa; ngoài viền không có.
+3. **Đo mực đường theo dáng đã phủ** (`styles.ink_cover`): vẽ các đường đó với bề rộng nét lên ảnh 0,1 mm, thu về cỡ ảnh làm việc, làm mờ ~2 bề rộng nét.
+4. **Lớp đan** vẽ phần còn thiếu: `đan = 1 − (1 − mục tiêu) ÷ (1 − dáng)`. Thứ tự vẽ: đan (nhạt → đậm) trước, đường theo dáng cuối cùng cho nét rõ.
+
+Hằng số `HYB_*` ở `styles.py`. Ảnh mẫu A5 / ảnh của chủ dự án (bút 0,5): mèo 5,7 → 5,8 phút, phi hành gia 8,4 → 8,8 phút, em bé A4 13,1 → 13,4 phút; số nét +1–5 %; mô phỏng mực sai mắt 0,033 (bằng đan chéo). A6 vẫn có vài đường ôm viền mặt / mũ (theo dáng thuần ở A6 thì mất hình). ⏳ in thật.
+
+### 8.12 Đường cong tông (13/11/2026)
+Tờ hiệu chỉnh tông ([07](07_THU_NGHIEM.md) mục 2b) in bằng Sakura 0,5 trên mặt bóng Ivory, chụp điện thoại, đọc bằng công cụ tạm (tìm 3 ô mốc đen, nắn phối cảnh từ 12 góc ô mốc, bù ánh sáng bằng mặt phẳng khớp với giấy giữa các ô, đọc 60 % giữa ô, độ đậm theo CIE L*: 0 = giấy, 1 = ô mốc). Độ đậm mắt thấy:
+
+| Độ phủ | 10 % | 20 % | 30 % | 40 % | 50 % | 60 % | 70 % | 80 % | 90 % |
+|---|---|---|---|---|---|---|---|---|---|
+| đan chéo | 0,09 | 0,13 | 0,21 | 0,26 | 0,39 | 0,45 | 0,63 | 0,79 | 0,93 |
+| đan 3 hướng | 0,08 | 0,12 | 0,19 | 0,25 | 0,38 | 0,54 | 0,67 | 0,79 | 0,96 |
+| xoắn ốc | 0,09 | 0,17 | 0,27 | 0,38 | 0,56 | 0,71 | 0,81 | 0,82 | 0,93 |
+| sóng biên độ | 0,06 | 0,14 | 0,16 | 0,24 | 0,30 | 0,33 | 0,45 | 0,55 | 0,71 |
+
+Đọc: vùng trung bình trông nhạt hơn độ phủ; xoắn ốc đậm nhanh, chạm trần từ 70 %; sóng biên độ không đậm được (8.9). Mực thật nhiều hơn độ phủ tính ~1,2 lần ở vùng nhạt. Không phải do mặt giấy: số 0,50 của Sakura (12/11) cũng đo trên mặt bóng (chủ dự án xác nhận 13/11), nên không đo lại. Nhiều khả năng "dải sát nhất còn đặc" của tờ hiệu chỉnh bút cho số hơi nhỏ hơn nét thật, cộng mực đọng ở chỗ quay đầu. Đường cong tông đo trọn từ đầu tới cuối nên đã gồm phần này, không cần sửa ô Bút vẽ.
+
+**Áp dụng** (`styles.tone_cover`, cho `crosshatch`, `spiral`, `crosshatch_flow`): độ đậm ảnh d → độ đậm mắt thấy mong muốn `d × V(0,9) ÷ 0,9` → tra ngược bảng (đã làm tăng dần) ra độ phủ → trộn 75 % với d (`TONE_CURVE_STRENGTH`). Đổi trường độ đậm trước khi chia mức, nên chuyển mức mềm vẫn giữ. Ví dụ đan chéo, áp đủ: 5 mức 23 / 45 / 68 / 90 % → ~32 / 61 / 74 / 90 %.
+
+Mô phỏng (`tools/ink_sim.py`, thêm cột "sai mắt" = mực → độ đậm mắt thấy theo bảng): đan chéo 0,037 → 0,033; ô đậm đều 0,14 → 0,07 (áp đủ: 0,05 nhưng dải chuyển liền đậm quá 0,047, nên chọn 0,75). Cột "sai số" cũ (so mực với độ đậm) tăng 0,04 → 0,09 là đúng ý: cố ý vẽ nhiều mực hơn ở vùng trung bình.
 
 ---
 
@@ -366,6 +394,15 @@ Lớp B bỏ phần nằm sát nét mực (Canny cho hai mép của một nét m
 | Ít (`low`) | 30 / 80 | 0,22 | 4 mm | 2,4 mm | ảnh chụp nhiều kết cấu |
 | Vừa (`medium`) | 18 / 50 | 0,16 | 2,5 mm | 1,6 mm | hình 2D, sticker |
 | Nhiều (`high`) | 10 / 30 | 0,11 | 1,5 mm | 1,0 mm | hình vẽ nét nhạt |
+
+**XDoG (13/11/2026, `edges.xdog_edges`)** thay Canny cho lớp ranh giới mảng khi tích "Dùng XDoG" ở kiểu Nét viền, và luôn dùng cho lớp viền phủ lên kiểu tô. Công thức: ảnh xám làm mờ σ và 1,6σ, lấy `mờ(σ) − 0,98 × mờ(1,6σ)`; vùng phẳng ra ~0, phía tối của cạnh ra âm, âm hơn ngưỡng (3 / 2 / 1 mức xám cho Ít / Vừa / Nhiều) là viền. Vì so với vùng xung quanh nên ảnh tối, ngược sáng vẫn ra nét; Canny dùng một ngưỡng cho cả ảnh nên chỗ tối mất nét.
+
+| Ảnh (A5, bút 0,5, khử nhiễu) | σ 0,35, ngưỡng 2 | σ 0,7, ngưỡng 2 (chọn) | σ 0,7, ngưỡng 1 | Canny Vừa |
+|---|---|---|---|---|
+| mèo | 72 nét, mất viền đầu | 112, có viền đầu, mắt, mũi | 155, lông vụn | 132, vụn như vết nứt |
+| em bé | 75 | 119, mặt, vai, mắt | 122, thêm miệng | 134 |
+
+Hạn chế: chỉ nhìn độ sáng, nên ranh giới hai màu cùng độ sáng (mũ trắng trên nền sáng) bị bỏ sót; Canny có thêm kênh màu Lab nên bắt được. Ảnh 2D / Schematic giữ Canny.
 
 ### 9.2 Làm mảnh: lấy đường giữa (`skimage.morphology.skeletonize`)
 Bào mòn nét từ hai mép vào, mỗi lượt một lớp điểm ảnh, đến khi chỉ còn **1 điểm ảnh** mà không làm đứt nét. Kết quả là **đường giữa** (skeleton).

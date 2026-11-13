@@ -59,7 +59,17 @@ def metrics(strokes, dark: np.ndarray) -> dict:
     ideal = cv2.resize(dark, (ink.shape[1], ink.shape[0]))[3 * SC:-3 * SC, : int(W_MM * 0.5 * SC)].mean(axis=0)
     jump = float(np.abs(np.diff(band[::SC]) - np.diff(ideal[::SC])).max())
     return {"error": float(np.abs(got - want).mean()), "length_mm": length, "strokes": len(strokes), "jump": jump,
-            "minutes": (length / (DRAW_FEED / 60) + len(strokes) * LIFT_S) / 60, "ink": ink}
+            "minutes": (length / (DRAW_FEED / 60) + len(strokes) * LIFT_S) / 60, "ink": ink, "got": got, "want": want}
+
+
+def eye_error(m: dict, kind: str) -> float:
+    """Sai tông MẮT THẤY: mực -> độ đậm nhìn thấy theo đường cong đo trên giấy (styles.TONE_CURVES, 13/11/2026; kiểu
+    không có bảng dùng bảng đan chéo làm gần đúng), so với độ đậm ảnh (tỷ lệ với độ đậm thấy được ở MAX_COVERAGE)."""
+    table = styles.TONE_CURVES["spiral" if kind == "spiral" else "crosshatch"]
+    seen = np.interp(m["got"], styles.TONE_COVERS, table)
+    v_max = float(np.interp(styles.MAX_COVERAGE, styles.TONE_COVERS, table))
+    want = np.clip(m["want"], 0, styles.MAX_COVERAGE) * v_max / styles.MAX_COVERAGE
+    return float(np.abs(seen - want).mean())
 
 
 def run_style(dark: np.ndarray, pen_mm: float = 0.45, **style) -> list:
@@ -73,9 +83,9 @@ CASES = {
     "sóng mềm": dict(kind="wave"),
     "xoắn ốc mềm": dict(kind="spiral"),
     "gạch chéo mềm": dict(kind="crosshatch"),
-    "đan 3 hướng": dict(kind="crosshatch3"),
     "sóng biến thiên": dict(kind="wave_am"),
     "theo dáng (flow, thô)": dict(kind="flow"),
+    "đan chéo + theo dáng": dict(kind="crosshatch_flow"),
 }
 
 
@@ -85,10 +95,11 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     dark = target()
     cv2.imwrite(str(out / "muc-tieu.png"), (255 * (1 - dark)).astype(np.uint8))
-    print(f"{'kiểu tô':24s} {'sai số':>8s} {'bậc':>6s} {'dài mm':>8s} {'số nét':>7s} {'phút':>6s}")
+    print(f"{'kiểu tô':24s} {'sai số':>8s} {'sai mắt':>8s} {'bậc':>6s} {'dài mm':>8s} {'số nét':>7s} {'phút':>6s}")
     for i, (name, style) in enumerate(CASES.items()):
         m = metrics(run_style(dark, **style), dark)
-        print(f"{name:24s} {m['error']:8.4f} {m['jump']:6.3f} {m['length_mm']:8.0f} {m['strokes']:7d} {m['minutes']:6.2f}")
+        print(f"{name:24s} {m['error']:8.4f} {eye_error(m, style['kind']):8.4f} {m['jump']:6.3f} {m['length_mm']:8.0f}"
+              f" {m['strokes']:7d} {m['minutes']:6.2f}")
         cv2.imwrite(str(out / f"{i}.png"), (255 * (1 - m["ink"])).astype(np.uint8))
     print(f"Ảnh mô phỏng ghi vào {out}")
 

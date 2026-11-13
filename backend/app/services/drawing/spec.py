@@ -112,10 +112,11 @@ RASTER = (
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
     Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am",
-                                                          "flow")),
+                                                          "flow", "crosshatch_flow")),
     Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
     Param("outline_detail", "choice", "medium", choices=("low", "medium", "high")),  # viền: ít = khối chính, nhiều = cả nét nhạt
+    Param("outline_xdog", "bool", False),                             # kiểu Nét viền: ranh giới mảng bằng XDoG thay Canny (lớp viền phủ lên kiểu tô luôn dùng XDoG)
     Param("levels", "int", 5, 3, 5),                                  # số mức sáng tối
     Param("angle", "float", 45.0, 0, 179, unit="°"),
     Param("spacing_mm", "float", None, 0.1, 20, unit="mm"),
@@ -134,7 +135,12 @@ PALETTE = (
 # Đo 12/11/2026 (tờ hiệu chỉnh A6, Ivory 250, 8000 mm/min): UB-155 0,35–0,4 → 0,38; UM-100 ~0,4; Sakura 0,4 mặt láng
 # 0,45–0,5 → 0,5 (mặt nhám 0,5–0,55: chọn Tùy chọn); bút bi 0,5 chưa đo.
 PENS = (0.38, 0.4, 0.5)
-STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow")   # flow: bản thô 12/11/2026
+# crosshatch3 (đan 3 hướng) và flow (theo dáng thuần) còn chạy được cho bản thảo cũ nhưng đã bỏ khỏi giao diện 13/11/2026
+# (in thật: đan 3 đậm nhạt như đan chéo, nét rối hơn; theo dáng thuần trông không thực, A6 không ra hình). crosshatch_flow: đan chéo + theo dáng ở dải viền, mặc định preset Chân dung từ 13/11/2026.
+STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow", "crosshatch_flow")
+# Kiểu hiện trên giao diện (ô style-kind ở index.html, đúng thứ tự). zigzag / wave ẩn từ 13/11/2026 (đan chéo + theo dáng
+# đẹp hơn); mặc định của tham số kind vẫn "zigzag" để API / bản thảo cũ không đổi nghĩa. Test kiểm khớp với index.html.
+UI_STYLES = ("crosshatch_flow", "crosshatch", "wave_am", "spiral", "outline")
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
           "raster": RASTER, "style": STYLE, "palette": PALETTE}

@@ -55,20 +55,26 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 
 | Preset | Kiểu | Thông số đặc biệt | Hợp với |
 |---|---|---|---|
-| Chân dung | zigzag 5 mức | khử nhiễu, gamma 1,15, thêm viền (Ít) | ảnh tự chụp, mặt người đủ sáng |
-| Phong cảnh | sóng 5 mức, góc 30° | CLAHE, thêm viền (Ít) | trời mây, nhà, cảnh đêm, hoàng hôn |
-| Cận cảnh / Đồ vật | xoắn ốc **4 mức** | gamma 1,25, thêm viền (Ít) | cốc, đồ ăn, đồ vật |
+| Chân dung | **đan chéo + theo dáng** 5 mức | khử nhiễu, gamma 1 | ảnh tự chụp, mặt người đủ sáng |
+| Phong cảnh | sóng biên độ, góc 30° | CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
+| Cận cảnh / Đồ vật | xoắn ốc **4 mức** | gamma 1 | cốc, đồ ăn, đồ vật |
+| **Phác họa ảnh** (13/11/2026) | viền, chi tiết Vừa, **XDoG** | khử nhiễu | ảnh chụp chỉ muốn nét viền (người, thú, đồ vật) |
 | Ảnh 2D / Hình vẽ | viền, chi tiết Vừa | | sticker, hoạt hình, truyện tranh |
 | Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
 
 Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của một bộ chung `BASE`.
 
+Danh sách kiểu nét từ 13/11/2026 (`spec.UI_STYLES`; zigzag, sóng thường, đan 3 hướng, theo dáng thuần đã ẩn, mã vẫn giữ, [09](09_QUYET_DINH_THIET_KE.md) P23, P25):
+
 | Kiểu nét | Số nét / nhấc bút | Ghi chú |
 |---|---|---|
-| Zigzag | ít nhất | mặc định, ổn định nhất |
-| Sóng | ít, nhiều điểm | G-code dài hơn zigzag |
-| Xoắn ốc | nhiều nhất | thời gian vẽ ~gấp đôi zigzag |
-| Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng |
+| Đan chéo + theo dáng | như gạch chéo (+1–5 %) | **mặc định**; đường cong ôm viền mắt / mũi / mặt, đan chéo gánh tông |
+| Gạch chéo chồng lớp | vừa | tông nhạt một hướng, đậm thêm hướng vuông góc |
+| Sóng biên độ | ít nhất | tông liền, mượt; vùng rất đậm thêm lớp gạch thẳng |
+| Xoắn ốc | nhiều nhất | đậm nhanh, ô rất đậm có vệt chữ thập |
+| Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng. Ô tích **"Dùng XDoG"** (chỉ hiện ở kiểu này): viền ảnh chụp rõ hơn. Ô "Thêm lớp viền" trên kiểu tô khác luôn dùng XDoG |
+
+Đan chéo, xoắn ốc, kiểu lai có **đường cong tông** đo trên giấy thật (Sakura 0,5, mặt bóng Ivory; [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12): không cần chỉnh gamma để bù vùng trung bình.
 
 **Nhiều màu (2–4):** mỗi màu một tệp G-code riêng, tên có mã màu (vd `draw-2-3231a7.gcode`). Vẽ xong tệp nào thì đổi bút rồi nạp tệp kế. Kiểu Viền luôn đơn sắc.
 
@@ -133,7 +139,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (vẽ lần lượt từng mức đậm nhạt; mặc định **tắt** từ 12/11/2026), **`bridge`** (mặc định bật: ảnh tô đơn sắc, nối nét gần ≤ 4 × bề rộng nét trong vùng đậm thay vì nhấc bút) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
 | `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 0,38, UM-100 0,40, Sakura 0,50, bút bi 0,50, hoặc Tùy chọn; đo 12/11/2026), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
-| `style` | kiểu (`outline` / `zigzag` / `wave` / `spiral`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |
+| `style` | kiểu (`spec.STYLES`; giao diện hiện `spec.UI_STYLES`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |
 | `palette` | đơn sắc / nhiều màu, số màu (2–4), bỏ nền |
 
 **Thêm một ô mới** phải chạm 5 chỗ: dòng `Param(...)` trong `spec.py` → tệp Python dùng nó → ô trong `index.html` → một dòng trong bảng `FIELDS` của `views/drawing/params.js` → khóa chữ trong `vi.json` và `en.json` ([03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 6).
