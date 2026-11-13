@@ -61,7 +61,8 @@ const codeText = (prefix, item) => {
        penUpZ: MACHINE.penUpZ,
        penDownZ: MACHINE.penDownZ,
        rapidFeed: MACHINE.rapidFeed ?? 6000,
-       accel: MACHINE.accel, junction: MACHINE.junction, liftOverheadS: MACHINE.liftOverheadS
+       accel: MACHINE.accel, junction: MACHINE.junction, liftOverheadS: MACHINE.liftOverheadS,
+       dwellFlushS: MACHINE.dwellFlushS, linesPerS: MACHINE.linesPerS
    });
    const message = (detail) => window.dispatchEvent(new CustomEvent("extruxy:message", { detail }));
 

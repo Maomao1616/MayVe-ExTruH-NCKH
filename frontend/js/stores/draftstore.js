@@ -67,7 +67,8 @@ export async function loadIntoControl(draft, file) {
         penUpZ: MACHINE.penUpZ,
         penDownZ: MACHINE.penDownZ,
         rapidFeed: MACHINE.rapidFeed ?? 6000,
-        accel: MACHINE.accel, junction: MACHINE.junction, liftOverheadS: MACHINE.liftOverheadS
+        accel: MACHINE.accel, junction: MACHINE.junction, liftOverheadS: MACHINE.liftOverheadS,
+        dwellFlushS: MACHINE.dwellFlushS, linesPerS: MACHINE.linesPerS
     });
     const layered = (draft.files?.length ?? 0) > 1 ? ` · ${file.layer}` : "";
     setFile({ name: `${draft.name}${layered}.gcode`, parsed });

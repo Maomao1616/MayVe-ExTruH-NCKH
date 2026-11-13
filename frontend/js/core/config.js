@@ -14,10 +14,13 @@ export const MACHINE = {
     jogMaxStep: 50,      // mm, bước jog lớn nhất được hiện trong ô chọn
     rapidFeed: 8000,     // mm/phút khi G0 = max_rate X/Y trên mạch; views/settings.js ghi đè bằng số thật khi đọc cấu hình máy
     // Chỉ để ƯỚC TÍNH thời gian (lib/gcode.js; = backend drawing/gcode.py EST_*). Đo 12/11/2026: gia tốc 3000 chạy ổn,
-    // junction 0,05; mỗi lần nâng bút thêm ~0,15 s (G4 xả hết hàng đợi) -> khớp tỷ lệ thực tế / ước tính cũ 1,7–1,9.
+    // junction 0,05. Đo 13/11/2026 (tờ nhấc bút + tờ 7.6): mỗi lần nâng bút thêm ~0,025 s, mỗi G4 thêm ~0,025 s (xả hàng
+    // đợi), máy nhận tối đa ~125 dòng/giây (gửi một dòng chờ `ok`). Số cũ liftOverheadS 0,15 gộp cả phần chậm do dòng/giây.
     accel: 3000,         // mm/s²
     junction: 0.05,      // mm
-    liftOverheadS: 0.15  // s
+    liftOverheadS: 0.025, // s
+    dwellFlushS: 0.025,  // s
+    linesPerS: 125       // dòng/giây
 };
 
 // Tùy chọn "Hoạt động" (Cài đặt). views/settings.js nạp từ trình duyệt và ghi đè các giá trị này.

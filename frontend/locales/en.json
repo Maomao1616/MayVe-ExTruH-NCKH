@@ -965,7 +965,7 @@
   "chart.row.elapsed_s": "Real time",
   "chart.row.est_seconds": "Software estimate",
   "chart.row.est_ratio": "Real ÷ estimate",
-  "chart.row.rapids": "Pen lifts (G0 moves)",
+  "chart.row.rapids": "Pen lifts (Z moves)",
   "chart.row.draw_mm": "Drawing length",
   "chart.row.travel_mm": "Travel length",
   "chart.row.run_pct": "% time running",

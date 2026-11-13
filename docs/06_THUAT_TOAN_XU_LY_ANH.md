@@ -435,17 +435,31 @@ vpype là thư viện chuyên cho máy vẽ. Phần mềm gọi một chuỗi l�
 **G-code** (`gcode.build_gcode`):
 ```
 G90 G21                  ; tọa độ tuyệt đối, đơn vị mm
-G1 Z3 F3000              ; nhấc bút
-G4 P0.05                 ; chờ servo
+G1 Z3 F3000              ; nhấc bút (chờ G4 chỉ ghi khi ô chờ > 0; mặc định 0 từ 13/11/2026)
 G0 X12.4 Y30.1           ; chạy nhanh tới đầu nét 1
 G1 Z0 F2000              ; hạ bút (chậm hơn, đỡ nảy)
-G4 P0.05
-G1 X13.0 Y30.6 F5000     ; vẽ qua từng điểm
-G1 X13.7 Y31.0
+G1 X13.0 Y30.6 F8000     ; vẽ qua từng điểm
+G1 X25.7 Y31.0           ; đoạn gần thẳng hàng gộp thành một G1
+G3 X27.7 Y33.0 I0 J2     ; đoạn cong gộp thành cung (I J = tâm trừ điểm đầu)
 …
 G1 Z3 F3000              ; nhấc bút, sang nét 2 …
 ```
-`F` chỉ ghi khi đổi. Điểm trùng liền nhau bị bỏ. Ước tính thời gian (từ 12/11/2026, `gcode.path_time` / `move_time`, frontend `lib/gcode.js` tính giống hệt): mỗi đoạn chạy hình thang tăng tốc – đều – giảm tốc với gia tốc `EST_ACCEL_MM_S2` = 3000 mm/s²; qua góc giảm tốc theo công thức junction của Grbl (`EST_JUNCTION_MM` = 0,05); mỗi nét dừng ở đầu / cuối; cộng thời gian nâng / hạ Z, chờ G4, và `EST_LIFT_OVERHEAD_S` = **0,15 s mỗi lần nhấc bút** (G4 bắt máy chạy hết hàng đợi, buffer tụt về 0 rồi phải nạp lại).
+`F` chỉ ghi khi đổi. Điểm trùng liền nhau bị bỏ.
+
+**Gộp cung G2/G3 (`arcs.py`, từ 13/11/2026).** Mỗi nét (đã đổi sang tọa độ máy) đi từ đầu tới cuối, tại mỗi điểm tìm đoạn dài nhất (nhân đôi rồi chia đôi số điểm) mà: (a) mọi điểm nằm sát một đường thẳng và không đi lùi → một G1, hoặc (b) mọi điểm **và trung điểm mọi đoạn** nằm sát đường tròn qua điểm đầu, giữa, cuối, quay một chiều → một G2 (cùng kim đồng hồ) / G3. Lấy cái ôm được nhiều điểm hơn. Hằng số: `ARC_TOL_MM` 0,02 (sai lệch tối đa), `ARC_MIN_POINTS` 4, bán kính `ARC_MIN_R_MM` 0,2 – `ARC_MAX_R_MM` 2000, `ARC_MAX_SWEEP_DEG` 300 (không gần trọn vòng: đầu trùng cuối G2 hiểu là cả vòng), `ARC_MIN_PRECISION` 3 (firmware từ chối cung nếu bán kính đầu / cuối lệch > 0,005 mm; đo được ≤ 1,4 µm). Công tắc `USE_ARCS` ở `gcode.py`.
+
+| Ảnh mẫu A5, bút 0,5 | zigzag | đan chéo | đan 3 | sóng | sóng biên độ | xoắn ốc | theo dáng |
+|---|---|---|---|---|---|---|---|
+| số dòng, phi hành gia | 12 043 → 10 343 | 13 259 → 11 140 | 13 616 → 10 389 | 26 914 → 25 205 | 18 873 → 18 873 | 10 073 → 7 727 | 8 419 → 7 758 |
+| số dòng, mèo | 8 484 → 6 681 | 7 688 → 6 049 | 7 329 → 5 719 | 16 720 → 15 159 | 12 180 → 12 180 | 6 139 → 4 855 | 3 778 → 3 558 |
+
+Cung chủ yếu ở chỗ quay đầu nửa vòng tròn và vòng xoắn ốc; sóng (dạng sin) gần như không khớp cung. Thời gian gần như không đổi vì bản vẽ không bị giới hạn dòng/giây (dưới).
+
+**Ước tính thời gian** (từ 12/11/2026, `gcode.path_time` / `move_time`, frontend `lib/gcode.js` tính giống hệt): mỗi đoạn chạy hình thang tăng tốc – đều – giảm tốc với gia tốc `EST_ACCEL_MM_S2` = 3000 mm/s²; qua góc giảm tốc theo công thức junction của Grbl (`EST_JUNCTION_MM` = 0,05); mỗi nét dừng ở đầu / cuối; cộng thời gian nâng / hạ Z, chờ G4. Từ 13/11/2026 (đo tờ nhấc bút + tờ 7.6): `EST_LIFT_OVERHEAD_S` = **0,025 s** mỗi lần nhấc, `EST_DWELL_FLUSH_S` = **0,025 s** mỗi lệnh G4 (máy xả hàng đợi), và một nét không nhanh hơn **số dòng ÷ `EST_LINES_PER_S` (125)** (phần mềm gửi một dòng chờ `ok`). Kiểm: tờ 7.6 ước 110,9 s / thật 111 s (bản trước 32 s); tờ nhấc bút 18,0 / 17 s (bản trước 22,5).
+
+**Gửi từng dòng có làm chậm bản vẽ thật không?** Mô phỏng (hàng đợi 15 khối, gửi 125 dòng/giây; kiểm lại bằng tờ 7.6: 6,0 / 12,0 / 24,1 / 60,3 s so với thật 6,0 / 11,6 / 23,3 / 60,7 s) trên ảnh mẫu A5 mọi kiểu tô: chậm thêm **~0 %**, kể cả khi bỏ cung. Đoạn ngắn (trung vị 0,4–0,9 mm ở zigzag / đan / sóng) đi từng cụm xen nét dài, hàng đợi nạp lại kịp. Nên không làm gửi dồn ([09](09_QUYET_DINH_THIET_KE.md) D10).
+
+Bảng dưới là số ngày 12/11 (hằng số cũ 0,15 s mỗi lần nhấc, gộp cả phần chậm chưa rõ nguyên nhân); ⏳ so lại thời gian thật / ước tính mới trên các tờ chân dung 13/11.
 
 | Ảnh mẫu A5, bút 0,45, vẽ 8000 / di chuyển 6000, chờ 0,02 | Cách cũ (quãng ÷ tốc độ) | Có gia tốc | Có gia tốc + nhấc bút |
 |---|---|---|---|
@@ -575,7 +589,7 @@ Xếp theo mức nặng cho MiniPC. Từ khóa tiếng Anh để tự tra.
 | Đo bề dày nét chữ | `skimage.morphology.medial_axis` | tự phát hiện chữ đậm → vẽ 2 đường | `medial axis stroke width` |
 | Tách chữ khỏi nền giấy quét | `skimage.filters.threshold_sauvola` | ngưỡng thích nghi từng vùng | `Sauvola binarization` |
 | Xóa đoạn vẽ chồng | plugin `deduplicate` của vpype | bớt nét trùng | `vpype deduplicate` |
-| Gộp đoạn thẳng thành cung tròn | ArcWelder (G2/G3) | ít dòng G-code hơn. ⚠ cung chưa thử trên máy thật | `ArcWelder arc fitting` |
+| Gộp đoạn thẳng thành cung tròn | ArcWelder (G2/G3) | ✅ đã làm 13/11/2026 (`arcs.py`, mục 12); G2 chạy đúng trên máy thật (tờ 7.6) | `ArcWelder arc fitting` |
 
 ### 17.2 Vừa
 | Hướng | Thư viện / cách | Được gì | Từ khóa |

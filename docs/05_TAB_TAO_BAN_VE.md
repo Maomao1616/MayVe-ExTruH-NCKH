@@ -41,13 +41,13 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
 | Khổ giấy, lề, rộng / cao, căn giữa, lật, đảo thứ tự | bố trí; đổi là G-code tự tính lại sau 0,4 s. Khổ "Cả vùng máy" = hành trình máy, mặc định 285 × 318 mm (lề chỉnh ở ô Lề an toàn, mặc định 5) |
-| Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 5000 / 6000 / 3000 / 2000 mm/min, Z3 / Z0 (ô Z nhấc lấy mặc định từ Cài đặt → "Z nhấc khi sinh G-code", không phải Z bút lên của điều khiển), chờ 0,05 s) |
+| Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 8000 / 8000 / 3000 / 2000 mm/min, Z3 / Z0 (ô Z nhấc lấy mặc định từ Cài đặt → "Z nhấc khi sinh G-code", không phải Z bút lên của điều khiển), chờ 0 s (từ 13/11/2026); nét cong ghi bằng G2/G3) |
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |
 | **Chuyển sang Điều khiển** | cần tích "Tôi đã kiểm tra…". Tự lưu bản thảo (không tạo trùng) rồi nạp vào tab Điều khiển. **Không tự chạy** |
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
 | **Thang xám** (nay nằm ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang xám ở tab Tạo bản vẽ") | nạp ảnh 11 bậc trắng → đen để in thử từng preset ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2) |
 
-Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (có gia tốc + ~0,15 s mỗi lần nhấc bút, từ 12/11/2026), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
+Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (có gia tốc, thời gian nhấc bút và giới hạn ~125 dòng/giây; [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 12), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
 
 ---
 

@@ -30,7 +30,7 @@ class JobClientInfo(BaseModel):
     est_seconds: float | None = Field(None, ge=0, le=10_000_000, allow_inf_nan=False)
     draw_mm: float | None = Field(None, ge=0, le=10_000_000, allow_inf_nan=False)
     travel_mm: float | None = Field(None, ge=0, le=10_000_000, allow_inf_nan=False)
-    rapids: int | None = Field(None, ge=0, le=10_000_000)      # số đoạn G0 ~ số lần nhấc bút
+    rapids: int | None = Field(None, ge=0, le=10_000_000)      # số lần nhấc bút (giao diện đếm theo Z từ 13/11/2026; trước là số đoạn G0)
     lines: int | None = Field(None, ge=0, le=10_000_000)
 
 

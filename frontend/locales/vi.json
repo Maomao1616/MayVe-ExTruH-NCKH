@@ -981,7 +981,7 @@
   "chart.row.elapsed_s": "Thời gian thật",
   "chart.row.est_seconds": "Ước tính của phần mềm",
   "chart.row.est_ratio": "Thật ÷ ước tính",
-  "chart.row.rapids": "Số lần nhấc bút (G0)",
+  "chart.row.rapids": "Số lần nhấc bút (theo Z)",
   "chart.row.draw_mm": "Quãng vẽ",
   "chart.row.travel_mm": "Quãng di chuyển",
   "chart.row.run_pct": "% thời gian máy chạy",

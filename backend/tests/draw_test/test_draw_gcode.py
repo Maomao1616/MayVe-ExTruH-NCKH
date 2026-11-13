@@ -136,7 +136,7 @@ def test_output_passes_the_job_runner_cleaner_unchanged():
 def test_too_many_lines_is_rejected(monkeypatch):
     monkeypatch.setattr(gc, "MAX_LINES", 10)
     with pytest.raises(DrawError) as e:
-        build([[(i, 0) for i in range(30)]])
+        build([[(i, (i * 7) % 50) for i in range(30)]])     # điểm thẳng hàng sẽ được gộp (arcs.py), nên dùng răng cưa
     assert e.value.code == "too_many_lines"
 
 

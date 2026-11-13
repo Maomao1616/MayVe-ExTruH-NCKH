@@ -58,8 +58,9 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Bút lên / giữa / xuống (điều khiển tay) | **Z5 / Z1,5 / Z0** (từ 09/11/2026: nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog dùng Z5 cho chắc) | Cài đặt → Cấu hình máy, mục App; mặc định ở `services/profile.py`, `frontend/js/core/config.js` |
 | Z nhấc khi **sinh G-code** | **Z3** (chỉnh 3 / 2 / 1,5 theo bản vẽ) | cùng mục App, ô "Z nhấc khi sinh G-code"; tab Tạo bản vẽ lấy làm mặc định cho ô Z |
 | Tốc độ nâng bút / hạ bút | 3000 / **2000** mm/min (hạ chậm hơn, đỡ nảy) | tab Tạo bản vẽ; `spec.py` |
-| Chờ sau nâng / sau hạ | **0,05 s** / 0,05 s | tab Tạo bản vẽ |
-| Tốc độ vẽ / di chuyển | **5000** / 6000 mm/min | tab Tạo bản vẽ |
+| Chờ sau nâng / sau hạ | **0 s** / 0 s (từ 13/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C10; trước 0,02 và 0,05) | tab Tạo bản vẽ; `spec.py` |
+| Tốc độ vẽ / di chuyển | **8000** / 8000 mm/min (từ 12/11/2026) | tab Tạo bản vẽ |
+| Nét cong trong G-code | cung **G2/G3** (từ 13/11/2026, [09](09_QUYET_DINH_THIET_KE.md) D12) | `drawing/arcs.py`, công tắc `USE_ARCS` ở `drawing/gcode.py` |
 | Bề rộng nét thật ÷ số trong ô "Bút vẽ" | **1,0** (từ 11/11/2026 ô đó ghi thẳng nét đo trên giấy của từng bút; trước là 1,1 và 1,375) | `LINE_WIDTH_RATIO` trong `styles.py`; số từng bút ở `index.html` ô `draw-pen-width` + `spec.PENS` |
 | Gốc giấy | góc trên trái O(0,0), Y hướng xuống; A6 ⊂ A5 ⊂ A4 cùng neo ở O | `layout.py` |
 | Hướng trục X / Y | ✅ **đúng** (chủ dự án xác nhận 05/11/2026) với `VIEW.flipX = flipY = false`, `invert_y = false` | `core/config.js`, `gcode.to_machine` |
@@ -80,6 +81,10 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | F10 | Sửa cấu hình qua USB: `$Config/Filename`, `$CD` (**chỉ in** YAML đang chạy, không ghi gì), `$/axes/x/max_rate_mm_per_min[=v]` (ghi vào RAM), `$LocalFS/List`, `$CD=/localfs/<tệp>` (ghi YAML đang chạy ra tệp, = nút "Lưu vào mạch" nhưng không sao lưu). Mục không có ô trên giao diện (vd `$/axes/x/motor0/pulloff_mm=1.5`, `$/axes/x/homing/cycle=2`, `$/axes/x/homing/settle_ms=100`; đường dẫn = vị trí trong tệp YAML, chữ thường) đổi bằng terminal rồi bấm "Lưu vào mạch" (từ 11/11/2026 nút luôn bấm được sau khi đọc cấu hình). `$10` (= `$Report/Status`) không nằm trong YAML: lưu ngay vào bộ nhớ riêng (NVS) khi gõ. Bộ nhớ trống ~60 KB. Tắt bật nguồn giá trị vẫn còn. `$CD=` viết lại tệp dạng chuẩn (mất chú thích `#`) nhưng máy chạy bình thường | Cài đặt → Cấu hình máy |
 | F11 | Dừng êm: chờ Idle → `$J=G90 G21 Z… F…` → xác nhận Z. Dừng gấp: Hold → Reset → Idle → nâng bút. Không alarm | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) mục 6 |
 | F12 | Gửi từng dòng chờ `ok`: 1500 dòng ở F3000 không nhảy Run / Idle | cách gửi hiện tại là đủ |
+| F13 | (13/11/2026) Gửi từng dòng chờ `ok` qua USB 115200 đạt **~125 dòng/giây** (124–130, mọi độ dài đoạn); hàng đợi chuyển động **15 khối**; `G4` bắt máy chạy hết hàng đợi rồi mới chờ | ước tính thời gian tính giới hạn này (`EST_LINES_PER_S`, `EST_DWELL_FLUSH_S`); nét cong ghi bằng G2/G3 |
+| F14 | (13/11/2026) **G2/G3 chạy đúng và đủ tốc** (vòng R10 ở 8000: 5,7 s, hàng đợi đầy) | `drawing/arcs.py` |
+| F15 | (13/11/2026) Tốc độ báo trong `FS:` (biểu đồ Tốc độ thật) **cao hơn thật tới 1,41 lần** tùy hướng chạy (máy CoreXY: vòng G2 thật ~7 900 mm/phút, biểu đồ 10 000–11 300; đường ngang G0 10 000 báo 14 142) | đọc tốc độ thật bằng quãng đường ÷ thời gian, không đọc số trên biểu đồ ⏳ sửa biểu đồ |
+| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án); lần sau tụt thì xem Terminal có `pen re-lift not sent` ⏳ |
 
 ## 6. Kết quả thử máy
 
@@ -95,14 +100,14 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | 05/11/2026 | hướng trục X / Y | ✅ đúng |
 | 11/11/2026 | ảnh con mèo (preset Chân dung), Pigma 0,4, giấy thường: tối đa 8000, gia tốc 3000, junction 0,05, Z3, SpreadCycle | chạy êm, không thấy mất bước. Nền lộ ranh giới các mức đậm nhạt; đọng mực cuối nét (nghi bút + giấy, thử lại bằng Ivory + Uniball 150) |
 | 12/11/2026 | tờ hiệu chỉnh A6 (UB-155, UM-100, Sakura), nhấc bút, 7.2 / 7.3 / 7.4 ở 7000–10000, thang xám A6 các kiểu, ảnh thật | vẽ **8000** ổn, đoạn dài lên được **10000**; gia tốc **3000** ổn (không tăng: sợ gãy ngòi); Z nhấc **3** đẹp (2,5 / 2 gần như không khác, dễ không nhấc khỏi giấy); chờ **0,02 s** chưa thấy lỗi. Thời gian thật = 1,7–1,9 × ước tính cũ; buffer tụt về 0 ở mỗi lần nhấc bút. ⚠ Servo: bật mạch xong phải bấm Bút lên một lần, không thì lệnh đầu tiên làm bút tụt về giữa; sau Home thỉnh thoảng tụt (~1250 µs) → phần mềm tự nhích Z xuống 0,5 rồi lên lại sau mỗi lần Home (`machine._relift_pen_after_home`) ⏳ kiểm trên máy |
+| 13/11/2026 | tờ nhấc bút (chờ 0 / 0,02 × Z3 × hạ 2000), tờ 7.6 đoạn ngắn / cung G2 ở 8000, Sakura 0,5, Ivory | **chờ 0 dùng được** (nét đủ, hàng đợi đầy suốt; chờ 0,02 hàng đợi tụt về 0 mỗi lần nhấc), cả tờ thật 17 s. 7.6: đoạn 1 / 0,5 / 0,25 / 0,1 mm mất 6,0 / 11,6 / 23,3 / 60,7 s (~125 dòng/giây), **G2 5,7 s**; trên giấy 5 vòng như nhau. Thật ÷ ước tính cũ = 3,46 (tờ 7.6) → sửa ước tính (nay 110,9 s so với thật 111 s). Servo sau Home: xem F16 |
 
 ## 7. Còn phải thử ⏳
 
 - Thời gian Home (X, Y, XY).
-- Cung `G2 / G3` trên máy thật (phần mềm hiện chỉ sinh `G0 / G1`).
-- `G4 P` tính bằng giây trên FluidNC 4.1.1 (đang giả định giây).
-- Chờ **0** (bỏ hẳn G4): tờ nhấc bút có ô 0. Nếu không kéo vệt thì bỏ được ~0,15 s mỗi lần nhấc (G4 bắt máy xả hết hàng đợi).
-- Servo sau khi bật mạch / sau Home: xem bút có còn tụt không sau bản sửa 12/11.
+- Bản vẽ thật có cung G2/G3 do phần mềm sinh (từ 13/11/2026): chạy hết không báo lỗi, so thời gian thật với ước tính.
+- `G4 P` tính bằng giây trên FluidNC 4.1.1 (đang giả định giây; từ 13/11 mặc định không còn G4).
+- Servo sau Home (F16): khi bút tụt, Terminal có dòng `pen re-lift not sent` không.
 - Z3 có đủ trên giấy cong không (bài 7.5).
 - Bề rộng nét ở 5000 mm/min, đường cong tông bằng thang xám in thật.
 

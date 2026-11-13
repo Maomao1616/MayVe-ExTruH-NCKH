@@ -59,8 +59,10 @@ GCODE = (
     Param("pen_down_z", "float", required=True, min=0, max=1000, unit="mm"),
     Param("pen_feed", "float", 3000.0, 10, 20000, unit="mm/min"),
     Param("pen_down_feed", "float", None, 10, 20000, unit="mm/min"),   # None = hạ bút cùng tốc độ nâng (pen_feed); ô trên giao diện mặc định 2000 (hạ chậm đỡ nảy, đỡ loang mực)
-    Param("delay_up_s", "float", 0.02, 0, 60, unit="s"),
-    Param("delay_down_s", "float", 0.02, 0, 60, unit="s"),
+    # Chờ sau nâng / hạ bút (G4). Mặc định 0 từ 13/11/2026: tờ nhấc bút hàng chờ 0 nét đủ, không hụt đầu nét, hàng đợi
+    # trong máy đầy suốt; chờ 0,02 thì G4 xả hàng đợi mỗi lần nhấc (chậm hơn ~0,08 s / lần). docs/09 mục C10.
+    Param("delay_up_s", "float", 0.0, 0, 60, unit="s"),
+    Param("delay_down_s", "float", 0.0, 0, 60, unit="s"),
     Param("precision", "int", 3, 1, 4),
 )
 

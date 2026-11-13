@@ -167,3 +167,26 @@ test("accel > 0: tính gia tốc + thời gian nâng bút; accel = 0 giữ cách
     near(last.t0 + last.dur, acc.seconds);
     assert.ok(acc.segments.every((s, i) => i === 0 || s.t0 >= acc.segments[i - 1].t0));
 });
+
+test("linesPerS: chuỗi dòng ngắn không nhanh hơn số dòng ÷ linesPerS; cung G2 tính là 1 dòng; dwellFlushS cộng mỗi G4", () => {
+    // Tờ 7.6 (13/11/2026): đoạn 0,1 mm ở 8000 thật chỉ ~125 dòng/giây
+    const pts = [];
+    for (let i = 0; i <= 628; i++) pts.push(`G1 X${(10 * Math.cos(i / 100)).toFixed(3)} Y${(10 * Math.sin(i / 100)).toFixed(3)}`);
+    const short = ["G90 G21", "G1 Z3 F3000", "G0 X10 Y0", "G1 Z0 F2000", "G1 X10 Y0 F8000", ...pts, "G1 Z3"].join("\n");
+    const base = { penUpZ: 3, rapidFeed: 8000, accel: 3000, junction: 0.05 };
+    const free = parseGcode(short, base);
+    const capped = parseGcode(short, { ...base, linesPerS: 125 });
+    assert.ok(free.seconds < 2);
+    assert.ok(capped.seconds >= 629 / 125);
+    const arc = ["G90 G21", "G1 Z3 F3000", "G0 X10 Y0", "G1 Z0 F2000", "G3 X-10 Y0 I-10 J0 F8000", "G1 Z3"].join("\n");
+    near(parseGcode(arc, { ...base, linesPerS: 125 }).seconds, parseGcode(arc, base).seconds);
+    const dwell = ["G90 G21", "G1 Z3 F3000", "G4 P0.02", "G4 P0.02"].join("\n");
+    near(parseGcode(dwell, { ...base, dwellFlushS: 0.025 }).seconds - parseGcode(dwell, base).seconds, 0.05);
+});
+
+test("jobClientInfo.rapids đếm số lần nhấc bút theo Z, kể cả khi di chuyển bằng G1 (13/11/2026)", async () => {
+    const { jobClientInfo } = await import("../js/lib/gcode.js");
+    const text = ["G90 G21", "G1 Z3 F3000", "G1 X10 Y10 F8000", "G1 Z0 F2000", "G1 X20 Y10", "G1 Z3",
+                  "G1 X30 Y30", "G1 Z0", "G1 X40 Y30", "G1 Z3"].join("\n");
+    assert.equal(jobClientInfo(parseGcode(text, { penUpZ: 3, penDownZ: 0, rapidFeed: 8000 })).rapids, 2);
+});

@@ -50,7 +50,7 @@ Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép
 - [ ] Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng.
 - [ ] Vẽ lại Phong cảnh với mặc định mới; chụp cận mép khối xem còn giọt mực ở chỗ quay đầu không.
 - [ ] Bài 7.1 (đo thời gian một chu kỳ nhấc bút), 7.3 (gia tốc), 7.5 (vệt kéo), mỗi bài một tờ.
-- [ ] Thời gian Home, Z nâng / hạ thật, cung G2 / G3.
+- [ ] Thời gian Home, Z nâng / hạ thật. Bản vẽ thật đầu tiên có cung G2/G3 do phần mềm sinh (từ 13/11): chạy hết không báo lỗi, nét cong mượt.
 - [ ] Đèn X / Y sáng đúng khi tay đè công tắc.
 - [ ] DIP3 (nối chân vị trí MS3 của driver): xem chữ in dưới module TMC2209 là **SPREAD** hay **PDN_UART**. Thử nghe: tắt nguồn → gạt → chạy G0; ồn hẳn lên = SpreadCycle. Nếu là SPREAD thì chạy 7.2b ở SpreadCycle (hai trục cùng chế độ).
 - [ ] Tiếp tục từ điểm dừng trên máy thật: hủy giữa chừng → Home → Tiếp tục, so nét chồng.
@@ -62,7 +62,7 @@ Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép
 | Khoảng cách nét / số mức / gamma từng preset | thang xám + ảnh thật ([07_THU_NGHIEM.md](07_THU_NGHIEM.md)) |
 | Quay đầu nửa vòng tròn có hết giọt mực | chụp cận |
 | `G4 P` tính bằng giây trên FluidNC 4.1.1 | đo |
-| Thời gian ước tính (có gia tốc + 0,15 s / lần nhấc, 12/11) | so từng kiểu tô, nhất là sóng biên độ (ước tính chậm ×3,4 vì sóng dày) |
+| Thời gian ước tính (bản 13/11: gia tốc + 0,025 s / lần nhấc + 0,025 s / G4 + giới hạn 125 dòng/giây; khớp tờ 7.6 và tờ nhấc bút) | so thời gian thật / ước tính trên các bức chân dung, sóng biên độ. Ngày 12/11 bản vẽ thật = 1,7–1,9 × ước tính cũ; bản mới có thể ước **thấp** hơn thật nếu phần chậm đó không do nhấc bút |
 | Biên lùi 64 dòng khi tiếp tục có đủ | hủy bản vẽ dài, tiếp tục |
 | Xử lý ảnh trên MiniPC i5-3210M; giới hạn RAM trên Ubuntu | `info.timings`, `htop` |
 | Chia màu với ảnh có màu rất nhỏ | ảnh nhiều màu nền sáng |
@@ -88,7 +88,7 @@ Sau đó (cần đo, dây hoặc in thật):
 
 | # | Việc | Cỡ | Vì sao |
 |---|---|---|---|
-| 7 | Nếu bước 2 cho thấy đói lệnh: nâng baud (230400–921600) + gửi dồn nhiều dòng | S–M | đoạn ngắn ở 8000 mm/min cần ~400 dòng/s (09 D11). **Đo trước, chưa đổi** |
+| 7 ✖ | ~~Nâng baud + gửi dồn nhiều dòng~~ **không làm** (13/11/2026) | — | đo: máy nhận ~125 dòng/giây do chờ `ok`, không do baud; mô phỏng: bản vẽ thật không chậm vì giới hạn này; nét cong đã ghi bằng G2/G3 (09 D10–D12) |
 | 8 | Đường cong tông từ thang xám in thật | S | tông giữa đúng với mắt (cần tờ in trước) |
 | 9 | Tab Beta in PDF: preset "Văn bản", đường kẻ vector, hai bút | L | mục tiêu chữ viết ([10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) 1.1) |
 | 10 | Cảm biến bút + hai nút cứng Tạm dừng / Chạy tiếp (YAML + dây, đèn "Bút") | S + dây | an toàn, dừng khẩn không phụ thuộc mạng (09 O9) |

@@ -26,7 +26,8 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F, 12/11/2026) đối c
 | 1 | **Đường cong tông** (0.3) | ảnh chụp tờ hiệu chỉnh tông | 1 buổi sau khi có ảnh |
 | 2 | **XDoG cho viền ảnh lệch sáng** (0.4) | 2–3 ảnh thật (em bé, ngược sáng, đèn đêm) | 1 buổi |
 | 3 | **Flow field: nét theo dáng ảnh** (0.5) | **bản thô F1–F3 đã có 12/11** (kiểu "Theo dáng ảnh (thử nghiệm)"); chờ in thử A6 + ảnh thú thật | còn F4–F6 |
-| 4 | **Buffer + G2/G3** (0.6) | nhật ký chạy máy thật có `Bf:` | sau khi có số liệu |
+| 3b ✅ | **Đan chéo + theo dáng** (kiểu lai, mặc định Chân dung) | xong 13/11/2026 ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.11); chờ in A6 / A4 | — |
+| 4 ✅ | **Buffer + G2/G3** (0.6) | xong 13/11/2026 | — |
 
 ### 0.3 Đường cong tông (ý tưởng D) ✅
 Mục tiêu: các mức đậm nhạt **trông cách đều nhau bằng mắt** trên đúng bút + giấy, thay vì cách đều theo độ phủ tính toán (mực loang, giấy hút, mắt nhạy ở vùng sáng hơn vùng tối).
@@ -72,7 +73,8 @@ Các bước giao, mỗi bước có ảnh xem trước để chủ dự án duy
 **Tiêu chí nhận** (so với gạch chéo, cùng ảnh, A5, bút 0,5): số lần nhấc bút ≤ 1,2×; thời gian ước tính ≤ 1,2×; sai tông mô phỏng ≤ gạch chéo; không nét nào ngắn hơn 3 × khoảng cách; xử lý ≤ 15 s trên laptop (đo lại trên MiniPC, giới hạn tiến trình con 600 s vẫn giữ); chủ dự án duyệt trên giấy.
 Rủi ro: trường hướng nhiễu → nét rối (chặn bằng làm mờ tensor + trộn về 45° chỗ coherence thấp); nhiều đường ngắn → nhiều nhấc bút (bước 5); vòng lặp Python chậm (giới hạn số điểm, đo từng bước trong `info.timings`).
 
-### 0.6 Buffer và cung G2/G3 (ý tưởng E) ⏸ chờ số liệu máy
+### 0.6 Buffer và cung G2/G3 (ý tưởng E) ✅ xong 13/11/2026
+**Kết quả:** tờ 7.6 + tờ nhấc bút ngày 13/11 ([07](07_THU_NGHIEM.md) mục 6, [02](02_PHAN_CUNG_MAY.md) F13–F14). Đã làm: chờ mặc định 0 ([09](09_QUYET_DINH_THIET_KE.md) C10), gộp cung G2/G3 (D12, `drawing/arcs.py`), ước tính tính giới hạn ~125 dòng/giây + xả hàng đợi ở G4. **Không làm** gửi dồn / tăng baud (D10, D11): mô phỏng gửi lệnh trên ảnh mẫu A5 (mọi kiểu tô, khớp số đo 7.6 trong 4 %) cho thấy bản vẽ thật chậm thêm ~0 %. Dưới đây giữ để tra cứu.
 - Chủ dự án xác nhận máy **đã từng vẽ được G2/G3** (trước 12/11/2026).
 - Số đo 12/11: buffer chỉ tụt về 0 lúc **nhấc bút** (G4 bắt máy xả hàng đợi), nét dài thì đầy → nghẽn hiện tại **không do USB**. Việc trước: thử **chờ 0** (bỏ G4) trên tờ nhấc bút.
 - B0 (12/11) Tờ thử **7.6 đoạn ngắn / cung G2** đã có sẵn ([07](07_THU_NGHIEM.md) mục 6): cùng một vòng tròn bằng G1 đoạn 1 → 0,1 mm và bằng G2; kết quả quyết định có cần B3 không.

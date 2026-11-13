@@ -23,7 +23,9 @@ export const DEFAULT_OPTIONS = {
     arcTolerance: 0.05,  // sai số khi chia cung tròn (mm)
     accel: 0,            // mm/s²; 0 = thời gian = quãng đường ÷ tốc độ (không tính gia tốc). Màn hình truyền MACHINE.accel
     junction: 0.05,      // junction_deviation_mm (chỉ dùng khi accel > 0)
-    liftOverheadS: 0     // giây cộng thêm mỗi lần nâng bút (chỉ dùng khi accel > 0)
+    liftOverheadS: 0,    // giây cộng thêm mỗi lần nâng bút (chỉ dùng khi accel > 0)
+    dwellFlushS: 0,      // giây cộng thêm mỗi G4 (máy xả hết hàng đợi; chỉ dùng khi accel > 0)
+    linesPerS: 0         // dòng/giây tối đa máy nhận được; 0 = không giới hạn (chỉ dùng khi accel > 0)
 };
 
 // Làm sạch một dòng giống backend (services/job.py): bỏ chú thích, rút gọn khoảng trắng.
@@ -243,12 +245,21 @@ export function moveTime(L, v0, v1, vmax, a) {
 
 // Tính lại thời gian từng đoạn có gia tốc, như bộ lập kế hoạch Grbl / FluidNC (= backend gcode.py path_time):
 // chuỗi đoạn X/Y liền nhau chạy nối tiếp, qua góc giảm tốc theo junction_deviation; đổi Z hay G4 thì dừng hẳn.
-// Mỗi lần nâng bút cộng thêm opts.liftOverheadS (máy chạy hết hàng đợi ở G4 rồi mới nạp lại). Trả tổng thời gian.
+// Mỗi lần nâng bút cộng thêm opts.liftOverheadS, mỗi G4 cộng opts.dwellFlushS (máy chạy hết hàng đợi rồi mới chờ).
+// Một chuỗi đoạn liền không nhanh hơn (số dòng G-code) ÷ opts.linesPerS: phần mềm gửi một dòng rồi chờ `ok`.
+// Trả tổng thời gian.
 function applyAcceleration(segments, opts) {
     const a = opts.accel, jd = opts.junction ?? 0.05;
+    const rate = opts.linesPerS ?? 0;
     const flush = (run) => {
         const n = run.length;
         if (!n) return;
+        const capLines = () => {
+            if (!(rate > 0)) return;
+            const total = run.reduce((t, r) => t + r.s.dur, 0);
+            const need = new Set(run.map((r) => r.s.line)).size / rate;   // cung G2/G3 nhiều đoạn chỉ là 1 dòng
+            if (total > 0 && total < need) run.forEach((r) => { r.s.dur *= need / total; });
+        };
         const vj = new Array(n + 1).fill(0);
         for (let i = 1; i < n; i++) {
             const p = run[i - 1], q = run[i];
@@ -262,6 +273,7 @@ function applyAcceleration(segments, opts) {
         for (let i = 1; i <= n; i++) vj[i] = Math.min(vj[i], Math.sqrt(vj[i - 1] ** 2 + 2 * a * run[i - 1].L));
         for (let i = n - 1; i >= 0; i--) vj[i] = Math.min(vj[i], Math.sqrt(vj[i + 1] ** 2 + 2 * a * run[i].L));
         run.forEach((r, i) => { r.s.dur = moveTime(r.L, vj[i], vj[i + 1], r.v, a); });
+        capLines();
         run.length = 0;
     };
     const run = [];
@@ -269,6 +281,7 @@ function applyAcceleration(segments, opts) {
         const L = Math.hypot(s.x1 - s.x0, s.y1 - s.y0);
         if (s.kind === "dwell" || s.kind === "z" || !(L > 0) || !(s.dur > 0)) {
             flush(run);
+            if (s.kind === "dwell") s.dur += opts.dwellFlushS ?? 0;
             if (s.kind === "z" && s.dur > 0) {
                 const dz = s.zLen ?? 0;
                 const base = dz > 0 ? moveTime(dz, 0, 0, dz / s.dur, a) : s.dur;
@@ -369,14 +382,26 @@ export function formatDuration(seconds) {
 }
 
 // Số liệu giao diện đã tính từ G-code, gửi kèm khi bấm Chạy để nhật ký chạy máy so với số đo thật
-// (backend/app/api/machine.py JobClientInfo). rapids = số đoạn G0 ~ số lần nhấc bút.
+// (backend/app/api/machine.py JobClientInfo). rapids = số lần nhấc bút, đếm theo Z: bút đang xuống mà Z lên quá ngưỡng
+// bút xuống. Trước 13/11/2026 đếm số đoạn G0, nên ra 0 khi tốc độ di chuyển thấp hơn tốc độ tối đa (đi bằng G1).
+// Tên trường giữ "rapids" để so được với nhật ký cũ.
+export function penLifts(segments) {
+    let lifts = 0, down = false;
+    for (const s of segments) {
+        if (s.kind !== "z") continue;
+        if (down && !s.penDown) lifts += 1;
+        down = s.penDown;
+    }
+    return lifts;
+}
+
 export function jobClientInfo(parsed) {
     const round = (v, d) => (Number.isFinite(v) ? Number(v.toFixed(d)) : undefined);
     return {
         est_seconds: round(parsed.seconds, 1),
         draw_mm: round(parsed.drawLength, 1),
         travel_mm: round(parsed.travelLength, 1),
-        rapids: parsed.segments.filter((s) => s.kind === "rapid").length,
+        rapids: penLifts(parsed.segments),
         lines: parsed.lineCount
     };
 }
