@@ -30,7 +30,8 @@ rows = []
 for kw, st in [({}, {}), ({"auto_levels": False, "gamma": 1.4}, {}),
                ({"black_point": 40, "white_point": 210}, {"invert": True}),
                ({"auto_levels": True, "gamma": 0.7, "black_point": 10}, {}),
-               ({"auto_levels": True}, {})]:
+               ({"auto_levels": True}, {}), ({"contrast": 1.6}, {}),
+               ({"auto_levels": False, "gamma": 1.2, "contrast": 0.7}, {"invert": True})]:
     d = tone.darkness(g, spec.parse("raster", kw), spec.parse("style", st))
     rows.append({"raster": kw, "style": st, "display": [int(round(255 * (1 - v))) for v in d[0]]})
 (out / "tone_cases.json").write_text(json.dumps({"gray": g[0].tolist(), "rows": rows}), encoding="utf-8")

@@ -34,10 +34,10 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Gửi ảnh** (khách) | thay cho Tạo nét khi chưa đăng nhập: gửi ảnh + thông số cho chủ máy (xem 08 B4). Quản lý mở ảnh khách ở hộp thư "Ảnh khách gửi" |
 | **Tạo nét** | (chỉ ảnh) chạy xử lý ở máy chủ, nền, có thanh tiến trình. Sau lần đầu nút đổi tên thành **Tạo lại nét**. Khách (không đăng nhập) không bấm được |
 | **Hủy** (cạnh thanh tiến trình) | dừng việc tạo nét đang chạy |
-| **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Cận cảnh – Đồ vật / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
+| **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
-| Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu) |
+| Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
 | Khổ giấy, lề, rộng / cao, căn giữa, lật, đảo thứ tự | bố trí; đổi là G-code tự tính lại sau 0,4 s. Khổ "Cả vùng máy" = hành trình máy, mặc định 285 × 318 mm (lề chỉnh ở ô Lề an toàn, mặc định 5) |
@@ -55,14 +55,12 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 
 | Preset | Kiểu | Thông số đặc biệt | Hợp với |
 |---|---|---|---|
-| Chân dung | **đan chéo + theo dáng** 5 mức | khử nhiễu, gamma 1 | ảnh tự chụp, mặt người đủ sáng |
+| Chân dung (14/11/2026) | **sóng biến thiên**, góc 135°, không viền | mức đen 20, **tương phản 1,3** | ảnh người chụp thật |
 | Phong cảnh | sóng biên độ, góc 30° | CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
-| Cận cảnh / Đồ vật | xoắn ốc **4 mức** | gamma 1 | cốc, đồ ăn, đồ vật |
-| **Phác họa ảnh** (13/11/2026) | viền, chi tiết Vừa, **XDoG** | khử nhiễu | ảnh chụp chỉ muốn nét viền (người, thú, đồ vật) |
-| Ảnh 2D / Hình vẽ | viền, chi tiết Vừa | | sticker, hoạt hình, truyện tranh |
+| Ảnh 2D / Hình vẽ (14/11/2026) | **gạch chéo 5 mức + lớp viền** | khử nhiễu | hoạt hình, truyện tranh, hình vẽ, sticker |
 | Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
 
-Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của một bộ chung `BASE`.
+Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của một bộ chung `BASE`. Cận cảnh (xoắn ốc) và Phác họa ảnh (Nét viền + XDoG) bỏ 14/11/2026: chọn tay kiểu nét khi cần ([09](09_QUYET_DINH_THIET_KE.md) P29).
 
 Danh sách kiểu nét từ 13/11/2026 (`spec.UI_STYLES`; zigzag, sóng thường, đan 3 hướng, theo dáng thuần đã ẩn, mã vẫn giữ, [09](09_QUYET_DINH_THIET_KE.md) P23, P25):
 

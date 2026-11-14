@@ -4,7 +4,7 @@ r"""Vẽ thử một ảnh với nhiều kiểu tô / preset ra PNG để so (kh
         [--kinds crosshatch,crosshatch_flow] [--set style.outline_overlay=true --set raster.gamma=1.1] [--out ..\export\preview]
 
 - Mỗi kiểu một ảnh <tên ảnh>_<khổ>_<kiểu>.png (nét đen, nét bút đúng bề rộng) + một ảnh ghép tất cả cạnh nhau.
-- Kiểu crosshatch_flow: đường theo dáng tô ĐỎ để thấy chúng nằm ở đâu.
+- Kiểu crosshatch_flow: đường viền bao khối tô ĐỎ để thấy chúng nằm ở đâu.
 - --set nhóm.tham_số=giá_trị (nhóm: raster / style / layout / optimize, tên tham số như spec.py) ghi đè cho mọi kiểu.
 - Ảnh mẫu không có tệp: dùng "astronaut" hoặc "cat" (skimage). Mặc định G-code: 8000, Z3 / 0, hạ 2000, chờ 0.
 Mặc định ghi vào export/preview/ (không lên Git).
@@ -71,7 +71,7 @@ def main():
 
     def spy(*args, **kw):                                    # giữ lại đường theo dáng để tô đỏ
         groups = real(*args, **kw)
-        captured["curves"] = groups[-1]
+        captured["curves"] = groups[-1]                      # nhóm cuối: đường viền bao khối (từ 14/11/2026)
         return groups
 
     styles.GROUPERS["crosshatch_flow"] = spy

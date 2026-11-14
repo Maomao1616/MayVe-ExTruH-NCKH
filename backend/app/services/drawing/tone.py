@@ -1,6 +1,6 @@
 """Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất).
 
-Thứ tự (sau khi đã thu nhỏ): khử nhiễu -> tự cân sáng -> mức đen/trắng + gamma -> CLAHE -> đảo.
+Thứ tự (sau khi đã thu nhỏ): khử nhiễu -> tự cân sáng -> mức đen/trắng + gamma -> tương phản -> CLAHE -> đảo.
 """
 from __future__ import annotations
 
@@ -29,6 +29,8 @@ def darkness(gray: np.ndarray, raster, style, ctx=None) -> np.ndarray:
     np.clip(x, 0.0, 1.0, out=x)
     if raster.gamma != 1.0:
         np.power(x, 1.0 / raster.gamma, out=x)            # gamma > 1 làm sáng vùng giữa
+    if raster.contrast != 1.0:                            # kéo giãn quanh xám giữa 0,5: sáng sáng thêm, tối tối thêm (cắt ở 0 / 1)
+        x = np.clip((x - 0.5) * raster.contrast + 0.5, 0.0, 1.0, out=x)
     if raster.clahe:
         u8 = (x * 255.0 + 0.5).astype(np.uint8)
         u8 = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(u8)

@@ -11,7 +11,10 @@ import cv2
 import numpy as np
 
 OFFSETS = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
-SMOOTH_PASSES = 2
+SMOOTH_MM = 0.8                  # làm mượt nét theo chiều dài thật (Gauss dọc nét, sigma mm). Trước 14/11/2026: trung bình
+                                 # 3 điểm × 2 lượt (~1 điểm ảnh = 0,3 mm) còn răng cưa của lưới điểm ảnh -> nét run
+CLOSED_SIGMA_FRAC = 0.05         # vòng kín: sigma ≤ 5 % chu vi (bán kính co ≤ ~5 %)
+SMOOTH_STEP_PX = 0.5             # lấy mẫu lại nét mỗi 0,5 điểm ảnh trước khi làm mượt
 SIMPLIFY_PX = 0.6
 CLOSE_PX = 2.0                   # hai đầu một nét cách nhau không quá chừng này điểm ảnh thì khép thành vòng
 
@@ -87,14 +90,27 @@ def paths(skel: np.ndarray) -> list[np.ndarray]:
     return out
 
 
-def smooth(pts: np.ndarray, passes: int = SMOOTH_PASSES) -> np.ndarray:
-    """Trung bình 3 điểm, giữ nguyên hai đầu (làm mượt bậc thang của lưới điểm ảnh)."""
-    for _ in range(passes):
-        if len(pts) < 3:
-            break
-        mid = (pts[:-2] + 2 * pts[1:-1] + pts[2:]) / 4.0
-        pts = np.concatenate([pts[:1], mid, pts[-1:]])
-    return pts
+def smooth(pts: np.ndarray, sigma_px: float) -> np.ndarray:
+    """Làm mượt Gauss dọc theo chiều dài nét. Nét hở giữ nguyên hai đầu và hướng ở đầu (đệm đối xứng qua điểm đầu /
+    cuối); vòng kín (điểm đầu = điểm cuối) làm mượt vòng quanh."""
+    from scipy.ndimage import gaussian_filter1d
+    if len(pts) < 4 or sigma_px <= 0:
+        return pts
+    s = np.concatenate([[0.0], np.cumsum(np.hypot(*np.diff(pts, axis=0).T))])
+    if s[-1] < 2 * SMOOTH_STEP_PX:
+        return pts
+    t = np.linspace(0.0, s[-1], max(4, int(s[-1] / SMOOTH_STEP_PX) + 1))
+    p = np.stack([np.interp(t, s, pts[:, 0]), np.interp(t, s, pts[:, 1])], axis=1)
+    sig = sigma_px / (t[1] - t[0])
+    if len(pts) > 6 and (pts[0] == pts[-1]).all():
+        sig = min(sig, CLOSED_SIGMA_FRAC * s[-1] / (t[1] - t[0]))   # vòng nhỏ (chấm mắt): làm mượt ít để không co lại
+        q = gaussian_filter1d(p[:-1], sig, axis=0, mode="wrap")
+        return np.concatenate([q, q[:1]]).astype(np.float32)
+    k = min(len(p) - 1, int(3 * sig) + 1)
+    pre = 2 * p[0] - p[1:k + 1][::-1]
+    post = 2 * p[-1] - p[-k - 1:-1][::-1]
+    q = gaussian_filter1d(np.concatenate([pre, p, post]), sig, axis=0, mode="nearest")[k:k + len(p)]
+    return q.astype(np.float32)
 
 
 def to_strokes(skel: np.ndarray, px_x_mm: float, px_y_mm: float, min_len_mm: float) -> list[list[tuple[float, float]]]:
@@ -104,7 +120,7 @@ def to_strokes(skel: np.ndarray, px_x_mm: float, px_y_mm: float, min_len_mm: flo
         closed = len(p) > 6 and float(np.hypot(*(p[0] - p[-1]))) <= CLOSE_PX
         if closed:
             p = np.concatenate([p, p[:1]])                 # vòng kín (hình tròn, số 0, chữ o): khép lại, đừng để hở một điểm ảnh
-        p = smooth(p)
+        p = smooth(p, SMOOTH_MM / ((px_x_mm + px_y_mm) / 2))
         if len(p) > 2:
             p = cv2.approxPolyDP(p.reshape(-1, 1, 2), SIMPLIFY_PX, False).reshape(-1, 2)
         if closed and len(p) > 2:

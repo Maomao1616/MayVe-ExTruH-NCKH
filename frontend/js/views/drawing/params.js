@@ -40,6 +40,7 @@ const FIELDS = [
     ["image-black-point", "raster", "black_point", "int"],
     ["image-white-point", "raster", "white_point", "int"],
     ["image-gamma", "raster", "gamma", "num"],
+    ["image-contrast", "raster", "contrast", "num"],
     ["image-max-side", "raster", "max_side_px", "optint"],
     ["image-auto-levels", "raster", "auto_levels", "bool"],
     ["image-clahe", "raster", "clahe", "bool"],
@@ -47,6 +48,7 @@ const FIELDS = [
     ["style-kind", "style", "kind", "str"],
     ["style-outline", "style", "outline_overlay", "bool"],
     ["style-soft", "style", "soft_levels", "bool"],
+    ["style-am-fill", "style", "am_fill", "bool"],
     ["style-invert", "style", "invert", "bool"],
     ["style-levels", "style", "levels", "int"],
     ["style-angle", "style", "angle", "num"],
@@ -241,6 +243,8 @@ export function syncVisibility() {
     if (levels) levels.hidden = levelless;
     const soft = $("style-soft")?.closest("label");
     if (soft) soft.hidden = levelless;
+    const amFill = $("style-am-fill")?.closest("label");
+    if (amFill) amFill.hidden = kind !== "wave_am";                    // chỉ sóng biến thiên bớt đường ở vùng sáng
     const xdog = $("style-xdog")?.closest("label");
     if (xdog) xdog.hidden = !outlineOnly;                         // lớp viền phủ lên kiểu tô luôn dùng XDoG (backend)
     const detail = $("style-outline-detail")?.closest("label");
@@ -258,6 +262,7 @@ export function toneSettings() {
     return {
         auto: $("image-auto-levels")?.checked ?? true,
         black: num("image-black-point", 0), white: num("image-white-point", 255), gamma: num("image-gamma", 1) || 1,
+        contrast: num("image-contrast", 1) || 1,
         invert: $("style-invert")?.checked ?? false
     };
 }

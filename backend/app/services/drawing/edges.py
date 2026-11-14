@@ -42,6 +42,14 @@ XDOG_SIGMA_MM = 0.7      # bản mờ nhỏ (mm): chi tiết nhỏ hơn chừng 
 XDOG_K = 1.6             # bản mờ lớn = 1,6 × bản nhỏ (tỷ lệ chuẩn của DoG)
 XDOG_TAU = 0.98          # trừ 98 % bản mờ lớn: vùng phẳng ra ~0, phía tối của cạnh ra âm
 XDOG_THRESHOLD = {"low": 3.0, "medium": 2.0, "high": 1.0}   # mức xám (0..255) âm hơn chừng này mới là viền; nhỏ = nhiều nét
+# FDoG (Kang 2007): hiệu hai bản mờ chỉ lấy NGANG nét, rồi làm mượt DỌC theo hướng nét -> nét liền, ít đứt. 14/11/2026, ảnh chân
+# dung A4 bút 0,4: XDoG (đã làm mượt nét) 145 nét; FDoG dọc 2 mm 137, dọc 4 mm 130 nét, viền mắt khép, cằm / cổ liền hơn;
+# xử lý 1,2 -> 1,9 s. FDOG_ALONG_MM = 0: quay về XDoG thường.
+FDOG_ALONG_MM = 4.0      # làm mượt dọc nét (sigma mm): to hơn = nét liền hơn, góc gắt tròn đi
+FDOG_TENSOR_MM = 1.5     # độ mịn của trường hướng nét (mm): hướng đổi êm trong chừng này
+FDOG_GRAD_MM = 0.5       # làm mờ trước khi đo hướng (bỏ hạt nhỏ hơn chừng này)
+XDOG_RIM_MM = 2.0        # XDoG tô kín phía tối: khối dày hơn chừng này (tròng mắt, con ngươi) chỉ giữ vành, không thì làm
+                         # mảnh ra một chấm rồi bị cắt như râu -> mắt mất khung (chủ dự án xem bản thảo 14/11/2026)
 
 
 def _odd(n: float) -> int:
@@ -96,11 +104,54 @@ def region_edges(ds: np.ndarray, rgb: np.ndarray | None, lo: int, hi: int) -> np
 
 
 def xdog_edges(ds: np.ndarray, px_mm: float, detail: str = "medium") -> np.ndarray:
-    """Phía tối của mọi cạnh (dải hẹp, làm mảnh ở bước gộp), so với vùng quanh nó chứ không theo ngưỡng toàn ảnh."""
+    """Phía tối của mọi cạnh (dải hẹp, làm mảnh ở bước gộp), so với vùng quanh nó chứ không theo ngưỡng toàn ảnh.
+    FDOG_ALONG_MM > 0: kiểu FDoG (lọc ngang nét, làm mượt dọc nét), xem fdog_response."""
     gray = (255.0 * (1.0 - ds)).astype(np.float32)
     s = max(0.8, XDOG_SIGMA_MM / px_mm)
-    d = cv2.GaussianBlur(gray, (0, 0), s) - XDOG_TAU * cv2.GaussianBlur(gray, (0, 0), s * XDOG_K)
+    if FDOG_ALONG_MM > 0:
+        d = fdog_response(gray, px_mm, s)
+    else:
+        d = cv2.GaussianBlur(gray, (0, 0), s) - XDOG_TAU * cv2.GaussianBlur(gray, (0, 0), s * XDOG_K)
     return d < -XDOG_THRESHOLD.get(detail, XDOG_THRESHOLD["medium"])
+
+
+def fdog_response(gray: np.ndarray, px_mm: float, sigma_px: float) -> np.ndarray:
+    """DoG lấy dọc pháp tuyến cạnh (hai bản mờ sigma, 1,6 sigma theo một chiều), rồi trung bình Gauss dọc đường đi theo
+    hướng nét (mỗi bước một điểm ảnh, đi về hai phía, giữ hướng không đảo chiều)."""
+    h, w = gray.shape
+    gb = cv2.GaussianBlur(gray, (0, 0), max(0.5, FDOG_GRAD_MM / px_mm))
+    gx = cv2.Sobel(gb, cv2.CV_32F, 1, 0, ksize=3)
+    gy = cv2.Sobel(gb, cv2.CV_32F, 0, 1, ksize=3)
+    st = max(0.5, FDOG_TENSOR_MM / px_mm)
+    jxx, jyy, jxy = (cv2.GaussianBlur(a, (0, 0), st) for a in (gx * gx, gy * gy, gx * gy))
+    phi = 0.5 * np.arctan2(2 * jxy, jxx - jyy)                        # hướng gradient (ngang nét)
+    nx, ny = np.cos(phi).astype(np.float32), np.sin(phi).astype(np.float32)
+    tx, ty = -ny, nx                                                  # hướng nét
+    xs, ys = np.meshgrid(np.arange(w, dtype=np.float32), np.arange(h, dtype=np.float32))
+
+    def at(img, x, y):
+        return cv2.remap(img, x, y, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+
+    ss = sigma_px * XDOG_K
+    ts = np.arange(-math.ceil(3 * ss), math.ceil(3 * ss) + 1, dtype=np.float32)
+    wc, ws = np.exp(-0.5 * (ts / sigma_px) ** 2), np.exp(-0.5 * (ts / ss) ** 2)
+    weights = wc / wc.sum() - XDOG_TAU * ws / ws.sum()
+    across = np.zeros_like(gray)
+    for t, k in zip(ts, weights):
+        across += float(k) * at(gray, xs + t * nx, ys + t * ny)
+    sm = max(1.0, FDOG_ALONG_MM / px_mm)
+    acc, wsum = across.copy(), 1.0
+    for sign in (1.0, -1.0):
+        x, y, dx, dy = xs, ys, sign * tx, sign * ty
+        for k in range(1, int(math.ceil(2 * sm)) + 1):
+            x, y = x + dx, y + dy
+            wk = math.exp(-0.5 * (k / sm) ** 2)
+            acc += wk * at(across, x, y)
+            wsum += wk
+            ntx, nty = at(tx, x, y), at(ty, x, y)
+            flip = np.where(ntx * dx + nty * dy < 0, -1.0, 1.0).astype(np.float32)
+            dx, dy = ntx * flip, nty * flip
+    return acc / wsum
 
 
 def blob_rings(ink: np.ndarray, skel: np.ndarray) -> np.ndarray:
@@ -219,7 +270,12 @@ def outline_mask(dark: np.ndarray, rgb: np.ndarray | None, px_mm: float, detail:
     rings = blob_rings(ink, ink_skel)
     if ctx:
         ctx.check()
-    reg = xdog_edges(ds, px_mm, detail) if method == "xdog" else region_edges(ds, rgb, lo, hi)
+    if method == "xdog":
+        reg = xdog_edges(ds, px_mm, detail)
+        k = _odd(XDOG_RIM_MM / px_mm)
+        reg &= ~(cv2.erode(reg.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) > 0)
+    else:
+        reg = region_edges(ds, rgb, lo, hi)
     reg &= ~(cv2.dilate(ink.astype(np.uint8), np.ones((5, 5), np.uint8)) > 0)
     reg = _drop_short(reg, min_mm / px_mm)
     if ctx:

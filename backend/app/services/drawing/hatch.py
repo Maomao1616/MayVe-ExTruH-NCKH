@@ -46,13 +46,22 @@ def blur(f: Field, spacing_mm: float) -> np.ndarray:
     return cv2.GaussianBlur(f.dark, (0, 0), sigma) if sigma >= 0.5 else f.dark
 
 
-def threshold_mask(d: np.ndarray, threshold: float, spacing_mm: float, px_mm: float) -> np.ndarray:
-    """Mặt nạ bool từ ảnh đã làm mờ: ngưỡng, nối khe hẹp, bỏ đốm nhỏ hơn khoảng cách nét."""
+def threshold_mask(d: np.ndarray, threshold: float, spacing_mm: float, px_mm: float,
+                   open_mm: float | None = None, barrier: np.ndarray | None = None) -> np.ndarray:
+    """Mặt nạ bool từ ảnh đã làm mờ: ngưỡng, nối khe hẹp, bỏ đốm / dải hẹp hơn open_mm (mặc định = khoảng cách nét).
+    `barrier` (bool, cùng cỡ): đường viền làm hàng rào, cắt mặt nạ TRƯỚC bước bỏ đốm nên mẩu tràn qua viền bị bỏ."""
     m = (d >= threshold).astype(np.uint8)
     k = int(max(1, round(spacing_mm / px_mm)))
+    if barrier is not None and k < 2:
+        m[barrier] = 0
     if k >= 2:
         kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k | 1, k | 1))
         m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, kern)
+        if barrier is not None:
+            m[barrier] = 0
+        if open_mm is not None:
+            ko = int(max(1, round(open_mm / px_mm)))
+            kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ko | 1, ko | 1))
         m = cv2.morphologyEx(m, cv2.MORPH_OPEN, kern)
     return m.astype(bool)
 
@@ -112,7 +121,7 @@ def _runs(on: np.ndarray):
 
 
 # --- đường quét song song ------------------------------------------------------------
-def scan_runs(mask, f: Field, angle_deg: float, spacing_mm: float, phase: float = 0.0):
+def scan_runs(mask, f: Field, angle_deg: float, spacing_mm: float, phase: float = 0.0, min_run_mm: float = MIN_RUN_MM):
     """Trả (u_hướng, v_pháp, danh sách theo dòng các (u0, u1)) trên các dòng cách nhau spacing_mm.
     `mask`: một mặt nạ, hoặc danh sách mặt nạ (dòng i dùng mask[i % len], xem dither_offsets)."""
     a = math.radians(angle_deg)
@@ -138,7 +147,7 @@ def scan_runs(mask, f: Field, angle_deg: float, spacing_mm: float, phase: float 
         rows, c0, c1 = _runs(on)
         for r, a0, a1 in zip(rows.tolist(), c0.tolist(), c1.tolist()):
             u0, u1 = umin + a0 * du, umin + a1 * du
-            if u1 - u0 >= MIN_RUN_MM:
+            if u1 - u0 >= min_run_mm:
                 lines[r0 + r].append((u0, u1))
     return d, n, vmin, lines
 

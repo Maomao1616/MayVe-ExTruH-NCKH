@@ -16,6 +16,10 @@ Test tự động: máy chủ ~397 bài (`python -m pytest` trong `backend`), gi
 Mục tiêu trước mắt cho phần web điều khiển: chốt thông số chuẩn bằng bản in → đo thời gian thật → (nếu có) tab Beta → MiniPC + Docker + Cloudflare. Camera, nút cứng, ESP32 thêm lúc nào cũng được.
 
 ## 2. Đã xong gần đây
+- [x] 14/11 (4): **Theo dáng ảnh áp được đậm nhạt**: sửa cửa sổ kiểm tra chỗ có đường (vuông → tròn; trước đó đường chéo không dày hơn ~1,4 mm), `FLOW_TEST_RATIO` 0,5 → 0,85, thêm đường cong tông. Còn: nhiều mẩu nét ngắn ở vùng tối (526 → 894 nét); chưa đo tờ tông riêng cho theo dáng.
+- [x] 14/11 (3): **4 preset** (09 P29): Chân dung = sóng biến thiên, không viền, mức đen 20, tương phản 1,3, góc 135°; Ảnh 2D = gạch chéo + viền; Phong cảnh, Schematic giữ; bỏ Cận cảnh, Phác họa. Ô **Tương phản** mới ở tiền xử lý (cả xem trước trong trình duyệt). Sóng biến thiên: ô **"Phủ đều đường ở vùng sáng"** (bật ở Chân dung): da mặt kín đường, hết vệt trắng do bớt đường.
+- [x] 14/11 (2): **tách đan chéo / theo dáng** (09 P28): giao diện có "Gạch chéo" và "Theo dáng ảnh" riêng, bỏ kiểu lai; preset Chân dung = Gạch chéo + lớp viền FDoG; Sóng biến thiên để trắng vùng sáng dưới 0,10 (hết đường thẳng giữa mặt). Thử bỏ chữ U ở mép (hàng rào mỏng, góc bo, lấn mức) rồi quay lại vì nét kém đẹp (09 P28).
+- [x] 14/11: **nét gọn hơn** (09 P27): đan chéo bỏ "râu" (dải đậm hẹp < 1,5 × khoảng cách nét, mẩu gạch < 1,5 mm, nối chéo); dưới độ phủ 0,2 để **giấy trắng hẳn**; **"Đan chéo + theo dáng" = đan chéo + MỘT đường viền cong bao khối làm hàng rào** (dòng gạch dừng ở viền, tóc không lan vào mặt; bỏ 2–3 đường theo dáng song song); khối đậm (tròng mắt) lấy vành; nét viền **làm mượt 0,8 mm**, bỏ nét < 4 mm; XDoG đổi sang **FDoG** (làm mượt dọc hướng nét 4 mm). Ảnh chân dung A4 bút 0,4: đan chéo + theo dáng 1196 → 868 nét, 20,6 → 16,2 phút, mực 92,7 → 76,9 m.
 - [x] 13/11 (4): **XDoG** (09 P26): ô tích "Dùng XDoG" ở kiểu Nét viền; lớp viền phủ lên kiểu tô luôn XDoG; preset **"Phác họa ảnh"**; hằng số chỉnh trên ảnh mèo + em bé (σ 0,7 mm).
 - [x] 13/11 (3): gọn giao diện (09 P25): ẩn zigzag + sóng thường (ô Kiểu tô còn 5 kiểu, mặc định đan chéo + theo dáng); `styles.py` chia mục A nền / B kiểu đang hiện / C kiểu ẩn; Tờ thử: nhấc bút chờ 0 / 0,02, gộp Thang xám + Tờ tông thành **Thang tông** (ảnh 16 ô nạp vào tab vẽ), chỉ còn 7.2 + 7.5; preset Cận cảnh gamma 1.
 - [x] 13/11 (2): theo tờ tông + chân dung in 13/11: **đường cong tông** cho đan chéo và xoắn ốc (75 %, 09 P21); kiểu **"Đan chéo + theo dáng"** làm mặc định Chân dung, gamma 1 (09 P22); **bỏ "Đan 3 hướng" và "Theo dáng ảnh" thuần** khỏi danh sách kiểu tô, mã giữ lại (P23); **sóng biên độ thêm lớp gạch ở vùng rất đậm** (P24, có công tắc); Biểu đồ **đếm nhấc bút theo Z** (P19); `tools/ink_sim.py` thêm cột "sai mắt".
@@ -40,6 +44,7 @@ Mục tiêu trước mắt cho phần web điều khiển: chốt thông số ch
 
 ## 3. Thử trên máy thật (không cần code)
 Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép mẫu ở 07 mục 8, điền số, gửi kèm ảnh.
+- [ ] **(14/11) Nét gọn (09 P27):** khởi động lại phần mềm, xem bản thảo Chân dung ("Đan chéo + theo dáng") và Nét viền tích XDoG. Nhìn: gạch còn lan qua viền không, mắt / mũi có khung không, má / nền sáng có quá trống không, viền có liền và mềm không. Trống quá → báo AI hạ `HATCH_WHITE`; mất chi tiết → hạ `HATCH_THIN_SPACINGS` / `FDOG_ALONG_MM`; viền thiếu → Chi tiết viền "Nhiều".
 - [ ] **(13/11) Chân dung kiểu mới** (khởi động lại phần mềm, chọn lại preset Chân dung để lấy "Đan chéo + theo dáng" và gamma 1): ảnh em bé A6 + A4, so với tờ đan chéo hôm 13/11. Nhìn: mắt / mũi / mép mặt có tách khỏi nền không, đường theo dáng có lạc lõng như viền dán lên không, đậm nhạt có quá đậm không (đường cong tông làm vùng trung bình đậm hơn). Quá đậm → tăng gamma 1,1–1,2 hoặc báo AI hạ `TONE_CURVE_STRENGTH`; đường theo dáng quá nhiều / ít → báo AI chỉnh `HYB_EDGE_LO / HI`, `HYB_FLOW_SHARE`.
 - [ ] **(13/11) XDoG:** (a) preset "Phác họa ảnh" với ảnh em bé + ảnh thú, A5; so với kiểu Nét viền tắt XDoG. (b) Chân dung tích thêm "Thêm lớp viền": có che bớt móc chữ U vùng sáng không, có rối không. Nếu thiếu nét → Chi tiết viền "Nhiều"; vụn → "Ít".
 - [ ] **(13/11) Sóng biên độ, chỉnh trên máy thật:** in lại tờ tông kiểu Sóng biên độ (nay có lớp gạch vùng đậm) + một ảnh phong cảnh tối. Ghi: ô 90 % có đen chưa, lớp gạch thẳng có làm mất vẻ mượt không, máy có rung ở sóng dày không (khung đã chắc hơn), thời gian / số lần nhấc. Không thích lớp gạch → `AM_DARK_LAYER = False` (`styles.py`). Muốn sóng dày hơn (khung đỡ rung): thử `AM_SPACING_LINES` 4 → 3 (mô phỏng: ô 90 % 0,78 → 0,81 khi chưa có lớp gạch).
@@ -78,6 +83,7 @@ Cách làm từng bài ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md); làm xong chép
 | Bản mang đi trên máy sạch (Visual C++ của OpenCV) | máy bạn bè |
 
 ## 5. Code tiếp, xếp theo ưu tiên
+- [ ] (14/11, chủ dự án đồng ý, chưa gấp) **Khoanh vùng chủ thể cho Chân dung**: kéo elip / chữ nhật trên khung Cắt ảnh; ngoài vùng gạch nhạt đi hoặc chỉ viền. Nền vẫn vẽ (giữ đúng kiểu ảnh), chỉ nhạt hơn để chủ thể nổi.
 Kế hoạch chốt 09/11/2026: làm lần lượt **bước 1 → 6** (không cần in giấy để kiểm), rồi tới các việc cần máy / dây / in thật.
 
 | Bước | Việc | Cỡ | Chi tiết |

@@ -150,8 +150,8 @@ function percentile(hist, total, q) {
     return a + (pos - lo) * (kth(hi) - a);
 }
 
-// settings: { auto, black, white, gamma, invert } → Uint8Array độ sáng hiển thị (255 = trắng giấy).
-export function toneMap(gray, { auto = true, black = 0, white = 255, gamma = 1, invert = false } = {}) {
+// settings: { auto, black, white, gamma, contrast, invert } → Uint8Array độ sáng hiển thị (255 = trắng giấy).
+export function toneMap(gray, { auto = true, black = 0, white = 255, gamma = 1, contrast = 1, invert = false } = {}) {
     const hist = new Uint32Array(256);
     for (let i = 0; i < gray.length; i++) hist[gray[i]]++;
     let p1 = 0;
@@ -169,6 +169,7 @@ export function toneMap(gray, { auto = true, black = 0, white = 255, gamma = 1, 
         if (scale) g = Math.floor(Math.min(255, Math.max(0, (v - p1) * scale)));
         let x = Math.min(1, Math.max(0, (g - lo) / (hi - lo)));
         if (gamma !== 1) x = x ** (1 / gamma);
+        if (contrast !== 1) x = Math.min(1, Math.max(0, (x - 0.5) * contrast + 0.5));   // như tone.py
         const brightness = invert ? 1 - x : x;
         lut[v] = Math.round(255 * brightness);
     }

@@ -182,3 +182,12 @@ def test_crosshatch3_draws_three_directions_only_where_dark():
         long = np.hypot(d[:, 0], d[:, 1]) > 3.0
         assert all(abs(dy) < 1e-6 for _, dy in d[long])
 
+
+def test_wave_am_fill_lines_whole_light_area():
+    """14/11/2026 (chủ dự án: "cả vùng mặt đều có nét"): am_fill bật thì vùng sáng vừa đều tông có đủ mọi đường."""
+    f = Field(np.full((150, 150), 0.2, np.float32), 60.0, 60.0)
+
+    def ink(**kw):
+        groups = styles.wave_am_groups(f, spec.parse("style", {"kind": "wave_am", "angle": 0, **kw}), 0.4)
+        return sum(float(np.hypot(*np.diff(np.asarray(s), axis=0).T).sum()) for g in groups for s in g)
+    assert ink(am_fill=True) > 1.15 * ink(am_fill=False)               # không bớt đường: nhiều mực hơn rõ

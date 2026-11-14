@@ -22,7 +22,7 @@ Giấy Ivory, mặt bóng như 13/11. Bút **Sakura 0,5** trừ khi ghi khác. K
 1. Tắt phần mềm, mở lại, trình duyệt **Ctrl+F5** (bản mới: G2/G3, chờ 0, đường cong tông, kiểu "Đan chéo + theo dáng", XDoG, Thang tông).
 2. Tab Tạo bản vẽ, khối G-code: ô **chờ** gõ **0** (trình duyệt còn nhớ 0,02). Vẽ / di chuyển 8000, Z3, hạ 2000.
 3. Terminal gõ `$10` → phải là `$10=3` (để Biểu đồ có hàng đợi).
-4. Chọn lại preset sau khi mở (preset Chân dung, Cận cảnh đổi gamma về 1).
+4. Chọn lại preset sau khi mở (từ 14/11/2026 còn 4 preset: Chân dung, Ảnh 2D, Phong cảnh, Schematic; 09 P29).
 
 | Bước | Làm gì | Ở đâu / chọn gì | Giấy | Ghi lại |
 |---|---|---|---|---|

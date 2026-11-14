@@ -18,7 +18,7 @@ test("độ sáng hiển thị khớp tone.darkness (sai lệch tối đa 1 mứ
     for (const row of rows) {
         const got = toneMap(Uint8Array.from(gray), {
             auto: row.raster.auto_levels ?? true, black: row.raster.black_point ?? 0, white: row.raster.white_point ?? 255,
-            gamma: row.raster.gamma ?? 1, invert: row.style.invert ?? false
+            gamma: row.raster.gamma ?? 1, contrast: row.raster.contrast ?? 1, invert: row.style.invert ?? false
         });
         let worst = 0;
         got.forEach((v, i) => { worst = Math.max(worst, Math.abs(v - row.display[i])); });

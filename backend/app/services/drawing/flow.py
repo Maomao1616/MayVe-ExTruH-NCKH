@@ -29,7 +29,9 @@ FLOW_MAX_SEP_LINES = 5.0         # khoảng cách đường lớn nhất = 5 × 
 FLOW_MIN_SEP_LINES = 1.1         # khoảng cách nhỏ nhất = 1,1 × bề rộng nét (vùng đậm nhất, chưa đè nét)
 FLOW_MAX_COVER = 0.9             # độ phủ lớn nhất (như MAX_COVERAGE của các kiểu gạch)
 FLOW_WHITE = 0.1                 # dưới độ phủ này để giấy trắng (không gieo, không đi qua); gạch 5 mức để trắng dưới ~0,11
-FLOW_TEST_RATIO = 0.5            # đang đi mà cách đường khác < 0,5 × khoảng cách tại chỗ đó thì dừng
+FLOW_TEST_RATIO = 0.85           # đang đi mà cách đường khác < 0,85 × khoảng cách tại chỗ đó thì dừng. Trước 14/11/2026: 0,5 (+ cửa sổ
+                                 # vuông). Cửa sổ tròn thì 0,5 cho đường ép sát nhau, mực phủ vượt độ đậm ảnh (0,45 -> 0,55);
+                                 # 0,7: 0,48; 0,85: 0,43 (đo 3 ảnh thật A4 bút 0,4; xem tools/style_preview.py)
 FLOW_SEED_RATIO = 0.95           # điểm gieo phải cách mọi đường ≥ 0,95 × khoảng cách
 FLOW_MIN_LEN_SEPS = 3.0          # bỏ đường ngắn hơn 3 × khoảng cách (gạch vụn: mỗi cái tốn một lần nhấc bút)
 FLOW_MAX_LEN_MM = 250.0          # một đường dài tối đa chừng này (mỗi phía một nửa)
@@ -80,10 +82,20 @@ def flow_strokes(f: Field, line_w: float, default_deg: float = 45.0, spacing_sca
     def cell(x: float, y: float) -> tuple[int, int]:
         return min(h - 1, max(0, int(y / sy))), min(w - 1, max(0, int(x / sx)))
 
+    disks: dict[int, np.ndarray] = {}
+
     def busy(x: float, y: float, radius: float) -> bool:
+        # Cửa sổ TRÒN (không vuông): cửa sổ vuông coi đường chéo 45° ở cách s là cách s / 1,41 nên không gieo được nét kề bên,
+        # chỉ còn gieo lưới 2 mm -> đường chéo không bao giờ dày hơn ~1,4 mm dù ảnh đậm (14/11/2026)
         k = max(1, int(radius / OCC_PX_MM))
         cx, cy = int(x / OCC_PX_MM), int(y / OCC_PX_MM)
-        return bool(occ[max(0, cy - k):cy + k + 1, max(0, cx - k):cx + k + 1].any())
+        if k not in disks:
+            yy, xx = np.ogrid[-k:k + 1, -k:k + 1]
+            disks[k] = (xx * xx + yy * yy) <= k * k
+        y0, x0 = max(0, cy - k), max(0, cx - k)
+        win = occ[y0:cy + k + 1, x0:cx + k + 1]
+        mask = disks[k][y0 - (cy - k):y0 - (cy - k) + win.shape[0], x0 - (cx - k):x0 - (cx - k) + win.shape[1]]
+        return bool((win.astype(bool) & mask).any())
 
     def stamp(points) -> None:
         if len(points) >= 2:
