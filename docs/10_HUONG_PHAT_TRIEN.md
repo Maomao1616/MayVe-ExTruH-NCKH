@@ -26,7 +26,7 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F, 12/11/2026) đối c
 | 1 ✅ | **Đường cong tông** (0.3) | xong 13/11/2026 cho đan chéo + xoắn ốc ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12); sóng biên độ chờ in lại | — |
 | 2 | **XDoG cho viền ảnh lệch sáng** (0.4) | 2–3 ảnh thật (em bé, ngược sáng, đèn đêm) | 1 buổi |
 | 3 | **Flow field: nét theo dáng ảnh** (0.5) | **bản thô F1–F3 đã có 12/11** (kiểu "Theo dáng ảnh (thử nghiệm)"); chờ in thử A6 + ảnh thú thật | còn F4–F6 |
-| 3b ✅ | **Đan chéo + theo dáng** (kiểu lai, mặc định Chân dung) | xong 13/11/2026 ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.11); chờ in A6 / A4 | — |
+| 3b ✅ | **Đan chéo + theo dáng** (kiểu lai) | xong 13/11/2026 ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.11); **14/11 ẩn khỏi giao diện**: chủ dự án tách đan chéo / theo dáng thành hai kiểu riêng, Chân dung đổi sang sóng biến thiên ([09](09_QUYET_DINH_THIET_KE.md) P28, P29) | — |
 | 4 ✅ | **Buffer + G2/G3** (0.6) | xong 13/11/2026 | — |
 
 ### 0.3 Đường cong tông (ý tưởng D) ✅

@@ -75,7 +75,7 @@ TONE_CURVES = {
     "spiral": (0.0, 0.023, 0.086, 0.107, 0.163, 0.193, 0.266, 0.319, 0.380, 0.452, 0.552, 0.683, 0.712, 0.804, 0.822,
                0.927),
 }
-TONE_CURVE_STYLES = {"crosshatch": "crosshatch", "spiral": "spiral", "crosshatch_flow": "crosshatch", "flow": "crosshatch"}
+TONE_CURVE_STYLES = {"crosshatch": "crosshatch", "spiral": "spiral", "crosshatch_flow": "crosshatch"}
 USE_TONE_CURVE = True            # False = bỏ đường cong (độ phủ = độ đậm ảnh như trước 13/11/2026)
 TONE_CURVE_STRENGTH = 0.75       # áp 75 % đường cong. Mô phỏng (tools/ink_sim.py, cột "sai mắt"; đan chéo): áp đủ thì ô đậm
                                  # ĐỀU đúng nhất (sai 0,14 -> 0,05) nhưng dải chuyển liền đậm quá (0,037 -> 0,047, chỗ giáp hai
@@ -406,10 +406,9 @@ def flow_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = 
     line_w = LINE_WIDTH_RATIO * pen_mm
     scale = spacing_of(style, pen_mm) / (DEFAULT_SPACING_PEN * line_w)      # người dùng đặt khoảng cách khác mặc định
     base = style.angle if angle is None else angle
-    # 14/11/2026: áp đường cong tông. Đo trên 3 ảnh thật (chân dung, hoạt hình, cô gái): mực phủ của theo dáng KHỚP độ đậm ảnh
-    # (0,45 -> 0,47; 0,65 -> 0,65) mà mắt thấy phủ 50 % chỉ đậm ~0,39 nên vùng giữa nhạt, tông phẳng. Dùng bảng đan chéo
-    # (nét một hướng như theo dáng ở độ phủ thấp); chưa đo tờ tông riêng cho theo dáng.
-    return [_clip_out(flow.flow_strokes(_toned(f, "flow"), line_w, base, scale, ctx), f)]
+    # Không áp đường cong tông (thử 14/11/2026 rồi bỏ): sau khi sửa cửa sổ kiểm tra (flow.busy), mực phủ đã bám đúng độ đậm; thêm
+    # đường cong thì tools/ink_sim.py báo vùng giữa đậm quá (sai mắt 0,043 -> 0,063)
+    return [_clip_out(flow.flow_strokes(f, line_w, base, scale, ctx), f)]
 
 
 @FILLERS.register("flow")

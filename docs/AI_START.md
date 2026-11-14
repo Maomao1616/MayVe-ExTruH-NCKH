@@ -51,6 +51,8 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 - `launcher/*.ps1`, `*.vbs`, `tools/dong_goi.ps1`: **ASCII không dấu** (PowerShell 5.1). Zip ghi tên tệp bằng `/`. Bản embeddable cần `..\backend` trong `python312._pth`.
 - Thử launcher / cập nhật trong thư mục tạm, **kiểm cổng 8000 trống trước** (`stop.ps1` tắt mọi thứ nghe 8000).
 - `str.replace` hàng loạt trên tệp Python có thể trượt im lặng: đọc lại đoạn đã sửa hoặc chạy test ngay.
+- **Chỉnh thuật toán vẽ (rút từ 14/11/2026):** (1) đổi tông / mật độ → chạy `python tools/ink_sim.py` TRƯỚC khi báo xong, không chỉ nhìn ảnh thật (đường cong tông cho theo dáng trông ổn trên ảnh nhưng ink_sim báo đậm quá, đã phải gỡ); (2) tách nguyên nhân bằng dữ liệu giả đơn giản (ô phẳng mỗi ô một độ đậm) trước khi soi ảnh thật (lỗi cửa sổ vuông ở `flow.busy` lộ ngay ở ô phẳng); (3) so trước / sau với mã đã commit: `git archive <commit> backend/app tools | tar -x -C <thư mục tạm>` rồi chạy ở đó (`git stash` không đổi gì khi mã đã commit); (4) thử biến thể bằng script nháp đè hằng số (monkeypatch) trong thư mục tạm, chỉ sửa mã khi đã chọn; (5) phải nới ngưỡng test cho qua = dấu hiệu nghi thay đổi, không phải nghi test; (6) không gợi ý chỉnh ô cho chủ dự án khi chưa chạy thử; (7) xem ảnh so sánh: cắt đúng vùng, kích thước thật, ảnh ghép thu nhỏ không thấy gì.
+- Sửa tay `locales/*.json`: kiểm `json.load` ngay sau khi sửa. Python Windows không thấy `/tmp` của Git Bash: ghi script vào thư mục tạm của phiên.
 
 ## 6. Xuất mã cho AI khác mà tiết kiệm token (`tools/export_context.py`, chỉ dùng thư viện chuẩn)
 ```

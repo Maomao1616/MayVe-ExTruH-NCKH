@@ -39,7 +39,7 @@ def test_lines_follow_the_iso_lines_of_a_ramp_and_space_by_darkness():
     assert np.mean(np.abs(a - 90.0) < 15.0) > 0.8                  # nét dọc (theo đường cùng độ đậm), không chéo 45°
     xs_light = [s[:, 0].mean() for s in strokes if s[:, 0].mean() < 20]
     xs_dark = [s[:, 0].mean() for s in strokes if s[:, 0].mean() > 40]
-    assert len(xs_dark) > 1.5 * len(xs_light)                      # vùng đậm nhiều đường hơn hẳn (14/11: đường cong tông nâng đầu nhạt nên còn ~2×)
+    assert len(xs_dark) > 2 * len(xs_light)                        # vùng đậm nhiều đường hơn hẳn
 
 
 def test_ring_gives_circular_strokes_and_none_shorter_than_three_spacings():

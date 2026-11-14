@@ -19,19 +19,19 @@
 Giấy Ivory, mặt bóng như 13/11. Bút **Sakura 0,5** trừ khi ghi khác. Kết quả 13/11 và lý do từng thay đổi: [09](09_QUYET_DINH_THIET_KE.md) C10, D10–D12, P19–P26.
 
 **Chuẩn bị (một lần):**
-1. Tắt phần mềm, mở lại, trình duyệt **Ctrl+F5** (bản mới: G2/G3, chờ 0, đường cong tông, kiểu "Đan chéo + theo dáng", XDoG, Thang tông).
+1. Tắt phần mềm, mở lại, trình duyệt **Ctrl+F5** (bản mới: G2/G3, chờ 0, đường cong tông, kiểu Theo dáng ảnh, FDoG, ô Tương phản, Thang tông).
 2. Tab Tạo bản vẽ, khối G-code: ô **chờ** gõ **0** (trình duyệt còn nhớ 0,02). Vẽ / di chuyển 8000, Z3, hạ 2000.
 3. Terminal gõ `$10` → phải là `$10=3` (để Biểu đồ có hàng đợi).
 4. Chọn lại preset sau khi mở (từ 14/11/2026 còn 4 preset: Chân dung, Ảnh 2D, Phong cảnh, Schematic; 09 P29).
 
 | Bước | Làm gì | Ở đâu / chọn gì | Giấy | Ghi lại |
 |---|---|---|---|---|
-| 1 | **Chân dung kiểu mới** | ảnh em bé, preset **Chân dung** (= Đan chéo + theo dáng, gamma 1), **A6** rồi **A4** | 2 tờ | so với tờ đan chéo 13/11: mắt / mũi / mép mặt có tách khỏi nền không; đường cong có lạc lõng như viền dán không; **có quá đậm không** (đường cong tông làm vùng trung bình đậm hơn → quá đậm thì gamma 1,1–1,2 và báo lại); thời gian thật / ước tính; Terminal có `error` nào không (bản vẽ thật đầu tiên có G2/G3) |
+| 1 | **Chân dung kiểu mới** | ảnh người thật, preset **Chân dung** (14/11: sóng biến thiên, không viền, mức đen 20, tương phản 1,3, phủ đều), **A6** rồi **A4** | 2 tờ | so với tờ đan chéo 13/11: mắt / mũi / mép mặt có tách khỏi nền không; đường cong có lạc lõng như viền dán không; **có quá đậm không** (đường cong tông làm vùng trung bình đậm hơn → quá đậm thì gamma 1,1–1,2 và báo lại); thời gian thật / ước tính; Terminal có `error` nào không (bản vẽ thật đầu tiên có G2/G3) |
 | 2 | **Thêm lớp viền XDoG** | như bước 1, **A4**, tích **"Thêm lớp viền phác họa lên kiểu tô"** | 1 tờ | có che bớt móc chữ U ở vùng sáng không, có rối không; thiếu nét → Chi tiết viền "Nhiều", vụn → "Ít" |
 | 3 | **Phác họa ảnh** | preset **Phác họa ảnh** (Nét viền + XDoG), ảnh em bé + ảnh thú, **A5**; nếu còn giấy: cùng ảnh, kiểu Nét viền **bỏ tích** XDoG | 2–3 tờ | XDoG có rõ mắt / mũi / miệng hơn không, có mất viền nào (mũ trắng trên nền sáng: XDoG chỉ nhìn độ sáng) |
 | 4 | **Sóng biên độ có lớp đậm** | Cài đặt → Tờ thử → **Thang tông** → tab vẽ: kiểu **Sóng biên độ**, gamma 1, tắt CLAHE / khử nhiễu, **A6**; rồi ảnh phong cảnh tối, preset **Phong cảnh**, **A5** | 2 tờ | ô đậm nhất đã gần đen chưa (bản cũ ~0,71); lớp gạch thẳng ở vùng đậm có làm mất vẻ mượt không (không thích → AI tắt `AM_DARK_LAYER`); máy có rung ở sóng dày không; thời gian / số lần nhấc (Biểu đồ, nay đếm theo Z) |
-| 5 | **Kiểm đường cong tông** | **Thang tông**, kiểu **Đan chéo + theo dáng** rồi **Xoắn ốc**, gamma 1, tắt CLAHE / khử nhiễu, Số mức 5, **A6** | 2 tờ | 5 bậc đậm nhạt có cách đều nhau không (16 ô gom thành ~5 bậc là đúng). Chụp như mục 2b, gửi ảnh gốc → AI đo, lệch thì sửa bảng |
-| 6 | (nếu còn giờ) **UB-155 đen** | **Thang tông**, kiểu Đan chéo + theo dáng, ô Bút vẽ UB-155 (0,38), **A6** | 1 tờ | như bước 5: đạt thì dùng chung đường cong, lệch thì AI thêm bảng riêng cho bút này |
+| 5 | **Kiểm đường cong tông** | **Thang tông**, kiểu **Gạch chéo** rồi **Xoắn ốc** (Theo dáng ảnh chưa có đường cong tông, vì thử trên ink_sim thấy đậm quá), gamma 1, tắt CLAHE / khử nhiễu, Số mức 5, **A6** | 2 tờ | 5 bậc đậm nhạt có cách đều nhau không (16 ô gom thành ~5 bậc là đúng). Chụp như mục 2b, gửi ảnh gốc → AI đo, lệch thì sửa bảng |
+| 6 | (nếu còn giờ) **UB-155 đen** | **Thang tông**, kiểu Gạch chéo, ô Bút vẽ UB-155 (0,38), **A6** | 1 tờ | như bước 5: đạt thì dùng chung đường cong, lệch thì AI thêm bảng riêng cho bút này |
 | 7 | (nếu gặp) **Servo sau Home** | — | — | bút tụt sau Home: Terminal có dòng `pen re-lift not sent` không |
 
 **Gửi lại:** ảnh từng tờ (thẳng góc, đủ sáng, không flash; tờ Thang tông thấy đủ 3 ô mốc đen) + bảng: bước · kiểu / preset · khổ · thời gian thật / ước tính · số lần nhấc · nhận xét. Có `error` ở Terminal thì chụp lại.

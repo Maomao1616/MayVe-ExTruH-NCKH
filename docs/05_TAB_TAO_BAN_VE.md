@@ -62,13 +62,13 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 
 Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của một bộ chung `BASE`. Cận cảnh (xoắn ốc) và Phác họa ảnh (Nét viền + XDoG) bỏ 14/11/2026: chọn tay kiểu nét khi cần ([09](09_QUYET_DINH_THIET_KE.md) P29).
 
-Danh sách kiểu nét từ 13/11/2026 (`spec.UI_STYLES`; zigzag, sóng thường, đan 3 hướng, theo dáng thuần đã ẩn, mã vẫn giữ, [09](09_QUYET_DINH_THIET_KE.md) P23, P25):
+Danh sách kiểu nét từ 14/11/2026 (`spec.UI_STYLES`; zigzag, sóng thường, đan 3 hướng, kiểu lai Đan chéo + theo dáng đã ẩn, mã vẫn giữ, [09](09_QUYET_DINH_THIET_KE.md) P23, P25, P28):
 
 | Kiểu nét | Số nét / nhấc bút | Ghi chú |
 |---|---|---|
-| Đan chéo + theo dáng | như gạch chéo (+1–5 %) | **mặc định**; đường cong ôm viền mắt / mũi / mặt, đan chéo gánh tông |
-| Gạch chéo chồng lớp | vừa | tông nhạt một hướng, đậm thêm hướng vuông góc |
-| Sóng biên độ | ít nhất | tông liền, mượt; vùng rất đậm thêm lớp gạch thẳng |
+| Gạch chéo chồng lớp | vừa | **mặc định**; tông nhạt một hướng, đậm thêm hướng vuông góc; bỏ "râu" (dải hẹp, mẩu ngắn), vùng độ phủ < 0,2 để trắng. Tích "Thêm lớp viền" (FDoG) cho nét cong mịn ở mắt, tóc, mép mặt |
+| Theo dáng ảnh (flow field) | nhiều | nét uốn theo dáng ảnh, kiểu riêng, có đường cong tông; vùng tối nhiều mẩu ngắn |
+| Sóng biến thiên | ít nhất | tông liền, mượt; vùng rất đậm thêm lớp gạch thẳng; ô "Phủ đều đường ở vùng sáng" cho da mặt không khe trắng (bật trong Chân dung) |
 | Xoắn ốc | nhiều nhất | đậm nhanh, ô rất đậm có vệt chữ thập |
 | Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng. Ô tích **"Dùng XDoG"** (chỉ hiện ở kiểu này): viền ảnh chụp rõ hơn. Ô "Thêm lớp viền" trên kiểu tô khác luôn dùng XDoG |
 

@@ -29,9 +29,10 @@ FLOW_MAX_SEP_LINES = 5.0         # khoảng cách đường lớn nhất = 5 × 
 FLOW_MIN_SEP_LINES = 1.1         # khoảng cách nhỏ nhất = 1,1 × bề rộng nét (vùng đậm nhất, chưa đè nét)
 FLOW_MAX_COVER = 0.9             # độ phủ lớn nhất (như MAX_COVERAGE của các kiểu gạch)
 FLOW_WHITE = 0.1                 # dưới độ phủ này để giấy trắng (không gieo, không đi qua); gạch 5 mức để trắng dưới ~0,11
-FLOW_TEST_RATIO = 0.85           # đang đi mà cách đường khác < 0,85 × khoảng cách tại chỗ đó thì dừng. Trước 14/11/2026: 0,5 (+ cửa sổ
+FLOW_TEST_RATIO = 0.7            # đang đi mà cách đường khác < 0,7 × khoảng cách tại chỗ đó thì dừng. Trước 14/11/2026: 0,5 (+ cửa sổ
                                  # vuông). Cửa sổ tròn thì 0,5 cho đường ép sát nhau, mực phủ vượt độ đậm ảnh (0,45 -> 0,55);
-                                 # 0,7: 0,48; 0,85: 0,43 (đo 3 ảnh thật A4 bút 0,4; xem tools/style_preview.py)
+                                 # 0,7: 0,48; 0,85: 0,43 (đo 3 ảnh thật A4 bút 0,4) nhưng 0,85 vụn hơn (67 so với 53 nét trong
+                                 # tools/ink_sim.py) và sai mắt 0,049 so với 0,043
 FLOW_SEED_RATIO = 0.95           # điểm gieo phải cách mọi đường ≥ 0,95 × khoảng cách
 FLOW_MIN_LEN_SEPS = 3.0          # bỏ đường ngắn hơn 3 × khoảng cách (gạch vụn: mỗi cái tốn một lần nhấc bút)
 FLOW_MAX_LEN_MM = 250.0          # một đường dài tối đa chừng này (mỗi phía một nửa)
