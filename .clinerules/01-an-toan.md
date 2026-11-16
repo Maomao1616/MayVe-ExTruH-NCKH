@@ -8,3 +8,4 @@
 6. Không bịa số máy. Lấy từ `MACHINE` (`frontend/js/core/config.js`), hồ sơ máy hoặc `docs/02_PHAN_CUNG_MAY.md`. Điều chưa đo thì ghi "chưa kiểm chứng".
 7. Không sửa cấu hình mạch ngoài các mục đã cho phép trong `backend/app/services/machine_config.py` (`FIELDS`): chân GPIO, kinematics, stepping sai có thể làm mạch không khởi động.
 8. Không tự chạy lệnh làm máy chuyển động, tắt cổng 8000 (`launcher/stop.ps1` tắt mọi thứ đang nghe 8000), hay xóa `data/`.
+9. Trình duyệt tự động (Playwright MCP, nếu có): chỉ bấm nút tab Điều khiển khi đang ở chế độ `sim` (Cài đặt → Kết nối). Máy thật đang nối hoặc chưa chắc → chỉ xem / chụp, không bấm ▶ Chạy, jog, Home, Reset; hỏi chủ dự án.

@@ -23,6 +23,7 @@ launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git)
 2. Route API mới mặc định **chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`); thêm route cho khách = một dòng ở đó **và** sửa `tests/test_auth.py`.
 3. **PIN thật không bao giờ vào Git, tài liệu, hay câu trả lời**: nằm ở `data\pin.txt` (gitignored). Chỉ nhắc tên khóa (`admin`, `unlock`).
 4. Không bịa số máy: lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `docs/02_PHAN_CUNG_MAY.md`; điều chưa đo thì ghi "chưa kiểm chứng".
+5. Trình duyệt tự động (Playwright MCP): chỉ bấm nút tab Điều khiển khi đang ở chế độ `sim` (Cài đặt → Kết nối). Máy thật đang nối hoặc chưa chắc → chỉ xem / chụp, không bấm ▶ Chạy, jog, Home, Reset; hỏi chủ dự án.
 
 ## Cách làm một việc
 1. Đọc đúng tài liệu liên quan (bảng ở `AI_START.md` mục 2). **Trước khi đổi hành vi đã chốt: đọc `docs/09_QUYET_DINH_THIET_KE.md`.**
