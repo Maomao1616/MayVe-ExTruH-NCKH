@@ -20,7 +20,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
 
 | Phần | Linh kiện | Ghi chú |
 |---|---|---|
-| Khung | **CoreXY**, mẫu Extruh pen plotter (Printables 734327) | vùng làm việc **285 × 318 mm**, Z (nâng bút) **5 mm** |
+| Khung | **CoreXY**, mẫu Extruh pen plotter (Printables 734327); đủ 3 mẫu in + video lắp ráp ở [README](../README.md) mục *Phần cứng* | vùng làm việc **285 × 318 mm**, Z (nâng bút) **5 mm** |
 | Cơ cấu bút | bút **hạ xuống giấy nhờ trọng lực**, servo chỉ **nâng** cụm bút | lực bút = trọng lượng cụm bút (muốn nét chắc hơn thì thêm khối nặng). Hạ chậm = đáp nhẹ, đỡ gãy ngòi |
 | Servo | **JX PS-1109MG** 9 g, bánh răng kim loại, analog | 4,8–6 V; 0,12 s/60° ở 4,8 V, 0,10 s/60° ở 6 V (theo nơi bán) |
 | Nguồn servo | hạ áp **XL4005**, đặt **~6 V** | GND phải nối chung với MKS. Nên có tụ 470–1000 µF sát servo |
