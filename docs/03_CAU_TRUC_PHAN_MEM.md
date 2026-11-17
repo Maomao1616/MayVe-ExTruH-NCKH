@@ -58,7 +58,9 @@ ExtruXY/
 │  ├─ tests/                 test tự động (pytest); draw_test/ cho tab vẽ
 │  └─ requirements.txt       danh sách thư viện
 ├─ tools/                    export_context.py (xuất mã cho AI + bản đồ mã) · dong_goi.ps1 (đóng gói zip)
-│                            make_test_gcode.py (G-code bài thử tốc độ) · ink_sim.py (mô phỏng mực)
+│                            make_test_gcode.py (G-code bài thử tốc độ) · ink_sim.py (mô phỏng mực) · ink_real.py (đo tông trên ảnh thật)
+│                            tone_read.py (đọc ảnh tờ tông) · log_read.py (đọc nhật ký chạy) · style_preview.py (xem nhanh kiểu nét)
+│                            ink_real.py (đo sai tông của kiểu tô trên ảnh thật, trước / sau sửa sai)
 ├─ launcher/                 bật / tắt phần mềm bằng icon (Windows)
 ├─ Cap nhat.bat              cập nhật bản mang đi
 ├─ Python/                   (không lên Git) Python 3.12 mang theo cho máy không cài Python
@@ -274,8 +276,8 @@ Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về 
 
 | Kiểm | Cách | Báo gì |
 |---|---|---|
-| Test máy chủ (~397 bài) | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng |
-| Test giao diện (58 bài) | ở thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` | như trên |
+| Test máy chủ (~563 bài) | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng |
+| Test giao diện (58 bài) | ở thư mục gốc: `node --test` kèm đủ 8 tệp: `frontend/tests/{chart,gcode,imageprep,locales,notify,paper,preview,subject}.test.mjs` (Windows: truyền đường dẫn tệp) | như trên |
 | Xem giao diện | sửa Python thì tắt và chạy lại server; trình duyệt **Ctrl+F5**; **F12 → Console** xem dòng đỏ | lỗi chữ, nút không chạy |
 | Thử bằng máy giả | Cài đặt → Kết nối → `sim` | mọi nút chạy được khi chưa có máy |
 | Lưới an toàn | Git: `git diff` xem đã đổi gì; `git checkout -- <tệp>` quay về bản đã commit | |

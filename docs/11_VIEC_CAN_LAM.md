@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động: máy chủ **549**, giao diện **58** (đều qua 17/11/2026). Còn thiếu chủ yếu: **in thật** các kiểu mới và **thử trên MiniPC**.
+Test tự động: máy chủ **563**, giao diện **58** (đều qua 17/11/2026). Còn thiếu chủ yếu: **in thật** các kiểu mới và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 
@@ -41,6 +41,7 @@ Test tự động: máy chủ **549**, giao diện **58** (đều qua 17/11/2026
 | **Hằng kiểu nét** | độ phủ tối đa **0,9**; trắng hẳn dưới **0,2** (sóng: **0,10**); bỏ mẩu < **1,5 mm**, dải hẹp < **1,5 ×** khoảng cách nét; đường cong tông **75 %**; sóng: khoảng cách **4 ×** nét, bước sóng **2 ×**, phủ đều bật ở Chân dung; theo dáng: `FLOW_TEST_RATIO` **0,7**, cửa sổ tròn, phủ tối đa **0,85**, khoảng cách lớn nhất **4,5 ×** nét; viền: **FDoG** dọc nét 4 mm, làm mượt **0,8 mm**, bỏ nét < **4 mm** |
 | **4 preset** | **Chân dung** = sóng biến thiên, góc 135°, không viền, mức đen 20, tương phản 1,3, phủ đều · **Ảnh 2D** = gạch chéo 5 mức + lớp viền + khử nhiễu · **Phong cảnh** = sóng + CLAHE, góc 30° · **Schematic** = viền, đen 60 / trắng 200 |
 | **Báo xong / lỗi** | âm báo WebAudio (xong: 3 nốt lên; lỗi: nốt trầm lặp; hủy: im) + tiêu đề tab nhấp nháy khi tab ẩn; công tắc ở Cài đặt → Hoạt động; không cần Internet |
+| **Sửa sai tông** (17/11) | vòng phản hồi `refine.py`: tô → dựng mực → so → chỉnh mục tiêu → tô lại; mặc định **1 lượt**, gạch chéo / sóng / xoắn ốc; sai số −40…−58 %, mực và thời gian +4…8 % ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13, 09 P34) |
 | **Giao diện** (17/11) | màu nhấn **vàng an toàn** `#ffd400` (nền sáng `#8a6d00`) thay cyan, ở `tokens.css`; hai khung vẽ (Tạo bản vẽ và xem trước ở Điều khiển) là **giấy ngà + nét đen** như bản in ở cả hai giao diện (khung giấy / lề vàng đậm `--paper-guide`); nhóm Tối ưu nét có nút **Về mặc định** và ô bị xóa trống tự trả về mặc định; dòng G-code ở tab Tạo bản vẽ ghi cả **số cung G2/G3** |
 | **Dọn mã** (17/11) | xóa kiểu lai `crosshatch_flow`, `HYB_*`, `edge_band`, `ink_cover`, hàng rào viền; `ink_sim` ra đúng số cũ cho mọi kiểu đang bật |
 | **Triển khai** | bản mang đi Windows + `Cap nhat.bat`; demo không cần Internet (giao diện không tải gì từ ngoài) |
@@ -62,7 +63,7 @@ Test tự động: máy chủ **549**, giao diện **58** (đều qua 17/11/2026
 | Tiếp tục khi mất điện | **chưa cần**, ghi lại sau nếu muốn |
 
 ### 4.2 Làm tiếp, theo thứ tự
-1. **Thuật toán** (đã tạm ổn): chờ in giấy nhóm A ([07](07_THU_NGHIEM.md)) rồi chốt hằng; cần thì tờ tông riêng cho Theo dáng ảnh và UB-155. **Tab Beta in PDF (chữ Word)** (10 mục 1.1, **L**): tôi xếp ở nhóm này vì là "nguồn nét" mới; bạn muốn chuyển sang sau mạng thì báo.
+1. **Thuật toán** (đã tạm ổn, vòng sửa sai đã làm 17/11): chờ in giấy nhóm A ([07](07_THU_NGHIEM.md), nhất là A5 so 0 / 1 lượt) rồi chốt hằng cuối và mặc định lượt; cần thì tờ tông riêng cho Theo dáng ảnh và UB-155. **Tab Beta in PDF (chữ Word)** (10 mục 1.1, **L**): tôi xếp ở nhóm này vì là "nguồn nét" mới; bạn muốn chuyển sang sau mạng thì báo.
 2. **Nối mạng** ([08](08_TRIEN_KHAI.md) mục E, F): MiniPC (đo xử lý ảnh, RAM) → Docker + USB cố định (udev) + IP cố định → Cloudflare Tunnel; **chỉ mở ra ngoài khi đã đặt PIN**; thử Origin / cookie qua Cloudflare. **M**
 3. **Nút cứng + cảm biến bút** (YAML + dây; 10 mục 3.1): `feed_hold_pin` + `cycle_start_pin` cho Tạm dừng / Chạy tiếp chạy cả khi mất mạng; cảm biến bút vào `probe` để biết bút thật đã nhấc, thêm đèn "Bút". **S + dây**
 4. **ESP32-S3** (cuối cùng, chọn 1–2): bảng điều khiển không dây, đo điện năng, đo nhiệt, camera. **L**

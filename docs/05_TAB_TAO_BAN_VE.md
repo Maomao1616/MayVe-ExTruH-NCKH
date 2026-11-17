@@ -36,6 +36,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Hủy** (cạnh thanh tiến trình) | dừng việc tạo nét đang chạy |
 | **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
+| Ô **Sửa sai tông (lượt)** | 0 = tắt, **1 mặc định**, tối đa 3 (tham số `style.refine_passes`): tô xong dựng lại ảnh mực, thiếu thì thêm nét, thừa thì bớt, tô lại; đúng tông hơn, nhiều mực và thời gian hơn 4–8 %. Không áp cho Theo dáng ảnh và Nét viền ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
 | **Chủ thể** (cạnh Cắt ảnh) | khoanh người / vật bằng **elip** hoặc **chữ nhật** trên ảnh gốc (kéo thả như khung cắt; thanh "Nền ngoài vùng còn" 0–100 %, mặc định 50): ngoài vùng bản vẽ nhạt đi, nền vẫn vẽ. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu) |

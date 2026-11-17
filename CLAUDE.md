@@ -9,7 +9,7 @@ Máy vẽ bút CoreXY (mạch MKS DLC32 + firmware FluidNC 4.1.1, không sửa f
 docs/        tài liệu 01–11 (người đọc, đánh số) + AI_* (chỉ cho AI)
 frontend/    index.html · css/ · locales/{vi,en}.json · js/{core,lib,stores,views}/ · tests/
 backend/     app/{api,links,services,auth.py,main.py} · tests/ · tests/draw_test/
-tools/       export_context.py · ink_sim.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1
+tools/       export_context.py · ink_sim.py · ink_real.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1
 launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git) bản thảo, hồ sơ, PIN
 ```
 - Frontend phụ thuộc một chiều: `views → stores → lib`, mọi tầng → `core`. View không import view khác (trừ `control.js → preview.js`). Mỗi phần tử HTML có **một** chủ ghi.
@@ -28,7 +28,7 @@ launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git)
 ## Cách làm một việc
 1. Đọc đúng tài liệu liên quan (bảng ở `AI_START.md` mục 2). **Trước khi đổi hành vi đã chốt: đọc `docs/09_QUYET_DINH_THIET_KE.md`.**
 2. Sửa mã **và test cùng lúc**. Chạy: `cd backend && python -m pytest` (~500 test; riêng `test_old_logs_are_pruned` có thể hết giờ khi chạy chung, chạy riêng thì qua) và `node --test <các tệp trong frontend/tests/*.mjs>` (Windows: truyền **đường dẫn tệp**, không truyền thư mục).
-3. Đổi thuật toán tô: đo bằng `python tools/ink_sim.py`, nêu số trước / sau. Đổi `layout.py` / `tone.py` / `raster_in.py`: sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS.
+3. Đổi thuật toán tô: đo bằng `python tools/ink_sim.py` (ảnh tổng hợp) và `tools/ink_real.py` (ảnh thật), nêu số trước / sau; test từng bộ tô nhớ đặt `refine_passes=0` (vòng sửa sai `refine.py`). Đổi `layout.py` / `tone.py` / `raster_in.py`: sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS.
 4. Cập nhật tài liệu đúng chỗ: xong việc → `11`; đổi hành vi đã chốt → `09`; API tab vẽ → `05` mục 7 + `spec.py`; con số thuật toán → `06`; số đo máy → `02`; thêm / đổi tệp lớn → `python tools/export_context.py --map`. **Không tạo tệp tài liệu mới** nếu nội dung thuộc tệp đã có.
 5. Chữ hiển thị: mọi chuỗi qua `frontend/locales/vi.json` và `en.json` (cùng khóa; `"` trong tiếng Việt phải thoát). `DrawError.code` ↔ khóa `drawing.error.<code>`. Terminal giữ tiếng Anh.
 6. Báo trung thực: test fail, bước bỏ qua, điều chưa thử trên máy thật / giấy / Ubuntu.

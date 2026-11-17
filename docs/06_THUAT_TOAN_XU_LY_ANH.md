@@ -11,7 +11,7 @@
 4. Bước 1 — Đọc ảnh, cắt, thu nhỏ (`raster_in.py`)
 5. Bước 2 — Ảnh xám thành bản đồ độ đậm (`tone.py`)
 6. Bước 3 — Chia thành đúng N mức sáng tối (`styles.level_plan`)
-7. Bước 4 — Mỗi mức thành một mặt nạ đen/trắng (`hatch.level_mask`)
+7. Bước 4 — Mỗi mức thành một mặt nạ đen/trắng (`hatch.threshold_mask`)
 8. Bước 5 — Mặt nạ thành nét: gạch chéo, sóng biến thiên, xoắn ốc, theo dáng (`hatch.py`, `styles.py`, `flow.py`)
 9. Kiểu Viền: ảnh thành đường nét một lượt (`edges.py`, `trace.py`)
 10. Nhiều màu (`palette.py`)
@@ -100,7 +100,7 @@ Máy chủ (tiến trình con ưu tiên thấp, isolated.py):
  (3) styles     chọn kiểu:
       ├─ TÔ (zigzag / sóng / xoắn ốc)
       │    level_plan  chia N mức, mỗi mức một khoảng cách nét
-      │    level_mask  mỗi mức → mặt nạ đen/trắng đã làm sạch
+      │    threshold_mask  mỗi mức → mặt nạ đen/trắng đã làm sạch
       │    scan_runs / spiral_runs  đường quét cắt theo mặt nạ
       │    serpentine  nối thành nét liền, quay đầu nửa vòng tròn
       ├─ VIỀN (outline)
@@ -219,7 +219,7 @@ Mỗi chỗ trên giấy **chỉ bị gạch một lượt**, nên ít nét hơn
 
 ---
 
-## 7. Bước 4 — Mỗi mức thành một mặt nạ đen/trắng (`hatch.level_mask`)
+## 7. Bước 4 — Mỗi mức thành một mặt nạ đen/trắng (`hatch.threshold_mask`)
 
 *Mặt nạ* = một bảng cùng cỡ ảnh, mỗi ô chỉ có **Có** (vẽ) hoặc **Không**. Đây chính là "ảnh bin" (nhị phân) đã được làm đẹp.
 
@@ -374,6 +374,40 @@ Tờ tông ([07](07_THU_NGHIEM.md) mục 2) in bằng Sakura 0,5 trên mặt bó
 Đọc: vùng trung bình trông nhạt hơn độ phủ; xoắn ốc đậm nhanh, chạm trần từ 70 %; sóng chỉ 0,71 ở 90 % (mục 8.9). Bảng đo trọn từ đầu tới cuối nên đã gồm cả mực đọng ở chỗ quay đầu, không cần sửa ô Bút vẽ.
 
 **Áp dụng** (`styles.tone_cover`, cho gạch chéo và xoắn ốc): độ đậm ảnh d → độ đậm mắt thấy mong muốn `d × V(0,9) ÷ 0,9` → tra ngược bảng ra độ phủ → trộn 75 % với d (`TONE_CURVE_STRENGTH`). Đổi trường độ đậm trước khi chia mức nên chuyển mức mềm vẫn giữ. Ví dụ gạch chéo, 5 mức 23 / 45 / 68 / 90 % → ~32 / 61 / 74 / 90 %. `ink_sim`: sai mắt 0,037 → 0,033; ô đậm đều 0,14 → 0,07 (áp đủ 0,05 nhưng dải chuyển liền đậm quá, nên chọn 0,75).
+
+
+### 8.13 Vòng sửa sai (`refine.py`, 17/11/2026)
+**Một câu:** tô xong thì dựng lại ảnh mực, so với độ đậm định vẽ, chỗ thiếu mực thì thêm nét, chỗ thừa thì bớt, rồi tô lại. Giống chỉnh vòi nước tắm: thử, thấy nguội thì vặn nóng thêm, thử lại.
+
+```
+ ảnh mục tiêu ──► tô nét ──► dựng ảnh mực ──► làm mờ 2 mm ──► so với độ đậm định vẽ
+      ▲                      (nét rộng đúng bút)                │ bản đồ sai số (thiếu / thừa mực)
+      └────────── trừ 0,8 × sai số khỏi mục tiêu ◄─────────────┘     lặp 1–3 lượt, giữ lượt nhỏ sai nhất
+```
+1. Dựng ảnh mực: mỗi nét một dải rộng đúng bề rộng bút; hai nét chồng nhau chỉ tính một lần (mực không dày thêm).
+2. Làm mờ cỡ 2 mm (mắt nhìn từ xa) rồi trừ ảnh định vẽ = bản đồ sai số (âm = thiếu mực).
+3. Trừ 0,8 × sai số khỏi **ảnh mục tiêu** rồi tô lại bằng chính kiểu tô đó; sai số cộng dồn qua các lượt nên nhỏ dần.
+4. Chỗ độ phủ gốc < 0,15 là giấy trắng chủ ý (kiểu tô để trắng): **không** thêm nét ở đó. Giữ lượt có sai số nhỏ nhất; không tốt hơn 3 % thì dừng.
+
+Chỉ cần kiểu tô là hàm "ảnh mục tiêu → nét" nên dùng chung được: Gạch chéo, Sóng biến thiên, Xoắn ốc (cả kiểu ẩn). **Không áp** cho Theo dáng ảnh (nét dừng theo khoảng cách nên đổi mục tiêu gần như không đổi mực; 3 lượt cũng vậy mà mỗi lượt 3–7 s) và Nét viền. Ô "Sửa sai tông (lượt)": 0 = tắt, mặc định **1**, tối đa 3.
+
+**Phát hiện khi đo (ảnh thật, A4, bút 0,5):** các kiểu tô vẽ ra **ít** mực hơn định vẽ, thiếu 5–8 % độ phủ, mọi mức đậm, một chiều (ban đầu tưởng thừa: do bộ dựng mực sai, xem dưới). 1 lượt sửa gần hết:
+
+| Ảnh · kiểu | Sai số 0 → 1 → 2 lượt | Chiều dài nét | Số lần nhấc bút | Thời gian vẽ ước tính |
+|---|---|---|---|---|
+| Chân dung A · Gạch chéo | 0,052 → 0,023 → 0,019 | 112,7 → 119,4 m (+6 %) | 1021 → 1076 (+5 %) | 22,1 → 23,3 phút (+5 %) |
+| Chân dung B · Sóng biến thiên | 0,068 → 0,040 → 0,036 | 63,8 → 67,8 m (+6 %) | 212 → 211 (0 %) | 23,6 → 24,5 phút (+4 %) |
+| Hoạt hình · Gạch chéo | 0,077 → 0,032 → 0,022 | 22,1 → 25,2 m (+14 %) | 441 → 462 (+5 %) | 6,0 → 6,5 phút (+8 %) |
+| Hoạt hình · Xoắn ốc | 0,040 → 0,030 → 0,028 | 53,5 → 53,9 m (0 %) | (chưa đo) | (chưa đo) |
+
+Đọc: sai số tính theo độ phủ (0–1) sau khi làm mờ 2 mm, đo bằng `tools/ink_real.py`. Tạo nét chậm thêm dưới 1 s mỗi lượt (Gạch chéo, Sóng). Cái giá là **mực và thời gian vẽ nhiều hơn 4–8 %** để đúng tông. **Chưa so trên giấy** ([07](07_THU_NGHIEM.md) A5); muốn giữ như cũ thì để ô = 0.
+
+**Còn lại:** sai số không về 0 vì các mức là bậc rời (5 mức: 0,225 / 0,45 / 0,675 / 0,9); vùng sáng (độ phủ 0,1–0,3) vẫn thiếu 0,04–0,05 vì nằm dưới ngưỡng trắng của kiểu tô; chỉ đo **độ phủ**, không đo vẻ đẹp.
+
+**Dựng ảnh mực: bài học đo (đều thử trong ngày 17/11/2026, ghi ở [09](09_QUYET_DINH_THIET_KE.md) P34):**
+- `cv2.polylines` vẽ nét **dày hơn yêu cầu** và chỉ ra độ dày lẻ (yêu cầu 5 và 6 đều ra 7 điểm): dựng ở 4 điểm / nét thừa 14–25 %, thay đổi theo góc và độ phân giải. Cách dùng: đo bề rộng thật vẽ ra (`_drawn_width`), chọn độ dày gần nhất, nhân bù.
+- Cộng chiều dài nét × bề rộng ÷ diện tích: sai ở chỗ đậm (hai lớp gạch chồng nhau ra độ phủ 1,2 > 1).
+- **Kiểm chéo bằng diện tích hợp các nét (shapely, đúng hình học)** trên 18 ô 30 × 30 mm nét thật: `ink_cover` ra 0,97–1,00 ×, bộ dựng cũ của `ink_sim` ra 1,06–1,13 × (thiên về đậm ~9 %). `ink_sim` đã đổi sang cách dựng này; số `ink_sim` ghi trong tài liệu trước 17/11 chỉ so tương đối được.
 
 ---
 
@@ -627,7 +661,7 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 |---|---|---|
 | Bút, độ phủ | `LINE_WIDTH_RATIO`, `DEFAULT_SPACING_PEN`, `MAX_COVERAGE` (`styles.py`) | 1,0 · 2,0 · 0,9 |
 | Đường cong tông | `USE_TONE_CURVE`, `TONE_CURVE_STRENGTH` | bật · 0,75 |
-| Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM`; `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
+| Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM` (`styles.py`); `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
 | Gạch chéo | `CROSS_START`, `CROSS_SLOPE`, `CROSS_ANGLE` | 0,45 · 0,5 · 90° |
 | Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 1,5 mm · 0,2 |
 | Sóng biến thiên | `AM_SPACING_LINES`, `AM_AMPLITUDE`, `AM_WAVE_LINES`, `AM_DITHER`, `AM_WHITE`, `AM_FILL`, `AM_MIN_RUN` | 4,0 · 0,45 · 2,0 · 0,35 · 1,6 (độ phủ 0,10) · tắt (bật ở Chân dung) · 3,0 |
@@ -642,9 +676,11 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Dò nét liền | `SMOOTH_MM`, `SIMPLIFY_PX`, `CLOSE_PX`, `CLOSED_SIGMA_FRAC` (`trace.py`); `OUTLINE_MIN_LEN_MM` (`styles.py`) | 0,8 mm · 0,6 · 2,0 · 0,05 · 4,0 mm |
 | Đọc ảnh | `OVERSAMPLE`, `UPSCALE_TO_PX`, `DRAFT_FACTOR`, `MAX_PIXELS` (`raster_in.py`) | 1,3 · 720 · 0,5 · 60 triệu |
 | Vùng chủ thể | `SUBJECT_FEATHER` (`tone.py`); `subject_outside` (`spec.py`) | 0,08 · 0,5 |
+| Sửa sai | `REFINE_GAIN`, `REFINE_SIGMA_MM`, `REFINE_STOP_RATIO`, `REFINE_RAISE_FROM` (`refine.py`); `refine_passes` (`spec.py`) | 0,8 · 2,0 mm · 0,97 · 0,15 · 1 lượt |
+| | `REFINE_LINE_PX`, `REFINE_GRID_PX_MM`, `REFINE_MAX_PIXELS` (dựng mực), `REFINE_KINDS` (`styles.py`) | 7 điểm / nét · 4 ô / mm · 16 triệu · gạch chéo, sóng, xoắn ốc |
 | Tối ưu nét | `BRIDGE_PEN`, `BRIDGE_MIN_DARK`, `TWO_OPT_MAX_STROKES` (`optimize.py`) | 4,0 × · 0,2 · 15 000 |
 | Cung G2/G3 | `ARC_TOL_MM`, `ARC_MIN_POINTS`, `ARC_MIN_R_MM`, `ARC_MAX_R_MM`, `ARC_MAX_SWEEP_DEG`, `USE_ARCS` (`arcs.py`, `gcode.py`) | 0,02 mm · 4 · 0,2 · 2000 · 300° · bật |
-| Ước tính thời gian | `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | 0,05 · 0,025 s · 0,025 s · 125 |
+| Ước tính thời gian | `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | **0,03** · 0,025 s · 0,025 s · 125 |
 | G-code mặc định (`spec.py`) | vẽ / di chuyển / bút / chờ nâng / chờ hạ | 8000 / 8000 / 3000 / 0 / 0 |
 | Tiền xử lý mặc định | gamma, tương phản, đen, trắng, tự cân sáng, CLAHE, khử nhiễu | 1 · 1 · 0 · 255 · bật · tắt · tắt |
 | Bút (`spec.PENS`) | UB-155, UM-100, Sakura (nét đo trên giấy) | 0,38 · 0,40 · 0,50 mm |
