@@ -3,7 +3,7 @@
 1. **Đọc** tài liệu liên quan (bảng ở `00-bat-dau.md`). Đổi hành vi đã chốt: đọc `docs/09_QUYET_DINH_THIET_KE.md` trước.
 2. **Sửa mã và test cùng lúc.**
 3. **Chạy test:**
-   - Backend: `cd backend && python -m pytest` (~500 test). `test_old_logs_are_pruned` có thể hết giờ khi chạy chung; chạy riêng thì qua.
+   - Backend: `cd backend && python -m pytest` (~563 test). `test_old_logs_are_pruned` có thể hết giờ khi chạy chung; chạy riêng thì qua.
    - Frontend: `node --test frontend/tests/<tên>.test.mjs ...` (Windows: truyền **đường dẫn từng tệp**, không truyền thư mục).
 4. **Đo thuật toán tô** bằng `python tools/ink_sim.py` (sai số tông, độ nhảy bậc, chiều dài, thời gian) và nêu số trước / sau. Mô phỏng chỉ để **so sánh**, không đoán độ đậm tuyệt đối trên giấy.
 5. Đổi `layout.py` / `tone.py` / `raster_in.py`: sinh lại số chuẩn `python frontend/tests/fixtures/make_image_fixtures.py` và sửa bản JS tương ứng (`paper.js`, `imageprep.js`).

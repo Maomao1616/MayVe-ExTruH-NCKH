@@ -23,7 +23,7 @@
 | C1 | Jog, bút, Zero chỉ khi Idle; Home khi Idle / Alarm | an toàn | ✅ |
 | C2 | Jog dùng `$J=…` | chạy được khi chưa Home, hủy được ngay | ✅ |
 | C3 | Zero dùng `G10 L20 P1` | chuẩn FluidNC | ✅ |
-| C4 | Bút 3 nấc **Z3 / Z1,5 / Z0** (03/11/2026, trước là Z5 / Z2,5). **Đã tách (09/11/2026):** điều khiển tay (nút Bút lên, Home, hủy, jog) nhấc **Z5**; chỉ G-code sinh ra nhấc thấp (mặc định Z3, chỉnh 2 / 1,5). Khung 2D coi bút xuống khi Z ≤ Z xuống + 0,5 mm (không dựa vào Z lên) | nhấc 3 mm đủ khỏi giấy, nhanh hơn; điều khiển tay hiếm khi cần nhanh nên nhấc cao cho chắc | 🧪 chưa thử lâu trên giấy cong · ✅ tách (máy giả) |
+| C4 | Bút 3 nấc (nút điều khiển tay) **Z5 / Z3 / Z0** = Lên / Giữa / Xuống, gửi `G90 G0 Z…` (từ 17/11/2026; nút Giữa trước là Z1,5, nấc 03/11/2026 là Z3 / Z1,5 / Z0, trước nữa Z5 / Z2,5; đổi sang `G0` vì chủ dự án nghi `$J=` làm servo giật). **Đã tách (09/11/2026):** điều khiển tay (nút Bút lên, Home, hủy, jog) nhấc **Z5**; chỉ G-code sinh ra nhấc thấp (mặc định Z3, chỉnh 2 / 1,5). Khung 2D coi bút xuống khi Z ≤ Z xuống + 0,5 mm (không dựa vào Z lên) | nhấc 3 mm đủ khỏi giấy, nhanh hơn; điều khiển tay hiếm khi cần nhanh nên nhấc cao cho chắc | 🧪 chưa thử lâu trên giấy cong · ✅ tách (máy giả) |
 | C5 | Gốc (0,0) trên trái, Y xuống; không lật khung 2D, không đảo trục Y | ✅ chủ dự án xác nhận hướng trục đúng 05/11/2026 | ✅ |
 | C6 | Nút Tạm dừng chỉ cho tác vụ; nút Hủy jog riêng | đúng bản chất firmware (Hold hủy jog, không resume được) | ✅ |
 | C7 | Cấu hình máy một panel: "Máy" (YAML trên mạch: Áp dụng vào RAM, Lưu vào mạch sau khi sao lưu) và "App" (hồ sơ phần mềm). Không cho sửa chân GPIO, kinematics | chỉnh thông số không cần WebUI / Wi-Fi | ✅ |

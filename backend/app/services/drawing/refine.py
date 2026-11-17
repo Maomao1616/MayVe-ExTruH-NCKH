@@ -1,13 +1,13 @@
 """Vòng sửa sai (17/11/2026, docs/06 mục 8.13): vẽ thử → dựng lại mực → so với độ phủ định vẽ → chỉnh ảnh mục tiêu → vẽ lại.
 
-Vì sao cần: mọi kiểu tô đều tính khoảng cách nét từ độ đậm ảnh rồi tin là mực phủ đúng như vậy, nhưng nét chồng nhau, đầu
-nét kết thúc so le, lớp gạch đan nhau... làm mực thật phủ nhiều hơn một chút (đo trên ảnh thật: thừa 4–9 % độ phủ ở mọi mức
-đậm, đúng một chiều). Sai số này có hệ thống nên sửa được bằng phản hồi, không phải đoán thêm một hệ số cho từng kiểu:
+Vì sao cần: mọi kiểu tô đều tính khoảng cách nét từ độ đậm ảnh rồi tin là mực phủ đúng như vậy, nhưng làm tròn số nét,
+đầu nét kết thúc so le, vùng chuyển mức... làm mực thật phủ khác ý định (đo trên ảnh thật, bút 0,5: THIẾU 5–8 % độ phủ ở mọi
+mức đậm, đúng một chiều). Sai số này có hệ thống nên sửa được bằng phản hồi, không phải đoán thêm một hệ số cho từng kiểu:
 
   1. Tô như bình thường, dựng ảnh mực (mỗi nét rộng đúng bề rộng bút), làm mờ ~2 mm (mắt nhìn từ xa).
   2. So với độ phủ định vẽ (đã qua đường cong tông của kiểu): thừa chỗ nào, thiếu chỗ nào (bản đồ sai số).
   3. Trừ một phần (REFINE_GAIN) bản đồ sai số khỏi ẢNH MỤC TIÊU rồi tô lại. Chỗ thừa mực thì mục tiêu hạ xuống, nét thưa đi;
-     chỗ thiếu thì nâng lên. Cộng dồn qua các lượt nên sai số còn lại nhỏ dần (như bộ điều khiển có thành phần tích phân).
+     chỗ thiếu thì nâng lên (trường hợp thường gặp: thiếu, nên thường là thêm nét). Cộng dồn qua các lượt nên sai số còn lại nhỏ dần (như bộ điều khiển có thành phần tích phân).
   4. Giữ lượt có sai số nhỏ nhất; dừng sớm khi lượt mới không tốt hơn rõ rệt.
 
 Chỉ cần kiểu tô là hàm "ảnh mục tiêu → các nhóm nét" nên dùng chung cho mọi kiểu (trừ Nét viền). Ý tưởng "làm sáng ảnh làm
@@ -66,7 +66,8 @@ def ink_cover(strokes, w_mm: float, h_mm: float, line_w: float) -> tuple[np.ndar
         cv2.polylines(canvas, [pts], False, 255, thick, cv2.LINE_8, 4)          # toạ độ 1/16 điểm ảnh (shift 4): đường chéo không bị lượng tử hóa
     k = max(1, int(scale / REFINE_GRID_PX_MM))
     small = cv2.resize(canvas, (max(2, width // k), max(2, height // k)), interpolation=cv2.INTER_AREA)
-    return small.astype(np.float32) / 255.0 * (true_px / _drawn_width(thick)), k / scale
+    cover = small.astype(np.float32) / 255.0 * (true_px / _drawn_width(thick))
+    return np.minimum(cover, 1.0), k / scale        # hệ số bù có thể > 1 (khung rất lớn, độ dày hòa nhau): mực không phủ quá 100 %
 
 
 def coverage_error(strokes, want: np.ndarray, w_mm: float, h_mm: float, line_w: float) -> tuple[float, np.ndarray]:

@@ -23,7 +23,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from app.services.drawing import gcode, raster, spec, styles     # noqa: E402
+from app.services.drawing import gcode, raster, spec            # noqa: E402
 
 PX_PER_MM = 8                    # độ phân giải ảnh xem trước
 SHEET_W = 2400                   # bề rộng ảnh ghép (điểm ảnh)

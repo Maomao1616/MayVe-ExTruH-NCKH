@@ -287,7 +287,7 @@ export function initTerminal() {
     pauseButton?.addEventListener("click", () => sendRealtime("hold"));
     resumeButton?.addEventListener("click", () => sendRealtime("resume"));
     jogCancelButton?.addEventListener("click", () => sendRealtime("jog_cancel"));
-    // ĐOẠN CODE MỚI: TÍCH HỢP BẢNG THÔNG BÁO KÍNH
+    // Hộp xác nhận Reset (dừng mềm)
 const resetBtn = document.getElementById("reset-btn");
 const customModal = document.getElementById("custom-reset-modal");
 const modalCancelBtn = document.getElementById("modal-cancel-btn");

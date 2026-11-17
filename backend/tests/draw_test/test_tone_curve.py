@@ -1,11 +1,8 @@
 """Đường cong tông (styles.TONE_CURVES, đo 13/11/2026) (kiểu lai đan chéo + theo dáng đã xóa 17/11/2026)."""
-import math
-
 import numpy as np
 import pytest
 
 from app.services.drawing import spec, styles
-from app.services.drawing.hatch import Field
 
 PEN = 0.5
 

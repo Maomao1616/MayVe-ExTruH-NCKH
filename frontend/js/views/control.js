@@ -276,7 +276,6 @@ function initMotionControls() {
     const commandButtons = document.querySelectorAll(
         ".coordinates-panel [data-command]"      // không gồm nút Mở khóa (của terminal.js)
     );
-    const jogCancel = $("jog-cancel-btn");
     const centerButton = $("jog-center-btn");
     const penButtons = document.querySelectorAll(".pen-bar [data-pen]");
     const jogDistance = $("jog-distance");
