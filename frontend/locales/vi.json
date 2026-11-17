@@ -2,7 +2,6 @@
   "app.title": "VMU PlotterPen",
   "nav.control": "Điều khiển",
   "nav.drawing": "Tạo bản vẽ",
-  "nav.jobs": "Công việc",
   "nav.settings": "Cài đặt",
   
   "language.vi": "Tiếng Việt",
@@ -61,13 +60,10 @@
 
 
 
-  "common.loading": "Đang tải...",
-  "common.notAvailable": "Chưa có backend",
   "common.status.disconnected": "Chưa kết nối",
   "common.status.unknown": "Chưa biết",
   "common.status.none": "Không có",
   "common.status.noData": "Chưa có dữ liệu",
-  "common.status.noApi": "Chưa có API",
   "common.status.unavailable": "Chưa khả dụng",
   "common.status.on": "Bật",
   "common.status.off": "Tắt",
@@ -82,17 +78,11 @@
   "common.action.regenerate": "Tạo lại",
   "common.action.sendToControl": "Chuyển sang Điều khiển",
 
-  "common.action.clearDisplay": "Xóa hiển thị",
   "common.action.connect": "Kết nối",
   "common.action.disconnect": "Ngắt kết nối",
   
 
   "common.icon.chevron": "⌄",
-  "common.level.off": "Tắt",
-  "common.level.low": "Nhẹ",
-  "common.level.medium": "Vừa",
-  "common.level.high": "Mạnh",
-  "common.filter.all": "Tất cả",
   
   "error.backendUnavailable": "Không thể kết nối backend.",
   
@@ -131,7 +121,6 @@
   "control.pen.mid": "Giữa",
   "mc.desc": "Thông số trên mạch (tệp YAML) và thông số phần mềm, chỉnh tại một chỗ.",
   "mc.read": "↻ Đọc từ máy",
-  "mc.badge.board": "Máy",
   "mc.badge.app": "App",
   "mc.legend.board": "Mục không có nhãn: nằm trong tệp YAML trên mạch.",
   "mc.legend.app": "chỉ phần mềm dùng, lưu ở backend",
@@ -199,7 +188,6 @@
   "control.progress.noJob": "Chưa có công việc",
   "control.progress.lines": "Dòng lệnh: —",
   "control.progress.eta": "Còn lại: —",
-  "control.mode.label": "Chế độ",
   
   "control.readonly.title": "Máy thật đang ở chế độ chỉ đọc.",
   "control.readonly.desc": "Home, jog, bút và chạy tệp bị khóa. Các lệnh dừng (Tạm dừng, Reset) vẫn hoạt động.",
@@ -231,8 +219,6 @@
   "control.jog.xyZero": "XY 0",
   "control.jog.xPlus": "X+",
   "control.jog.yPlus": "Y+",
-  "control.jog.penUp": "Bút lên",
-  "control.jog.penDown": "Bút xuống",
   "control.jog.help": "Jog chỉ mở khi máy rảnh (Idle). Sau $X máy chạy được cả jog lẫn G-code dù chưa Home, nên hãy Home trước khi vẽ để tọa độ đúng.",
   
   "control.gcode.title": "Tệp G-code",
@@ -316,7 +302,6 @@
     "terminal.notConnected": "Chưa kết nối bộ điều khiển",
     "terminal.statusStale": "Dữ liệu từ máy đã cũ",
     "terminal.connected": "Đã kết nối",
-    "safety.confirmReset": "Reset sẽ dừng ngay mọi chuyển động và vào trạng thái Alarm. Tiếp tục?",
     "alarm.1": "Chạm công tắc giới hạn cứng",
     "alarm.2": "Vượt giới hạn mềm",
     "alarm.3": "Đã hủy bằng Reset khi đang chạy",
@@ -351,15 +336,10 @@
     "alarm.18": "Chạm giới hạn cứng khi đo",
 
 
-  "control.macro.title": "Macro nhanh",
-  "control.macro.desc": "Chạy các chuỗi lệnh đã lưu",
-  "control.macro.manage": "Quản lý macro",
-  "control.macro.empty": "Chưa có macro. Thêm macro trong Cài đặt.",
   
   "drawing.heading.eyebrow": "DRAWING WORKSPACE",
   "drawing.heading.desc": "Chuẩn bị hình ảnh, đường nét và G-code cho máy vẽ.",
   
-  "drawing.workflow.step4": "Tạo G-code",
   
   "drawing.source.title": "Nguồn hình ảnh",
   "drawing.source.desc": "PNG, JPG hoặc SVG",
@@ -457,22 +437,12 @@
   "drawing.info.inBounds": "Trong vùng làm việc?",
   
 
-  "job.confirmCancel": "Hủy tác vụ sẽ Reset máy (vào Alarm) và bút có thể còn đang hạ. Tiếp tục?",
     "job.state.running": "Đang chạy",
     "job.state.finishing": "Đang hoàn tất",
     "job.state.done": "Hoàn tất",
     "job.state.failed": "Lỗi",
     "job.state.cancelled": "Đã hủy",
 
-  "jobs.heading.eyebrow": "JOB MANAGEMENT",
-  "jobs.heading.desc": "Theo dõi tác vụ hiện tại và khu vực quản lý hàng đợi.",
-  "jobs.summary.current": "Tác vụ hiện tại",
-  "jobs.summary.noData": "Chưa có dữ liệu từ backend",
-  "jobs.summary.progress": "Tiến trình",
-  "jobs.summary.noJob": "Chưa có tác vụ chạy",
-  "jobs.summary.source": "Nguồn dữ liệu",
-  "jobs.summary.backend": "Backend",
-  "jobs.summary.confirmedOnly": "Chỉ hiển thị dữ liệu đã xác nhận",
   
   "jobs.queue.title": "Hàng đợi công việc",
   "jobs.queue.desc": "Các bản thảo đã tạo ở tab Tạo bản vẽ; bản ghim ở trên cùng. Giữ ☰ kéo để đổi thứ tự, ✎ để đổi tên.",
@@ -484,15 +454,7 @@
   
 
   
-  "jobs.history.title": "Lịch sử tác vụ",
-  "jobs.history.help": "Lịch sử chỉ hiển thị sau khi có API lưu và truy vấn các công việc đã thực hiện.",
   
-  "jobs.log.title": "Nhật ký lệnh và lỗi",
-  "jobs.log.desc": "Lệnh đã gửi, phản hồi và lỗi từ máy.",
-  "jobs.log.filterLabel": "Lọc nhật ký",
-  "jobs.log.filterTx": "Lệnh đã gửi",
-  "jobs.log.filterRx": "Phản hồi",
-  "jobs.log.filterError": "Lỗi và Alarm",
   
   "settings.heading.eyebrow": "APPLICATION SETTINGS",
   "settings.heading.desc": "Cấu hình giao diện và kết nối bộ điều khiển.",
@@ -529,28 +491,12 @@
   "settings.connection.verifyFailed": "Backend đã nhận yêu cầu nhưng chưa xác nhận trạng thái kết nối.",
   "settings.connection.disconnectVerifyFailed": "Đã gửi yêu cầu ngắt kết nối nhưng backend chưa xác nhận.",
 
-  "settings.macro.title": "Macro",
-  "settings.macro.desc": "Các nhóm lệnh thao tác nhanh.",
-  "settings.macro.add": "+ Thêm macro",
-  "settings.macro.empty": "Chưa có macro tùy chỉnh",
-  "settings.macro.help": "Các macro có thể được quản lý ở bước sau.",
   
   "settings.machine.title": "Cấu hình máy",
-  "settings.machine.desc": "Thông số phần cứng và firmware.",
-  "settings.machine.readonly": "Chỉ đọc",
-  "settings.machine.name": "Tên máy",
-  "settings.machine.defaultName": "ExtruXY Plotter",
   "settings.machine.firmware": "Firmware",
   "settings.machine.kinematics": "Kiểu cơ cấu",
   "settings.machine.corexy": "CoreXY (theo cấu hình dự án)",
-  "settings.machine.configBackend": "Cấu hình từ backend",
-  "settings.machine.noConfigApi": "Chưa có API đọc cấu hình",
-  "settings.machine.help": "Không chỉnh trực tiếp thông số firmware từ giao diện khi chưa có API và cơ chế xác nhận an toàn.",
   
-  "settings.display.title": "Thông số hiển thị máy",
-  "settings.display.desc": "Chỉ ảnh hưởng giao diện, không ghi vào máy.",
-  "settings.display.xArea": "Vùng làm việc X (mm)",
-  "settings.display.yArea": "Vùng làm việc Y (mm)",
   "sheet.title": "Tờ thử / hiệu chỉnh",
   "sheet.desc": "Mỗi nút tạo một bản thảo trong Hàng đợi (tab Điều khiển): nạp, nhìn khung vẽ, chạy như mọi bản vẽ. Dùng khi thử máy thật, mỗi tờ một tờ giấy.",
   "sheet.lift.title": "Tờ nhấc bút",
@@ -632,11 +578,6 @@
   "settings.pin.mismatch": "Hai lần nhập PIN mới không giống nhau",
   "settings.pin.done": "Đã đổi PIN. Đang tải lại…",
   "settings.pin.help": "4–64 ký tự: chữ, số, ký hiệu; không khoảng trắng, không dấu tiếng Việt. Nên từ 6 ký tự, khó đoán. PIN lưu ở data/pin.txt trên máy chủ (không lên Git).",
-  "settings.display.penUp": "Z bút lên",
-  "settings.display.penDown": "Z bút xuống",
-  "settings.display.jogMax": "Bước jog tối đa (mm)",
-  "settings.display.feedMax": "Tốc độ tối đa (mm/phút)",
-  "settings.display.help": "Các giá trị này nên khớp với file cấu hình máy (ConfigNCKH-16: X 285, Y 318, Z 5). Thay đổi tại đây không sửa firmware.",
   
   "settings.behavior.title": "Hoạt động",
   "settings.behavior.desc": "Cách giao diện cập nhật và xác nhận thao tác.",
@@ -657,7 +598,6 @@
   "action.refreshStatus.title": "Làm mới trạng thái",
   "action.pause.title": "Tạm dừng chuyển động (Feed Hold). Có thể Tiếp tục.",
   "action.resume.title": "Tiếp tục sau khi Tạm dừng",
-  "action.stop.title": "Hủy tác vụ đang chạy (cần backend quản lý tác vụ)",
   "action.reset.title": "Dừng mềm (Ctrl-X): dừng ngay, máy mất vị trí và phải Home lại",
   "action.zeroX.title": "Zero X: đặt gốc làm việc tại vị trí hiện tại",
   "action.homeX.title": "Home trục X: chạy về công tắc hành trình",
@@ -667,8 +607,6 @@
   "action.homeAll.title": "Home tất cả các trục",
   "action.cancelJog.title": "Hủy lệnh jog đang chạy",
   "action.jogCenter.title": "Về gốc làm việc (X0 Y0)",
-  "action.penUp.title": "Nâng bút",
-  "action.penDown.title": "Hạ bút (Z0)",
   "action.unlock.title": "Mở khóa sau Alarm (không làm máy chuyển động)",
   
   "terminal.input.placeholder": "Nhập lệnh G-code hoặc lệnh firmware...",
@@ -701,10 +639,7 @@
 
 
 
-  "dynamic.checkingBackend": "Đang kiểm tra backend...",
   "dynamic.noJob": "Không có tác vụ",
-  "dynamic.waitingBackend": "Đang chờ kết nối backend...",
-  "dynamic.noLog": "Chưa có nhật ký.",
 
   "drawing.layout.a6": "A6 (105 × 148 mm)",
   "drawing.layout.rotate": "Xoay (theo chiều kim đồng hồ)",
@@ -736,6 +671,8 @@
   "drawing.hint.amFill": "Sóng biến thiên ở vùng sáng vừa (da mặt) thường bớt bớt đường cho đúng tông, để lại khe trắng. Bật: từ độ phủ 0,10 có đủ mọi đường, cả vùng da phủ đều đường (đậm hơn ảnh một chút, bù bằng gamma / tương phản nếu cần).",
   "drawing.hint.soft": "Bật: ở chỗ giáp hai mức đậm nhạt, các dòng gạch kết thúc so le như răng lược nên tông chuyển dần, không còn đường ranh giới rõ. Tốn thêm ~30 % số lần nhấc bút. Tắt để so với cách cũ.",
   "drawing.style.levels": "Số mức đậm nhạt",
+  "drawing.style.refine": "Sửa sai tông (lượt)",
+  "drawing.hint.refine": "Sau khi tô, máy dựng lại ảnh mực rồi so với độ đậm mong muốn: chỗ nào thiếu mực thì thêm nét, chỗ thừa thì bớt, rồi tô lại. 0 = tắt; 1 (mặc định) sửa phần lớn sai lệch; 2–3 chính xác hơn chút nhưng chậm hơn và nhiều nét hơn. Không áp cho Theo dáng ảnh và Nét viền.",
   "drawing.style.angle": "Góc gạch (°)",
   "drawing.style.spacing": "Khoảng cách gạch (mm, trống = tự tính)",
   "drawing.style.amplitude": "Biên độ sóng (mm, trống = tự tính)",

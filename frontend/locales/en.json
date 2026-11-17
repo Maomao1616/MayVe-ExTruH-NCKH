@@ -2,7 +2,6 @@
   "app.title": "VMU PlotterPen",
   "nav.control": "Control",
   "nav.drawing": "Create Drawing",
-  "nav.jobs": "Jobs",
   "nav.settings": "Settings",
   
   "language.vi": "Vietnamese",
@@ -56,13 +55,10 @@
   "dock.files.loadHelp": "Load into the Control tab (the drawing frame shows right there; check the position, then press Run)",
 
 
-  "common.loading": "Loading...",
-  "common.notAvailable": "Backend not available",
   "common.status.disconnected": "Disconnected",
   "common.status.unknown": "Unknown",
   "common.status.none": "None",
   "common.status.noData": "No data yet",
-  "common.status.noApi": "API not available",
   "common.status.unavailable": "Unavailable",
   "common.status.on": "On",
   "common.status.off": "Off",
@@ -78,17 +74,11 @@
   "common.action.regenerate": "Regenerate",
   "common.action.sendToControl": "Go to Control",
  
-  "common.action.clearDisplay": "Clear Display",
   "common.action.connect": "Connect",
   "common.action.disconnect": "Disconnect",
   
 
   "common.icon.chevron": "⌄",
-  "common.level.off": "Off",
-  "common.level.low": "Low",
-  "common.level.medium": "Medium",
-  "common.level.high": "High",
-  "common.filter.all": "All",
   
   "error.backendUnavailable": "Unable to connect to the backend.",
   
@@ -127,7 +117,6 @@
   "control.pen.mid": "Middle",
   "mc.desc": "Board parameters (YAML file) and software parameters, edited in one place.",
   "mc.read": "↻ Read from machine",
-  "mc.badge.board": "Board",
   "mc.badge.app": "App",
   "mc.legend.board": "Unlabelled items: stored in the YAML file on the board.",
   "mc.legend.app": "software only, stored by the backend",
@@ -192,7 +181,6 @@
   "control.progress.noJob": "No job yet",
   "control.progress.lines": "Command: —",
   "control.progress.eta": "Remaining: —",
-  "control.mode.label": "Mode",
   
   "control.readonly.title": "The real machine is in read-only mode.",
   "control.readonly.desc": "Home, jog, pen, and file execution are locked. Stop commands (Pause, Reset) remain available.",
@@ -224,8 +212,6 @@
   "control.jog.xyZero": "XY 0",
   "control.jog.xPlus": "X+",
   "control.jog.yPlus": "Y+",
-  "control.jog.penUp": "Pen Up",
-  "control.jog.penDown": "Pen Down",
   "control.jog.help": "Jog is available only while the machine is Idle. After $X both jog and G-code run even without homing, so home first for correct coordinates.",
   
   "control.gcode.title": "G-code File",
@@ -305,7 +291,6 @@
     "terminal.notConnected": "Controller not connected",
     "terminal.statusStale": "Machine data is stale",
     "terminal.connected": "Connected",
-    "safety.confirmReset": "Reset stops all motion immediately and enters the Alarm state. Continue?",
     "alarm.1": "Hard limit triggered",
     "alarm.2": "Soft limit exceeded",
     "alarm.3": "Aborted by reset during motion",
@@ -339,15 +324,10 @@
     "alarm.17": "G-code error",
     "alarm.18": "Probe hard limit",
 
-  "control.macro.title": "Quick Macros",
-  "control.macro.desc": "Run saved command sequences",
-  "control.macro.manage": "Manage Macros",
-  "control.macro.empty": "No macros yet. Add macros in Settings.",
   
   "drawing.heading.eyebrow": "DRAWING WORKSPACE",
   "drawing.heading.desc": "Prepare images, paths, and G-code for the plotter.",
   
-  "drawing.workflow.step4": "Generate G-code",
   
   "drawing.source.title": "Image Source",
   "drawing.source.desc": "PNG, JPG, or SVG",
@@ -444,22 +424,12 @@
   "drawing.info.eta": "Estimated Time",
   "drawing.info.inBounds": "Within work area?",
   
-  "job.confirmCancel": "Cancelling resets the machine (Alarm state) and the pen may still be down. Continue?",
   "job.state.running": "Running",
   "job.state.finishing": "Finishing",
   "job.state.done": "Done",
   "job.state.failed": "Failed",
   "job.state.cancelled": "Cancelled",
 
-  "jobs.heading.eyebrow": "JOB MANAGEMENT",
-  "jobs.heading.desc": "Monitor the current job and manage the queue.",
-  "jobs.summary.current": "Current Job",
-  "jobs.summary.noData": "No data from backend",
-  "jobs.summary.progress": "Progress",
-  "jobs.summary.noJob": "No running job",
-  "jobs.summary.source": "Data Source",
-  "jobs.summary.backend": "Backend",
-  "jobs.summary.confirmedOnly": "Only confirmed data is displayed",
   
   "jobs.queue.title": "Job Queue",
   "jobs.queue.desc": "Drafts created in the Drawing tab; pinned ones on top. Hold ☰ and drag to reorder, ✎ to rename.",
@@ -471,15 +441,7 @@
   
 
   
-  "jobs.history.title": "Job History",
-  "jobs.history.help": "History will be shown once an API is available to save and retrieve completed jobs.",
   
-  "jobs.log.title": "Command and Error Log",
-  "jobs.log.desc": "Commands sent, responses, and machine errors.",
-  "jobs.log.filterLabel": "Filter Log",
-  "jobs.log.filterTx": "Command sent",
-  "jobs.log.filterRx": "Response",
-  "jobs.log.filterError": "Errors and Alarms",
   
   "settings.heading.eyebrow": "APPLICATION SETTINGS",
   "settings.heading.desc": "Configure the interface and controller connection.",
@@ -516,28 +478,12 @@
   "settings.connection.verifyFailed": "The backend accepted the request but did not confirm the connection.",
   "settings.connection.disconnectVerifyFailed": "Disconnect requested but the backend has not confirmed it.",
 
-  "settings.macro.title": "Macros",
-  "settings.macro.desc": "Quick command groups.",
-  "settings.macro.add": "+ Add Macro",
-  "settings.macro.empty": "No custom macros",
-  "settings.macro.help": "Macro management can be added in a later step.",
   
   "settings.machine.title": "Machine Configuration",
-  "settings.machine.desc": "Hardware and firmware information.",
-  "settings.machine.readonly": "Read-only",
-  "settings.machine.name": "Machine Name",
-  "settings.machine.defaultName": "ExtruXY Plotter",
   "settings.machine.firmware": "Firmware",
   "settings.machine.kinematics": "Kinematics",
   "settings.machine.corexy": "CoreXY (according to project configuration)",
-  "settings.machine.configBackend": "Configuration from Backend",
-  "settings.machine.noConfigApi": "Configuration-reading API unavailable",
-  "settings.machine.help": "Do not change firmware parameters from the interface until an API and a safe confirmation mechanism are available.",
   
-  "settings.display.title": "Machine Display Parameters",
-  "settings.display.desc": "Affects the interface only; does not write to the machine.",
-  "settings.display.xArea": "X Work Area (mm)",
-  "settings.display.yArea": "Y Work Area (mm)",
   "sheet.title": "Test sheets / calibration",
   "sheet.desc": "Each button creates a draft in the Queue (Control tab): load it, check the frame and run it like any drawing. For real-machine tests, one sheet of paper each.",
   "sheet.lift.title": "Pen-lift sheet",
@@ -619,11 +565,6 @@
   "settings.pin.mismatch": "The two new PINs differ",
   "settings.pin.done": "PIN changed. Reloading…",
   "settings.pin.help": "4–64 characters: letters, digits, symbols; no spaces. 6+ and hard to guess. Stored in data/pin.txt on the server (not in Git).",
-  "settings.display.penUp": "Pen-up Z",
-  "settings.display.penDown": "Pen-down Z",
-  "settings.display.jogMax": "Maximum Jog Step (mm)",
-  "settings.display.feedMax": "Maximum Speed (mm/min)",
-  "settings.display.help": "These values should match the machine configuration (ConfigNCKH-16: X 285, Y 318, Z 5). Changes here do not modify the firmware.",
   
   "settings.behavior.title": "Behavior",
   "settings.behavior.desc": "How the interface updates and confirms actions.",
@@ -644,7 +585,6 @@
   "action.refreshStatus.title": "Refresh status",
   "action.pause.title": "Pause motion (Feed Hold). Can be resumed.",
   "action.resume.title": "Resume after Pause",
-  "action.stop.title": "Cancel running job (requires backend job management)",
   "action.reset.title": "Soft reset (Ctrl-X): stop immediately, machine loses position and must be homed",
   "action.zeroX.title": "Zero X: set work origin at current position",
   "action.homeX.title": "Home X-axis: move to limit switch",
@@ -654,8 +594,6 @@
   "action.homeAll.title": "Home all axes",
   "action.cancelJog.title": "Cancel running jog command",
   "action.jogCenter.title": "Go to work origin (X0 Y0)",
-  "action.penUp.title": "Pen Up",
-  "action.penDown.title": "Pen Down (Z0)",
   "action.unlock.title": "Unlock after Alarm (does not move machine)",
   
   "terminal.input.placeholder": "Enter G-code or firmware command...",
@@ -685,10 +623,7 @@
   "aria.previewProgress": "Preview progress",
   "aria.previewSpeed": "Playback speed",
   
-  "dynamic.checkingBackend": "Checking backend...",
   "dynamic.noJob": "No task",
-  "dynamic.waitingBackend": "Waiting for backend connection...",
-  "dynamic.noLog": "No log yet.",
 
   "drawing.layout.a6": "A6 (105 × 148 mm)",
   "drawing.layout.rotate": "Rotate (clockwise)",
@@ -719,6 +654,8 @@
   "drawing.style.amFill": "Even lines in light areas (no white gaps on skin)",
   "drawing.hint.amFill": "In mid-light areas (skin) the variable-wave style normally drops some lines to match the tone, leaving white gaps. On: every line is present from 10% coverage, so skin is evenly lined (slightly darker than the photo; adjust gamma / contrast if needed).",
   "drawing.hint.soft": "On: where two tone levels meet, hatch lines end at staggered points like a comb, so the tone changes gradually with no visible border line. Costs ~30% more pen lifts. Turn off to compare with the old method.",
+  "drawing.style.refine": "Tone correction (passes)",
+  "drawing.hint.refine": "After filling, the app redraws the ink image and compares it with the wanted darkness: where ink is short it adds strokes, where there is too much it removes them, then fills again. 0 = off; 1 (default) fixes most of the error; 2-3 is a little more accurate but slower with more strokes. Not applied to Flow and Outline.",
   "drawing.style.levels": "Tone levels",
   "drawing.style.angle": "Hatch angle (°)",
   "drawing.style.spacing": "Hatch spacing (mm, empty = auto)",

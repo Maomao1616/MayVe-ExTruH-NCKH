@@ -20,7 +20,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 
-from app.services.drawing import spec, styles          # noqa: E402
+from app.services.drawing import refine, spec, styles  # noqa: E402
 from app.services.drawing.hatch import Field           # noqa: E402
 
 W_MM, H_MM, PX = 80.0, 50.0, 0.2          # ảnh nguồn 0,2 mm / điểm
@@ -39,11 +39,15 @@ def target() -> np.ndarray:
 
 
 def render(strokes) -> np.ndarray:
+    """Ảnh mực với bề rộng nét thật. Từ 17/11/2026 dùng cách dựng đã hiệu chuẩn của refine.py (cv2.polylines AA cũ vẽ dày hơn
+    yêu cầu, thiên về đậm ~9 % so với diện tích hình học đúng; số ink_sim trước ngày này chỉ so tương đối được)."""
+    true_px = LINE_W * SC
+    thick = refine._thickness_for(true_px)
     canvas = np.zeros((int(H_MM * SC), int(W_MM * SC)), np.uint8)
     for s in strokes:
-        pts = (np.asarray(s) * SC).astype(np.int32).reshape(-1, 1, 2)
-        cv2.polylines(canvas, [pts], False, 255, int(round(LINE_W * SC)), cv2.LINE_AA)
-    return canvas.astype(np.float32) / 255.0
+        pts = np.round(np.asarray(s) * (SC * 16.0)).astype(np.int32).reshape(-1, 1, 2)
+        cv2.polylines(canvas, [pts], False, 255, thick, cv2.LINE_8, 4)
+    return np.minimum(canvas.astype(np.float32) / 255.0 * (true_px / refine._drawn_width(thick)), 1.0)
 
 
 def metrics(strokes, dark: np.ndarray) -> dict:
@@ -73,6 +77,7 @@ def eye_error(m: dict, kind: str) -> float:
 
 
 def run_style(dark: np.ndarray, pen_mm: float = 0.45, **style) -> list:
+    style = {"refine_passes": 0, **style}                  # mặc định KHÔNG sửa sai: so các kiểu tô thuần với nhau (refine_passes khai riêng)
     return styles.fill(Field(dark, W_MM, H_MM), spec.parse("style", style), pen_mm, None)
 
 
@@ -85,6 +90,11 @@ CASES = {
     "gạch chéo mềm": dict(kind="crosshatch"),
     "sóng biến thiên": dict(kind="wave_am"),
     "theo dáng (flow, thô)": dict(kind="flow"),
+    # vòng sửa sai (refine.py, 17/11/2026): cùng kiểu, thêm 1 lượt. Số "sai số / sai mắt" ở đây dùng bộ dựng mực riêng của ink_sim
+    # (nét vẽ dày hơn thật nên thiên về đậm); đo chính xác hơn trên ảnh thật: tools/ink_real.py
+    "gạch chéo + sửa sai": dict(kind="crosshatch", refine_passes=1),
+    "sóng biến thiên + sửa sai": dict(kind="wave_am", refine_passes=1),
+    "xoắn ốc + sửa sai": dict(kind="spiral", refine_passes=1),
 }
 
 

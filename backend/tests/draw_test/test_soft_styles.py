@@ -12,7 +12,7 @@ SC = 20                                         # mô phỏng 20 điểm / mm
 
 
 def style(**kw):
-    return spec.parse("style", kw)
+    return spec.parse("style", {"refine_passes": 0, **kw})          # thử từng bộ tô, không qua vòng sửa sai (test_refine.py lo phần đó)
 
 
 def ink(strokes, w_mm, h_mm):

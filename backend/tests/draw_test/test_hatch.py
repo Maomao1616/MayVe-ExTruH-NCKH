@@ -13,7 +13,7 @@ def field(dark, w=60.0, h=40.0):
 
 
 def style(**kw):
-    return spec.parse("style", kw)
+    return spec.parse("style", {"refine_passes": 0, **kw})          # thử từng bộ tô, không qua vòng sửa sai (test_refine.py lo phần đó)
 
 
 def length(strokes):

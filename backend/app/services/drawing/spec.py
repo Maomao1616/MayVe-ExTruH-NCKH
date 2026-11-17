@@ -130,6 +130,7 @@ STYLE = (
     Param("spacing_mm", "float", None, 0.1, 20, unit="mm"),
     Param("amplitude_mm", "float", None, 0.05, 10, unit="mm"),
     Param("invert", "bool", False),                                   # đảo sáng/tối
+    Param("refine_passes", "int", 1, 0, 3),                           # vòng sửa sai (refine.py): số lượt chỉnh lại sau lần tô đầu; 0 = tắt. Không áp cho Theo dáng ảnh, Nét viền
 )
 
 # Đa màu: tối đa 2-4 màu, chỉ để thử mô hình.

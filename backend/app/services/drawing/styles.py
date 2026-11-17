@@ -19,7 +19,7 @@ import math
 
 import numpy as np
 
-from . import edges, hatch, trace
+from . import edges, hatch, refine, trace
 from .hatch import Field
 from .registry import FILLERS
 from .shapes import Stroke
@@ -432,12 +432,27 @@ def outline(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None
 
 
 # === Điểm vào cho raster.py ===============================================================================================
+# Kiểu có vòng sửa sai (refine.py). Không có: "outline" (không phải kiểu tô tông) và "flow" (đo 17/11/2026: nét dừng theo khoảng cách
+# nên đổi ảnh mục tiêu gần như không đổi mực, 4 lượt cũng vậy, mà mỗi lượt tốn 3–7 s trên ảnh A4).
+REFINE_KINDS = ("zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am")
+
+
 def fill_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
-                overlay: bool | None = None) -> list[list[Stroke]]:
+                overlay: bool | None = None, report: dict | None = None) -> list[list[Stroke]]:
     """Nét tô chia nhóm theo mức đậm nhạt (nhạt → đậm), nhóm viền (nếu có) cuối cùng. Nhóm rỗng bị bỏ.
-    `angle` ghi đè góc gạch (mỗi màu một góc); `overlay` ghi đè outline_overlay (đa màu chỉ phủ viền một lần)."""
+    `angle` ghi đè góc gạch (mỗi màu một góc); `overlay` ghi đè outline_overlay (đa màu chỉ phủ viền một lần).
+    Ô "Sửa sai" (style.refine_passes > 0): tô, đo mực dựng lại, chỉnh mục tiêu, tô lại (refine.py). `report` nhận số đo."""
     grouper = GROUPERS.get(style.kind)
-    groups = grouper(f, style, pen_mm, ctx, angle) if grouper else [FILLERS.get(style.kind)(f, style, pen_mm, ctx, angle)]
+
+    def build(fld: Field) -> list[list[Stroke]]:
+        return grouper(fld, style, pen_mm, ctx, angle) if grouper else [FILLERS.get(style.kind)(fld, style, pen_mm, ctx, angle)]
+
+    passes = int(getattr(style, "refine_passes", 0) or 0)
+    if passes > 0 and style.kind in REFINE_KINDS:
+        want = np.clip(tone_cover(f.dark, style.kind), 0.0, MAX_COVERAGE)   # độ phủ kiểu này định vẽ
+        groups = refine.refine(f, build, want, LINE_WIDTH_RATIO * pen_mm, passes, ctx, report)
+    else:
+        groups = build(f)
     if overlay is None:
         overlay = style.outline_overlay
     if overlay and style.kind != "outline":     # viền vẽ SAU cùng cho nét rõ

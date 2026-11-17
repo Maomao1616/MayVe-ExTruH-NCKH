@@ -68,6 +68,7 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
     step("style", 0.3, "Tạo nét")
     field = Field(dark, img.width_mm, img.height_mm, img.rgb if wants_outline else None)
     colors: dict[str, str] = {}
+    refine_reports: list[dict] = []                              # số đo vòng sửa sai (mỗi màu / ảnh một báo cáo)
     raw_layers: list[Layer] = []
     groups_of: dict[str, list[list]] = {}                       # mã lớp -> các nhóm nét theo mức đậm nhạt (xem styles.fill_groups)
     if multi:
@@ -76,7 +77,10 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
             step("style", 0.3 + 0.4 * i / max(1, len(regions)), f"Tạo nét màu {i + 1}/{len(regions)}")
             f = Field(palette.density(dark, region), img.width_mm, img.height_mm)
             angle = (sp.angle + i * 180.0 / len(regions)) % 180.0       # mỗi màu một góc để dễ phân biệt
-            groups = styles.fill_groups(f, sp, rp.pen_width_mm, ctx, angle, overlay=False)
+            report: dict = {}
+            groups = styles.fill_groups(f, sp, rp.pen_width_mm, ctx, angle, overlay=False, report=report)
+            if report:
+                refine_reports.append(report)
             if groups:
                 raw_layers.append(Layer(str(len(raw_layers) + 1), [s for g in groups for s in g]))
                 groups_of[raw_layers[-1].id] = groups
@@ -87,7 +91,10 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
             if edge:
                 groups_of[raw_layers[0].id].append(edge)
     else:
-        groups = styles.fill_groups(field, sp, rp.pen_width_mm, ctx)
+        report = {}
+        groups = styles.fill_groups(field, sp, rp.pen_width_mm, ctx, report=report)
+        if report:
+            refine_reports.append(report)
         if groups:
             raw_layers.append(Layer("1", [s for g in groups for s in g]))
             groups_of["1"] = groups
@@ -131,11 +138,24 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
         "layers": [dict(m, color=colors.get(l.id), **layer_stats([l])) for m, l in zip(meta, layers)],
         "optimize": {"before": before, "after": layer_stats(layers), "bridged": bridged,
                      "pipeline": optimize.build_pipeline(op, before["strokes"])},
+        "refine": _refine_summary(refine_reports),
     }
     timings[clock["key"]] = timings.get(clock["key"], 0.0) + time.perf_counter() - clock["t"]
     info["timings"] = {k: round(v, 3) for k, v in timings.items()}
     info["timings"]["total"] = round(sum(timings.values()), 3)
     return layers, frame, info, warnings
+
+
+def _refine_summary(reports: list[dict]) -> dict | None:
+    """Gộp báo cáo vòng sửa sai (nhiều màu = nhiều báo cáo): sai số độ phủ trước / sau (trung bình theo màu), số lượt tối đa."""
+    if not reports:
+        return None
+    n = len(reports)
+    return {"error_before": round(sum(r["error_before"] for r in reports) / n, 4),
+            "error_after": round(sum(r["error_after"] for r in reports) / n, 4),
+            "passes": max(r["passes"] for r in reports),
+            "strokes_before": sum(r["strokes_before"] for r in reports),
+            "strokes_after": sum(r["strokes_after"] for r in reports)}
 
 
 def _optimize(raw_layers: list[Layer], groups_of: dict[str, list[list]], op):

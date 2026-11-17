@@ -51,6 +51,7 @@ const FIELDS = [
     ["style-am-fill", "style", "am_fill", "bool"],
     ["style-invert", "style", "invert", "bool"],
     ["style-levels", "style", "levels", "int"],
+    ["style-refine", "style", "refine_passes", "int"],
     ["style-angle", "style", "angle", "num"],
     ["style-spacing", "style", "spacing_mm", "optnum"],
     ["style-amplitude", "style", "amplitude_mm", "optnum"],
@@ -237,6 +238,8 @@ export function syncVisibility() {
         const label = $(id)?.closest("label");
         if (label) label.hidden = outlineOnly;
     }
+    const refine = $("style-refine")?.closest("label");
+    if (refine) refine.hidden = outlineOnly || kind === "flow";       // vòng sửa sai không áp cho Nét viền và Theo dáng ảnh (backend styles.REFINE_KINDS)
     // Sóng biến thiên và Theo dáng ảnh không chia mức: ẩn số mức và ô chuyển mức mềm
     const levelless = outlineOnly || kind === "wave_am" || kind === "flow";
     const levels = $("style-levels")?.closest("label");
