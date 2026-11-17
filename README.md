@@ -1,7 +1,12 @@
-# VMU PlotterPen (ExtruXY) — phần mềm điều khiển máy vẽ
+# VMU PlotterPen (ExtruXY) — máy vẽ bút CoreXY và phần mềm điều khiển
 
-Máy vẽ bút CoreXY tự làm (vùng làm việc 285 × 318 mm, giấy A6 / A5 / A4) và phần mềm điều khiển chạy trên trình duyệt. Máy dùng mạch **MKS DLC32 V2.1** với firmware **FluidNC v4.1.1** (không sửa firmware), nối với máy tính qua cáp USB.
+Máy vẽ bút CoreXY tự làm (vùng làm việc 285 × 318 mm, giấy A6 / A5 / A4) và phần mềm điều khiển chạy trên trình duyệt. Máy dùng mạch **MKS DLC32 V2.1** với firmware **FluidNC v4.1.1** (không sửa firmware), nối với máy tính qua cáp USB. Giao diện mở được từ máy tính hoặc điện thoại trong cùng mạng, không cài thêm gì, **không cần Internet**.
 
+Bút vẽ là bút thật (Sakura 0,4 / Uniball 150 trên giấy Ivory 250 g/m²) nên nét ra có chỗ đậm chỗ nhạt, mực thấm khác nhau theo từng loại giấy — phần khó nhất của dự án nằm ở đây, không phải ở cơ khí.
+
+Phần mềm giữ đơn giản có chủ ý: **Python + FastAPI** ở máy chủ, **JavaScript thuần** ở trình duyệt, không framework, không bước build. Máy đích là MiniPC cũ nên cách này nhẹ, và mở tệp ra là đọc được, không cần thêm công cụ.
+
+Ba tab, ba việc:
 - **Tab Điều khiển:** kết nối, trạng thái, jog, Home / Zero, nâng hạ bút, nạp tệp G-code (khung 2D hiện ngay), chạy, hủy an toàn, tiếp tục tác vụ đã dừng, âm báo khi xong / lỗi, terminal, macro, hàng đợi.
 - **Tab Tạo bản vẽ:** ảnh hoặc SVG → nét (gạch chéo, theo dáng ảnh, sóng biến thiên, xoắn ốc, nét viền; 4 preset; khoanh vùng chủ thể; vòng sửa sai tông; 1–4 màu) → đặt lên giấy → G-code → bản thảo → sang Điều khiển.
 - **Tab Cài đặt:** kết nối, giao diện, cấu hình máy (đọc / ghi YAML trên mạch), hồ sơ bút, tờ thử / hiệu chỉnh, PIN quản lý, dữ liệu.
@@ -12,7 +17,10 @@ Trình duyệt (JS thuần) ⇄ HTTP API ⇄ máy chủ Python (FastAPI) ⇄ má
 Giao diện không bao giờ chạm cổng USB; máy chủ là nguồn sự thật. Máy thật **mặc định chỉ đọc** cho tới khi mở khóa chuyển động. Tab Tạo bản vẽ **không bao giờ gọi máy**.
 
 ## Phần cứng: khung, mạch, firmware
-Khung in 3D ghép từ ba mẫu công khai (ý tưởng chung của **pittance**; giấy phép từng mẫu theo trang Printables):
+
+![Bản dựng 3D khung máy](docs/khung-3d.png)
+
+Khung không vẽ từ số 0: lấy mẫu **extruH pen plotter** của **pittance**, ghép thêm hai mẫu cải tiến của cộng đồng (giấy phép từng mẫu theo trang Printables):
 
 | Phần | Nguồn |
 |---|---|
@@ -29,10 +37,10 @@ Khung in 3D ghép từ ba mẫu công khai (ý tưởng chung của **pittance**
 | Servo nâng bút | **JX PS-1109MG** 9 g, bánh răng kim loại, analog | **cấp nguồn 6 V riêng** (hạ áp XL4005 từ 12 V, GND nối chung với mạch); dùng chung nguồn với mạch thì servo giật và mạch dễ reset |
 | Động cơ, driver | 2 × NEMA17 17HS4401, 2 × TMC2209 | dòng, Vref, bước/mm, chân, cấu hình: [02_PHAN_CUNG_MAY.md](docs/02_PHAN_CUNG_MAY.md) |
 
-Bản dựng 3D của mình theo đúng ba mẫu trên: khung chữ H (hai thanh ray + đai GT2), cụm bút treo trên thanh ngang, khay đựng mạch và bút đặt ở góc tờ giấy.
+Cụm bút: bút **hạ xuống giấy bằng trọng lực**, servo chỉ làm nhiệm vụ nhấc lên — lực đè lên giấy đều, không phụ thuộc servo khoẻ hay yếu.
 
 ## Tài liệu
-Bắt đầu từ **[docs/01_TONG_QUAN.md](docs/01_TONG_QUAN.md)**. Tài liệu đánh số từ nhỏ đến lớn, viết cho cả người không học lập trình:
+Mọi thứ nằm trong `docs/`: số đo, lý do chọn cách này mà không chọn cách kia, bài nào đã thử trên giấy. Đọc từ **[docs/01_TONG_QUAN.md](docs/01_TONG_QUAN.md)**; tài liệu đánh số từ nhỏ đến lớn, viết cho người không học lập trình:
 
 | # | Tệp | Nội dung |
 |---|---|---|
@@ -50,7 +58,7 @@ Bắt đầu từ **[docs/01_TONG_QUAN.md](docs/01_TONG_QUAN.md)**. Tài liệu 
 | AI | [AI_START](docs/AI_START.md), [AI_CODEMAP](docs/AI_CODEMAP.md) | chỉ dành cho AI |
 
 ## Cài đặt và chạy (máy phát triển)
-Cần **Python 3.12** (3.15 quá mới, thiếu gói) và **Git**. Windows PowerShell:
+Lệnh dưới đây cho Windows PowerShell. Cần **Python 3.12** (3.15 quá mới, thiếu gói) và **Git**:
 ```powershell
 git clone <địa-chỉ-kho>
 cd <thư-mục-kho>\backend
@@ -76,6 +84,7 @@ Mở `http://127.0.0.1:8000/`. Chưa có máy: Cài đặt → Kết nối → c
 - Chỉ chạy phần tab vẽ: `python -m pytest tests/draw_test`.
 
 ## Dùng máy thật an toàn
+Máy có động cơ thật: một lệnh sai có thể đâm bút xuống bàn, rách giấy hoặc kẹt tay. Nguyên tắc: **máy chỉ đọc cho tới khi mở khóa chuyển động**, không để máy chạy khi chưa tin cấu hình.
 - Cắm USB, chọn cổng ở Cài đặt → Kết nối. Chế độ chỉ đọc chỉ xem trạng thái và gửi lệnh đọc.
 - Muốn máy chạy: **Mở khóa chuyển động** (tự khóa sau 15 phút). Chỉ mở khi có người đứng cạnh, tay gần công tắc nguồn.
 - Nút Reset / Dừng trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V.
