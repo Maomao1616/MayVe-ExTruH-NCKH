@@ -12,10 +12,10 @@
     --highlight: #ff9102;       /* cam: tieu de khoi, so lieu, nut chinh (dung it de con noi bat) */
     --on-highlight: #1a1000;    /* chu tren nen cam */
 
-    --paper: #ece8dc;           /* to giay tren canvas ve: giay nga, net den nhu ban in (tu 17/11/2026; truoc do xam xanh #1a212c) */
+    --paper: #c4c0b2;           /* to giay tren canvas ve: giay nga, net den nhu ban in (tu 17/11/2026; truoc do xam xanh #1a212c) */
     --paper-ink: #15181d;       /* nut ve mac dinh tren giay */
-    --paper-text: #6b7280;      /* chu nho tren giay */
-    --paper-guide: #b07d00;     /* khung giay A4/A5/A6, le, khung dang chinh: vang dam, doc duoc ca tren giay nga va nen toi */
+    --paper-text: #565c68;      /* chu nho tren giay */
+    --paper-guide: #8a6000;     /* khung giay A4/A5/A6, le, khung dang chinh: vang dam, doc duoc ca tren giay nga va nen toi */
 
     --accent: #2a2400;          /* nen dam: nut chinh, tab dang chon, song nen (nau vang toi) */
     --accent-hover: #ffb04a;    /* di chuot: cam sang (do danh rieng cho nguy hiem) */

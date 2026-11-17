@@ -1103,9 +1103,9 @@ label select {
     /* mau ma preview.js doc de ve */
     /* Vùng làm việc là tờ giấy ngà, nét đen như bản in: dày nét thì tối đi, nhìn ra khối (từ 17/11/2026) */
     --path-color: #15181d;
-    --preview-paper: #ece8dc;
-    --preview-paper-text: #6b7280;
-    --live-color: #0a8f5c;      /* xanh lá đậm: --success quá nhạt trên giấy ngà */
+    --preview-paper: #cfcbbd;   /* giấy ngà xám dịu, đỡ chói trên nền tối (trước: #ece8dc) */
+    --preview-paper-text: #565c68;
+    --live-color: #067a4e;      /* xanh lá đậm: --success quá nhạt trên giấy ngà */
     --head-color: var(--warning);
 
     position: relative;

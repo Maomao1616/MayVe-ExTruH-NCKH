@@ -165,7 +165,7 @@ export function initPreview() {
             border: color(css, "--border", "#2a3038"),
             muted: color(css, "--text-muted", "#7a8494"),
             path: color(css, "--path-color", "#15181d"),
-            paper: color(css, "--preview-paper", "#ece8dc"),
+            paper: color(css, "--preview-paper", "#cfcbbd"),
             paperText: color(css, "--preview-paper-text", "#6b7280"),
             live: color(css, "--live-color", color(css, "--success", "#00b27a")),
             head: color(css, "--head-color", color(css, "--warning", "#e0b013"))
