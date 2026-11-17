@@ -123,7 +123,20 @@ API: `POST /api/customer` (khách); `GET /api/customer`, `GET /api/customer/{id}
 - Launcher đã mở cho mạng (`--host 0.0.0.0`, tự thêm IP vào danh sách Host).
 - **Giao diện chạy được khi không có Internet** ✅: không tải gì từ ngoài (không CDN, không font Google).
 - Wi-Fi của mạch MKS **không cần** vào mạng (USB là đủ). Vào thì có thêm đường điều khiển qua WebUI FluidNC, **vượt qua mọi khóa của phần mềm**: tắt hoặc đặt mật khẩu mạnh trước demo.
-- **Đặt cả PIN quản lý và PIN mở khóa** trước khi cho người khác vào mạng.
+- **Đặt PIN quản lý** (`admin=`) trước khi cho người khác vào mạng; PIN mở khóa chuyển động chưa dùng.
+
+**Vào giao diện từ điện thoại (khi laptop đã có Wi-Fi)**
+1. Nối laptop vào Wi-Fi **trước**, rồi mới bấm icon **VMU PlotterPen** (launcher đọc IP lúc bật). Đã bật rồi mới nối Wi-Fi: chạy `launcher\stop.vbs`, bấm icon lại.
+2. Trang tự mở trên laptop với địa chỉ dạng `http://192.168.x.x:8000`: đó là địa chỉ cần dùng. Không thấy thì mở PowerShell gõ `ipconfig`, lấy dòng *IPv4 Address* của Wi-Fi, thêm `:8000`.
+3. Điện thoại nối **cùng Wi-Fi** (tắt 4G cho chắc), mở trình duyệt, gõ đúng địa chỉ đó, bắt đầu bằng `http://` (không phải `https://`).
+4. Lần đầu Windows hỏi tường lửa: chọn **Mạng riêng tư**. Không hỏi mà điện thoại vẫn không vào: Settings → Network & internet → Wi-Fi → mạng đang nối → **Private network**.
+5. Chưa đặt PIN thì ai vào cũng là quản lý: đặt `admin=` trước (mục A4).
+
+| Triệu chứng | Thường là |
+|---|---|
+| điện thoại xoay mãi, laptop thì vào được | Wi-Fi công cộng (trường, quán) không cho hai máy thấy nhau ("client isolation"): dùng điện thoại phát Wi-Fi hoặc router mini |
+| trang báo `bad_host` | gõ địa chỉ khác địa chỉ launcher mở (tên máy, IP cũ). IP đổi mỗi lần nối lại mạng: bấm lại icon, dùng địa chỉ mới |
+| chỉ vào được khi tắt tường lửa | mạng đang xếp là Public: đổi sang Private (bước 4) |
 
 | Cách phát Wi-Fi cho demo | Internet | Ghi chú |
 |---|---|---|
@@ -259,4 +272,4 @@ Khớp với máy chủ:
 | Thời gian xử lý ảnh, RAM, máy có giật trên MiniPC | `info.timings` (rê chuột dòng trạng thái tab vẽ), `htop` |
 | Giới hạn RAM của tiến trình xử lý ảnh, cài OpenCV / scikit-image trên Ubuntu | trên MiniPC |
 | Origin / Host / cookie qua Cloudflare, Codespaces | cấu hình thật |
-| Chưa đặt PIN thì cho mọi người làm quản lý (như hiện tại) hay chặn hẳn khi mở ra ngoài | chủ dự án quyết |
+| Chưa đặt PIN thì mở ra ngoài sao | chờ bạn chọn: [11](11_VIEC_CAN_LAM.md) Q2 |

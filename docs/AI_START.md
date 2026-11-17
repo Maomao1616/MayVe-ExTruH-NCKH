@@ -11,7 +11,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 ## 2. Tài liệu
 | Tệp | Mở khi |
 |---|---|
-| `docs/11_VIEC_CAN_LAM.md` | biết cái gì xong / chưa kiểm chứng / việc tiếp |
+| `docs/11_VIEC_CAN_LAM.md` | **mở đầu tiên**: cái gì xong (từ khóa + hằng chốt), cần bạn chọn, cần thử, làm tiếp |
 | `docs/AI_CODEMAP.md` | tìm tệp theo vai trò + token, danh sách route (sinh tự động, không sửa tay) |
 | `docs/03_CAU_TRUC_PHAN_MEM.md` | tầng frontend / backend, quy tắc phụ thuộc, dữ liệu, biến môi trường |
 | `docs/04_TAB_DIEU_KHIEN.md` | sửa điều khiển máy, chạy G-code, dừng an toàn, tiếp tục |
@@ -19,7 +19,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 | `docs/06_THUAT_TOAN_XU_LY_ANH.md` | sửa thuật toán ảnh → nét (con số, công thức, thư viện đã loại) |
 | `docs/02_PHAN_CUNG_MAY.md` | đụng phần cứng, giao thức, hành vi firmware đã xác nhận |
 | `docs/09_QUYET_DINH_THIET_KE.md` | **trước khi đổi một hành vi đã chốt** |
-| `docs/07_THU_NGHIEM.md` · `08_TRIEN_KHAI.md` · `10_HUONG_PHAT_TRIEN.md` | thử trên giấy · đóng gói / phân quyền / mạng / MiniPC · ý tưởng để dành |
+| `docs/07_THU_NGHIEM.md` · `08_TRIEN_KHAI.md` · `10_HUONG_PHAT_TRIEN.md` | danh sách việc cần thử + cách đo · đóng gói / phân quyền / mạng / MiniPC · ý tưởng để dành |
 
 **Mã khác tài liệu thì mã là sự thật**; sửa tài liệu cho khớp. Tài liệu 01–11 viết cho **người không học code**: giữ văn phong đó khi sửa (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
 
@@ -29,7 +29,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 3. **Phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác (trừ `control.js` → `preview.js`). Một phần tử HTML chỉ một chủ ghi.
 4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Thêm tham số = dòng `Param` + ô `index.html` + dòng `FIELDS` trong `views/drawing/params.js` + khóa dịch.
 5. **Dịch:** mọi chữ qua `frontend/locales/vi.json` và `en.json`, hai tệp cùng khóa. Terminal giữ tiếng Anh. `DrawError.code` ↔ khóa `drawing.error.<code>`.
-6. **Test đi cùng mã.** `cd backend && python -m pytest` (~500; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`; `test_old_logs_are_pruned` có thể hết giờ khi chạy chung, chạy riêng thì qua). Frontend: `node --test` kèm từng tệp `frontend/tests/*.mjs` (39). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
+6. **Test đi cùng mã.** `cd backend && python -m pytest` (~546; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`; `test_old_logs_are_pruned` có thể hết giờ khi chạy chung, chạy riêng thì qua). Frontend: `node --test` kèm từng tệp `frontend/tests/*.mjs` (50). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
 7. **Không bịa số máy.** Lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `02_PHAN_CUNG_MAY.md`; ghi rõ điều chưa kiểm chứng.
 8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`). Thêm route cho khách = một dòng trong danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
 9. **Thuật toán tô:** đánh giá thay đổi bằng `tools/ink_sim.py` (sai số tông, chiều dài, thời gian) trước khi đề xuất; nêu số trước / sau.
@@ -89,6 +89,7 @@ Việc hôm nay: <một việc cụ thể>. Cần tệp nào thì nói, tôi g�
 
 ## 7. Giữ tài liệu đúng
 - Thêm / đổi tệp lớn → `python tools/export_context.py --map`.
+- **Việc chưa làm chỉ có hai danh sách:** cần thử → `07` (đầu tệp); cần chọn / cần code → `11` mục 4. Việc đã xong chỉ ghi **từ khóa + hằng đã chốt** ở `11` mục 3 (đừng kể lại quá trình); quyết định bị thay thì gạch ngang ở `09` (giữ mã), thử rồi bỏ thì ghi một dòng ở `09`.
 - Xong một việc → `11_VIEC_CAN_LAM.md`. Đổi hành vi đã chốt → `09_QUYET_DINH_THIET_KE.md`. Đổi API tab vẽ → `05_TAB_TAO_BAN_VE.md` mục 7 + `spec.py`. Đổi con số thuật toán → `06_THUAT_TOAN_XU_LY_ANH.md`. Số đo máy mới → `02_PHAN_CUNG_MAY.md`.
 - **Tệp luật cho AI khác:** `CLAUDE.md` (Claude Code) và thư mục `.clinerules/` (Cline, các tệp 00–04) là bản rút gọn của mục 3–5 của tệp này. Đổi luật ở đây thì sửa cả hai nơi cho khớp; `AI_START.md` là bản gốc.
 - Không tạo tệp tài liệu mới nếu nội dung thuộc một tệp đã có. Tệp mới cho người đọc thì đánh số; tệp chỉ cho AI thì đặt tiền tố `AI_` và ghi "FOR AI" ở dòng đầu.

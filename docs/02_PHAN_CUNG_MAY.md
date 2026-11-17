@@ -55,7 +55,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 
 | Thông số | Giá trị | Trong phần mềm |
 |---|---|---|
-| Bút lên / giữa / xuống (điều khiển tay) | **Z5 / Z1,5 / Z0** (từ 09/11/2026: nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog dùng Z5 cho chắc) | Cài đặt → Cấu hình máy, mục App; mặc định ở `services/profile.py`, `frontend/js/core/config.js` |
+| Bút lên / giữa / xuống (điều khiển tay) | **Z5 / Z3 / Z0** (Giữa từ 17/11/2026 đổi 1,5 → 3; nút gửi `G90 G0 Z…`) (từ 09/11/2026: nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog dùng Z5 cho chắc) | Cài đặt → Cấu hình máy, mục App; mặc định ở `services/profile.py`, `frontend/js/core/config.js` |
 | Z nhấc khi **sinh G-code** | **Z3** (chỉnh 3 / 2 / 1,5 theo bản vẽ) | cùng mục App, ô "Z nhấc khi sinh G-code"; tab Tạo bản vẽ lấy làm mặc định cho ô Z |
 | Tốc độ nâng bút / hạ bút | 3000 / **2000** mm/min (hạ chậm hơn, đỡ nảy) | tab Tạo bản vẽ; `spec.py` |
 | Chờ sau nâng / sau hạ | **0 s** / 0 s (từ 13/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C10; trước 0,02 và 0,05) | tab Tạo bản vẽ; `spec.py` |
@@ -83,8 +83,8 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | F12 | Gửi từng dòng chờ `ok`: 1500 dòng ở F3000 không nhảy Run / Idle | cách gửi hiện tại là đủ |
 | F13 | (13/11/2026) Gửi từng dòng chờ `ok` qua USB 115200 đạt **~125 dòng/giây** (124–130, mọi độ dài đoạn); hàng đợi chuyển động **15 khối**; `G4` bắt máy chạy hết hàng đợi rồi mới chờ | ước tính thời gian tính giới hạn này (`EST_LINES_PER_S`, `EST_DWELL_FLUSH_S`); nét cong ghi bằng G2/G3 |
 | F14 | (13/11/2026) **G2/G3 chạy đúng và đủ tốc** (vòng R10 ở 8000: 5,7 s, hàng đợi đầy) | `drawing/arcs.py` |
-| F15 | (13/11/2026) Tốc độ báo trong `FS:` (biểu đồ Tốc độ thật) **cao hơn thật tới 1,41 lần** tùy hướng chạy (máy CoreXY: vòng G2 thật ~7 900 mm/phút, biểu đồ 10 000–11 300; đường ngang G0 10 000 báo 14 142) | đọc tốc độ thật bằng quãng đường ÷ thời gian, không đọc số trên biểu đồ ⏳ sửa biểu đồ |
-| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án); lần sau tụt thì xem Terminal có `pen re-lift not sent` ⏳ |
+| F15 | (13/11/2026) Tốc độ báo trong `FS:` (biểu đồ Tốc độ thật) **cao hơn thật tới 1,41 lần** tùy hướng chạy (máy CoreXY: vòng G2 thật ~7 900 mm/phút, biểu đồ 10 000–11 300; đường ngang G0 10 000 báo 14 142) | đọc tốc độ thật bằng quãng đường ÷ thời gian, không đọc số trên biểu đồ ([11](11_VIEC_CAN_LAM.md) mục 4.3: sửa biểu đồ) |
+| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án). 17/11: nghi do xung điều khiển trong firmware, không do mã; nút bút đổi sang `G90 G0 Z…` để so với `$J=` ([07](07_THU_NGHIEM.md) B2); tụt thì xem Terminal có `pen re-lift not sent` |
 
 ## 6. Kết quả thử máy
 
@@ -104,12 +104,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 
 ## 7. Còn phải thử ⏳
 
-- Thời gian Home (X, Y, XY).
-- Bản vẽ thật có cung G2/G3 do phần mềm sinh (từ 13/11/2026): chạy hết không báo lỗi, so thời gian thật với ước tính.
-- `G4 P` tính bằng giây trên FluidNC 4.1.1 (đang giả định giây; từ 13/11 mặc định không còn G4).
-- Servo sau Home (F16): khi bút tụt, Terminal có dòng `pen re-lift not sent` không.
-- Z3 có đủ trên giấy cong không (bài 7.5).
-- Bề rộng nét ở 5000 mm/min, đường cong tông bằng thang xám in thật.
+Gộp về một danh sách ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md) nhóm B (còn: bản vẽ thật có G2/G3, servo sau Home F16, laptop yếu; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
 
 ## 8. Ghi chú điện tử cho người nối dây
 

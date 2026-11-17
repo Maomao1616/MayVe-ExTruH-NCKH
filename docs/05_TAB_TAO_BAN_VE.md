@@ -37,6 +37,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
+| **Chủ thể** (cạnh Cắt ảnh) | khoanh người / vật bằng **elip** hoặc **chữ nhật** trên ảnh gốc (kéo thả như khung cắt; thanh "Nền ngoài vùng còn" 0–100 %, mặc định 50): ngoài vùng bản vẽ nhạt đi, nền vẫn vẽ. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
@@ -56,7 +57,7 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 | Preset | Kiểu | Thông số đặc biệt | Hợp với |
 |---|---|---|---|
 | Chân dung (14/11/2026) | **sóng biến thiên**, góc 135°, không viền | mức đen 20, **tương phản 1,3** | ảnh người chụp thật |
-| Phong cảnh | sóng biên độ, góc 30° | CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
+| Phong cảnh | sóng biến thiên, góc 30° | CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
 | Ảnh 2D / Hình vẽ (14/11/2026) | **gạch chéo 5 mức + lớp viền** | khử nhiễu | hoạt hình, truyện tranh, hình vẽ, sticker |
 | Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
 
@@ -67,12 +68,12 @@ Danh sách kiểu nét từ 14/11/2026 (`spec.UI_STYLES`; zigzag, sóng thườn
 | Kiểu nét | Số nét / nhấc bút | Ghi chú |
 |---|---|---|
 | Gạch chéo chồng lớp | vừa | **mặc định**; tông nhạt một hướng, đậm thêm hướng vuông góc; bỏ "râu" (dải hẹp, mẩu ngắn), vùng độ phủ < 0,2 để trắng. Tích "Thêm lớp viền" (FDoG) cho nét cong mịn ở mắt, tóc, mép mặt |
-| Theo dáng ảnh (flow field) | nhiều | nét uốn theo dáng ảnh, kiểu riêng, có đường cong tông; vùng tối nhiều mẩu ngắn |
+| Theo dáng ảnh (flow field) | nhiều | nét uốn theo dáng ảnh, kiểu riêng, khoảng cách theo độ đậm; chưa có đường cong tông; vùng tối có mẩu ngắn |
 | Sóng biến thiên | ít nhất | tông liền, mượt; vùng rất đậm thêm lớp gạch thẳng; ô "Phủ đều đường ở vùng sáng" cho da mặt không khe trắng (bật trong Chân dung) |
 | Xoắn ốc | nhiều nhất | đậm nhanh, ô rất đậm có vệt chữ thập |
 | Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng. Ô tích **"Dùng XDoG"** (chỉ hiện ở kiểu này): viền ảnh chụp rõ hơn. Ô "Thêm lớp viền" trên kiểu tô khác luôn dùng XDoG |
 
-Đan chéo, xoắn ốc, kiểu lai có **đường cong tông** đo trên giấy thật (Sakura 0,5, mặt bóng Ivory; [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12): không cần chỉnh gamma để bù vùng trung bình.
+Gạch chéo và xoắn ốc có **đường cong tông** đo trên giấy thật (Sakura 0,5, mặt bóng Ivory; [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12): không cần chỉnh gamma để bù vùng trung bình.
 
 **Nhiều màu (2–4):** mỗi màu một tệp G-code riêng, tên có mã màu (vd `draw-2-3231a7.gcode`). Vẽ xong tệp nào thì đổi bút rồi nạp tệp kế. Kiểu Viền luôn đơn sắc.
 

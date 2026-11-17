@@ -93,9 +93,10 @@ Quy tắc: view **không** dùng view khác (trừ `control.js` dùng `preview.j
 | | `paper.js` | bố trí trên tờ giấy (bản JS của `layout.py`, có test đối chiếu) |
 | | `imageprep.js` | thu nhỏ ảnh trước khi gửi + công thức độ sáng (khớp `raster_in.py` / `tone.py`) |
 | | `drafts.js` | định dạng số liệu bản thảo |
+| | `subject.js` · `notify.js` | hàm thuần của vùng chủ thể (ép vùng, tham số gửi backend) · âm báo + tiêu đề tab khi vẽ xong / lỗi |
 | stores | `jobstore.js` · `draftstore.js` · `macros.js` | tệp G-code đang nạp · danh sách bản thảo · macro |
 | views | `control.js`, `preview.js`, `jobchart.js`, `terminal.js`, `header.js`, `dock.js` | tab Điều khiển và các khối chung |
-| | `drawing.js` + `drawing/` (`params`, `canvas`, `crop`, `presets`, `tonepreview`) | tab Tạo bản vẽ |
+| | `drawing.js` + `drawing/` (`params`, `canvas`, `crop`, `subject`, `presets`, `tonepreview`) | tab Tạo bản vẽ |
 | | `drafts.js` | danh sách bản thảo (tab vẽ) + Hàng đợi (tab Điều khiển) |
 | | `settings.js`, `storage.js` | tab Cài đặt |
 | | `auth.js` | khung đăng nhập ở đầu trang |
@@ -244,7 +245,7 @@ Ví dụ thật: bỏ nút "Tạo tờ mẫu hiệu chỉnh bút" = bỏ nút tr
 | Khối | Việc |
 |---|---|
 | Kết nối | chọn chế độ (máy thật `serial` / máy giả `sim`), cổng COM (nhớ cổng lần trước), Kết nối / Ngắt |
-| Giao diện chung · Hoạt động | ngôn ngữ, sáng / tối; nhịp cập nhật terminal, hỏi lại trước Home, phím tắt jog |
+| Giao diện chung · Hoạt động | ngôn ngữ, sáng / tối; nhịp cập nhật terminal, hỏi lại trước Home, phím tắt jog, âm báo xong / lỗi |
 | Bản thảo | số bản tối đa, dung lượng tối đa (thư mục cố định). Vượt thì xóa bản cũ nhất không ghim |
 | Lưu trữ dữ liệu | xem (không sửa) và tải về nội dung bản thảo, sao lưu cấu hình, macro, tệp lẻ |
 | **Cấu hình máy** | mục **Máy**: đọc YAML đang chạy trên mạch (`$CD`), sửa các mục được phép (tốc độ, gia tốc, hành trình, Home, servo; danh sách `FIELDS` trong `machine_config.py`), **Áp dụng** (`$/axes/...`, chỉ trong RAM, hàng đổi có dấu ●), **Lưu vào mạch** (sao lưu bản gốc về máy tính rồi `$CD=/localfs/<tệp>`), nạp bản sao lưu. Không cho sửa chân GPIO, kinematics, stepping. Mục **App**: Z bút 3 nấc, tốc độ bút, bước jog tối đa (lưu `data/profile.json`) |
@@ -274,7 +275,7 @@ Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về 
 | Kiểm | Cách | Báo gì |
 |---|---|---|
 | Test máy chủ (~397 bài) | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng |
-| Test giao diện (33 bài) | ở thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` | như trên |
+| Test giao diện (58 bài) | ở thư mục gốc: `node --test frontend/tests/paper.test.mjs frontend/tests/imageprep.test.mjs frontend/tests/gcode.test.mjs` | như trên |
 | Xem giao diện | sửa Python thì tắt và chạy lại server; trình duyệt **Ctrl+F5**; **F12 → Console** xem dòng đỏ | lỗi chữ, nút không chạy |
 | Thử bằng máy giả | Cài đặt → Kết nối → `sim` | mọi nút chạy được khi chưa có máy |
 | Lưới an toàn | Git: `git diff` xem đã đổi gì; `git checkout -- <tệp>` quay về bản đã commit | |

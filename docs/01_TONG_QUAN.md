@@ -38,13 +38,53 @@ Quy tắc quan trọng nhất: **giao diện không bao giờ tự nói chuyện
 
 | Tab | Việc | Tài liệu |
 |---|---|---|
-| **Điều khiển** | kết nối, xem trạng thái, jog, Home, đặt gốc, nâng hạ bút, nạp + xem trước + chạy G-code, hủy an toàn, tiếp tục từ điểm dừng, terminal, macro, hàng đợi | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) |
-| **Tạo bản vẽ** | ảnh / SVG → nét (đan chéo + theo dáng, gạch chéo, sóng biên độ, xoắn ốc, viền; 1–4 màu) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
+| **Điều khiển** | kết nối, xem trạng thái, jog, Home, đặt gốc, nâng hạ bút, nạp G-code + xem khung vẽ + chạy, hủy an toàn, tiếp tục từ điểm dừng, terminal, macro, hàng đợi | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) |
+| **Tạo bản vẽ** | ảnh / SVG → nét (gạch chéo, theo dáng ảnh, sóng biến thiên, xoắn ốc, viền; 1–4 màu; 4 preset: Chân dung, Ảnh 2D, Phong cảnh, Schematic) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
 | **Cài đặt** | cổng kết nối, ngôn ngữ, giao diện sáng / tối, cấu hình máy (đọc / ghi cấu hình trên mạch qua USB), hồ sơ bút, hạn mức bản thảo, xem dữ liệu | [03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 7 |
 
 Hai tab chính nối nhau qua **bản thảo trên đĩa**:
 ```
 Tạo bản vẽ  ──lưu──►  bản thảo (G-code + ảnh minh họa)  ──nạp──►  Điều khiển  ──nhìn khung vẽ, bấm Chạy──►  chạy
+```
+
+### Sơ đồ quy trình
+
+**1. Từ ảnh tới nét bút** (chi tiết từng khối: [06](06_THUAT_TOAN_XU_LY_ANH.md))
+```
+ảnh / SVG
+   │  cắt, thu nhỏ theo khung ÷ bút × 1,3              raster_in
+   ▼
+tiền xử lý: tự cân sáng · mức đen / trắng · gamma · tương phản · (CLAHE) · (khử nhiễu)      tone
+   ▼
+bản đồ độ đậm 0..1 ──► đường cong tông (gạch chéo, xoắn ốc)
+   ▼
+kiểu nét ──┬─ gạch chéo        chia mức, mỗi mức một lượt gạch, mức mềm
+           ├─ sóng biến thiên  biên độ theo độ đậm, tông liền
+           ├─ theo dáng ảnh    nét uốn theo dáng, khoảng cách theo độ đậm
+           ├─ xoắn ốc          một nét, mức mềm
+           └─ nét viền         top-hat + XDoG / FDoG → đường giữa 1 điểm ảnh
+   ▼  (+ lớp viền tùy chọn, vẽ sau cùng)
+tối ưu: nối nét gần · bớt điểm · sắp thứ tự (2-opt)                              optimize
+   ▼
+đặt lên giấy (khổ, lề, xoay) ──► G-code: G1 + cung G2/G3, Z nhấc 3, hạ 2000       layout, gcode
+   ▼
+bản thảo ──► Điều khiển ──► gửi từng dòng, chờ `ok` ──► máy vẽ
+```
+
+**2. Khách → quản lý → máy** (phân quyền: [08](08_TRIEN_KHAI.md) phần B)
+```
+Khách (điện thoại)           Quản lý (laptop, có PIN)                         Máy
+ chọn ảnh, cắt, khổ    ──►   hộp "Ảnh khách gửi" ──► Mở ──► Tạo nét ──►   bản thảo ──► Chạy ──► vẽ
+ bấm "Gửi ảnh"               (ảnh tự xóa sau 5 ngày; ≤ 6 ảnh / giờ)         (cần mở khóa chuyển động)
+```
+
+**3. Vòng làm việc: bạn, AI, máy** (mỗi vòng ghi lại để vòng sau không phải thử lại)
+```
+ chọn ảnh + preset ──► bản thảo trên màn hình ──► in thử ra giấy ──► chụp ảnh + ghi số (07)
+        ▲                                                                   │
+        │                                                                   ▼
+ ghi: việc xong / cần làm (11)  ◄── sửa hằng số 1 dòng + test ◄── AI đọc ảnh bằng tools/ (tone_read, ink_sim, style_preview)
+ ghi: quyết định + lý do (09)
 ```
 
 ## 4. Hai vai trò người dùng
@@ -80,6 +120,18 @@ PIN đặt trong tệp `data\pin.txt` (không lên Git). Chưa đặt PIN thì a
 
 Tài liệu đánh số từ nhỏ đến lớn. Người đọc lần đầu đi theo thứ tự; người viết báo cáo dùng mục "Dùng cho báo cáo".
 
+**4. Đang cần gì thì mở tệp nào**
+```
+ cái gì xong / cần thử / cần tôi chọn ─────────► 11  (sổ làm việc, mở đầu tiên)
+ cách thử trên giấy, mẫu gửi kết quả ──────────► 07
+ vì sao chọn vậy, trước khi đổi hành vi đã chốt ► 09
+ tìm hằng số / công thức thuật toán ảnh ───────► 06  (mục 19: bảng hằng đã chốt)
+ sửa nút, API, tham số tab vẽ ─────────────────► 05      sửa điều khiển, dừng an toàn ──► 04
+ tìm tệp mã, cách sửa / thêm chức năng ────────► 03 + AI_CODEMAP
+ phần cứng, firmware, kết quả thử máy ─────────► 02      đóng gói, mạng, MiniPC ────────► 08
+ ý tưởng để dành (chữ PDF, IoT, ESP32) ────────► 10
+```
+
 | # | Tệp | Nội dung | Dùng cho báo cáo |
 |---|---|---|---|
 | 01 | **Tổng quan** (tệp này) | dự án là gì, hệ thống, các tab, từ điển | Giới thiệu |
@@ -87,12 +139,12 @@ Tài liệu đánh số từ nhỏ đến lớn. Người đọc lần đầu đ
 | 03 | [03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) | cây thư mục, frontend, backend, luồng dữ liệu, dữ liệu trên đĩa, cách tìm / sửa mã, kiểm tra | Kiến trúc phần mềm |
 | 04 | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) | nút, luồng lệnh, gửi G-code, dừng an toàn, tiếp tục | Điều khiển, an toàn |
 | 05 | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md) | nút, preset, luồng dữ liệu, tham số, API, bản thảo | Phần mềm tạo bản vẽ |
-| 06 | [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) | **chi tiết thuật toán ảnh → nét**, thư viện dùng / không dùng / có thể thêm | Thuật toán (phần chính) |
-| 07 | [07_THU_NGHIEM.md](07_THU_NGHIEM.md) | cách thử trên giấy, bài thử tốc độ, bảng ghi kết quả | Thực nghiệm |
+| 06 | [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) | **chi tiết thuật toán ảnh → nét**, thư viện dùng / không dùng, bảng hằng đã chốt | Thuật toán (phần chính) |
+| 07 | [07_THU_NGHIEM.md](07_THU_NGHIEM.md) | **danh sách việc cần thử**, cách đo bề rộng nét / tông, bài thử máy, mẫu gửi kết quả | Thực nghiệm |
 | 08 | [08_TRIEN_KHAI.md](08_TRIEN_KHAI.md) | bản mang đi Windows, phân quyền, mạng / demo, MiniPC, Cloudflare | Triển khai, IoT |
 | 09 | [09_QUYET_DINH_THIET_KE.md](09_QUYET_DINH_THIET_KE.md) | chọn gì, vì sao | Lý do lựa chọn |
 | 10 | [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) | ý tưởng để dành: tab Beta PDF, chữ tay, IoT, ESP32 | Hướng phát triển |
-| 11 | [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) | tình trạng, việc cần làm, cần bạn quyết | (sổ làm việc) |
+| 11 | [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) | đã xong (từ khóa + hằng chốt), cần bạn chọn, cần thử, làm tiếp | (sổ làm việc) |
 | AI | [AI_START.md](AI_START.md), [AI_CODEMAP.md](AI_CODEMAP.md) | **chỉ cho AI**: quy tắc, bẫy, bản đồ mã sinh tự động | không |
 
 Cài đặt và chạy phần mềm: [README.md](../README.md) ở thư mục gốc.

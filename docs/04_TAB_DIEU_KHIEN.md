@@ -40,7 +40,7 @@
 | | Home X / Y / tất cả | chạy về công tắc hành trình (hỏi xác nhận). **Tự nâng bút trước** | `$J=G90 G21 Z5 F3000` rồi `$H` / `$HX` / `$HY` |
 | Di chuyển | Mũi tên, ô bước | jog theo bước đã chọn (tối đa 50 mm) | `$J=G91 G21 X10 F…` |
 | | Nút giữa | về gốc làm việc | `$J=G90 G21 X0 Y0 F…` |
-| Bút | Lên / Giữa / Xuống | Z5 / Z1,5 / Z0 (sửa ở Cài đặt → Cấu hình máy, mục App). Z nhấc của G-code (mặc định 3) là giá trị khác, chỉnh ở cùng mục; nhấc của G-code vẫn hiện là "Lên" | `$J=G90 G21 Z5 F3000` |
+| Bút | Lên / Giữa / Xuống | Z5 / Z3 / Z0 (sửa ở Cài đặt → Cấu hình máy, mục App; Giữa = Z3 từ 17/11/2026). Z nhấc của G-code (mặc định 3) là giá trị khác, chỉnh ở cùng mục; nhấc của G-code vẫn hiện là "Lên" | `G90 G0 Z5` (từ 17/11/2026; trước là `$J=G90 G21 Z5 F3000`) |
 | Tệp G-code | Chọn tệp → nhìn khung 2D → **▶ Chạy** | nút Xem trước và ô tích xác nhận đang **ẩn** (công tắc `REQUIRE_PREVIEW_CONFIRM` ở đầu `views/control.js`; đặt `true` để hiện lại: lúc đó phải xem trước + tích, đổi tệp là làm lại). Dòng bị cấm hiện đỏ kèm số dòng và lý do, khóa nút Chạy | gửi từng dòng |
 | | Hủy tác vụ | hộp thoại: Tiếp tục chạy / **Dừng êm** / **Dừng gấp** | xem mục 6 |
 | | −10 −1 100% +1 +10 | ghi đè tốc độ (10–200 %) | byte `0x90`…`0x94` |

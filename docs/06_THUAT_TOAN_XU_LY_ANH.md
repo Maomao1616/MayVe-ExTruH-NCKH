@@ -1,7 +1,7 @@
 # 06 — Thuật toán xử lý ảnh: từ ảnh chụp đến nét bút
 
 > Dành cho người đọc (chủ dự án, người viết báo cáo, người không học lập trình). Đọc từ trên xuống: mỗi mục dựa vào mục trước.
-> Mọi con số trong tài liệu lấy từ mã hiện tại (05/11/2026). Mã nằm ở `backend/app/services/drawing/`.
+> Con số lấy từ mã, cập nhật 17/11/2026; bảng **hằng đã chốt** ở mục 19. Mã nằm ở `backend/app/services/drawing/`.
 > Muốn biết nút bấm ở đâu: [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md). Muốn biết cách thử trên giấy: [07_THU_NGHIEM.md](07_THU_NGHIEM.md).
 
 **Mục lục**
@@ -12,7 +12,7 @@
 5. Bước 2 — Ảnh xám thành bản đồ độ đậm (`tone.py`)
 6. Bước 3 — Chia thành đúng N mức sáng tối (`styles.level_plan`)
 7. Bước 4 — Mỗi mức thành một mặt nạ đen/trắng (`hatch.level_mask`)
-8. Bước 5 — Mặt nạ thành nét: zigzag, sóng, xoắn ốc (`hatch.py`, `styles.py`)
+8. Bước 5 — Mặt nạ thành nét: gạch chéo, sóng biến thiên, xoắn ốc, theo dáng (`hatch.py`, `styles.py`, `flow.py`)
 9. Kiểu Viền: ảnh thành đường nét một lượt (`edges.py`, `trace.py`)
 10. Nhiều màu (`palette.py`)
 11. Tối ưu nét bằng vpype (`optimize.py`)
@@ -21,14 +21,15 @@
 14. Kiểm tra thuật toán mà không cần in: bộ mô phỏng mực
 15. Thư viện đã dùng: mỗi cái làm gì
 16. Thư viện và cách làm đã cân nhắc nhưng KHÔNG dùng, vì sao
-17. Thư viện và thuật toán có thể thêm để phát triển
+17. Còn có thể thêm
 18. Giới hạn đã biết
+19. Bảng hằng đã chốt
 
 ---
 
 ## 1. Bài toán: máy vẽ chỉ kẻ được đường, không tô được màu xám
 
-Máy in phun phun được mực đậm nhạt khác nhau. Máy vẽ thì không. Nó chỉ làm được **một việc**: hạ một cây bút xuống giấy rồi kéo đi, để lại một **đường mực rộng cố định** (bút Sakura 0,4 ra nét rộng khoảng 0,55 mm).
+Máy in phun phun được mực đậm nhạt khác nhau. Máy vẽ thì không. Nó chỉ làm được **một việc**: hạ một cây bút xuống giấy rồi kéo đi, để lại một **đường mực rộng cố định** (bút Sakura 0,4 ra nét rộng khoảng 0,45–0,5 mm trên giấy Ivory).
 
 Vậy muốn có vùng "xám nhạt", "xám vừa", "gần đen" thì làm sao? Cách duy nhất: **kẻ nhiều đường song song, đường càng sát nhau thì vùng đó càng đậm.** Đứng xa 40–50 cm, mắt không thấy từng đường mà thấy một mảng xám. Đây là cách các họa sĩ khắc đồng, vẽ ký họa bằng bút kim vẫn làm (gọi là *hatching*, gạch nét).
 
@@ -41,7 +42,7 @@ Thưa (xám nhạt)      Vừa (xám)          Dày (gần đen)
 ─────────────        ─────────────      ═════════════
 ```
 
-Một cách khác hẳn là **vẽ theo đường viền** (như tranh tô màu), không cần sáng tối: chỉ cần biết đâu là đường trong ảnh. Dự án có cả hai: **kiểu tô** (zigzag, sóng, xoắn ốc) và **kiểu viền**.
+Một cách khác hẳn là **vẽ theo đường viền** (như tranh tô màu), không cần sáng tối: chỉ cần biết đâu là đường trong ảnh. Dự án có cả hai: **kiểu tô** (gạch chéo, sóng, xoắn ốc, theo dáng) và **kiểu viền**.
 
 Từ đó ra ba câu hỏi lớn, cũng là ba phần chính của tài liệu:
 1. Ảnh có hàng trăm mức xám, máy chỉ kẻ được vài mật độ: **chia thành mấy mức, chia ở đâu?** (mục 6)
@@ -57,8 +58,8 @@ Không có thuật toán nào nghĩ ra một lần là đúng. Dây chuyền c�
 ### 2.1 Bắt đầu từ giới hạn vật lý, không bắt đầu từ thư viện
 | Giới hạn thật | Hệ quả cho thuật toán |
 |---|---|
-| Bút ra nét rộng cố định ~0,55 mm | Độ đậm = **mật độ nét**. Mọi khoảng cách phải tính bằng **mm thật**, theo bề rộng nét thật |
-| Mỗi lần nhấc + hạ bút mất ~0,25 s (bằng quãng vẽ ~20 mm ở 5000 mm/min) | Ưu tiên **nét dài liền** (zigzag nối đầu đuôi), nối qua khe trắng ngắn, bỏ mẩu quá ngắn |
+| Bút ra nét rộng cố định ~0,5 mm | Độ đậm = **mật độ nét**. Mọi khoảng cách phải tính bằng **mm thật**, theo bề rộng nét thật |
+| Mỗi lần nhấc + hạ bút tốn thêm ~0,025 s ngoài chuyển động (đo 13/11/2026, chờ 0) | Ưu tiên **nét dài liền** (zigzag nối đầu đuôi), nối qua khe trắng ngắn, bỏ mẩu quá ngắn |
 | Ở góc nhọn máy phải giảm tốc gần về 0 (`junction_deviation` 0,01 mm), bút đứng lâu thì mực loang thành giọt | Chỗ quay đầu dùng **nửa vòng tròn**, không dùng hai góc vuông |
 | G-code gửi từng dòng, tối đa 200 000 dòng | Giới hạn số điểm (sóng tự giãn bước), đơn giản hóa nét |
 | MiniPC i5 thế hệ 3, vừa điều khiển máy vừa xử lý ảnh | Thu nhỏ ảnh **trước** khi lọc; độ phân giải chỉ đủ cho bút; chạy ở tiến trình riêng ưu tiên thấp |
@@ -182,7 +183,7 @@ Kẻ các nét rộng `w` cách nhau `s` (tính từ tâm nét này tới tâm n
 ```
 Với `w` = 0,55 mm: cách 1,1 mm phủ 50 %; cách 0,61 mm phủ 90 %; cách 2,44 mm phủ 22,5 %.
 
-`w` lấy từ bề rộng nét **đo thật**: `w = LINE_WIDTH_RATIO × số trong ô "Bút vẽ"`. 03/11/2026 Sakura 0,4 trên giấy thường ra 0,55 mm (1,375, các bảng số trong mục này tính theo số đó). 11/11/2026 giấy Ivory: 1,1 → w = 0,44 mm. **Cùng ngày (tối): `LINE_WIDTH_RATIO = 1,0`, ô "Bút vẽ" chọn theo tên bút và mang sẵn nét đo trên giấy** (UB-155 / UM-100 0,30 · Sakura 0,45 · bút bi 0,50, ước tính chờ đo). Sakura 0,45: 4 mức cách 2,0 / 1,0 / 0,67 / 0,50 mm; nét 0,30: 1,33 / 0,67 / 0,44 / 0,33 mm (nhiều đường hơn ~50 %, vẽ lâu hơn tương ứng).
+`w` là bề rộng nét **đo thật trên giấy**, ghi sẵn trong ô "Bút vẽ" (`LINE_WIDTH_RATIO = 1,0`): UB-155 **0,38** · UM-100 **0,40** · Sakura **0,50** (đo 12/11/2026, Ivory mặt bóng, 8000 mm/phút; [07](07_THU_NGHIEM.md) mục 1). Các ví dụ và bảng trong mục này tính với w = 0,55 mm (số đo đầu tiên, 03/11/2026) cho dễ theo dõi; với Sakura 0,50 thì 4 mức cách 2,22 / 1,11 / 0,74 / 0,56 mm.
 
 ### 6.2 Chia mức
 "N mức" gồm cả **mức 0 = giấy trắng (không vẽ)**. Với N = 5 thì có 4 mức có mực. Độ phủ mục tiêu **tăng đều** từ 0 tới 90 % (`MAX_COVERAGE = 0.9`). Không lên 100 % vì nét quá sát sẽ nhòe thành một mảng ướt, giấy quăn.
@@ -249,7 +250,20 @@ Các dải **không chồng nhau**. Hàm `styles._passes` trả lần lượt (m
 
 ---
 
-## 8. Bước 5 — Mặt nạ thành nét: zigzag, sóng, xoắn ốc, gạch chéo, sóng biến thiên
+## 8. Bước 5 — Mặt nạ thành nét: gạch chéo, sóng biến thiên, xoắn ốc, theo dáng
+
+**Trạng thái các kiểu tô (14/11/2026)**
+
+| Kiểu (tên mã) | Trạng thái | Dùng ở | Mục |
+|---|---|---|---|
+| Gạch chéo (`crosshatch`) | hiện, mặc định | preset Ảnh 2D (kèm lớp viền) | 8.8 |
+| Sóng biến thiên (`wave_am`) | hiện | preset Chân dung, Phong cảnh | 8.9 |
+| Theo dáng ảnh (`flow`) | hiện | chọn tay | 8.10 |
+| Xoắn ốc (`spiral`) | hiện | chọn tay | 8.4 |
+| Nét viền (`outline`) | hiện | preset Schematic; làm lớp viền | 9 |
+| zigzag | ẩn, còn dùng làm nền của gạch chéo và lớp đậm của sóng | — | 8.1, 8.2 |
+| sóng thường (`wave`), đan 3 hướng (`crosshatch3`) | ẩn (tờ tông còn dùng) | — | 8.3 |
+| lai đan chéo + theo dáng | đã xóa 17/11/2026 ([09](09_QUYET_DINH_THIET_KE.md) P28) | — | — |
 
 ### 8.1 Đường quét song song (`hatch.scan_runs`), nền của zigzag và sóng
 Ý tưởng: kẻ các đường thẳng song song cách nhau `s` mm phủ cả ảnh, rồi **chỉ giữ phần đường nằm trong vùng Có của mặt nạ**.
@@ -303,7 +317,7 @@ Sau đó tra mặt nạ, lấy đoạn Có như 8.1, rồi:
 - **nối qua khe trắng** ngắn hơn `max(3 mm, 6 × s)` (đỡ một lần nhấc bút),
 - **bỏ mẩu** ngắn hơn `max(0,3 mm, 4 × s)` (gần như không thấy).
 
-Mô phỏng: sai số 0,106 → 0,058. Nhưng mỗi bậc cắt xoắn ốc thành nhiều mẩu, nên thời gian vẽ khoảng **gấp đôi zigzag**; preset Cận cảnh (bỏ 14/11/2026) vì vậy dùng 4 mức.
+Mô phỏng: sai số 0,106 → 0,058. Nhưng mỗi bậc cắt xoắn ốc thành nhiều mẩu, nên thời gian vẽ khoảng **gấp đôi zigzag**; khi chọn Xoắn ốc nên dùng 4 mức.
 
 ### 8.5 Thêm lớp viền lên kiểu tô
 Bật "Thêm lớp viền" thì sau khi tô xong, phần mềm chạy thêm kiểu Viền (mục 9) và vẽ lớp viền **sau cùng** để nét rõ.
@@ -324,59 +338,42 @@ Một hàm có dòng `@FILLERS.register("tên")` trong `styles.py` + thêm tên 
 ### 8.8 Gạch chéo chồng lớp (`crosshatch`)
 Độ phủ mong muốn T tách thành hai lớp a (góc gạch) và b (góc + 90°) sao cho `1 − (1 − a)(1 − b) = T` (`styles.cross_split`): T ≤ 0,45 chỉ lớp a (= T); trên đó a tăng nửa phần, b gánh phần còn lại. T = 0,9: a ≈ b ≈ 0,68, tức mỗi hướng cách ~0,65 mm thay vì một hướng cách 0,49 mm (ít ướt giấy). Mỗi lớp là một lượt zigzag đủ mức (mềm nếu bật); vẽ hết lớp a rồi mới lớp b (mực lớp dưới có thời gian khô). Tốn hơn zigzag ~20 % chiều dài ở ảnh nhiều mảng đậm.
 
+**Bớt râu, trắng hẳn (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27)**, áp cho mọi kiểu gạch (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mẩu gạch < 1,5 mm (`HATCH_MIN_RUN_MM`) bỏ; độ phủ dưới 0,2 (`HATCH_WHITE`) để trắng hẳn, mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`), không kẻ chéo sang dòng khác. Ảnh chân dung A4 bút 0,4: 1120 → 867 nét, 19,4 → 16,2 phút.
+
 ### 8.9 Sóng biến thiên (`wave_am`): tông liền, không chia mức
-Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4: 1,76 mm), bước sóng **cố định** `λ = 2 × nét thật` (0,88 mm), cùng pha (pha tính từ cùng một gốc) nên không bao giờ cắt nhau. Chỉ biên độ đổi theo độ đậm:
-- Đường sóng `v = A·sin(2πu/λ)` dài gấp `F(k)` lần đường thẳng, `k = 2πA/λ` (bảng tra `hatch._F_TAB`). Nét rộng w cách s0 phủ `w·F/s0`. Muốn độ phủ c: `F = c·s0/w` → tra ngược ra k → A. Biên độ tối đa 0,45 × s0 cho độ phủ ~0,9.
-- Sáng hơn mức một lưới đường thẳng phủ được (w/s0 = 25 %) thì bớt đường: còn 1/2 (dòng chẵn), rồi 1/4 (dòng chia hết cho 4); mỗi đường xuất hiện ở ngưỡng lệch so le ±35 % nên không thành ranh giới. **Ô tích "Phủ đều đường ở vùng sáng"** (`style.am_fill`, 14/11/2026; bật trong preset Chân dung): mọi lưới có mặt cùng lúc từ độ phủ 0,10, không bớt đường ở tông 0,10–0,33. Lý do: vùng đều tông (da mặt) bớt đường thì mất trọn 1/8 số đường, thành vệt trắng dài rộng 3,2 mm cách ~13 mm (chủ dự án thấy 3 vệt trên mặt; thử đổi đường bị bớt mỗi 8 mm thì thành vệt ngắn lấm tấm, kém hơn, đã bỏ). Đổi lại da đậm hơn ảnh một chút (đường thẳng đều phủ 25 %). Dưới 1,6 × w/(4 s0) (độ phủ 0,10, từ 14/11/2026; trước 0,6 ×) để trắng.
-- Chỉ nối hai đường khi thật sự quay đầu và hai đầu lệch ≤ s0 (thường ở mép ảnh); nối chỗ khác ra móc chữ U / Z lạc lõng. Bỏ đoạn ngắn hơn 3 × s0.
-- Lần thử đầu cho bước sóng đổi theo độ đậm: các đường lệch pha cắt nhau thành lưới rối, đã bỏ.
-- **Lớp đậm (13/11/2026, `AM_DARK_LAYER`):** tờ tông in thật: ô 90 % chỉ trông 0,71. Vẽ lại tờ trên máy tính (nét 0,5 mm), mực hình học của sóng chỉ 0,47 / 0,54 / 0,62 / 0,70 / 0,78 ở ô 50 / 60 / 70 / 80 / 90 %: sườn sóng dốc (λ 1 mm, nét 0,5 mm) đè lên nhau. Đổi biên độ (bị chặn trước bởi độ dài cần thiết), bước sóng 2,5 × nét, khoảng cách 3 × nét: tối đa 0,83. Nên thêm **một lượt zigzag vuông góc** ở vùng đậm: sóng coi như phủ `min(c, 0,45 + (c − 0,45) × 0,78)`, gạch bù `1 − (1 − c) ÷ (1 − sóng)`. Ô 90 %: 0,78 → 0,89 (đan chéo 0,93); dưới 0,45 không đổi. Mô phỏng sai mắt 0,071 → 0,049. Giá: phi hành gia A5 79 → 267 lần nhấc, 8,9 → 11 phút.
+Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4: 1,76 mm), bước sóng **cố định** `λ = 2 × nét thật`, cùng pha nên không cắt nhau. Chỉ **biên độ** đổi theo độ đậm:
+- Đường sóng `v = A·sin(2πu/λ)` dài gấp `F(k)` lần đường thẳng, `k = 2πA/λ` (bảng `hatch._F_TAB`). Nét rộng w cách s0 phủ `w·F/s0`; muốn độ phủ c: `F = c·s0/w` → tra ngược ra k → A. Biên độ tối đa 0,45 × s0 cho độ phủ ~0,9.
+- **Vùng sáng:** sáng hơn mức một lưới đường thẳng phủ được (w/s0 = 25 %) thì bớt đường: còn 1/2, rồi 1/4; mỗi đường xuất hiện ở ngưỡng lệch so le ±35 % nên không thành ranh giới. Dưới độ phủ **0,10** (`AM_WHITE` 1,6) để trắng. Ô tích **"Phủ đều đường ở vùng sáng"** (`style.am_fill`, bật ở Chân dung): mọi lưới có mặt cùng lúc từ 0,10, vì vùng đều tông (da mặt) mà bớt đường thì có đường mất trọn → vệt trắng 3,2 mm cách ~13 mm ([09](09_QUYET_DINH_THIET_KE.md) P29); đổi lại da đậm hơn ảnh một chút.
+- **Vùng rất đậm** (`AM_DARK_LAYER`): sóng chỉ phủ `min(c, 0,45 + (c − 0,45) × 0,78)` (sườn sóng đè nhau); thêm một lượt gạch **vuông góc** bù `1 − (1 − c) ÷ (1 − sóng)`. Ô 90 %: 0,78 → 0,89. Giá: ảnh tối nhấc bút nhiều hơn (79 → 267 lần, 8,9 → 11 phút).
+- Chỉ nối hai đường khi thật sự quay đầu và hai đầu lệch ≤ s0 (thường ở mép ảnh); bỏ đoạn ngắn hơn 3 × s0. Bước sóng đổi theo độ đậm đã thử: các đường lệch pha cắt nhau thành lưới rối, bỏ.
 
-**Đo:** dải chuyển liền: sai tông 0,027, bậc 0,012 (zigzag cũ 0,082 / 0,099). Ảnh mèo A5: 105 nét, 5,4 phút có gia tốc (nhanh nhất vì gần như không nhấc bút) nhưng **16 000 dòng G-code** (zigzag 8 000): nhiều đoạn ngắn 0,2 mm. Ở 8000 mm/phút có thể vượt sức gửi lệnh từng dòng qua USB: xem đường "hàng đợi" ở Biểu đồ (cần `$10=3`); nếu hàng đợi cạn thì hạ tốc độ cho kiểu này.
+Đo (mô phỏng): dải chuyển liền sai tông 0,027, bậc 0,012 (zigzag cũ 0,082 / 0,099). Ảnh mèo A5: 105 nét, 5,4 phút nhưng **16 000 dòng G-code** (nhiều đoạn 0,2 mm): ở 8000 xem đường "hàng đợi" ở Biểu đồ.
 
-### 8.10 Theo dáng ảnh (`flow`, `flow.py`): bản thô 12/11/2026
-Nét không đi theo một góc cố định mà **uốn dọc theo dáng ảnh** (má, lông, tóc). Độ đậm liền, không chia mức (ô Số mức và Chuyển mức mềm bị ẩn).
-1. **Trường hướng:** làm mờ ảnh độ đậm σ = 1 mm, lấy đạo hàm Sobel, lập tensor cấu trúc (gx², gx·gy, gy²) rồi làm mờ σ = 4 mm. Hướng nét = vuông góc với hướng đổi độ đậm mạnh nhất, tức là **dọc theo đường cùng độ đậm**. Độ "rõ hướng" 0..1; dưới 0,35 thì trộn dần về góc ở ô "Góc" (mặc định 45°) để chỗ phẳng không bị nét quằn quại.
-2. **Khoảng cách tại mỗi chỗ** = bề rộng nét ÷ độ phủ mong muốn, giới hạn 1,1 × đến 5 × bề rộng nét. Độ phủ dưới 0,1 để giấy trắng.
-3. **Đặt đường đều nhau (Jobard–Lefer):** gieo đường đầu ở chỗ đậm nhất, đi hai phía theo hướng, bước 0,3 mm. Một đường dừng khi ra vùng trắng, cách đường khác dưới 0,5 × khoảng cách, cong gắt hơn bán kính 1,5 mm, hoặc dài quá 250 mm. Xong một đường thì gieo đường mới hai bên, cách đúng một khoảng tính **ở chỗ gieo** (tính ở đường cũ thì lan từ đậm sang nhạt bị dày quá). Bỏ đường ngắn hơn 3 × khoảng cách. Vùng tách rời được gieo bằng lưới 2 mm, đậm trước.
-4. Kiểm "quá gần" bằng ảnh đánh dấu ô 0,1 mm: mỗi đường xong được vẽ vào ảnh đó (`cv2.polylines`), hỏi một ô vuông quanh điểm. Sau đó đi qua tối ưu và nối nét gần như mọi kiểu tô.
+### 8.10 Theo dáng ảnh (`flow`, `flow.py`)
+Nét **uốn dọc theo dáng ảnh** (má, lông, tóc) thay vì góc cố định; độ đậm liền (ô Số mức và Chuyển mức mềm bị ẩn).
+1. **Trường hướng:** làm mờ σ = 1 mm → Sobel → tensor cấu trúc làm mờ σ = 4 mm; hướng nét = vuông góc hướng đổi độ đậm mạnh nhất (dọc đường cùng độ đậm); độ rõ hướng dưới 0,35 thì trộn dần về ô "Góc" (mặc định 45°) để chỗ phẳng không quằn quại.
+2. **Khoảng cách** = bề rộng nét ÷ độ phủ mong muốn, giới hạn 1,1 × đến 5 × nét; độ phủ dưới 0,1 để trắng.
+3. **Đặt đường đều nhau (Jobard–Lefer):** gieo ở chỗ đậm nhất, đi hai phía bước 0,3 mm; dừng khi ra vùng trắng, cách đường khác dưới **0,7 ×** khoảng cách (`FLOW_TEST_RATIO`), cong gắt hơn bán kính 1,5 mm, hoặc dài quá 250 mm. Xong một đường thì gieo hai bên, cách đúng khoảng tính **ở chỗ gieo** (tính ở đường cũ thì lan từ đậm sang nhạt bị dày); bỏ đường ngắn hơn 3 × khoảng cách; vùng tách rời gieo bằng lưới 2 mm, đậm trước.
+4. **Kiểm "quá gần"** bằng ảnh đánh dấu ô 0,1 mm, hỏi một ô **tròn** quanh điểm (từ 14/11/2026: ô vuông coi đường chéo 45° ở xa là xa / 1,41 nên nét kề bên không gieo được, đường chéo không bao giờ dày hơn ~1,4 mm). **Không áp đường cong tông** ([09](09_QUYET_DINH_THIET_KE.md) P30). Sau đó qua tối ưu + nối nét gần như mọi kiểu tô.
 
-**Đo 12/11 (máy tính, chưa in):**
-- Mô phỏng mực: sai tông 0,056 (đan chéo 0,042, đan 3 hướng 0,036), đậm hơn mong muốn khoảng 0,1 đều khắp dải. Zigzag trong cùng mô phỏng cũng đậm hơn 0,06–0,1. Chỉ số "bậc" 0,10 là do nét dọc song song với cột đo, không phải ranh giới mức.
-- Ảnh mẫu A5, bút 0,5, 8000: mèo 160 lần nhấc / 2,4 phút ước tính (đan chéo 365 / 5,5 phút); người 265 / 4,5 phút (đan chéo 438 / 8,7 phút). Dùng ít mực hơn đan chéo khoảng 35 % (đan chéo chồng 2 lớp), nên **trên giấy có thể nhạt hơn**. Xử lý 4–5 s.
+Đo 14/11/2026: mực phủ bám độ đậm ảnh (0,45 → 0,48); `ink_sim` sai tông 0,053, sai mắt 0,043, 53 nét. In thật A4 13/11: ra hình, nhiều "hồn", hơi "nghệ thuật"; A6 độ phân giải thấp gần như không ra hình. Việc còn lại (nối đầu các đường kề nhau, tờ tông riêng): [10](10_HUONG_PHAT_TRIEN.md) mục 0.
 
-**Chưa có:** lớp hai cho vùng rất đậm (F4), nối đầu các đường kề nhau, chỉnh theo ảnh thật (F5), preset (F6). Kế hoạch: [10](10_HUONG_PHAT_TRIEN.md) mục 0.5.
-
-**In thật 13/11:** A4 mèo 6:21 (ước 7:16): ra hình, nét ôm theo lông / mắt rất có "hồn" nhưng trông "nghệ thuật"; A6 độ phân giải thấp gần như không ra hình. → giữ làm kiểu riêng, phần "dáng" đưa vào kiểu lai (8.11).
-
-**Sửa tông (14/11/2026, chủ dự án: "flow chưa áp đậm nhạt").** Hai lỗi: (1) `busy()` kiểm tra "đã có đường chưa" bằng cửa sổ **vuông**, coi đường chéo 45° ở cách `s` là cách `s / 1,41`, nên nét kề bên không gieo được; chỉ còn gieo lưới 2 mm (cách nhau 2 ÷ √2 = 1,41 mm) nên đường chéo không bao giờ dày hơn ~1,4 mm dù ảnh đậm (ô phẳng độ đậm 0,4 / 0,6 / 0,9 đều ra 57–59 nét trên 60 mm). Đổi sang cửa sổ **tròn**: khoảng cách khớp yêu cầu (0,2 → 2,00 mm; 0,9 → 0,44 mm). (2) Với cửa sổ tròn, `FLOW_TEST_RATIO` 0,5 cho đường ép sát nhau, mực phủ vượt độ đậm ảnh (0,45 → 0,55); đặt **0,7** thì 0,45 → 0,48 (đo 3 ảnh thật A4 bút 0,4); 0,85 sát hơn (0,43) nhưng vụn hơn (ink_sim: 67 so với 53 nét) và sai mắt 0,049 so với 0,043. **Không áp đường cong tông** cho theo dáng: thử rồi bỏ, vì sau khi sửa mực đã bám đúng độ đậm, thêm đường cong thì ink_sim báo sai mắt 0,043 → 0,063 (vùng giữa đậm quá). `tools/ink_sim.py` (theo dáng): sai số 0,056 → 0,053, sai mắt 0,040 → 0,043, 54 → 53 nét.
-
-### 8.11 Đan chéo + theo dáng (`crosshatch_flow`, 13/11/2026): mặc định preset Chân dung
-Đan chéo gánh tông, đường theo dáng chỉ vẽ ở **dải viền** để mắt / mũi / mép mặt tách khỏi nền ([09](09_QUYET_DINH_THIET_KE.md) P22).
-1. **Dải viền** (`styles.edge_band`): làm mờ σ 1 mm, độ dốc độ đậm g (mỗi mm). `e = trơn((g − 0,04) ÷ (0,12 − 0,04)) × trơn(độ rõ hướng ÷ 0,3)`, nới ra 1,5 mm mỗi phía (giãn nở hình tròn) rồi làm mờ 0,5 mm → 0..1.
-2. **Đường theo dáng** (`flow.flow_strokes`) trên độ phủ mong muốn × 0,5 × dải viền: ở viền chúng gánh tối đa một nửa; ngoài viền không có.
-3. **Đo mực đường theo dáng đã phủ** (`styles.ink_cover`): vẽ các đường đó với bề rộng nét lên ảnh 0,1 mm, thu về cỡ ảnh làm việc, làm mờ ~2 bề rộng nét.
-4. **Lớp đan** vẽ phần còn thiếu: `đan = 1 − (1 − mục tiêu) ÷ (1 − dáng)`. Thứ tự vẽ: đan (nhạt → đậm) trước, đường theo dáng cuối cùng cho nét rõ.
-
-Hằng số `HYB_*` ở `styles.py`. Ảnh mẫu A5 / ảnh của chủ dự án (bút 0,5): mèo 5,7 → 5,8 phút, phi hành gia 8,4 → 8,8 phút, em bé A4 13,1 → 13,4 phút; số nét +1–5 %; mô phỏng mực sai mắt 0,033 (bằng đan chéo). A6 vẫn có vài đường ôm viền mặt / mũ (theo dáng thuần ở A6 thì mất hình). ⏳ in thật.
-
-**Bớt râu, trắng hẳn, một đường viền (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27):** mọi kiểu gạch / đan chéo (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mức nhạt nhất bắt đầu từ độ phủ 0,2 (`HATCH_WHITE`), mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`). **Kiểu này từ 14/11 = đan chéo + MỘT đường viền FDoG bao từng khối** (`crosshatch_flow_groups`), thay các đường theo dáng ở dải viền ở trên (chúng chạy 2–3 sợi song song ôm viền, trông như râu): vẽ đường viền thành mặt nạ rộng 2 × nét (`CONTOUR_BARRIER_PENS`), cắt mặt nạ mọi mức đậm nhạt bằng nó TRƯỚC bước mở (`hatch.threshold_mask(barrier=...)`) nên dòng gạch dừng ở viền và mẩu tràn sang khối bên kia bị bỏ: tóc không lan vào mặt. XDoG / FDoG tô kín phía tối của cạnh; khối dày hơn 2 mm (`edges.XDOG_RIM_MM`, tròng mắt) chỉ giữ vành, không thì làm mảnh ra một chấm và mất khung mắt.
+### 8.11 Vùng chủ thể (17/11/2026)
+Sau khi có bản đồ độ đậm, `tone.apply_subject` nhân độ đậm với `ngoài + (1 − ngoài) × trọng số`: trọng số 1 trong vùng, 0 ngoài vùng, chuyển mờ ±8 % bán kính (`SUBJECT_FEATHER`). Elip: khoảng cách chuẩn hóa tới tâm; chữ nhật: khoảng cách Chebyshev. Vùng tính theo ảnh **gốc**, backend đổi sang tọa độ phần đã cắt (`crop_*`). Áp cho mọi kiểu (nền nhạt hơn thì cả viền ở nền cũng ít hơn). Giao diện và lý do: [09](09_QUYET_DINH_THIET_KE.md) P31.
 
 ### 8.12 Đường cong tông (13/11/2026)
-Tờ hiệu chỉnh tông ([07](07_THU_NGHIEM.md) mục 2b) in bằng Sakura 0,5 trên mặt bóng Ivory, chụp điện thoại, đọc bằng công cụ tạm (tìm 3 ô mốc đen, nắn phối cảnh từ 12 góc ô mốc, bù ánh sáng bằng mặt phẳng khớp với giấy giữa các ô, đọc 60 % giữa ô, độ đậm theo CIE L*: 0 = giấy, 1 = ô mốc). Độ đậm mắt thấy:
+Tờ tông ([07](07_THU_NGHIEM.md) mục 2) in bằng Sakura 0,5 trên mặt bóng Ivory, chụp điện thoại, đọc bằng `tools/tone_read.py` (tìm 3 ô mốc đen, nắn phối cảnh, bù ánh sáng, đọc 60 % giữa ô, độ đậm theo CIE L*: 0 = giấy, 1 = ô mốc). Độ đậm mắt thấy:
 
 | Độ phủ | 10 % | 20 % | 30 % | 40 % | 50 % | 60 % | 70 % | 80 % | 90 % |
 |---|---|---|---|---|---|---|---|---|---|
 | đan chéo | 0,09 | 0,13 | 0,21 | 0,26 | 0,39 | 0,45 | 0,63 | 0,79 | 0,93 |
 | đan 3 hướng | 0,08 | 0,12 | 0,19 | 0,25 | 0,38 | 0,54 | 0,67 | 0,79 | 0,96 |
 | xoắn ốc | 0,09 | 0,17 | 0,27 | 0,38 | 0,56 | 0,71 | 0,81 | 0,82 | 0,93 |
-| sóng biên độ | 0,06 | 0,14 | 0,16 | 0,24 | 0,30 | 0,33 | 0,45 | 0,55 | 0,71 |
+| sóng biến thiên | 0,06 | 0,14 | 0,16 | 0,24 | 0,30 | 0,33 | 0,45 | 0,55 | 0,71 |
 
-Đọc: vùng trung bình trông nhạt hơn độ phủ; xoắn ốc đậm nhanh, chạm trần từ 70 %; sóng biên độ không đậm được (8.9). Mực thật nhiều hơn độ phủ tính ~1,2 lần ở vùng nhạt. Không phải do mặt giấy: số 0,50 của Sakura (12/11) cũng đo trên mặt bóng (chủ dự án xác nhận 13/11), nên không đo lại. Nhiều khả năng "dải sát nhất còn đặc" của tờ hiệu chỉnh bút cho số hơi nhỏ hơn nét thật, cộng mực đọng ở chỗ quay đầu. Đường cong tông đo trọn từ đầu tới cuối nên đã gồm phần này, không cần sửa ô Bút vẽ.
+Đọc: vùng trung bình trông nhạt hơn độ phủ; xoắn ốc đậm nhanh, chạm trần từ 70 %; sóng chỉ 0,71 ở 90 % (mục 8.9). Bảng đo trọn từ đầu tới cuối nên đã gồm cả mực đọng ở chỗ quay đầu, không cần sửa ô Bút vẽ.
 
-**Áp dụng** (`styles.tone_cover`, cho `crosshatch`, `spiral`, `crosshatch_flow`): độ đậm ảnh d → độ đậm mắt thấy mong muốn `d × V(0,9) ÷ 0,9` → tra ngược bảng (đã làm tăng dần) ra độ phủ → trộn 75 % với d (`TONE_CURVE_STRENGTH`). Đổi trường độ đậm trước khi chia mức, nên chuyển mức mềm vẫn giữ. Ví dụ đan chéo, áp đủ: 5 mức 23 / 45 / 68 / 90 % → ~32 / 61 / 74 / 90 %.
-
-Mô phỏng (`tools/ink_sim.py`, thêm cột "sai mắt" = mực → độ đậm mắt thấy theo bảng): đan chéo 0,037 → 0,033; ô đậm đều 0,14 → 0,07 (áp đủ: 0,05 nhưng dải chuyển liền đậm quá 0,047, nên chọn 0,75). Cột "sai số" cũ (so mực với độ đậm) tăng 0,04 → 0,09 là đúng ý: cố ý vẽ nhiều mực hơn ở vùng trung bình.
+**Áp dụng** (`styles.tone_cover`, cho gạch chéo và xoắn ốc): độ đậm ảnh d → độ đậm mắt thấy mong muốn `d × V(0,9) ÷ 0,9` → tra ngược bảng ra độ phủ → trộn 75 % với d (`TONE_CURVE_STRENGTH`). Đổi trường độ đậm trước khi chia mức nên chuyển mức mềm vẫn giữ. Ví dụ gạch chéo, 5 mức 23 / 45 / 68 / 90 % → ~32 / 61 / 74 / 90 %. `ink_sim`: sai mắt 0,037 → 0,033; ô đậm đều 0,14 → 0,07 (áp đủ 0,05 nhưng dải chuyển liền đậm quá, nên chọn 0,75).
 
 ---
 
@@ -400,18 +397,9 @@ Lớp B bỏ phần nằm sát nét mực (Canny cho hai mép của một nét m
 | Vừa (`medium`) | 18 / 50 | 0,16 | 2,5 mm | 1,6 mm | hình 2D, sticker |
 | Nhiều (`high`) | 10 / 30 | 0,11 | 1,5 mm | 1,0 mm | hình vẽ nét nhạt |
 
-**XDoG (13/11/2026, `edges.xdog_edges`)** thay Canny cho lớp ranh giới mảng khi tích "Dùng XDoG" ở kiểu Nét viền, và luôn dùng cho lớp viền phủ lên kiểu tô. Công thức: ảnh xám làm mờ σ và 1,6σ, lấy `mờ(σ) − 0,98 × mờ(1,6σ)`; vùng phẳng ra ~0, phía tối của cạnh ra âm, âm hơn ngưỡng (3 / 2 / 1 mức xám cho Ít / Vừa / Nhiều) là viền. Vì so với vùng xung quanh nên ảnh tối, ngược sáng vẫn ra nét; Canny dùng một ngưỡng cho cả ảnh nên chỗ tối mất nét.
+**XDoG, rồi FDoG (13–14/11/2026, `edges.xdog_edges` / `fdog_response`)** thay Canny cho lớp ranh giới mảng khi tích "Dùng XDoG" ở kiểu Nét viền, và luôn dùng cho lớp viền phủ lên kiểu tô. XDoG: ảnh xám làm mờ σ và 1,6σ, lấy `mờ(σ) − 0,98 × mờ(1,6σ)`; vùng phẳng ra ~0, phía tối của cạnh ra âm, âm hơn ngưỡng (3 / 2 / 1 mức xám cho Ít / Vừa / Nhiều) là viền. Vì so với vùng xung quanh nên ảnh tối, ngược sáng vẫn ra nét (σ 0,7 mm; 0,35 mất viền đầu). **FDoG** lấy hiệu **ngang** nét (dọc gradient) rồi trung bình Gauss **dọc** hướng nét (σ 4 mm, `FDOG_ALONG_MM`; trường hướng từ tensor mịn 1,5 mm): đoạn đứt do nhiễu được nối lại, nét lẻ không cùng hướng nhạt đi (ảnh chân dung A4: 145 → 130 nét, viền mắt khép). Khối đậm dày hơn 2 mm (`XDOG_RIM_MM`, tròng mắt) chỉ lấy **vành**, không thì làm mảnh ra một chấm rồi mất khung mắt. Hạn chế: chỉ nhìn độ sáng nên bỏ sót ranh giới hai màu cùng độ sáng (Canny có thêm kênh màu Lab bắt được); ảnh 2D / Schematic giữ Canny.
 
-**FDoG (14/11/2026, `edges.fdog_response`)**: thay hiệu hai bản mờ tròn của XDoG bằng hiệu lấy **ngang** nét (dọc gradient), rồi trung bình Gauss **dọc** theo hướng nét (σ 4 mm, `FDOG_ALONG_MM`; trường hướng từ tensor cấu trúc mịn 1,5 mm). Nét bị đứt quãng vì nhiễu được nối lại theo hướng, nét lẻ không có hướng chung thì nhạt đi. Ảnh chân dung A4 bút 0,4: XDoG 145 nét → FDoG 130, viền mắt khép, cằm / cổ liền; xử lý 1,2 → 1,9 s. `FDOG_ALONG_MM = 0` = XDoG cũ.
-
-**Làm mượt nét viền (14/11/2026, `trace.smooth`)**: nét dò từ ảnh được lấy mẫu lại mỗi 0,5 điểm ảnh, làm mượt Gauss dọc chiều dài với σ = 0,8 mm (`SMOOTH_MM`); nét hở giữ hai đầu, vòng kín σ ≤ 5 % chu vi (chấm mắt không co). Bỏ nét ngắn hơn 4 mm (`styles.OUTLINE_MIN_LEN_MM`). Trước: trung bình 3 điểm × 2 lượt (~0,3 mm), nét còn run; giữ nét từ 1 mm, nhiều gạch vụn.
-
-| Ảnh (A5, bút 0,5, khử nhiễu) | σ 0,35, ngưỡng 2 | σ 0,7, ngưỡng 2 (chọn) | σ 0,7, ngưỡng 1 | Canny Vừa |
-|---|---|---|---|---|
-| mèo | 72 nét, mất viền đầu | 112, có viền đầu, mắt, mũi | 155, lông vụn | 132, vụn như vết nứt |
-| em bé | 75 | 119, mặt, vai, mắt | 122, thêm miệng | 134 |
-
-Hạn chế: chỉ nhìn độ sáng, nên ranh giới hai màu cùng độ sáng (mũ trắng trên nền sáng) bị bỏ sót; Canny có thêm kênh màu Lab nên bắt được. Ảnh 2D / Schematic giữ Canny.
+**Làm mượt nét viền (`trace.smooth`, 14/11/2026):** lấy mẫu lại mỗi 0,5 điểm ảnh, làm mượt Gauss dọc chiều dài σ = **0,8 mm** (`SMOOTH_MM`); nét hở giữ hai đầu, vòng kín σ ≤ 5 % chu vi (chấm mắt không co). Bỏ nét ngắn hơn 4 mm (`OUTLINE_MIN_LEN_MM`). Trước đó: trung bình 3 điểm × 2 lượt (~0,3 mm), nét còn run.
 
 ### 9.2 Làm mảnh: lấy đường giữa (`skimage.morphology.skeletonize`)
 Bào mòn nét từ hai mép vào, mỗi lượt một lớp điểm ảnh, đến khi chỉ còn **1 điểm ảnh** mà không làm đứt nét. Kết quả là **đường giữa** (skeleton).
@@ -439,9 +427,9 @@ Vì sao không dò đường bao (`findContours`, potrace): dò bao cho **hai đ
 | 1 | Đồ thị | mỗi điểm đường giữa là một nút, nối với điểm lân cận 8 hướng |
 | 2 | Đi nét | bắt đầu từ các đầu mút (sau đó tới các vòng kín). Tại ngã rẽ chọn hướng **thẳng nhất** (tích vô hướng với hướng đang đi lớn nhất). Nhánh còn lại thành nét mới, bắt đầu từ chính điểm rẽ nên không hở |
 | 3 | Khép vòng | hai đầu một nét cách nhau ≤ 2 điểm ảnh thì nối lại (chữ o, số 0, hình tròn không hở) |
-| 4 | Làm mượt | trung bình trọng số (1, 2, 1) ÷ 4 trên ba điểm liền, chạy 2 lượt, giữ hai đầu: bỏ bậc thang của lưới điểm ảnh |
+| 4 | Làm mượt | Gauss dọc chiều dài σ 0,8 mm (xem trên): bỏ bậc thang của lưới điểm ảnh |
 | 5 | Bớt điểm | `cv2.approxPolyDP` (thuật toán Douglas–Peucker, dung sai 0,6 điểm ảnh ≈ 0,18 mm): bỏ điểm thừa trên đoạn gần thẳng |
-| 6 | Đổi sang mm | `(điểm + 0,5) × mm mỗi điểm ảnh`; bỏ nét ngắn hơn max(1 mm, 3 × cỡ bút) |
+| 6 | Đổi sang mm | `(điểm + 0,5) × mm mỗi điểm ảnh`; bỏ nét ngắn hơn max(4 mm, 3 × cỡ bút) |
 
 ---
 
@@ -494,7 +482,7 @@ G1 Z3 F3000              ; nhấc bút, sang nét 2 …
 
 **Gộp cung G2/G3 (`arcs.py`, từ 13/11/2026).** Mỗi nét (đã đổi sang tọa độ máy) đi từ đầu tới cuối, tại mỗi điểm tìm đoạn dài nhất (nhân đôi rồi chia đôi số điểm) mà: (a) mọi điểm nằm sát một đường thẳng và không đi lùi → một G1, hoặc (b) mọi điểm **và trung điểm mọi đoạn** nằm sát đường tròn qua điểm đầu, giữa, cuối, quay một chiều → một G2 (cùng kim đồng hồ) / G3. Lấy cái ôm được nhiều điểm hơn. Hằng số: `ARC_TOL_MM` 0,02 (sai lệch tối đa), `ARC_MIN_POINTS` 4, bán kính `ARC_MIN_R_MM` 0,2 – `ARC_MAX_R_MM` 2000, `ARC_MAX_SWEEP_DEG` 300 (không gần trọn vòng: đầu trùng cuối G2 hiểu là cả vòng), `ARC_MIN_PRECISION` 3 (firmware từ chối cung nếu bán kính đầu / cuối lệch > 0,005 mm; đo được ≤ 1,4 µm). Công tắc `USE_ARCS` ở `gcode.py`.
 
-| Ảnh mẫu A5, bút 0,5 | zigzag | đan chéo | đan 3 | sóng | sóng biên độ | xoắn ốc | theo dáng |
+| Ảnh mẫu A5, bút 0,5 | zigzag | đan chéo | đan 3 | sóng | sóng biến thiên | xoắn ốc | theo dáng |
 |---|---|---|---|---|---|---|---|
 | số dòng, phi hành gia | 12 043 → 10 343 | 13 259 → 11 140 | 13 616 → 10 389 | 26 914 → 25 205 | 18 873 → 18 873 | 10 073 → 7 727 | 8 419 → 7 758 |
 | số dòng, mèo | 8 484 → 6 681 | 7 688 → 6 049 | 7 329 → 5 719 | 16 720 → 15 159 | 12 180 → 12 180 | 6 139 → 4 855 | 3 778 → 3 558 |
@@ -505,28 +493,9 @@ Cung chủ yếu ở chỗ quay đầu nửa vòng tròn và vòng xoắn ốc; 
 
 **Gửi từng dòng có làm chậm bản vẽ thật không?** Mô phỏng (hàng đợi 15 khối, gửi 125 dòng/giây; kiểm lại bằng tờ 7.6: 6,0 / 12,0 / 24,1 / 60,3 s so với thật 6,0 / 11,6 / 23,3 / 60,7 s) trên ảnh mẫu A5 mọi kiểu tô: chậm thêm **~0 %**, kể cả khi bỏ cung. Đoạn ngắn (trung vị 0,4–0,9 mm ở zigzag / đan / sóng) đi từng cụm xen nét dài, hàng đợi nạp lại kịp. Nên không làm gửi dồn ([09](09_QUYET_DINH_THIET_KE.md) D10).
 
-Bảng dưới là số ngày 12/11 (hằng số cũ 0,15 s mỗi lần nhấc, gộp cả phần chậm chưa rõ nguyên nhân); ⏳ so lại thời gian thật / ước tính mới trên các tờ chân dung 13/11.
+Đo 12/11 (hằng số cũ 0,15 s mỗi lần nhấc) cho thời gian thật gấp 1,7–1,9 lần ước tính cũ (quãng ÷ tốc độ); sau khi sửa 13/11: A4 mèo theo dáng thật ÷ ước = 0,87, A4 em bé đan chéo 0,94 ([09](09_QUYET_DINH_THIET_KE.md) P19). Hằng số hiện tại ở mục 19.
 
-| Ảnh mẫu A5, bút 0,45, vẽ 8000 / di chuyển 6000, chờ 0,02 | Cách cũ (quãng ÷ tốc độ) | Có gia tốc | Có gia tốc + nhấc bút |
-|---|---|---|---|
-| zigzag (1031 nét) | 7,0 phút | 10,1 (×1,44) | 12,7 (×1,81) |
-| đan chéo (1279 nét) | 8,9 | 12,6 (×1,41) | 15,8 (×1,78) |
-| xoắn ốc (1725 nét) | 9,3 | 12,2 (×1,31) | 16,5 (×1,77) |
-| sóng biên độ (99 nét) | 3,0 | 10,2 (×3,4) | 10,4 |
-
-Chủ dự án đo thực tế / ước tính cũ = 1,7–1,9 (12/11/2026) → hằng số 0,15 s chọn để khớp ba kiểu đầu. Sóng biên độ chậm hẳn vì sóng dày (bước sóng 2 × nét): máy phải giảm tốc ở mỗi đỉnh sóng, cũng là lý do máy rung ⏳ đo thời gian thật một bức sóng biên độ để kiểm.
-
-**Nối nét gần (`optimize.bridge`, 12/11/2026).** Sau khi sắp xếp, nếu đầu nét sau cách cuối nét trước ≤ `BRIDGE_PEN` × bề rộng nét (4 × 0,5 = 2 mm) và mọi điểm trên đoạn nối có độ đậm ≥ `BRIDGE_MIN_DARK` (0,2; ảnh độ đậm làm mờ 2 × nét) thì nối luôn thay vì nhấc bút (`optimize.bridge`, gọi trong `raster.build_raster`). Không dùng cho Viền và nhiều màu. Đo (ảnh mẫu skimage, A5, bút 0,5, vẽ 8000, chưa cộng 0,15 s / lần nhấc):
-
-| Ảnh / kiểu | Nhấc bút trước → sau | Ước tính trước → sau |
-|---|---|---|
-| chân dung, zigzag | 1047 → 464 | 6,2 → 4,4 phút |
-| chân dung, đan chéo | 1245 → 438 | 7,6 → 5,0 |
-| chân dung, xoắn ốc | 1457 → 261 | 7,7 → 3,9 |
-| mèo, xoắn ốc | 780 → 218 | 4,3 → 2,5 |
-| sóng biên độ | không đổi (khoảng cách giữa các nét đã > 2 mm) | |
-
-Mực vẽ thêm ~3 % (đoạn nối nằm trong vùng đậm, ảnh mô phỏng gần như không khác). Trước khi nối: 55–80 % lần nhấc bút chỉ bay ≤ 2–3 mm.
+**Nối nét gần (`optimize.bridge`, 12/11/2026).** Sau khi sắp xếp, nếu đầu nét sau cách cuối nét trước ≤ `BRIDGE_PEN` × bề rộng nét (4 ×) và mọi điểm trên đoạn nối có độ đậm ≥ `BRIDGE_MIN_DARK` (0,2; ảnh độ đậm làm mờ 2 × nét) thì nối luôn thay vì nhấc bút. Không dùng cho Viền và nhiều màu. Đo (ảnh mẫu A5, bút 0,5): chân dung gạch chéo 1245 → 438 lần nhấc, 7,6 → 5,0 phút; xoắn ốc 1457 → 261, 7,7 → 3,9; sóng không đổi (khoảng cách giữa nét đã > 2 mm). Mực +3 %. Trước khi nối, 55–80 % lần nhấc bút chỉ bay ≤ 2–3 mm.
 
 ---
 
@@ -535,19 +504,19 @@ Mực vẽ thêm ~3 % (đoạn nối nằm trong vùng đậm, ảnh mô phỏng
 **Máy không biết gì về khoảng cách nét.** FluidNC chỉ nhận danh sách tọa độ mm và chạy tới đó. Mọi thứ đã tính xong trong phần mềm:
 
 ```
-Cỡ bút 0,4 mm   × 1,375 (đo thật)          → bề rộng nét w = 0,55 mm
-độ phủ mục tiêu (vd bậc 2 = 45 %)          → s = 0,55 ÷ 0,45 = 1,22 mm
-đường quét thứ i                           → v = vmin + i × 1,22 mm  (tọa độ mm trên bản vẽ)
+ô "Bút vẽ" Sakura (đo trên giấy)        → bề rộng nét w = 0,50 mm
+độ phủ mục tiêu (vd bậc 2 = 45 %)          → s = 0,50 ÷ 0,45 = 1,11 mm
+đường quét thứ i                           → v = vmin + i × 1,11 mm  (tọa độ mm trên bản vẽ)
 điểm ảnh ↔ mm                              → x_mm = cột × (bề rộng ảnh mm ÷ số cột)
 bố trí lên giấy                            → cộng vị trí khung, nhân tỷ lệ
-G-code (G21 = mm)                          → G1 X63.41 Y20.55 F5000
+G-code (G21 = mm)                          → G1 X63.41 Y20.55 F8000
 FluidNC ($100 = 80 bước/mm)                → 1 mm = 80 bước động cơ (độ phân giải 0,0125 mm)
 ```
-Hai đường kề nhau cách nhau 1,22 mm vì **tọa độ trong G-code cách nhau đúng 1,22 mm**.
+Hai đường kề nhau cách nhau 1,11 mm vì **tọa độ trong G-code cách nhau đúng 1,11 mm**.
 
 Vì khoảng cách gắn với mm thật, **kéo khung to/nhỏ hơn 12 %** so với lúc tạo nét thì giao diện tự tạo lại nét (nếu chỉ phóng hình học, nét sẽ thưa ra hoặc dày đặc so với bút).
 
-**Con số dễ sai nhất là w = 0,55 mm**: phụ thuộc bút, giấy, tốc độ vẽ, độ loang. Đổi bút hay giấy thì đo lại (tờ hiệu chỉnh, [07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 1) và sửa số của bút đó trong ô "Bút vẽ" (`index.html` + `spec.PENS`), hoặc chọn Tùy chọn và gõ số đo; mọi khoảng cách tự cập nhật.
+**Con số dễ sai nhất là bề rộng nét w**: phụ thuộc bút, giấy, tốc độ vẽ, độ loang. Đổi bút hay giấy thì đo lại (tờ hiệu chỉnh, [07](07_THU_NGHIEM.md) mục 1) và sửa số của bút đó trong ô "Bút vẽ" (`index.html` + `spec.PENS`), hoặc chọn Tùy chọn và gõ số đo; mọi khoảng cách tự cập nhật.
 
 ---
 
@@ -555,7 +524,7 @@ Vì khoảng cách gắn với mm thật, **kéo khung to/nhỏ hơn 12 %** so v
 
 `tools/ink_sim.py` (chạy: `cd backend` rồi `.venv\Scripts\python.exe ..\tools\ink_sim.py`):
 1. Dựng ảnh thử 80 × 50 mm: một dải chuyển liền trắng → đen và một đốm tròn mềm.
-2. Chạy từng kiểu tô, **vẽ lại các nét** với bề rộng thật 0,55 mm ở 20 điểm/mm (`cv2.polylines`).
+2. Chạy từng kiểu tô, **vẽ lại các nét** với bề rộng thật 0,45 mm (Sakura 0,4 trên Ivory) ở 20 điểm/mm (`cv2.polylines`).
 3. Làm mờ cả ảnh mực và ảnh mục tiêu ~2 mm (`GaussianBlur`), giống mắt nhìn từ xa.
 4. In: **sai số trung bình** (nhỏ = đúng tông), tổng chiều dài nét, số nét, thời gian ước tính. Ghi ảnh mô phỏng vào `export/ink-sim/`.
 
@@ -622,46 +591,60 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 
 ---
 
-## 17. Thư viện và thuật toán có thể thêm để phát triển
+## 17. Còn có thể thêm
 
-Xếp theo mức nặng cho MiniPC. Từ khóa tiếng Anh để tự tra.
+Đã làm (bỏ khỏi danh sách): đường cong tông, làm mượt nét viền, XDoG / FDoG, flow field, gộp cung G2/G3. Việc lớn (tab Beta PDF, chữ tay, IoT, AI tạo ảnh, tự hiệu chỉnh bằng ArUco) ở [10](10_HUONG_PHAT_TRIEN.md). Từ khóa tiếng Anh để tự tra.
 
-### 17.1 Nhẹ (chỉ numpy / scipy, gần như không thêm RAM)
 | Hướng | Thư viện / cách | Được gì | Từ khóa |
 |---|---|---|---|
-| Đường cong tông theo bút thật | `scipy.interpolate` trên số đo thang xám in thật | tông giữa đúng với mắt nhìn (hiện coi độ phủ tỷ lệ thẳng với độ đậm) | `tone reproduction curve`, `halftone calibration` |
-| Làm mượt nét viền tốt hơn | `scipy.signal.savgol_filter`, `splprep`, Chaikin | cong trơn hơn trung bình 3 điểm | `Savitzky-Golay polyline smoothing` |
 | Tỉa râu theo đồ thị | `skan` | phân tích nhánh chính xác hơn | `skan skeleton branch` |
 | Đo bề dày nét chữ | `skimage.morphology.medial_axis` | tự phát hiện chữ đậm → vẽ 2 đường | `medial axis stroke width` |
 | Tách chữ khỏi nền giấy quét | `skimage.filters.threshold_sauvola` | ngưỡng thích nghi từng vùng | `Sauvola binarization` |
 | Xóa đoạn vẽ chồng | plugin `deduplicate` của vpype | bớt nét trùng | `vpype deduplicate` |
-| Gộp đoạn thẳng thành cung tròn | ArcWelder (G2/G3) | ✅ đã làm 13/11/2026 (`arcs.py`, mục 12); G2 chạy đúng trên máy thật (tờ 7.6) | `ArcWelder arc fitting` |
-
-### 17.2 Vừa
-| Hướng | Thư viện / cách | Được gì | Từ khóa |
-|---|---|---|---|
-| Tab Beta in trang PDF | `pypdfium2` (giấy phép thoáng) hoặc PyMuPDF | trang PDF → ảnh 600 dpi → skeleton; chữ 14 pt đi được | `pypdfium2 render page` |
-| Đọc cấu trúc PDF | PyMuPDF `get_text("rawdict")`, `get_drawings()` | đường kẻ bảng vẽ thẳng bằng vector, chữ đi skeleton, ảnh đi kiểu tô | `PyMuPDF get_drawings` |
-| Viền kiểu nét vẽ tay | XDoG / FDoG (tự viết bằng OpenCV) | nét mềm hơn Canny | `XDoG extended difference of gaussians` |
-| Phân vùng siêu điểm ảnh | `skimage.segmentation.slic`, `felzenszwalb` | mảng màu sạch hơn mean shift | `SLIC superpixels` |
-| Tô theo hướng khối | flow field, đường đồng mức | nét uốn theo hình (khác hẳn zigzag) | `flow field hatching`, `contour hatching` |
-| Tự hiệu chỉnh bằng ảnh chụp | `cv2.aruco` + `cv2.findHomography` | chụp tờ mẫu bằng điện thoại → tự đo bề rộng nét, độ phủ từng dải → tự sửa `LINE_WIDTH_RATIO` | `OpenCV ArUco homography` |
-| Đo chất lượng | SSIM (`skimage.metrics.structural_similarity`), OCR `pytesseract` (gói `vie`) | số liệu "giống bản gốc bao nhiêu %" cho báo cáo | `SSIM`, `character error rate` |
-
-### 17.3 Nặng (laptop, hoặc chỉ chạy khi máy vẽ rảnh)
-| Hướng | Mô hình | Ghi chú |
-|---|---|---|
-| AI tìm viền nhẹ | TEED (~58 nghìn tham số), PiDiNet, HED qua `cv2.dnn` / onnxruntime | viền ảnh chụp sạch hơn Canny |
-| AI ảnh chụp → tranh nét | Informative Drawings (ONNX ~8,6 MB, MIT) | ⚠ đo tốc độ trên i5-3210M trước |
-| AI hoạt hình → nét | Anime2Sketch | chỉ có PyTorch ~218 MB, phải tự chuyển ONNX |
-| Đường giữa từ vector | Inkscape đổi chữ thành đường → `centerline` (Voronoi, Shapely) | chính xác, không phụ thuộc độ phân giải |
+| Phân vùng siêu điểm ảnh | `skimage.segmentation.slic` | mảng màu sạch hơn mean shift | `SLIC superpixels` |
+| Đo chất lượng | SSIM, OCR `pytesseract` (gói `vie`) | số liệu "giống bản gốc bao nhiêu %" cho báo cáo | `SSIM`, `character error rate` |
+| **Nặng** (laptop, hoặc khi máy vẽ rảnh): AI tìm viền, ảnh → tranh nét | TEED, PiDiNet, HED qua `cv2.dnn` / onnxruntime; Informative Drawings (ONNX ~8,6 MB, MIT); Anime2Sketch (chỉ có PyTorch ~218 MB) | viền ảnh chụp sạch hơn Canny | ⚠ đo tốc độ trên i5-3210M trước |
 
 ---
 
 ## 18. Giới hạn đã biết
 
-- **Ảnh chụp màu** ở kiểu Viền ra **bản phác** nhận ra được hình, nét hơi đứt, không phải tranh tô màu sạch. Muốn sạch hơn cần AI tìm viền (17.3).
-- **Chữ nhỏ** (14 pt, cao ~2 mm) đi qua đường ảnh này bị nát (mỗi điểm ảnh ~0,3 mm). Chữ phải đi dây chuyền riêng (tab Beta PDF, 17.2).
+- **Ảnh chụp màu** ở kiểu Viền ra **bản phác** nhận ra được hình, nét hơi đứt, không phải tranh tô màu sạch. Muốn sạch hơn cần AI tìm viền (mục 17).
+- **Chữ nhỏ** (14 pt, cao ~2 mm) đi qua đường ảnh này bị nát (mỗi điểm ảnh ~0,3 mm). Chữ phải đi dây chuyền riêng (tab Beta PDF, [10](10_HUONG_PHAT_TRIEN.md) mục 1.1).
 - **Mạch in đơn giản** (vết, pad, chân linh kiện, nét ≥ 1,5 mm) đi được bằng preset Schematic.
-- Độ phủ được coi là **tỷ lệ thẳng** với độ đậm cảm nhận. Mắt người không tuyến tính, nên tông giữa có thể lệch. Thang xám in thật sẽ cho biết cần uốn đường cong tông ra sao.
-- Bề rộng nét 0,55 mm đo ở tốc độ vẽ cũ (3000 mm/min). Cần đo lại ở 5000.
+- **Ảnh nhỏ** (vài trăm điểm ảnh) ra nét thô khi in lớn: mỗi điểm ảnh rộng hơn nét bút (ảnh 484 px trên A4: ~0,6 mm). Dùng ảnh gốc hoặc Cắt ảnh sát chủ thể.
+- Đường cong tông mới đo cho **một bút + một mặt giấy** (Sakura 0,5, mặt bóng); Theo dáng ảnh và UB-155 chưa có bảng riêng.
+- **Chữ U** ở mảng sáng hẹp (tóc giáp mặt) còn lại ở kiểu gạch: đã thử bỏ không được mà không làm xấu chỗ khác ([09](09_QUYET_DINH_THIET_KE.md) P28).
+- Bề rộng nét phụ thuộc bút, giấy, tốc độ: đổi một trong ba thì đo lại.
+
+---
+
+## 19. Bảng hằng đã chốt (lấy từ mã, 17/11/2026)
+
+Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đổi một dòng là đổi hành vi; thử trước bằng `tools/ink_sim.py` và `tools/style_preview.py`, nêu số trước / sau ([07](07_THU_NGHIEM.md) mục 3 nói khi nào đổi cái nào).
+
+| Nhóm | Hằng (tệp) | Giá trị |
+|---|---|---|
+| Bút, độ phủ | `LINE_WIDTH_RATIO`, `DEFAULT_SPACING_PEN`, `MAX_COVERAGE` (`styles.py`) | 1,0 · 2,0 · 0,9 |
+| Đường cong tông | `USE_TONE_CURVE`, `TONE_CURVE_STRENGTH` | bật · 0,75 |
+| Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM`; `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
+| Gạch chéo | `CROSS_START`, `CROSS_SLOPE`, `CROSS_ANGLE` | 0,45 · 0,5 · 90° |
+| Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 1,5 mm · 0,2 |
+| Sóng biến thiên | `AM_SPACING_LINES`, `AM_AMPLITUDE`, `AM_WAVE_LINES`, `AM_DITHER`, `AM_WHITE`, `AM_FILL`, `AM_MIN_RUN` | 4,0 · 0,45 · 2,0 · 0,35 · 1,6 (độ phủ 0,10) · tắt (bật ở Chân dung) · 3,0 |
+| Sóng: lớp đậm | `AM_DARK_LAYER`, `AM_EFF_KNEE`, `AM_EFF_SLOPE` | bật · 0,45 · 0,78 |
+| Xoắn ốc | `BRIDGE_MM`, `SPIRAL_BRIDGE_PITCHES`, `SPIRAL_MIN_PITCHES` (`hatch.py`) | 3,0 mm · 6,0 · 4,0 |
+| Theo dáng ảnh | `FLOW_STEP_MM`, `FLOW_GRAD_SIGMA_MM`, `FLOW_TENSOR_SIGMA_MM`, `FLOW_COHERENCE_FULL`, `FLOW_MIN_RADIUS_MM` (`flow.py`) | 0,3 · 1,0 · 4,0 · 0,35 · 1,5 |
+| | `FLOW_MIN/MAX_SEP_LINES`, `FLOW_MAX_COVER`, `FLOW_WHITE`, `FLOW_TEST_RATIO`, `FLOW_SEED_RATIO` | 1,1 / **4,5** · **0,85** · **0,08** · 0,7 · 0,95 (17/11: sáng dày hơn, tối thưa hơn; chờ ảnh thật) |
+| | `FLOW_MIN_LEN_SEPS`, `FLOW_MAX_LEN_MM`, `FLOW_SEED_EVERY`, `FLOW_GRID_SEED_MM` | 3,0 · 250 · 3 · 2,0 |
+| Nét viền: nét mực, khe | `INK_MAX_MM`, `LIGHT_MAX_MM`, `GAP_MM`, `GAP_ANGLE`, `SPUR_MM` (`edges.py`) | 4,0 · 1,2 · 1,5 · 55° · 2,4 / 1,6 / 1,0 |
+| Nét viền: XDoG / FDoG | `XDOG_SIGMA_MM`, `XDOG_K`, `XDOG_TAU`, `XDOG_THRESHOLD`, `XDOG_RIM_MM` | 0,7 · 1,6 · 0,98 · 3 / 2 / 1 · 2,0 |
+| | `FDOG_ALONG_MM`, `FDOG_TENSOR_MM`, `FDOG_GRAD_MM` | 4,0 · 1,5 · 0,5 (`FDOG_ALONG_MM = 0` = XDoG) |
+| Dò nét liền | `SMOOTH_MM`, `SIMPLIFY_PX`, `CLOSE_PX`, `CLOSED_SIGMA_FRAC` (`trace.py`); `OUTLINE_MIN_LEN_MM` (`styles.py`) | 0,8 mm · 0,6 · 2,0 · 0,05 · 4,0 mm |
+| Đọc ảnh | `OVERSAMPLE`, `UPSCALE_TO_PX`, `DRAFT_FACTOR`, `MAX_PIXELS` (`raster_in.py`) | 1,3 · 720 · 0,5 · 60 triệu |
+| Vùng chủ thể | `SUBJECT_FEATHER` (`tone.py`); `subject_outside` (`spec.py`) | 0,08 · 0,5 |
+| Tối ưu nét | `BRIDGE_PEN`, `BRIDGE_MIN_DARK`, `TWO_OPT_MAX_STROKES` (`optimize.py`) | 4,0 × · 0,2 · 15 000 |
+| Cung G2/G3 | `ARC_TOL_MM`, `ARC_MIN_POINTS`, `ARC_MIN_R_MM`, `ARC_MAX_R_MM`, `ARC_MAX_SWEEP_DEG`, `USE_ARCS` (`arcs.py`, `gcode.py`) | 0,02 mm · 4 · 0,2 · 2000 · 300° · bật |
+| Ước tính thời gian | `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | 0,05 · 0,025 s · 0,025 s · 125 |
+| G-code mặc định (`spec.py`) | vẽ / di chuyển / bút / chờ nâng / chờ hạ | 8000 / 8000 / 3000 / 0 / 0 |
+| Tiền xử lý mặc định | gamma, tương phản, đen, trắng, tự cân sáng, CLAHE, khử nhiễu | 1 · 1 · 0 · 255 · bật · tắt · tắt |
+| Bút (`spec.PENS`) | UB-155, UM-100, Sakura (nét đo trên giấy) | 0,38 · 0,40 · 0,50 mm |
