@@ -8,7 +8,7 @@ export const MACHINE = {
     travelZ: 5,          // mm, hành trình Z trong YAML (tab Tạo bản vẽ dùng để kiểm Z bút)
     penUpZ: 5,           // Z bút lên khi ĐIỀU KHIỂN (nút Bút lên, Home, hủy, jog): cao cho chắc; hành trình Z thật là 5
     gcodeUpZ: 3,         // Z nhấc mặc định khi SINH G-code (ô Z trong tab Tạo bản vẽ): thấp cho nhanh (3 / 2 / 1,5)
-    penMidZ: 1.5,        // nấc giữa: bút lơ lửng sát giấy
+    penMidZ: 3,          // nấc giữa: bút lơ lửng sát giấy (= Z nhấc của G-code; chốt 17/11/2026, trước đó 1,5)
     penDownZ: 0,         // Z0 = bút xuống
     penFeed: 3000,       // mm/phút
     jogMaxStep: 50,      // mm, bước jog lớn nhất được hiện trong ô chọn
@@ -17,7 +17,7 @@ export const MACHINE = {
     // junction 0,05. Đo 13/11/2026 (tờ nhấc bút + tờ 7.6): mỗi lần nâng bút thêm ~0,025 s, mỗi G4 thêm ~0,025 s (xả hàng
     // đợi), máy nhận tối đa ~125 dòng/giây (gửi một dòng chờ `ok`). Số cũ liftOverheadS 0,15 gộp cả phần chậm do dòng/giây.
     accel: 3000,         // mm/s²
-    junction: 0.05,      // mm
+    junction: 0.03,      // mm (chốt 17/11/2026, trước đó 0,05)
     liftOverheadS: 0.025, // s
     dwellFlushS: 0.025,  // s
     linesPerS: 125       // dòng/giây
@@ -27,7 +27,8 @@ export const MACHINE = {
 export const PREFS = {
     pollMs: 500,         // nhịp cập nhật terminal (/api/log)
     confirmHome: true,   // hỏi lại trước $H / $HX / $HY
-    shortcuts: false     // jog bằng phím mũi tên (mặc định tắt để tránh bấm nhầm)
+    shortcuts: false,    // jog bằng phím mũi tên (mặc định tắt để tránh bấm nhầm)
+    notify: true         // âm báo + tiêu đề tab nhấp nháy khi vẽ xong / lỗi
 };
 
 export const POLL = {

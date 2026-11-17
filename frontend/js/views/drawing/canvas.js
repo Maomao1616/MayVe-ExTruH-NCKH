@@ -9,10 +9,8 @@ const CURSORS = { nw: "nwse-resize", se: "nwse-resize", ne: "nesw-resize", sw: "
 const HANDLE_PX = 7;          // bán kính vùng bắt tay nắm (px màn hình)
 const SNAP_PX = 6;            // hít vào lề/tâm khi cách dưới ngần này px
 const MIN_BOX_MM = 5;
-// "" = mực mặc định của giao diện. Bảng màu theo nền: sáng cho giao diện tối, đậm cho giao diện sáng.
-const LAYER_COLORS_DARK = ["", "#ff9f5a", "#7ad66b", "#e0c24a", "#c58bff"];
-const LAYER_COLORS_LIGHT = ["", "#d9480f", "#2b8a3e", "#a67c00", "#7048e8"];
-const isLightTheme = () => document.documentElement.dataset.theme === "light";
+// "" = mực mặc định (--paper-ink). Từ 17/11/2026 tờ giấy luôn sáng (ngà / trắng) ở cả hai giao diện nên chỉ cần bảng màu đậm.
+const LAYER_COLORS = ["", "#d9480f", "#2b8a3e", "#a67c00", "#7048e8"];
 const REFERENCE = [["a6", "A6"], ["a5", "A5"], ["a4", "A4"]];             // khung vẽ sẵn trên bàn máy
 
 const token = (name, fallback) =>
@@ -34,11 +32,10 @@ function layerColor(layer, index, fallback) {
     if (hex) {
         const n = parseInt(hex[1], 16);
         const lum = (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
-        const visible = isLightTheme() ? lum < 0.8 : lum > 0.35 && lum < 0.95;   // màu chìm vào nền: dùng màu mặc định
+        const visible = lum < 0.8;   // màu chìm vào nền: dùng màu mặc định
         if (visible) return layer.color;
     }
-    const palette = isLightTheme() ? LAYER_COLORS_LIGHT : LAYER_COLORS_DARK;
-    return palette[index % palette.length] || fallback;
+    return LAYER_COLORS[index % LAYER_COLORS.length] || fallback;
 }
 
 // Co giãn một khung theo tay nắm. Trả null nếu kết quả ra ngoài phần trong lề (giữ khung cũ).
@@ -127,7 +124,7 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         if (!canvas.width) return;
         const bg = token("--bg-main", "#0e0e0e");
         const grid = token("--border", "#2a2a2a");
-        const accent = token("--accent-text", "#3cc8d4");
+        const accent = scene?.paper ? token("--paper-guide", "#8a6d00") : token("--accent-text", "#ffd400");   // trên giấy ngà dùng vàng đậm
         const muted = token("--text-muted", "#999");
         const danger = token("--danger", "#e5484d");
         const { W, H } = world();

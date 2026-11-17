@@ -19,6 +19,7 @@ import * as params from "./drawing/params.js";
 import { presetValues } from "./drawing/presets.js";
 import { forget as forgetImage, imageSize, prepareForUpload } from "../lib/imageprep.js";
 import * as crop from "./drawing/crop.js";
+import * as subject from "./drawing/subject.js";
 import { initCustomer } from "./customer.js";
 import { initTonePreview, refresh as refreshTone, setFile as showOriginal } from "./drawing/tonepreview.js";
 
@@ -60,13 +61,15 @@ export function initDrawing() {
     params.initParams(onParamChange);
     initTonePreview({ stageEl: $("original-image-holder") ?? $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings });
     // Cắt ảnh: áp dụng = nạp lại như tệp mới (tỷ lệ ảnh đổi nên khung vừa lại phần trong lề).
+    const regenerate = () => {
+        if (S.file && S.taskId) startImport("final", { fresh: true });        // đã tạo nét: tạo lại với vùng cắt / chủ thể mới
+        else if (S.file) guestFrame();                                         // chưa: chỉ nhớ vùng (khách: cập nhật khung)
+    };
     crop.initCrop({
-        apply: () => {
-            if (S.file && S.taskId) startImport("final", { fresh: true });        // đã tạo nét: tạo lại với vùng cắt mới
-            else if (S.file) guestFrame();                                         // chưa: chỉ nhớ vùng cắt (khách: cập nhật khung)
-        },
+        apply: regenerate,
         ratio: () => { const b = params.innerBox(); return b.w > 0 && b.h > 0 ? b.w / b.h : null; }
     });
+    subject.initSubject({ apply: regenerate });
     initFile();
     initButtons();
     initCustomer({
@@ -145,6 +148,7 @@ function acceptFile(file) {      // trả Promise xong khi đã biết cỡ ản
     $("drawing-file-name").textContent = `${file.name} · ${file.size < 1024 * 1024 ? (file.size / 1024).toFixed(1) + " KB" : (file.size / 1048576).toFixed(1) + " MB"}`;
     showOriginal(file);
     crop.setImage(null);
+    subject.setImage(false);
     window.dispatchEvent(new CustomEvent("extruxy:draw-file", { detail: { file } }));
     if (ext === ".svg") { startImport("final", { fresh: true }); return Promise.resolve(); }
     clearTrace();                                            // ảnh: chỉ hiện ảnh, chờ người dùng bấm "Tạo nét"
@@ -152,6 +156,7 @@ function acceptFile(file) {      // trả Promise xong khi đã biết cỡ ản
     return imageSize(file).then((size) => {
         if (S.file !== file) return;
         crop.setImage(size);
+        subject.setImage(Boolean(size));
         guestFrame();
     });
 }
@@ -223,7 +228,7 @@ async function startImport(quality, { fresh = false, box = null } = {}) {
             if (seq !== S.importSeq) return;
         }
         const options = params.importOptions(quality, frameBox);
-        if (!isSvg) Object.assign(options.raster, crop.payload());
+        if (!isSvg) Object.assign(options.raster, crop.payload(), subject.payload());
         job = await api.drawImport(upload, options);
     } catch (error) {
         return failImport(seq, error);
@@ -684,7 +689,8 @@ function renderInfo() {
     const files = S.result?.files ?? [];
     const sum = (pick) => files.reduce((n, f) => n + (pick(f.stats) ?? 0), 0);
     if (S.result) {
-        set("drawing-gcode-status", `${sum((s) => s.lines)} ${t("control.gcode.lines")}`);
+        const arcs = sum((s) => s.arcs);               // số cung G2/G3 trong G-code (0 = toàn G1)
+        set("drawing-gcode-status", `${sum((s) => s.lines)} ${t("control.gcode.lines")}${arcs ? ` · ${arcs} ${t("drawing.info.arcs")}` : ""}`);
         const b = files.reduce((acc, f) => ({
             x0: Math.min(acc.x0, f.stats.bounds.x0), y0: Math.min(acc.y0, f.stats.bounds.y0),
             x1: Math.max(acc.x1, f.stats.bounds.x1), y1: Math.max(acc.y1, f.stats.bounds.y1)

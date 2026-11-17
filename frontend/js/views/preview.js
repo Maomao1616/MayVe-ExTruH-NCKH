@@ -164,7 +164,9 @@ export function initPreview() {
         const c = {
             border: color(css, "--border", "#2a3038"),
             muted: color(css, "--text-muted", "#7a8494"),
-            path: color(css, "--path-color", color(css, "--accent-text", "#00b6bd")),
+            path: color(css, "--path-color", "#15181d"),
+            paper: color(css, "--preview-paper", "#ece8dc"),
+            paperText: color(css, "--preview-paper-text", "#6b7280"),
             live: color(css, "--live-color", color(css, "--success", "#00b27a")),
             head: color(css, "--head-color", color(css, "--warning", "#e0b013"))
         };
@@ -173,7 +175,7 @@ export function initPreview() {
         const replay = Boolean(file) && (clock > 0 || playing);
         const baseKey = [canvas.width, canvas.height, dpr, view.zoom, view.panX, view.panY, travelX, travelY,
             VIEW.flipX, VIEW.flipY, fileSerial, wco.join(), el.grid?.checked, el.travel?.checked, replay,
-            c.border, c.muted, c.path].join("|");
+            c.border, c.muted, c.path, c.paper].join("|");
         const base = layers.base;
         syncLayer(base);
         if (base.key !== baseKey) {
@@ -214,7 +216,7 @@ export function initPreview() {
         const [bx, by] = T.toScreen(travelX, travelY);
         const rx = Math.min(ax, bx), ry = Math.min(ay, by);
         const rw = Math.abs(bx - ax), rh = Math.abs(by - ay);
-        cx.fillStyle = "rgba(255,255,255,0.03)";
+        cx.fillStyle = c.paper;                       // tờ giấy: nét đen trên giấy ngà
         cx.fillRect(rx, ry, rw, rh);
 
         if (el.grid?.checked) drawGrid(cx, T, c);
@@ -224,7 +226,7 @@ export function initPreview() {
         cx.lineWidth = 1;
         cx.strokeRect(rx, ry, rw, rh);
         cx.setLineDash([]);
-        cx.fillStyle = c.muted;
+        cx.fillStyle = c.paperText;
         cx.font = "11px sans-serif";
         cx.fillText("O (0, 0)", ax + (ax <= bx ? 6 : -50), ay + (ay <= by ? 14 : -6));
         cx.fillText(`${travelX} × ${travelY} mm`, bx + (bx >= ax ? -86 : 6), by + (by >= ay ? -6 : 14));

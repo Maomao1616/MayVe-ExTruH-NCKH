@@ -1101,8 +1101,11 @@ label select {
 
 .preview-canvas-container {
     /* mau ma preview.js doc de ve */
-    --path-color: var(--accent-text);
-    --live-color: var(--success);
+    /* Vùng làm việc là tờ giấy ngà, nét đen như bản in: dày nét thì tối đi, nhìn ra khối (từ 17/11/2026) */
+    --path-color: #15181d;
+    --preview-paper: #ece8dc;
+    --preview-paper-text: #6b7280;
+    --live-color: #0a8f5c;      /* xanh lá đậm: --success quá nhạt trên giấy ngà */
     --head-color: var(--warning);
 
     position: relative;
@@ -1124,6 +1127,11 @@ label select {
     aspect-ratio: var(--canvas-aspect);
     border: 1px dashed var(--text-muted);
     background: rgb(255 255 255 / 3%);
+}
+
+[data-theme="light"] .preview-canvas-container {
+    --preview-paper: #ffffff;
+    --live-color: var(--success);
 }
 
 .preview-canvas-container.is-canvas .work-area-frame {

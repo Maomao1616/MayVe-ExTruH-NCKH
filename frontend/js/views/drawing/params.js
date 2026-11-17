@@ -353,6 +353,31 @@ function restoreForm() {
     }
 }
 
+/* ---------- mặc định của nhóm Tối ưu nét ---------- */
+
+// Mặc định = giá trị trong schema backend (spec.OPTIMIZE); chưa có schema thì giá trị ghi sẵn trong index.html.
+function optimizeDefault(id, key, type) {
+    const el = $(id);
+    const row = schema?.params?.optimize?.find((p) => p.name === key);
+    if (type === "bool") return row ? Boolean(row.default) : el.defaultChecked;
+    return row && row.default !== null && row.default !== undefined ? String(row.default) : el.defaultValue;
+}
+
+function setOptimizeField(id, key, type) {
+    const el = $(id);
+    if (!el) return;
+    const value = optimizeDefault(id, key, type);
+    if (type === "bool") el.checked = value;
+    else el.value = value;
+}
+
+// Nút "Về mặc định": đặt lại cả nhóm Tối ưu nét (gộp nét, đơn giản hóa, bỏ nét ngắn, 2-opt, ...).
+export function resetOptimize(onChange) {
+    for (const [id, g, key, type] of FIELDS) if (g === "optimize") setOptimizeField(id, key, type);
+    saveForm();
+    onChange("import", "optimize-reset");
+}
+
 // `onChange(kind, id)` kind: "layout" (chỉ bố trí lại) | "import" (phải vector hóa lại) | "gcode" (chỉ tạo lại G-code)
 export function initParams(onChange) {
     restoreForm();
@@ -374,6 +399,17 @@ export function initParams(onChange) {
     for (const id of ["drawing-paper", "drawing-paper-width", "drawing-paper-height"]) {
         watch(id, "layout", id === "drawing-paper" ? "change" : "input");
     }
+    // Ô Tối ưu nét bị xóa trống hoặc chứa chữ: rời ô thì trả về mặc định (không để trống mà không biết đang dùng gì)
+    for (const [id, g, key, type] of FIELDS) {
+        if (g !== "optimize" || type === "bool") continue;
+        $(id)?.addEventListener("change", () => {
+            if (read(id, type) !== undefined) return;
+            setOptimizeField(id, key, type);
+            saveForm();
+            onChange("import", id);
+        });
+    }
+    $("optimize-reset-btn")?.addEventListener("click", () => resetOptimize(onChange));
     for (const id of ["draw-pen-width", "draw-pen-width-custom"]) watch(id, "import", id === "draw-pen-width" ? "change" : "input");
     $("drawing-lock-ratio")?.addEventListener("change", () => { syncVisibility(); saveForm(); });
 }

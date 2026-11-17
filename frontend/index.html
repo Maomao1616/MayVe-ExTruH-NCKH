@@ -338,7 +338,7 @@
                     <span aria-hidden="true">▲</span><small data-i18n="control.pen.up">Lên</small><span class="pen-z" id="pen-up-z">Z5</span>
                   </button>
                   <button data-pen="mid" disabled="" id="pen-mid-btn" type="button" aria-pressed="false">
-                    <span aria-hidden="true">●</span><small data-i18n="control.pen.mid">Giữa</small><span class="pen-z" id="pen-mid-z">Z1.5</span>
+                    <span aria-hidden="true">●</span><small data-i18n="control.pen.mid">Giữa</small><span class="pen-z" id="pen-mid-z">Z3</span>
                   </button>
                   <button data-pen="down" disabled="" id="pen-down-btn" type="button" aria-pressed="false">
                     <span aria-hidden="true">▼</span><small data-i18n="control.pen.down">Xuống</small><span class="pen-z" id="pen-down-z">Z0</span>
@@ -1001,6 +1001,7 @@
                     <span data-i18n="drawing.vectorize.twoOpt">Sắp xếp kỹ (2-opt, chậm hơn, ít nhấc bút hơn)</span>
                   </label>
                 </div>
+                <button class="secondary-button" data-i18n="[title]drawing.vectorize.resetHelp; drawing.vectorize.reset" id="optimize-reset-btn" title="Đặt lại cả nhóm Tối ưu nét về giá trị chuẩn" type="button">Về mặc định</button>
               </div>
             </details>
 
@@ -1090,6 +1091,15 @@
                 <div class="crop-toolbar">
                   <button class="secondary-button" data-i18n="drawing.crop.edit; [title]drawing.crop.editTitle" disabled="" id="crop-edit-btn" title="Chọn phần ảnh muốn vẽ" type="button">✂ Cắt ảnh</button>
                   <span class="muted-text" data-i18n="drawing.crop.none" id="crop-info">Dùng toàn bộ ảnh</span>
+                  <label class="subject-pick" data-i18n="[title]drawing.subject.help" for="subject-shape" title="Khoanh chủ thể: ngoài vùng bản vẽ nhạt đi">
+                    <span data-i18n="drawing.subject.label">Chủ thể</span>
+                    <select disabled="" id="subject-shape">
+                      <option data-i18n="drawing.subject.none" selected="" value="none">Không</option>
+                      <option data-i18n="drawing.subject.ellipse" value="ellipse">Elip</option>
+                      <option data-i18n="drawing.subject.rect" value="rect">Chữ nhật</option>
+                    </select>
+                  </label>
+                  <button class="secondary-button" data-i18n="drawing.subject.edit" disabled="" id="subject-edit-btn" type="button">Sửa vùng</button>
                 </div>
                 <div class="drawing-image-stage drawing-original" id="original-image-stage">
                   <div class="crop-wrap">
@@ -1102,6 +1112,11 @@
                         <span class="crop-handle" data-handle="ne"></span><span class="crop-handle" data-handle="e"></span>
                         <span class="crop-handle" data-handle="se"></span><span class="crop-handle" data-handle="s"></span>
                         <span class="crop-handle" data-handle="sw"></span><span class="crop-handle" data-handle="w"></span>
+                      </div>
+                    </div>
+                    <div class="crop-overlay subject-overlay" hidden="" id="subject-overlay">
+                      <div class="crop-rect subject-rect" id="subject-rect">
+                        <span class="crop-handle" data-handle="nw"></span><span class="crop-handle" data-handle="n"></span><span class="crop-handle" data-handle="ne"></span><span class="crop-handle" data-handle="e"></span><span class="crop-handle" data-handle="se"></span><span class="crop-handle" data-handle="s"></span><span class="crop-handle" data-handle="sw"></span><span class="crop-handle" data-handle="w"></span>
                       </div>
                     </div>
                   </div>
@@ -1124,6 +1139,19 @@
                     <button class="primary-button" data-i18n="drawing.crop.apply" id="crop-apply-btn" type="button">Áp dụng cắt</button>
                   </div>
                   <p class="help-text" data-i18n="drawing.crop.help">Kéo trong ảnh để chọn vùng mới, kéo khung để dời, kéo góc hoặc cạnh để co giãn. Áp dụng sẽ tạo lại nét theo phần đã cắt.</p>
+                </div>
+                <div class="crop-panel subject-panel" hidden="" id="subject-panel">
+                  <label for="subject-outside">
+                    <span data-i18n="drawing.subject.outside">Nền ngoài vùng còn</span>
+                    <input id="subject-outside" max="100" min="0" step="5" type="range" value="50"/>
+                    <strong id="subject-outside-value">50 %</strong>
+                  </label>
+                  <div class="crop-actions">
+                    <button data-i18n="drawing.subject.reset" id="subject-reset-btn" type="button">Xóa vùng</button>
+                    <button data-i18n="drawing.crop.cancel" id="subject-cancel-btn" type="button">Hủy</button>
+                    <button class="primary-button" data-i18n="drawing.subject.apply" id="subject-apply-btn" type="button">Áp dụng vùng</button>
+                  </div>
+                  <p class="help-text" data-i18n="drawing.subject.panelHelp">Kéo trong ảnh để khoanh chủ thể, kéo khung để dời, kéo góc hoặc cạnh để co giãn. Ngoài vùng, bản vẽ nhạt đi theo thanh trên (0 % = trắng hẳn); nền vẫn được vẽ.</p>
                 </div>
                 <div aria-live="polite" class="drawing-progress" id="drawing-progress">
                   <progress id="drawing-progress-bar" max="1" value="0"></progress>
@@ -1331,6 +1359,16 @@
                 <select id="shortcuts-enabled">
                   <option data-i18n="common.status.off" selected="" value="off">Tắt</option>
                   <option data-i18n="common.status.on" value="on">Bật</option>
+                </select>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong data-i18n="settings.behavior.notify">Âm báo khi vẽ xong / lỗi</strong>
+                  <p data-i18n="settings.behavior.notifyDesc">Kêu ba nốt khi xong, hai nốt trầm khi lỗi; tab đang ẩn thì tiêu đề nhấp nháy. Không cần Internet.</p>
+                </div>
+                <select id="notify-enabled">
+                  <option data-i18n="common.status.on" selected="" value="on">Bật</option>
+                  <option data-i18n="common.status.off" value="off">Tắt</option>
                 </select>
               </div>
             </article>

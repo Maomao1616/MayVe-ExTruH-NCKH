@@ -12,6 +12,7 @@ import { isAdmin } from "../core/auth.js";
 import { MACHINE, PREFS } from "../core/config.js";
 import { subscribe, isConnected, isStale, firmwareLabel } from "../core/state.js";
 import { parseGcode, outOfRange, formatDuration, jobClientInfo } from "../lib/gcode.js";
+import { notifyJob } from "../lib/notify.js";
 import { store, setFile, requestPreview, subscribeStore } from "../stores/jobstore.js";
 import { refreshDrafts } from "../stores/draftstore.js";
 import { initPreview } from "./preview.js";
@@ -315,11 +316,11 @@ function initMotionControls() {
         sendCommand(`$J=G90 G21 X0 Y0 F${settings.feed}`);
     });
 
-    // Thanh bút 3 nấc: jog tuyệt đối tới Z của nấc (đã khớp WebUI FluidNC trên máy thật).
+    // Thanh bút 3 nấc: G0 tuyệt đối tới Z của nấc (từ 17/11/2026, thay `$J=`: thử xem servo có còn tụt không, 07 B2).
     penButtons.forEach((button) => {
         button.addEventListener("click", () => {
             const z = MACHINE[PEN_LEVELS[button.dataset.pen]];
-            sendCommand(`$J=G90 G21 Z${trim(z)} F${trim(MACHINE.penFeed)}`);
+            sendCommand(`G90 G0 Z${trim(z)}`);
         });
     });
 
@@ -793,10 +794,14 @@ function initGcodePanel() {
         if (!job) { lastJob = { id: null, state: null }; return; }
         if (job.id === lastJob.id && job.state === lastJob.state) return;
         const first = job.id !== lastJob.id;
+        const wasRunning = !first && lastJob.state === "running";     // chỉ báo khi tận mắt thấy tác vụ chạy xong, không báo lúc mở trang
         lastJob = { id: job.id, state: job.state };
         if (first && job.state === "running") return;   // đã có dòng "Job started" từ backend
         if (job.state === "done" || job.state === "failed" || job.state === "cancelled") {
             setTimeout(refreshResume, 600);       // backend ghi/xóa điểm dừng ở luồng riêng, chờ một chút
+        }
+        if (wasRunning && PREFS.notify) {
+            notifyJob(job.state, `${t(job.state === "done" ? "notify.done" : "notify.failed")} · ${job.name}`);
         }
         if (job.state === "done") {
             message({ text: `Job finished: ${job.name} (${formatDuration(job.elapsed_s)}).` });

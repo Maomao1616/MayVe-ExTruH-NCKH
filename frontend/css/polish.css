@@ -1799,3 +1799,31 @@ body.role-guest .coordinate-header span:nth-child(5) {
 /* selector đủ "nặng" để thắng quy tắc input chung ở style.css (cùng độ ưu tiên, polish.css nạp sau) */
 .pin-field input[type="password"].is-match { border-color: var(--success); }
 .pin-field input[type="password"].is-mismatch { border-color: var(--danger); }
+
+/* Khoanh chủ thể (views/drawing/subject.js): dùng lại .crop-overlay / .crop-rect; phần ngoài vùng phủ xám (trắng thì không thấy trên ảnh sáng) */
+.subject-pick {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.subject-pick select {
+    width: auto;
+}
+.subject-overlay .subject-rect {
+    border-color: var(--warning, #d9a400);
+    box-shadow: 0 0 0 9999px rgb(100 110 125 / 50%);
+    background-image: none;
+}
+.subject-overlay:not(.is-editing) .subject-rect {
+    box-shadow: 0 0 0 9999px rgb(100 110 125 / 38%);
+}
+.subject-overlay.is-editing .subject-rect {
+    background-image: none;
+}
+.subject-overlay.is-ellipse .subject-rect {
+    border-radius: 50%;
+}
+.subject-panel input[type="range"] {
+    flex: 1 1 140px;
+    min-width: 120px;
+}

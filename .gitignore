@@ -10,3 +10,4 @@ export/
 /_ban_cu/
 # G-code thử / xuất ra ở gốc dự án (G-code thật nằm trong data/ hoặc export/)
 /*.gcode
+.playwright-mcp/

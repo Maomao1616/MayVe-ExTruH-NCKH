@@ -38,6 +38,7 @@ export function initCrop({ apply, ratio }) {
     window.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && draft) { draft = null; render(); }
     });
+    window.addEventListener("extruxy:subject-edit", () => { if (draft) { draft = null; render(); } });   // không sửa hai khung cùng lúc
     window.addEventListener("extruxy:language-changed", render);
     render();
 }
@@ -80,6 +81,7 @@ export function payload() {
 
 function startEdit() {
     if (!natural) return;
+    window.dispatchEvent(new Event("extruxy:crop-edit"));        // subject.js tự hủy phần đang sửa
     draft = { ...applied };
     render();
 }

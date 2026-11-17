@@ -425,6 +425,7 @@ function loadPrefs() {
     if (POLL_CHOICES.includes(Number(saved.pollMs))) PREFS.pollMs = Number(saved.pollMs);
     if (typeof saved.confirmHome === "boolean") PREFS.confirmHome = saved.confirmHome;
     if (typeof saved.shortcuts === "boolean") PREFS.shortcuts = saved.shortcuts;
+    if (typeof saved.notify === "boolean") PREFS.notify = saved.notify;
 }
 
 function savePref(key, value) {
@@ -438,12 +439,14 @@ function initBehavior() {
     const poll = document.getElementById("poll-interval");
     const confirmHome = document.getElementById("confirm-home");
     const shortcuts = document.getElementById("shortcuts-enabled");
+    const notify = document.getElementById("notify-enabled");
 
     loadPrefs();
     setPollInterval(PREFS.pollMs);
     if (poll) poll.value = String(PREFS.pollMs);
     if (confirmHome) confirmHome.value = PREFS.confirmHome ? "on" : "off";
     if (shortcuts) shortcuts.value = PREFS.shortcuts ? "on" : "off";
+    if (notify) notify.value = PREFS.notify ? "on" : "off";
 
     poll?.addEventListener("change", () => {
         const ms = Number(poll.value);
@@ -453,6 +456,7 @@ function initBehavior() {
     });
     confirmHome?.addEventListener("change", () => savePref("confirmHome", confirmHome.value === "on"));
     shortcuts?.addEventListener("change", () => savePref("shortcuts", shortcuts.value === "on"));
+    notify?.addEventListener("change", () => savePref("notify", notify.value === "on"));
 }
 
 /* ==================== 3. CẤU HÌNH MÁY ==================== */

@@ -13,7 +13,7 @@ from .. import paths
 
 DEFAULTS = {
     "pen_up_z": 5.0,        # Z bút lên khi ĐIỀU KHIỂN (nút Bút lên, Home tự nâng, hủy tác vụ, jog): nhấc cao cho chắc
-    "pen_mid_z": 1.5,
+    "pen_mid_z": 3,
     "pen_down_z": 0.0,
     "gcode_up_z": 3.0,      # Z nhấc mặc định khi SINH G-code (tab Tạo bản vẽ); nhấc thấp thì nhanh hơn, chỉnh 3 / 2 / 1,5 theo bản vẽ
     "pen_feed": 3000.0,     # mm/phút, <= $112 (3000)
