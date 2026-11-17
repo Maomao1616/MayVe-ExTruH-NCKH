@@ -1,4 +1,4 @@
-"""Kiểu tô "Theo dáng ảnh" (flow field), BẢN THÔ 12/11/2026 (bước F1–F3 của docs/10_HUONG_PHAT_TRIEN.md mục 0.5).
+"""Kiểu tô "Theo dáng ảnh" (flow field), sửa 14/11/2026 (docs/06_THUAT_TOAN_XU_LY_ANH.md mục 8.10).
 
 Nét không chạy theo một góc cố định mà uốn DỌC theo dáng ảnh (má, lông, tóc, nếp vải):
   1. Trường hướng: tensor cấu trúc của ảnh độ đậm -> hướng dọc theo cạnh + độ "rõ hướng" (0..1). Chỗ phẳng, không rõ
@@ -24,11 +24,11 @@ FLOW_GRAD_SIGMA_MM = 1.0         # làm mờ ảnh trước khi lấy đạo hà
 FLOW_TENSOR_SIGMA_MM = 4.0       # làm mờ tensor cấu trúc: hướng thay đổi êm trong ~4 mm (to hơn = nét thẳng hơn, ít rối)
 FLOW_COHERENCE_FULL = 0.35       # độ rõ hướng từ mức này trở lên thì theo hẳn hướng ảnh; thấp hơn thì trộn dần về góc mặc định
 FLOW_MIN_RADIUS_MM = 1.5         # cong gắt hơn bán kính này thì dừng đường (máy không phải giảm tốc / rung ở 8000 mm/phút)
-FLOW_MAX_SEP_LINES = 5.0         # khoảng cách đường lớn nhất = 5 × bề rộng nét (vùng nhạt). 10 × ra sọc lẻ tẻ (mô phỏng 12/11);
+FLOW_MAX_SEP_LINES = 4.5         # khoảng cách đường lớn nhất = 4,5 × bề rộng nét (vùng nhạt; 17/11/2026 hạ từ 5 vì vùng sáng hơi ít nét). 10 × ra sọc lẻ tẻ (mô phỏng 12/11);
                                  # 5 × gần bằng mức nhạt nhất của gạch 5 mức (bề rộng ÷ 0,225 = 4,4 ×)
 FLOW_MIN_SEP_LINES = 1.1         # khoảng cách nhỏ nhất = 1,1 × bề rộng nét (vùng đậm nhất, chưa đè nét)
-FLOW_MAX_COVER = 0.9             # độ phủ lớn nhất (như MAX_COVERAGE của các kiểu gạch)
-FLOW_WHITE = 0.1                 # dưới độ phủ này để giấy trắng (không gieo, không đi qua); gạch 5 mức để trắng dưới ~0,11
+FLOW_MAX_COVER = 0.85            # độ phủ lớn nhất (17/11/2026 hạ từ 0,9: vùng tối hơi đặc; ink_sim sai mắt 0,043 → 0,040)
+FLOW_WHITE = 0.08                # dưới độ phủ này để giấy trắng (không gieo, không đi qua); gạch 5 mức để trắng dưới ~0,11
 FLOW_TEST_RATIO = 0.7            # đang đi mà cách đường khác < 0,7 × khoảng cách tại chỗ đó thì dừng. Trước 14/11/2026: 0,5 (+ cửa sổ
                                  # vuông). Cửa sổ tròn thì 0,5 cho đường ép sát nhau, mực phủ vượt độ đậm ảnh (0,45 -> 0,55);
                                  # 0,7: 0,48; 0,85: 0,43 (đo 3 ảnh thật A4 bút 0,4) nhưng 0,85 vụn hơn (67 so với 53 nét trong

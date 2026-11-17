@@ -47,18 +47,13 @@ def blur(f: Field, spacing_mm: float) -> np.ndarray:
 
 
 def threshold_mask(d: np.ndarray, threshold: float, spacing_mm: float, px_mm: float,
-                   open_mm: float | None = None, barrier: np.ndarray | None = None) -> np.ndarray:
-    """Mặt nạ bool từ ảnh đã làm mờ: ngưỡng, nối khe hẹp, bỏ đốm / dải hẹp hơn open_mm (mặc định = khoảng cách nét).
-    `barrier` (bool, cùng cỡ): đường viền làm hàng rào, cắt mặt nạ TRƯỚC bước bỏ đốm nên mẩu tràn qua viền bị bỏ."""
+                   open_mm: float | None = None) -> np.ndarray:
+    """Mặt nạ bool từ ảnh đã làm mờ: ngưỡng, nối khe hẹp, bỏ đốm / dải hẹp hơn open_mm (mặc định = khoảng cách nét)."""
     m = (d >= threshold).astype(np.uint8)
     k = int(max(1, round(spacing_mm / px_mm)))
-    if barrier is not None and k < 2:
-        m[barrier] = 0
     if k >= 2:
         kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k | 1, k | 1))
         m = cv2.morphologyEx(m, cv2.MORPH_CLOSE, kern)
-        if barrier is not None:
-            m[barrier] = 0
         if open_mm is not None:
             ko = int(max(1, round(open_mm / px_mm)))
             kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ko | 1, ko | 1))

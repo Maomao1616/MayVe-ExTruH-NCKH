@@ -54,4 +54,3 @@ def test_outline_style_keeps_canny_unless_ticked(monkeypatch):
 
 def test_outline_overlay_on_fill_styles_always_uses_xdog(monkeypatch):
     assert _method_used(monkeypatch, kind="crosshatch", outline_overlay=True) == "xdog"
-    assert _method_used(monkeypatch, kind="crosshatch_flow", outline_overlay=True, outline_xdog=False) == "xdog"

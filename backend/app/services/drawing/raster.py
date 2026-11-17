@@ -64,7 +64,7 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
     step("read", 0.05, "Đọc ảnh")
     img = raster_in.load(data, rp, ref_w, ref_h, ctx, color=multi or wants_outline)
     step("tone", 0.2, "Chỉnh sắc độ")
-    dark = tone.darkness(img.gray, rp, sp, ctx)
+    dark = tone.apply_subject(tone.darkness(img.gray, rp, sp, ctx), rp)
     step("style", 0.3, "Tạo nét")
     field = Field(dark, img.width_mm, img.height_mm, img.rgb if wants_outline else None)
     colors: dict[str, str] = {}

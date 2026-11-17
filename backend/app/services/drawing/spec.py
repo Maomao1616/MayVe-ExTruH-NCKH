@@ -108,12 +108,18 @@ RASTER = (
     Param("auto_levels", "bool", True),                               # kéo giãn 1–99% độ sáng: ảnh chụp thiếu tương phản vẫn ra nét
     Param("clahe", "bool", False),                                    # cân bằng sáng cục bộ (ảnh tối/sáng lệch)
     Param("denoise", "bool", False),                                  # khử nhiễu NLM: chậm, chỉ cho ảnh thiếu sáng
+    # Vùng chủ thể (17/11/2026): hình elip / chữ nhật, tỷ lệ 0..1 của ảnh GỐC (như crop_*); ngoài vùng độ đậm nhân với
+    # subject_outside (1 = giữ nguyên, 0 = trắng). Nền vẫn vẽ nhưng nhạt hơn, chủ thể nổi.
+    Param("subject_shape", "choice", "none", choices=("none", "ellipse", "rect")),
+    Param("subject_x", "float", 0.0, 0, 1), Param("subject_y", "float", 0.0, 0, 1),
+    Param("subject_w", "float", 1.0, 0.01, 1), Param("subject_h", "float", 1.0, 0.01, 1),
+    Param("subject_outside", "float", 0.5, 0, 1),
 )
 
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
     Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am",
-                                                          "flow", "crosshatch_flow")),
+                                                          "flow")),
     Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("am_fill", "bool", False),                                  # sóng biến thiên: phủ đều đường ở vùng sáng (styles.AM_FILL)
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
@@ -138,8 +144,8 @@ PALETTE = (
 # 0,45–0,5 → 0,5 (mặt nhám 0,5–0,55: chọn Tùy chọn); bút bi 0,5 chưa đo.
 PENS = (0.38, 0.4, 0.5)
 # crosshatch3 (đan 3 hướng) và flow (theo dáng thuần) còn chạy được cho bản thảo cũ nhưng đã bỏ khỏi giao diện 13/11/2026
-# (in thật: đan 3 đậm nhạt như đan chéo, nét rối hơn; theo dáng thuần trông không thực, A6 không ra hình). crosshatch_flow: đan chéo + viền làm hàng rào (14/11/2026), ẩn cùng ngày: chủ dự án tách đan chéo / theo dáng thành hai kiểu riêng; Chân dung = đan chéo + lớp viền.
-STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow", "crosshatch_flow")
+# (in thật: đan 3 đậm nhạt như đan chéo, nét rối hơn; theo dáng thuần trông không thực, A6 không ra hình).
+STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow")
 # Kiểu hiện trên giao diện (ô style-kind ở index.html, đúng thứ tự). zigzag / wave ẩn từ 13/11/2026 (đan chéo + theo dáng
 # đẹp hơn); mặc định của tham số kind vẫn "zigzag" để API / bản thảo cũ không đổi nghĩa. Test kiểm khớp với index.html.
 UI_STYLES = ("crosshatch", "flow", "wave_am", "spiral", "outline")

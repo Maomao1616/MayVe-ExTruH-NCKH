@@ -9,8 +9,7 @@ Mục lục (14/11/2026; danh sách hiện trên giao diện = spec.UI_STYLES, c
                         spiral           Xoắn ốc (Cận cảnh)
                         outline          Nét viền (Ảnh 2D, Schematic; thuật toán ở edges.py / trace.py)
   C. Kiểu đã ẩn         zigzag (13/11: đan chéo đẹp hơn), wave (sóng thường, như trên), crosshatch3 (đan 3 hướng: tông
-                        như đan chéo, nét rối hơn), crosshatch_flow (đan chéo + viền hàng rào; 14/11 chủ dự án: khối rối,
-                        lệch tông hơn đan chéo + lớp viền -> tách đan chéo / theo dáng thành hai kiểu)
+                        như đan chéo, nét rối hơn). Kiểu lai crosshatch_flow đã xóa 17/11/2026 (09 P28)
 Hiện lại một kiểu ẩn = thêm tên vào spec.UI_STYLES + một dòng <option> ở index.html (ô style-kind) + khóa dịch vi / en.
 Thêm kiểu mới = một hàm đăng ký @FILLERS.register("tên") + tên vào spec.STYLES (+ GROUPERS nếu chia nhóm theo mức).
 """
@@ -59,7 +58,7 @@ def level_plan(levels: int, line_w: float, scale: float = 1.0) -> list[tuple[flo
     return [(lo, hi, max(0.1, scale * line_w / c)) for lo, hi, c in zip(lows, highs, cover)]
 
 
-# --- Đường cong tông (docs/10 mục 0.3, T3–T4) ------------------------------------------------------------------------
+# --- Đường cong tông (docs/06 mục 8.12) ------------------------------------------------------------------------
 # Đo 13/11/2026: tờ hiệu chỉnh tông, Sakura 0,5, mặt bóng Ivory 250 g/m², 8000 mm/phút, chụp điện thoại, đọc 60 % giữa
 # mỗi ô, chuẩn hóa theo giấy quanh ô và 3 ô mốc đen, độ đậm theo CIE L* (mắt thấy). Ô có độ phủ TONE_COVERS[i] (calibration.
 # TONE_STEPS) trông đậm TONE_CURVES[kiểu][i] (0 = giấy, 1 = ô mốc đen; đã trừ ô giấy, làm cho tăng dần).
@@ -75,7 +74,7 @@ TONE_CURVES = {
     "spiral": (0.0, 0.023, 0.086, 0.107, 0.163, 0.193, 0.266, 0.319, 0.380, 0.452, 0.552, 0.683, 0.712, 0.804, 0.822,
                0.927),
 }
-TONE_CURVE_STYLES = {"crosshatch": "crosshatch", "spiral": "spiral", "crosshatch_flow": "crosshatch"}
+TONE_CURVE_STYLES = {"crosshatch": "crosshatch", "spiral": "spiral"}
 USE_TONE_CURVE = True            # False = bỏ đường cong (độ phủ = độ đậm ảnh như trước 13/11/2026)
 TONE_CURVE_STRENGTH = 0.75       # áp 75 % đường cong. Mô phỏng (tools/ink_sim.py, cột "sai mắt"; đan chéo): áp đủ thì ô đậm
                                  # ĐỀU đúng nhất (sai 0,14 -> 0,05) nhưng dải chuyển liền đậm quá (0,037 -> 0,047, chỗ giáp hai
@@ -129,15 +128,13 @@ HATCH_MIN_RUN_MM = 1.5           # mẩu gạch ngắn hơn chừng này bỏ (t
 HATCH_WHITE = 0.2                # độ phủ dưới mức này để giấy trắng hẳn, mép giáp trắng không so le: nổi chủ thể
 
 
-def _passes(f: Field, style, pen_mm: float, ctx, angle: float | None = None, clean: bool = False,
-            barrier: np.ndarray | None = None):
+def _passes(f: Field, style, pen_mm: float, ctx, angle: float | None = None, clean: bool = False):
     """(mặt nạ, góc, khoảng cách nét) cho từng dải đậm nhạt.
 
     Cứng (soft_levels = false): mỗi dải một mặt nạ, các mặt nạ không chồng nhau, ranh giới là một đường.
     Mềm (mặc định): mỗi dải 8 mặt nạ, dòng gạch thứ i dùng mặt nạ i % 8 có ngưỡng lệch riêng (hatch.dither_offsets).
     Ở chỗ giáp hai mức, dòng của mức nhạt thưa dần còn dòng của mức đậm dày dần: độ đậm chuyển liền.
-    `clean` (kiểu gạch / đan chéo): bỏ dải hẹp hơn HATCH_THIN_SPACINGS × khoảng cách, dưới HATCH_WHITE để trắng hẳn.
-    `barrier`: mặt nạ đường viền; dòng gạch dừng ở viền, không tràn sang khối bên cạnh."""
+    `clean` (kiểu gạch / đan chéo): bỏ dải hẹp hơn HATCH_THIN_SPACINGS × khoảng cách, dưới HATCH_WHITE để trắng hẳn."""
     s_ref = spacing_of(style, pen_mm)
     line_w = LINE_WIDTH_RATIO * pen_mm
     plan = level_plan(style.levels, line_w, s_ref / (DEFAULT_SPACING_PEN * line_w))
@@ -153,7 +150,7 @@ def _passes(f: Field, style, pen_mm: float, ctx, angle: float | None = None, cle
         if t not in ge:
             if ctx:
                 ctx.check()
-            ge[t] = hatch.threshold_mask(d, t, s_ref, f.px_mm, open_mm, barrier)
+            ge[t] = hatch.threshold_mask(d, t, s_ref, f.px_mm, open_mm)
         return ge[t]
 
     for index, (lo, hi, s) in enumerate(plan):
@@ -184,10 +181,9 @@ def _link(d, n, vmin, lines, s: float, soft: bool, shape=None, turn_only: bool =
 
 
 # === A. Nền dùng chung (tiếp): một lượt gạch zigzag ===================================================================
-def zigzag_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
-                  barrier: np.ndarray | None = None) -> list[list[Stroke]]:
+def zigzag_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
     groups = []
-    for mask, a, s in _passes(f, style, pen_mm, ctx, angle, clean=True, barrier=barrier):
+    for mask, a, s in _passes(f, style, pen_mm, ctx, angle, clean=True):
         d, n, vmin, lines = hatch.scan_runs(mask, f, a, s, min_run_mm=HATCH_MIN_RUN_MM)
         groups.append(_clip_out(_link(d, n, vmin, lines, s, isinstance(mask, list), turn_only=True), f))
     return groups
@@ -258,14 +254,12 @@ def crosshatch_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | N
     return _cross_layers(_toned(f, "crosshatch"), style, pen_mm, ctx, angle)
 
 
-def _cross_layers(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
-                  barrier: np.ndarray | None = None) -> list[list[Stroke]]:
-    """Hai lớp đan chéo trên trường độ phủ ĐÃ áp đường cong tông. `barrier`: đường viền chặn dòng gạch."""
+def _cross_layers(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
+    """Hai lớp đan chéo trên trường độ phủ ĐÃ áp đường cong tông."""
     a, b = cross_split(f.dark)
     base = style.angle if angle is None else angle
-    first = zigzag_groups(Field(a, f.width_mm, f.height_mm), style, pen_mm, ctx, base, barrier)
-    second = zigzag_groups(Field(b, f.width_mm, f.height_mm), style, pen_mm, ctx, (base + CROSS_ANGLE) % 180.0,
-                           barrier)
+    first = zigzag_groups(Field(a, f.width_mm, f.height_mm), style, pen_mm, ctx, base)
+    second = zigzag_groups(Field(b, f.width_mm, f.height_mm), style, pen_mm, ctx, (base + CROSS_ANGLE) % 180.0)
     return first + second
 
 
@@ -416,86 +410,9 @@ def flow_fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = No
     return _flat(flow_groups(f, style, pen_mm, ctx, angle))
 
 
-# === B. Đan chéo + theo dáng (13/11/2026, chủ dự án chọn làm mặc định Chân dung) ---------------------------------------
-# In thật 13/11: đan chéo thuần đủ đậm nhạt nhưng cứng, mắt / mũi / mép mặt không tách khỏi nền khi nhìn gần; theo dáng
-# thuần có "hồn" ở A4 nhưng quá "nghệ thuật" và ở A6 không ra hình. Lai: đan chéo gánh tông, thêm vài đường theo dáng
-# CHỈ ở dải viền (chỗ độ đậm đổi mạnh VÀ hướng rõ). Lớp đan vẽ thưa đi đúng phần mực đường theo dáng đã phủ (đo bằng
-# cách vẽ các đường đó lên ảnh), nên độ đậm tổng không đổi.
-HYB_FLOW_SHARE = 0.5             # trong dải viền, đường theo dáng gánh tối đa một nửa độ phủ; phần còn lại là đan chéo
-HYB_EDGE_SIGMA_MM = 1.0          # làm mờ trước khi đo độ dốc độ đậm (bỏ hạt nhỏ hơn ~1 mm)
-HYB_EDGE_LO = 0.04               # độ đậm đổi chậm hơn 0,04 / mm: không phải viền
-HYB_EDGE_HI = 0.12               # đổi từ 0,12 / mm trở lên: viền rõ hẳn
-HYB_COHERENCE = 0.3              # độ rõ hướng từ mức này: hướng đủ tin để vẽ theo
-HYB_BAND_MM = 1.5                # nới dải viền ra mỗi phía chừng này (vài đường song song ôm theo viền)
-HYB_INK_PX_MM = 0.1              # ô của ảnh vẽ thử các đường theo dáng để đo mực đã phủ
-
-
-def edge_band(f: Field, default_deg: float = 45.0) -> np.ndarray:
-    """0..1: chỗ nào là dải viền có hướng rõ (1 = chắc chắn), cùng cỡ f.dark."""
-    import cv2
-    from . import flow
-    px = f.px_mm
-    d = cv2.GaussianBlur(f.dark.astype(np.float32), (0, 0), max(0.5, HYB_EDGE_SIGMA_MM / px))
-    gy, gx = np.gradient(d)
-    grad = np.hypot(gx, gy) / px                                         # độ đậm đổi mỗi mm
-    _, _, coh = flow.direction_field(f, default_deg)
-    e = np.clip((grad - HYB_EDGE_LO) / (HYB_EDGE_HI - HYB_EDGE_LO), 0, 1) * np.clip(coh / HYB_COHERENCE, 0, 1)
-    r = max(1, int(round(HYB_BAND_MM / px)))
-    e = cv2.dilate(e.astype(np.float32), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1)))
-    return np.clip(cv2.GaussianBlur(e, (0, 0), max(0.5, 0.5 / px)), 0, 1)
-
-
-def ink_cover(strokes: list[Stroke], f: Field, line_w: float) -> np.ndarray:
-    """Độ phủ mực thật của các nét (bề rộng line_w), trung bình trong ~2 bề rộng nét, cùng cỡ f.dark."""
-    import cv2
-    k = HYB_INK_PX_MM
-    canvas = np.zeros((int(math.ceil(f.height_mm / k)) + 1, int(math.ceil(f.width_mm / k)) + 1), np.uint8)
-    t = max(1, int(round(line_w / k)))
-    for s in strokes:
-        if len(s) >= 2:
-            cv2.polylines(canvas, [np.round(np.asarray(s) / k * 16).astype(np.int32)], False, 255, t, cv2.LINE_8, 4)
-    cov = cv2.resize(canvas.astype(np.float32) / 255, (f.w, f.h), interpolation=cv2.INTER_AREA)
-    return cv2.GaussianBlur(cov, (0, 0), max(0.5, 2 * line_w / f.px_mm))
-
-
-CONTOUR_BARRIER_PENS = 2.0       # hàng rào quanh đường viền rộng 2 × nét: dòng gạch dừng cách mép nét viền ~nửa nét
-
-
-def stroke_mask(strokes: list[Stroke], f: Field, width_mm: float) -> np.ndarray:
-    """Mặt nạ bool cùng cỡ f.dark: các nét vẽ với bề rộng width_mm."""
-    import cv2
-    canvas = np.zeros((f.h, f.w), np.uint8)
-    t = max(1, int(round(width_mm / f.px_mm)))
-    sx, sy = f.w / f.width_mm * 16, f.h / f.height_mm * 16
-    for s in strokes:
-        if len(s) >= 2:
-            pts = np.round(np.asarray(s) * [sx, sy] - 8).astype(np.int32)      # tâm điểm ảnh ở +0,5
-            cv2.polylines(canvas, [pts], False, 1, t, cv2.LINE_8, 4)
-    return canvas.astype(bool)
-
-
-def crosshatch_flow_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
-    """Đan chéo trong từng khối + MỘT đường viền cong (FDoG, làm mượt) bao quanh khối, vẽ sau cùng.
-
-    14/11/2026 (chủ dự án): đường viền là hàng rào: dòng gạch dừng ở viền nên khối đậm (tóc) không lan sang khối nhạt
-    (mặt), mắt / mũi giữ khung dáng. Thay cách 13/11 (2–3 đường theo dáng song song ở dải viền, trông như râu;
-    edge_band / ink_cover giữ lại cho kiểu khác)."""
-    line_w = LINE_WIDTH_RATIO * pen_mm
-    contour = outline(f, style, pen_mm, ctx)
-    barrier = stroke_mask(contour, f, CONTOUR_BARRIER_PENS * line_w)
-    if ctx:
-        ctx.check()
-    return _cross_layers(_toned(f, "crosshatch_flow"), style, pen_mm, ctx, angle, barrier) + [contour]
-
-
-@FILLERS.register("crosshatch_flow")
-def crosshatch_flow(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    return _flat(crosshatch_flow_groups(f, style, pen_mm, ctx, angle))
-
-
 GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_groups,
             "crosshatch": crosshatch_groups, "crosshatch3": crosshatch3_groups, "wave_am": wave_am_groups,
-            "flow": flow_groups, "crosshatch_flow": crosshatch_flow_groups}
+            "flow": flow_groups}
 
 
 # === B. Nét viền ==========================================================================================================
@@ -523,7 +440,7 @@ def fill_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = 
     groups = grouper(f, style, pen_mm, ctx, angle) if grouper else [FILLERS.get(style.kind)(f, style, pen_mm, ctx, angle)]
     if overlay is None:
         overlay = style.outline_overlay
-    if overlay and style.kind not in ("outline", "crosshatch_flow"):     # viền vẽ SAU cùng cho nét rõ (crosshatch_flow đã có)
+    if overlay and style.kind != "outline":     # viền vẽ SAU cùng cho nét rõ
         if ctx:
             ctx.check()
         groups = groups + [outline(f, style, pen_mm, ctx)]

@@ -1,7 +1,7 @@
-r"""Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/07 mục 2b, docs/06 mục 8.12).
+r"""Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/07 mục 2, docs/06 mục 8.12).
 
     cd backend && .venv\Scripts\python.exe ..\tools\tone_read.py anh.jpg [--paper a6] [--crop x0,y0,x1,y1]
-                 [--kind crosshatch_flow] [--out kiem.png] [--json ket_qua.json]
+                 [--kind crosshatch] [--out kiem.png] [--json ket_qua.json]
 
 Cách đo (13/11/2026): tìm 3 ô mốc đen (trên phải, dưới trái, dưới phải; ô góc vuông = dưới phải, cạnh dài = phải),
 nắn phối cảnh từ 12 góc ô mốc, bù ánh sáng bằng mặt phẳng khớp với giấy ở khe giữa các ô (bỏ điểm dính mực), đọc 60 %
@@ -161,7 +161,7 @@ def main():
     ap.add_argument("image")
     ap.add_argument("--paper", default="a6", choices=sorted(cal.TONE_SIZES), help="hình học tờ (Thang tông luôn a6)")
     ap.add_argument("--crop", help="x0,y0,x1,y1 (điểm ảnh) khi ảnh chụp nhiều tờ")
-    ap.add_argument("--kind", help="so với đường cong tông của kiểu này (vd crosshatch_flow, spiral)")
+    ap.add_argument("--kind", help="so với đường cong tông của kiểu này (vd crosshatch, spiral)")
     ap.add_argument("--out", help="ảnh kiểm tra (khung đỏ = chỗ đo)")
     ap.add_argument("--json", help="ghi kết quả")
     a = ap.parse_args()
