@@ -133,6 +133,32 @@ Thứ tự làm đã chốt 17/11/2026 ở [11](11_VIEC_CAN_LAM.md) mục 4.2: t
 - 💡 `.devcontainer/` cho GitHub Codespaces.
 - 💡 2-opt trong Web Worker, chỉ khi đo trên MiniPC thấy sắp xếp nét lâu.
 
+### 4.1 Tham khảo từ 4 repo của Tonino-RB (17/11/2026, chưa làm)
+
+Nguồn: 4 repo cùng một tác giả, đều làm về máy vẽ bút — `SVGroom` (app macOS duyệt và cắt chọn tệp SVG), `Plotterosaurus` (máy chủ vẽ tự dựng cho AxiDraw, chạy trên Raspberry Pi, giao diện web), `PlotHatcher` (biến chữ trong SVG thành nét vẽ được), `vpyposaurus` (giao diện web cho vpype). Giấy phép: SVGroom **PolyForm Noncommercial** (học được, bán thì không) · Plotterosaurus và PlotHatcher **MIT** (dùng lại được, phải giữ bản quyền) · vpyposaurus **chưa thấy tệp giấy phép** (muốn dùng mã phải hỏi tác giả). Cả bốn viết bằng Swift / Python + vpype, không phải JS thuần → **lấy ý tưởng, không chép mã**; riêng vpyposaurus cùng kiểu kiến trúc với mình (FastAPI + HTML/CSS/JS không phụ thuộc) nên đọc cách họ tổ chức được.
+
+| # | Việc | Vì sao đáng làm | Chạm vào | Cỡ |
+|---|---|---|---|---|
+| 1 | 💡 Cảnh báo khi SVG có **chữ** (`<text`), **ảnh nhúng** (`<image`) hoặc nét **ngoài khổ giấy** | Hiện chữ biến mất im lặng (vpype chỉ đọc đường nét), chỉ báo khi SVG không còn nét nào | `services/drawing/svg_in.py` + khóa `drawing.warning.text_not_path`, `image_ignored`, `off_page_content` (vi + en) | S |
+| 2 | 💡 Hiện **"ước tính / thật"** cạnh nhau trong nhật ký chạy | `joblog.py` đã lưu `elapsed_s` (thật) và `est_seconds` (ước) mà chưa ai so → có số để chỉnh `EST_ACCEL_MM_S2`, `EST_LINES_PER_S`. Cách họ làm: đối chiếu mô hình với phần mềm AxiDraw, sai 0,5–1 % | `services/joblog.py` + danh sách nhật ký chạy | S |
+| 3 | 💡 **So sánh 2 bản thảo cạnh nhau** cùng tỉ lệ + bảng số (thời gian, quãng bút, số lần nhấc, số nét) | Đúng vòng A/B đang làm (tông, 0 vs 1 lượt, UB-155 vs Sakura); hiện phải in 2 tờ rồi mắt so | `views/drafts.js` + khối xem trước | M |
+| 4 | 💡 **Ẩn / hiện từng lớp màu**, thời gian tính lại theo | Trả lời ngay "bỏ màu đỏ thì nhanh hơn bao nhiêu", không cần in | `views/drawing/*`, `spec.py` (bỏ lớp trước khi dựng G-code) | M |
+| 5 | 💡 Thêm khổ giấy A3, B5, Legal, Tabloid vào ô Khổ giấy | Rẻ, chỉ thêm hằng số | `lib/paper.js`, `spec.py`, `index.html` | S |
+| 6 | 💡 **Nhắc đổi bút giữa các lớp màu, và bỏ nhắc khi lớp kế dùng đúng bút đó** (so màu + bề rộng nét) | `05` mục ghi "vẽ xong tệp nào thì đổi bút rồi nạp tệp kế" — làm tay nên dễ nạp tệp kế khi chưa đổi bút. Họ có `pause_between_layers` + `skip_same_pen_pause` | `views/drafts.js` (Nạp theo lớp), `stores/jobstore.js` | S |
+| 7 | 💡 **Chia lớp theo "bút" = màu + bề rộng nét** cho SVG không có layer (Illustrator / Figma) | Họ cho chọn `layer_mode`: layer Inkscape · nhóm gốc · theo bút. Mình chỉ theo layer Inkscape (`svg_in.py:58`) | `svg_in.py` + `spec.py` | M |
+| 8 | 💡 **"Cái gì đã đổi" từng bước tối ưu SVG** (mỗi bước: số nét, quãng nhấc trước / sau) | Mình chỉ có tổng trước / sau (`svg_in.py:135`); họ chạy vpype từng bước và báo từng bước một | `optimize.py` (chạy `execute` theo từng bước) + khối xem trước | S |
+| 9 | 💡 **Tô kín mảng đặc của SVG bằng gạch** (giữ đường bao, tô phần trong) | SVG có hình tô đặc hiện chỉ ra đường bao rỗng ⚠ (vpype đọc hình học, bỏ phần tô — **chưa thử** với tệp tô đặc). Họ tô bằng 6 kiểu: xoắn ốc, đồng tâm, đường thẳng, đan, zigzag, theo dáng chữ | `styles.py` (dùng lại kiểu tô) + `svg_in.py` (phải biết hình kín) | M–L |
+| 10 | 💡 **Chữ trong SVG: giữ `<text>`, thêm lớp "… hatched" / "… contour"** thay vì đổi hẳn thành path | Họ không phá tệp gốc, chữ vẫn sửa được; đúng hướng mục 1.1–1.2 ở trên (tab PDF, bộ chữ) | để dành cho tab Beta PDF | M |
+| 11 | 💡 **Tờ mẫu riêng cho từng kiểu nét** (mọi chữ, số, dấu ở 2 cỡ) | Mình có Tờ thử (thang tông, nhấc bút) nhưng chưa có tờ mẫu theo kiểu nét; họ sinh tờ A3 cho từng kiểu tô | `testsheets.py` | S |
+
+Nguồn từng việc: **1–5** SVGroom · **6–7** Plotterosaurus · **8** vpyposaurus · **9–11** PlotHatcher.
+
+**Đã có rồi, đừng làm lại** (đối chiếu mã 17/11/2026): vẽ như bút thật (đầu tròn, bề rộng bút — `views/drawing/canvas.js:193`) · thời gian có gia tốc, chậm ở góc, nét ngắn, thời gian nhấc / hạ bút (`gcode.py:175-190`) · mỗi lớp tính như một lần chạy riêng (`service.py:77`) · tên lớp + màu bút lấy từ lớp Inkscape (`svg_in.py:69`) · khổ giấy, lề, xoay, canh giữa (`lib/paper.js`) · cảnh báo đã có: `dropped_strokes`, `feed_above_rapid`, `no_page_size` · tối ưu SVG bằng vpype, có số trước / sau (`optimize.py`); riêng ảnh thì chạy ở tiến trình con, ưu tiên thấp (`isolated.py`) · bản xem trước do máy chủ tự dựng từ nét (`/drafts/{id}/preview.svg`), không nhúng SVG gốc vào trang → cùng tinh thần "không cho tệp lạ chạy mã" của vpyposaurus · ảnh khách tự xóa sau 5 ngày, ≤ 6 ảnh / giờ (≈ "giữ 30 tệp gần nhất" của họ) · báo vẽ xong bằng âm báo + tiêu đề tab (≈ webhook `job_complete`) · vùng máy: mình **chặn trước** khi vẽ (`paper_out_of_area`, `box_out_of_paper`), họ chỉ cảnh báo rồi cắt bớt — mình chặt hơn, giữ.
+
+**Không lấy:** thư viện ảnh kiểu Lightroom (sao, cờ, nhãn màu, tag, lọc, tự sang ảnh sau khi chấm) — bản thảo của mình ít, thêm vào chỉ rối; catalog `.svgroom`, liên kết thư mục, tìm tệp bị mất, phím tắt, Copy to Folder — đặc thù macOS, mình không có nhu cầu; 6 tab dây chuyền của vpype Studio (Layers / Occult / Operations / …) — mình có dây chuyền riêng, dựng lại chỉ để giống họ; plugin `vpype-occult` (bỏ nét bị hình khác che) — chỉ có nghĩa với tranh nhiều lớp chồng; `disable_motors_on_complete`, `delete_on_complete`, webhook — chưa cần.
+
+**Để dành cho sau (không phải việc nhỏ):** Plotterosaurus có `/api/v1/*` riêng cho máy khác gọi, xác thực bằng khóa `X-API-Key` tách khỏi giao diện web — đúng thứ sẽ cần khi làm ESP32 (mục 3.2) hoặc cho máy khác điều khiển; hiện mình chưa có, và **thêm khóa API là việc bảo mật phải hỏi trước**. Còn: nút cứng Tạm dừng / Chạy tiếp họ đã làm bằng nút thật trên máy — mình đã có trong danh sách mục 3.1.
+
 ---
 
 ## 5. Lời khuyên đã kiểm là sai (từ một tư vấn AI khác, 02/11/2026): đừng làm theo
