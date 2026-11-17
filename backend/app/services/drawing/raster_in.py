@@ -45,10 +45,6 @@ class Raster:
     source_px: tuple[int, int]   # kích thước ảnh gốc sau khi cắt (w, h)
     rgb: np.ndarray | None = None   # uint8 (h, w, 3), chỉ có khi load(color=True)
 
-    @property
-    def mm_per_px(self) -> float:
-        return self.width_mm / self.gray.shape[1]
-
 
 def work_side_px(ref_long_mm: float, pen_mm: float, quality: str, override: int | None, cap: int) -> int:
     """Cạnh dài (điểm ảnh) cần xử lý: khung ÷ bút × 1,3, không vượt `cap`."""

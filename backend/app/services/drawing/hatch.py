@@ -61,11 +61,6 @@ def threshold_mask(d: np.ndarray, threshold: float, spacing_mm: float, px_mm: fl
     return m.astype(bool)
 
 
-def level_mask(f: Field, threshold: float, spacing_mm: float) -> np.ndarray:
-    """Mặt nạ bool: làm mờ nhẹ, ngưỡng, nối khe hẹp, bỏ đốm nhỏ hơn khoảng cách nét (bút không vẽ nổi)."""
-    return threshold_mask(blur(f, spacing_mm), threshold, spacing_mm, f.px_mm)
-
-
 # --- chuyển mức mềm: mỗi dòng gạch một ngưỡng hơi lệch -----------------------------------
 DITHER_RANKS = 8                 # 8 độ lệch khác nhau, lặp lại mỗi 8 dòng
 
@@ -234,10 +229,6 @@ AM_TIGHT_MM = 2.0                # λ ngắn hơn chừng này coi là sóng dà
 def sine_k_for_length(F: np.ndarray) -> np.ndarray:
     """F (độ dài đường sóng ÷ đường thẳng, >= 1) -> k = 2πA/λ."""
     return np.interp(F, _F_TAB, _K_TAB)
-
-
-def sine_length_factor(k: np.ndarray) -> np.ndarray:
-    return np.interp(k, _K_TAB, _F_TAB)
 
 
 def _sample(img: np.ndarray, f: Field, x: np.ndarray, y: np.ndarray) -> np.ndarray:

@@ -19,14 +19,6 @@ SIMPLIFY_PX = 0.6
 CLOSE_PX = 2.0                   # hai đầu một nét cách nhau không quá chừng này điểm ảnh thì khép thành vòng
 
 
-def skeleton(mask: np.ndarray, min_pixels: int) -> np.ndarray:
-    # nạp scikit-image lúc cần (~0,65 s): server chính không xử lý ảnh (tiến trình con làm), bật nhanh hơn
-    from skimage.morphology import remove_small_objects, skeletonize
-    if min_pixels > 1:
-        mask = remove_small_objects(mask, max_size=min_pixels - 1, connectivity=2)
-    return skeletonize(mask)
-
-
 def _graph(skel: np.ndarray):
     ys, xs = np.nonzero(skel)
     ident = np.full(skel.shape, -1, dtype=np.int32)
