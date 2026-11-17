@@ -10,6 +10,19 @@
 - Ô "Bút vẽ" ghi thẳng **bề rộng nét đo trên giấy**; bút chưa có trong danh sách thì chọn **Tùy chọn** và gõ số đo.
 - Bút đỏ chỉ dùng đo bề rộng nét, loang, đọng mực; **không dùng đánh giá độ đậm** (đỏ trông nhạt hơn đen).
 
+### Đổi gì thì phải đo lại gì
+Hằng số thuật toán (`FLOW_*`, `HATCH_*`, `AM_*`, `REFINE_*`) **không** đổi theo bút hay giấy; chỉ đổi khi một bài dưới đây bảo.
+
+| Bạn đổi | Làm lại | Ghi kết quả vào | Không đụng |
+|---|---|---|---|
+| **Bút** (loại, cỡ) | tờ hiệu chỉnh bút (mục 1) + tờ tông A4 | ô **Bút vẽ**; `spec.PENS` | `LINE_WIDTH_RATIO` (giữ 1,0) |
+| **Giấy** (bóng ↔ nhám, hãng) | mục 1 + A4 | bảng bút / giấy ở [02](02_PHAN_CUNG_MAY.md); `TONE_CURVES` nếu A4 lệch | hằng thuật toán |
+| **Tốc độ vẽ** | bài 7.4 (mục 6) | `draw_feed` | `LINE_WIDTH_RATIO`, `MAX_COVERAGE` |
+| **Z nhấc / chờ / hạ bút** | bài 7.1 (mục 6) | `spec.py` (`pen_up_z`, chờ, hạ) | hằng tô |
+| **Gia tốc / junction** | bài 7.3 (mục 6) | cấu hình máy → Lưu vào mạch | hằng tô |
+| **Kiểu ảnh đặc thù** (chữ, sơ đồ, đen trắng gắt) | chỉnh gamma / tương phản trên giao diện; chưa vừa mới báo AI | ô tương ứng trên tab Tạo bản vẽ | hằng tô |
+| **Sửa sai tông** (số lượt) | A5 | ô **Sửa sai tông** | `TONE_CURVES` |
+
 ## Danh sách cần thử (làm từ trên xuống)
 
 **Chuẩn bị (một lần):** (1) tắt phần mềm, mở lại, trình duyệt **Ctrl+F5**; (2) tab Tạo bản vẽ, khối G-code: vẽ / di chuyển **8000**, Z nâng 3 / hạ 0, hạ bút 2000, chờ **0**; (3) Terminal gõ `$10` phải ra `$10=3` (không thì gõ `$10=3`); (4) Cài đặt → Cấu hình máy: `junction_deviation` **0,03** → Áp dụng → **Lưu vào mạch** (bạn bấm; phần mềm đã ước tính theo 0,03); (5) bật nguồn, nối, **mở khóa chuyển động**; (6) chọn lại preset sau khi mở. Giấy Ivory mặt bóng, bút **Sakura 0,5** trừ khi ghi khác.
