@@ -108,3 +108,16 @@ def test_image_already_at_working_size_is_not_resampled_again():
     # ảnh đã thu nhỏ ở trình duyệt, lệch tối đa 1 điểm vì làm tròn: giữ nguyên điểm ảnh
     r = raster_in.load(png(650, 866), rp(), 200, 287)
     assert r.gray.shape == (866, 650)
+
+
+def test_sharpen_is_off_by_default_and_makes_an_edge_steeper_without_moving_flat_areas():
+    g = np.full((60, 120), 200, np.uint8)
+    g[:, 60:] = 100                                                        # một ranh sáng / tối thẳng đứng
+    base = tone.darkness(g, rp(auto_levels=False), spec.parse("style", {}))
+    same = tone.darkness(g, rp(auto_levels=False, sharpen=0.0), spec.parse("style", {}), None, 0.4)
+    assert np.array_equal(base, same)                                      # mặc định = như trước, số chuẩn không đổi
+    sharp = tone.darkness(g, rp(auto_levels=False, sharpen=1.5), spec.parse("style", {}), None, 0.4)
+    assert sharp[30, 5] == pytest.approx(base[30, 5], abs=1e-3) and sharp[30, 115] == pytest.approx(base[30, 115], abs=1e-3)   # chỗ phẳng giữ nguyên
+    assert sharp[30, 63] > base[30, 63] and sharp[30, 56] < base[30, 56]   # hai bên ranh: tối thêm tối, sáng thêm sáng
+    with pytest.raises(DrawError):
+        rp(sharpen=9)

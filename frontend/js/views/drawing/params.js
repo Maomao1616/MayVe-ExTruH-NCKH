@@ -43,6 +43,7 @@ const FIELDS = [
     ["image-contrast", "raster", "contrast", "num"],
     ["image-max-side", "raster", "max_side_px", "optint"],
     ["image-auto-levels", "raster", "auto_levels", "bool"],
+    ["image-sharpen", "raster", "sharpen", "num"],
     ["image-clahe", "raster", "clahe", "bool"],
     ["image-denoise", "raster", "denoise", "bool"],
     ["style-kind", "style", "kind", "str"],

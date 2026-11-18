@@ -1,6 +1,6 @@
 """Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất).
 
-Thứ tự (sau khi đã thu nhỏ): khử nhiễu -> tự cân sáng -> mức đen/trắng + gamma -> tương phản -> CLAHE -> đảo.
+Thứ tự (sau khi đã thu nhỏ): khử nhiễu -> tự cân sáng -> mức đen/trắng + gamma -> tương phản -> CLAHE -> làm nét -> đảo.
 """
 from __future__ import annotations
 
@@ -10,8 +10,13 @@ import numpy as np
 cv2.setNumThreads(2)             # chừa CPU cho việc điều khiển máy
 
 
-def darkness(gray: np.ndarray, raster, style, ctx=None) -> np.ndarray:
-    """`raster` = nhóm tham số raster, `style` = nhóm kiểu tô (chỉ dùng `invert`)."""
+SHARPEN_SIGMA_MM = 1.5          # làm nét cục bộ: trừ bản mờ Gauss cỡ này (mm; ~4 điểm ảnh ở A4 bút 0,5). Thử 18/11/2026 ảnh bưu điện A4: hệ số 1,5 làm rõ
+                                 # vòm, cột, vòng đồng hồ mà không thêm nét (314 -> 328 nét); thêm lớp viền thì nguệch ngoạc, tương phản 1,8 mất tông giữa
+SHARPEN_SIGMA_PX = 4.0           # dùng khi không biết cỡ điểm ảnh (test)
+
+
+def darkness(gray: np.ndarray, raster, style, ctx=None, px_mm: float | None = None) -> np.ndarray:
+    """`raster` = nhóm tham số raster, `style` = nhóm kiểu tô (chỉ dùng `invert`). `px_mm` = cỡ một điểm ảnh (mm), cho làm nét."""
     img = gray
     if raster.denoise:                                    # NLM: chậm, chỉ khi bật
         img = cv2.fastNlMeansDenoising(img, None, h=7, templateWindowSize=5, searchWindowSize=15)
@@ -35,6 +40,9 @@ def darkness(gray: np.ndarray, raster, style, ctx=None) -> np.ndarray:
         u8 = (x * 255.0 + 0.5).astype(np.uint8)
         u8 = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8)).apply(u8)
         x = u8.astype(np.float32) / 255.0
+    if raster.sharpen > 0:                                # unsharp mask: x + hệ số × (x − bản mờ), cắt 0..1
+        sigma = SHARPEN_SIGMA_MM / px_mm if px_mm else SHARPEN_SIGMA_PX
+        x = np.clip(x + raster.sharpen * (x - cv2.GaussianBlur(x, (0, 0), max(sigma, 0.5))), 0.0, 1.0).astype(np.float32)
     d = 1.0 - x
     if style.invert:
         d = 1.0 - d

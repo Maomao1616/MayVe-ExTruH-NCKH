@@ -4,7 +4,7 @@
 // (cách thử: docs/07_THU_NGHIEM.md). 🧪 Mới thử bằng ảnh mẫu, chưa in ra giấy.
 const BASE = {                   // mặc định chung, từng preset ghi đè
     "image-auto-levels": true, "image-clahe": false, "image-denoise": false,
-    "image-black-point": "0", "image-white-point": "255", "image-gamma": "1", "image-contrast": "1",
+    "image-black-point": "0", "image-white-point": "255", "image-gamma": "1", "image-contrast": "1", "image-sharpen": "0",
     "style-levels": "5", "style-angle": "45", "style-spacing": "", "style-amplitude": "",
     "style-outline": false, "style-outline-detail": "medium", "style-xdog": false, "style-invert": false, "style-soft": true, "style-am-fill": false, "palette-mode": "mono"
 };
@@ -21,8 +21,10 @@ export const PRESETS = {
     },
     // 14/11/2026 giữ nguyên: thử ảnh chùa + hồ A4: sóng + CLAHE nhiều sắc độ trời nhất; thêm viền -> cây cối vụn; gạch chéo +
     // viền, tương phản 1,2 -> tiền cảnh đen kịt.
-    landscape: {                 // phong cảnh, trời mây, nhà cửa, cảnh đêm: tăng chi tiết cục bộ, sóng biên độ cho tông mượt
-        ...BASE, "image-clahe": true,
+    // 18/11/2026 (chủ dự án): bỏ CLAHE, thêm tương phản 1,4 + mức đen 15, không viền. Ảnh bưu điện A5: CLAHE làm phẳng tông từng chỗ
+    // nên không nhận ra vòm cổng; bản mới "đẹp phết" (xem xem trước, chưa in giấy). Ảnh chùa / trời mây từng hợp CLAHE: nếu mất sắc độ trời thì bật lại tay.
+    landscape: {                 // phong cảnh, trời mây, nhà cửa, cảnh đêm: sóng biên độ cho tông mượt, tương phản cao
+        ...BASE, "image-contrast": "1.4", "image-black-point": "15", "image-sharpen": "1.5",
         "style-kind": "wave_am", "style-angle": "30"
     },
     // 14/11/2026 (chủ dự án): ảnh 2D = gạch chéo + lớp viền FDoG (thử ảnh hoạt hình A4: đẹp nhất; trước: chỉ nét viền).

@@ -661,6 +661,7 @@
   "drawing.preprocess.whitePoint": "Mức trắng",
   "drawing.preprocess.gamma": "Gamma (sáng/tối giữa)",
   "drawing.preprocess.contrast": "Tương phản",
+  "drawing.preprocess.sharpen": "Làm nét (ranh giữa các mảng)",
   "drawing.preprocess.maxSide": "Độ phân giải xử lý (px, trống = tự tính)",
   "drawing.preprocess.auto_levels": "Tự cân sáng (kéo giãn độ sáng)",
   "drawing.preprocess.clahe": "Cân bằng sáng cục bộ (ảnh tối/sáng lệch)",
@@ -731,6 +732,7 @@
 
   "drawing.hint.blackPoint": "Mọi điểm tối hơn mức này coi như đen hẳn. Tăng (vd 20–40) để bỏ nền xám bẩn; để 0 nếu ảnh sạch.",
   "drawing.hint.whitePoint": "Mọi điểm sáng hơn mức này coi như trắng hẳn (không vẽ). Giảm (vd 220–240) để bỏ nền giấy hơi xám hoặc ám màu.",
+  "drawing.hint.sharpen": "Làm nét cục bộ: ranh giữa hai mảng sáng tối (mép cột, vòm cửa, đồng hồ) rõ hơn, không thêm nét vẽ. 0 = tắt; thường 1–2 cho phong cảnh, nhà cửa. Quá lớn (trên 2,5) thì sinh viền giả quanh vật. Xem trước ở khung ảnh chưa thấy, chỉ có ở bản vẽ.",
   "drawing.hint.contrast": "Kéo giãn sáng tối quanh xám giữa. Lớn hơn 1: sáng sáng thêm, tối tối thêm, chủ thể nổi hơn (ảnh chụp nhạt, da mịn). Nhỏ hơn 1: dịu đi. Thường 1–1,6.",
   "drawing.hint.gamma": "Chỉnh độ sáng vùng giữa. Lớn hơn 1: ảnh sáng lên, ít nét tối. Nhỏ hơn 1: tối đi, nhiều nét hơn. Thường dùng 0,8–1,3.",
   "drawing.hint.maxSide": "Cạnh dài của ảnh khi xử lý. Để trống: tự tính từ khung vẽ và bút (khung ÷ bút × 1,3). Giảm để máy yếu chạy nhanh, tăng để giữ chi tiết mảnh. Tối đa 4000.",

@@ -106,6 +106,7 @@ RASTER = (
     Param("black_point", "int", 0, 0, 254),
     Param("white_point", "int", 255, 1, 255),
     Param("auto_levels", "bool", True),                               # kéo giãn 1–99% độ sáng: ảnh chụp thiếu tương phản vẫn ra nét
+    Param("sharpen", "float", 0.0, 0.0, 3.0),                         # làm nét cục bộ (unsharp mask, tone.SHARPEN_SIGMA_MM): ranh giữa các mảng sáng tối rõ hơn; 0 = tắt
     Param("clahe", "bool", False),                                    # cân bằng sáng cục bộ (ảnh tối/sáng lệch)
     Param("denoise", "bool", False),                                  # khử nhiễu NLM: chậm, chỉ cho ảnh thiếu sáng
     # Vùng chủ thể (17/11/2026): hình elip / chữ nhật, tỷ lệ 0..1 của ảnh GỐC (như crop_*); ngoài vùng độ đậm nhân với
