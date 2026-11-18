@@ -49,7 +49,7 @@
 | Khung 2D | Phóng / thu, toàn cảnh, xóa vết, phát lại | xem trước **một** tệp đang chọn; khi chạy, vệt bút bám theo đường của tệp | |
 | Hàng đợi công việc | Làm mới, Nạp, Ghim, Đẩy ưu tiên, Mở xem | đọc thẳng các bản thảo đã lưu | |
 | Terminal | Gửi, Xóa log hiển thị | gửi lệnh tay; giữ tiếng Anh để dễ tra mã lỗi | nguyên văn |
-| Dock trái | Macro | lệnh lưu sẵn (thêm / sửa / xóa), lưu ở máy chủ | |
+| Dock trái (⚡) | Macro | lệnh lưu sẵn (thêm / sửa / xóa), lưu ở máy chủ | **điện thoại: nút ⚡ bị ẩn** (18/11/2026) |
 | | Tệp nhanh | các bản thảo đã ghim, bấm để nạp (khung vẽ hiện ngay, rồi bấm Chạy) | |
 
 ---

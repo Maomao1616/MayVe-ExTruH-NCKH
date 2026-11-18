@@ -1620,6 +1620,14 @@ body.is-reordering * {
     opacity: 1;
 }
 
+/* 18/11/2026: nút ✎ bị bóp còn 16 px trong khi ký hiệu cần 21 px -> ký hiệu bị cắt (đo ở khổ 390 px).
+   Cho tối thiểu 26 px, canh giữa; máy tính chỉ rộng thêm vài px, không đổi bố cục. */
+.draft-rename-btn {
+    min-width: 26px;
+    padding: 2px 0 !important;
+    text-align: center;
+}
+
 .draft-rename-input {
     flex: 1 1 auto;
     min-width: 0;
@@ -1648,6 +1656,88 @@ body.is-reordering * {
         transition: none;
     }
 }
+
+/* ==================== 17. ĐIỆN THOẠI: ẨN NÚT ⚡, DÙNG HẾT BỀ NGANG, KHỐI DỄ ĐỌC HƠN ====================
+   Đo 18/11/2026 ở khổ 390×844: `.app-shell` (style.css mục 15) chừa 42 px bên trái cho nút ⚡ ("Truy cập nhanh")
+   nên mỗi khối chỉ rộng 321 px (86 % bề ngang), chữ trong khối còn 281 px.
+   18/11/2026 (chủ dự án): trên điện thoại **ẩn nút ⚡** (không bỏ tính năng — máy tính vẫn bấm được; bỏ đúng
+   một dòng `.dock { display: none; }` dưới đây là hiện lại). Nhờ vậy khối rộng 351 px (+9 %), chữ +9 %.
+   Máy tính (> 760 px) giữ nguyên bố cục. */
+@media (max-width: 760px) {
+    .app-shell {
+        padding: 12px 12px 40px 12px;
+    }
+
+    /* ẨN nút ⚡ trên điện thoại: nút nằm đè mép trái và bắt trang chừa 42 px nên khung bị hẹp */
+    .dock {
+        display: none;
+    }
+
+    /* Khối gọn lại: lề trong 18/20 -> 12 px (chữ rộng thêm 12–16 px), dòng 1,45 */
+    .panel {
+        padding: 12px;
+        line-height: 1.45;
+    }
+
+    /* Chữ nền trả về 14 px như máy tính (lần trước nâng 15 px thấy chật); ô nào có cỡ riêng thì giữ nguyên */
+    body {
+        font-size: 14px;
+    }
+
+    /* Khối trong cùng một cột: cách nhau 12 px (trước 16 px) cho cuộn thấy được nhiều khối hơn */
+    .control-layout {
+        gap: 12px;
+    }
+
+    /* ---- Hàng đợi công việc: mỗi dòng bản thảo đang cao 235 px ----
+       Đo 18/11/2026 ở khổ 390 px: cột Thao tác bị bóp còn 65 px nên 4 nút xuống dòng chữ (Xem nháp 3 dòng),
+       cả dòng cao 235 px; bảng rộng 406 px phải cuộn ngang. Dưới đây đổi mỗi dòng thành 2 tầng:
+       tên ở trên, 4 nút gọn ở dưới -> dòng còn ~70 px, bảng vừa 340 px, không phải cuộn ngang. */
+    #jobs-table-container table,
+    #jobs-table-container tbody,
+    #jobs-table-container tr,
+    #jobs-table-container td {
+        display: block;
+        width: auto;
+    }
+
+    #jobs-table-container thead {
+        display: none;
+    }
+
+    #jobs-table-container tbody tr {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    #jobs-table-container td {
+        padding: 0;
+        border: 0;
+    }
+
+    #jobs-table-container td:nth-child(2),
+    #jobs-table-container td:nth-child(3) {
+        display: none;                 /* giữ quy tắc cũ: ẩn Thời gian + Số liệu */
+    }
+
+    #jobs-table-container .draft-title {
+        padding-bottom: 5px;
+    }
+
+    #jobs-table-container .draft-item-actions {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        gap: 4px;
+    }
+
+    #jobs-table-container .draft-item-actions button {
+        padding: 4px 8px;
+        font-size: 12px;
+        line-height: 1.25;
+        white-space: nowrap;
+    }
+}
+
 
 /* ==================== Đèn công tắc hành trình X / Y (Pn) ở đầu bảng Vị trí ==================== */
 .panel-heading-side {
