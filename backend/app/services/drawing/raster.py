@@ -60,7 +60,7 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
         warnings.append({"code": "palette_ignored", "count": 1})
 
     # Viền cần ảnh màu để thấy ranh giới hai mảng khác màu cùng độ sáng (đỏ cạnh xanh lá)
-    wants_outline = sp.kind == "outline" or sp.outline_overlay
+    wants_outline = sp.kind in ("outline", "sketch") or sp.outline_overlay      # phác chì cần ảnh màu cho mô hình
     step("read", 0.05, "Đọc ảnh")
     img = raster_in.load(data, rp, ref_w, ref_h, ctx, color=multi or wants_outline)
     step("tone", 0.2, "Chỉnh sắc độ")

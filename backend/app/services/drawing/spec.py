@@ -120,7 +120,7 @@ RASTER = (
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
     Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am",
-                                                          "flow")),
+                                                          "flow", "sketch")),
     Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("am_fill", "bool", False),                                  # sóng biến thiên: phủ đều đường ở vùng sáng (styles.AM_FILL)
     Param("outline_overlay", "bool", False),                          # thêm lớp viền phác họa lên kiểu tô
@@ -147,10 +147,10 @@ PALETTE = (
 PENS = (0.38, 0.4, 0.5)
 # crosshatch3 (đan 3 hướng) và flow (theo dáng thuần) còn chạy được cho bản thảo cũ nhưng đã bỏ khỏi giao diện 13/11/2026
 # (in thật: đan 3 đậm nhạt như đan chéo, nét rối hơn; theo dáng thuần trông không thực, A6 không ra hình).
-STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow")
+STYLES = ("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch3", "wave_am", "flow", "sketch")
 # Kiểu hiện trên giao diện (ô style-kind ở index.html, đúng thứ tự). zigzag / wave ẩn từ 13/11/2026 (đan chéo + theo dáng
 # đẹp hơn); mặc định của tham số kind vẫn "zigzag" để API / bản thảo cũ không đổi nghĩa. Test kiểm khớp với index.html.
-UI_STYLES = ("crosshatch", "flow", "wave_am", "spiral", "outline")
+UI_STYLES = ("crosshatch", "flow", "wave_am", "spiral", "outline", "sketch")
 
 GROUPS = {"layout": LAYOUT, "gcode": GCODE, "machine": MACHINE, "optimize": OPTIMIZE, "svg": SVG,
           "raster": RASTER, "style": STYLE, "palette": PALETTE}

@@ -909,6 +909,7 @@
                       <option data-i18n="drawing.style.waveAm" value="wave_am">Sóng biến thiên (tông liền)</option>
                       <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
                       <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
+                      <option data-i18n="drawing.style.sketch" value="sketch">Phác chì (AI, chân dung người và thú)</option>
                     </select>
                   </label>
                   <label for="palette-mode" data-i18n="[title]drawing.hint.paletteMode">
@@ -954,7 +955,7 @@
                 <div class="checkbox-list">
                   <label data-i18n="[title]drawing.hint.xdog">
                     <input id="style-xdog" type="checkbox"/>
-                    <span data-i18n="drawing.style.xdog">Dùng XDoG (viền rõ hơn ở ảnh chụp, ảnh tối / ngược sáng)</span>
+                    <span data-i18n="drawing.style.xdog">Dùng FDoG (viền rõ hơn ở ảnh chụp, ảnh tối / ngược sáng)</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.outlineOverlay">
                     <input id="style-outline" type="checkbox"/>
@@ -1084,7 +1085,6 @@
                 <div class="drawing-canvas-toolbar">
                   <button data-i18n="drawing.canvas.fit" disabled="" id="drawing-fit-btn" type="button">Xem toàn bộ</button>
                   <button data-i18n="drawing.canvas.rotate" disabled="" id="drawing-rotate-btn" type="button">Xoay 90°</button>
-                  <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Giữ Shift + cuộn để thu phóng</span>
                   <button data-i18n="drawing.canvas.keep; [title]drawing.hint.keep" disabled="" id="drawing-keep-btn" type="button">Giữ bản này</button>
                   <label class="checkbox-inline" data-i18n="[title]drawing.hint.compare" for="drawing-compare">
                     <span data-i18n="drawing.canvas.compare">So sánh</span>
@@ -1095,6 +1095,7 @@
                     </select>
                   </label>
                   <span class="muted-text" id="drawing-compare-info"></span>
+                  <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Giữ Shift + cuộn để thu phóng</span>
                   <span class="muted-text" id="drawing-canvas-zoom">—</span>
                 </div>
                 <div class="drawing-canvas-stage" id="drawing-canvas-stage">

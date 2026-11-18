@@ -262,6 +262,7 @@ Các dải **không chồng nhau**. Hàm `styles._passes` trả lần lượt (m
 | Theo dáng ảnh (`flow`) | hiện | chọn tay | 8.10 |
 | Xoắn ốc (`spiral`) | hiện | chọn tay | 8.4 |
 | Nét viền (`outline`) | hiện | preset Schematic; làm lớp viền | 9 |
+| Phác chì (`sketch`) | hiện (18/11/2026, chưa in giấy) | chọn tay (chân dung người và thú); cần mô hình AI ngoài Git | 8.15 |
 | zigzag | ẩn, còn dùng làm nền của gạch chéo và lớp đậm của sóng | — | 8.1, 8.2 |
 | sóng thường (`wave`), đan 3 hướng (`crosshatch3`) | ẩn (tờ tông còn dùng) | — | 8.3 |
 | lai đan chéo + theo dáng | đã xóa 17/11/2026 ([09](09_QUYET_DINH_THIET_KE.md) P28) | — | — |
@@ -411,6 +412,17 @@ Chỉ cần kiểu tô là hàm "ảnh mục tiêu → nét" nên dùng chung đ
 - **Kiểm chéo bằng diện tích hợp các nét (shapely, đúng hình học)** trên 18 ô 30 × 30 mm nét thật: `ink_cover` ra 0,97–1,00 ×, bộ dựng cũ của `ink_sim` ra 1,06–1,13 × (thiên về đậm ~9 %). `ink_sim` đã đổi sang cách dựng này; số `ink_sim` ghi trong tài liệu trước 17/11 chỉ so tương đối được.
 
 ---
+
+### 8.15 Phác chì (`sketch`, `sketch.py`, 18/11/2026): ảnh chì do AI vẽ, rồi vẽ bằng nét theo dáng
+Cho chân dung **người và động vật** (chủ dự án 18/11: "chân dung coi như áp cả cho động vật"), kiểu bản phác chì. Đây là chỗ **duy nhất dùng mô hình học sâu**; mọi bước khác là thuật toán cổ điển.
+1. **Mô hình:** U²-Net Portrait (Qin và cộng sự, huấn luyện trên bộ APDrawing: ảnh chân dung → bản vẽ chì). Tệp ONNX opset 10 của `ailia-models` (`storage.googleapis.com/ailia-models/u2net_portrait/u2net_portrait.onnx`, **176 282 629 byte**), chạy bằng `onnxruntime` CPU 2 luồng (`SKETCH_THREADS`). Đầu vào: ảnh màu của khung đệm trắng thành 512 × 512, chia cho giá trị lớn nhất rồi chuẩn hóa ImageNet; đầu ra: ảnh chì min-max (đen = nét). Mã và trọng số của U²-Net ghi **Apache-2.0** (theo các trang mô hình, chưa đối chiếu LICENSE gốc; bộ dữ liệu APDrawing có thể có điều khoản riêng nên **hỏi trước khi bán máy**).
+2. **Vì sao không ép thành đường mảnh:** ảnh chì có đậm nhạt. Làm mảnh (`skeletonize`) từ nó thì tóc thành lưới đa giác, ảnh chó mất nửa nét (đã thử 18/11: thử cả ngưỡng nét mực và top-hat 1,0 / 1,6 mm). Cách giữ được kết cấu chì: coi ảnh chì là **bản đồ độ đậm** (phóng về cỡ xử lý, nhân `SKETCH_GAIN` 1,15) rồi vẽ bằng `styles.flow_groups` (mục 8.10): nét uốn dọc sợi tóc, dày ở chỗ đậm, thưa ở chỗ nhạt, viền mắt mũi miệng vẫn ra. Gạch chéo thử cùng bản đồ thì kém (chỉ còn vài mảng).
+3. **Bỏ vạch nền:** nét thẳng (hai đầu / chiều dài ≥ 0,99), dài hơn 30 mm, lệch trục dọc / ngang dưới 6° (`SKETCH_RULER_*`) là rèm, cạnh tường: bỏ; nét xiên và cong vẫn giữ. Ảnh có kiến trúc thẳng sẽ mất nét thật.
+4. **Cắt sát đầu:** mô hình học trên ảnh đầu người cỡ 512 px; đầu càng nhỏ trong khung thì mắt, mũi càng ít chi tiết. Dùng ô **Cắt ảnh** cắt sát đầu (OpenCV 5 bản headless không có bộ dò mặt `CascadeClassifier`, nên chưa tự cắt).
+5. **Tốc độ** (CPU máy dev, chưa đo trên MiniPC i5-6100T): mô hình ~1,7 s; cả bản vẽ chân dung A4 xử lý ~3,5 s; ước tính vẽ ~2 phút, 225–256 nét (ảnh người, ảnh chó). Cổng đặt ra 18/11 là dưới ~20 s: **qua**.
+6. **Mô hình là dữ liệu ngoài:** đặt ở `data/models/u2net-portrait.onnx` (thư mục `data/` không lên Git, **không vào gói zip**: máy mới phải chép tay). Thiếu tệp hoặc thiếu `onnxruntime` thì báo lỗi `model_missing`, không sập. Gói `onnxruntime` đã thêm vào `requirements.txt` và cài vào cả `Python\` đi kèm.
+7. **Đã thử và bỏ:** Informative Drawings (ONNX của `rocca`, 17 MB): nét sạch nhưng "làm già mặt", và làm lớp viền thêm vào kiểu khác thì chỉ làm xấu (chủ dự án 18/11). Mã, tùy chọn "Viền do AI vẽ" và tệp mô hình đã xóa.
+8. Không có vòng sửa sai (`REFINE_KINDS`), không có đường cong tông. Hạn chế đã thấy: nền có vạch thẳng xiên vẫn ra nét; ảnh nhiều người hay phong cảnh không hợp (mô hình chỉ học đầu người). **Chưa in giấy.**
 
 ## 9. Kiểu Viền: ảnh thành đường nét một lượt (`edges.py`, `trace.py`)
 
@@ -638,7 +650,7 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 | Xóa đoạn vẽ chồng | plugin `deduplicate` của vpype | bớt nét trùng | `vpype deduplicate` |
 | Phân vùng siêu điểm ảnh | `skimage.segmentation.slic` | mảng màu sạch hơn mean shift | `SLIC superpixels` |
 | Đo chất lượng | SSIM, OCR `pytesseract` (gói `vie`) | số liệu "giống bản gốc bao nhiêu %" cho báo cáo | `SSIM`, `character error rate` |
-| **Nặng** (laptop, hoặc khi máy vẽ rảnh): AI tìm viền, ảnh → tranh nét | TEED, PiDiNet, HED qua `cv2.dnn` / onnxruntime; Informative Drawings (ONNX bản rocca 17 193 338 byte (16,4 MiB), mã MIT nhưng **trọng số không ghi giấy phép** (hỏi tác giả nếu bán máy); chuẩn hóa đầu vào: notebook [-1,1], một nguồn khác [0,1], phải thử mới biết); Anime2Sketch (chỉ có PyTorch ~218 MB) | viền ảnh chụp sạch hơn Canny | ⚠ đo tốc độ trên i5-3210M trước |
+| **Nặng** (laptop, hoặc khi máy vẽ rảnh): AI tìm viền, ảnh → tranh nét | TEED, PiDiNet, HED qua `cv2.dnn` / onnxruntime; Informative Drawings (ONNX bản rocca 17 193 338 byte (16,4 MiB), mã MIT nhưng **trọng số không ghi giấy phép** (hỏi tác giả nếu bán máy); chuẩn hóa đầu vào: notebook [-1,1], một nguồn khác [0,1], phải thử mới biết); Anime2Sketch (chỉ có PyTorch ~218 MB) | viền ảnh chụp sạch hơn Canny | **U²-Net Portrait đã làm 18/11/2026 (mục 8.15, kiểu Phác chì; ~3,5 s trên CPU dev)**; Informative Drawings đã thử và bỏ; các mô hình còn lại chưa |
 
 ---
 
@@ -662,6 +674,7 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 |---|---|---|
 | Bút, độ phủ | `LINE_WIDTH_RATIO`, `DEFAULT_SPACING_PEN`, `MAX_COVERAGE` (`styles.py`) | 1,0 · 2,0 · 0,9 |
 | Đường cong tông | `USE_TONE_CURVE`, `TONE_CURVE_STRENGTH` | bật · 0,75 |
+| Phác chì (`sketch.py`) | `SKETCH_INPUT_PX`, `SKETCH_GAIN`, `SKETCH_RULER_MM` | 512 · 1,15 · 30 mm |
 | Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM` (`styles.py`); `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
 | Gạch chéo | `CROSS_START`, `CROSS_SLOPE`, `CROSS_ANGLE` | 0,45 · 0,5 · 90° |
 | Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 6 mm (18/11/2026, trước 1,5) · 0,2 |
