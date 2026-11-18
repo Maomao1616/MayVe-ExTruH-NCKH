@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~545,309 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~543,812 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -155,15 +155,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `optimize.py` | ~1,148 | Tối ưu nét bằng vpype: nối nét gần nhau, đơn giản hóa, bỏ nét ngắn, sắp xếp giảm quãng bút nâng. |
 | `palette.py` | ~1,124 | Chia 2–4 màu: k-means (OpenCV) trên Lab, ảnh thu nhỏ ~300 px; mỗi màu một vùng, mỗi vùng một lớp bút. |
 | `preview.py` | ~409 | Nét xem nháp: rút gọn để vẽ lên canvas (tọa độ NGUỒN, trước bố trí; frontend tự di chuyển/co giãn). |
-| `raster.py` | ~3,128 | Dây chuyền ảnh raster -> đường nét: đọc -> chỉnh sắc độ -> tô nét -> tối ưu vpype. |
+| `raster.py` | ~3,112 | Dây chuyền ảnh raster -> đường nét: đọc -> chỉnh sắc độ -> tô nét -> tối ưu vpype. |
 | `raster_in.py` | ~1,891 | Nạp ảnh raster -> ảnh xám ở độ phân giải làm việc + kích thước thật (mm). |
 | `refine.py` | ~2,220 | Vòng sửa sai (17/11/2026, docs/06 mục 8.13): vẽ thử → dựng lại mực → so với độ phủ định vẽ → chỉnh ảnh mục tiê |
 | `registry.py` | ~379 | Sổ đăng ký: gom các biến thể cùng loại (kiểu vector hóa...). Thêm kiểu mới không sửa chỗ khác. |
 | `service.py` | ~1,353 | Ghép các bước: kiểm tra tham số -> bố trí -> G-code (mỗi lớp một tệp) -> kiểm bằng chính bộ làm sạch |
 | `shapes.py` | ~174 | Kiểu dữ liệu dùng chung. Tọa độ đường nét: (x, y) tính bằng mm, gốc ở góc trên trái, Y xuống. |
-| `spec.py` | ~4,062 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
+| `spec.py` | ~4,053 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
 | `store.py` | ~463 | Bộ nhớ tạm các bản vẽ đã nạp (để đổi tham số bố trí/G-code không phải nạp lại ảnh/SVG). |
-| `styles.py` | ~9,310 | Kiểu tô: mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
+| `styles.py` | ~9,137 | Kiểu tô: mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
 | `svg_in.py` | ~1,559 | Nạp SVG (nhiều lớp) bằng vpype -> các lớp đường nét tính bằng mm. |
 | `tasks.py` | ~1,287 | Tác vụ nền của tab vẽ: MỘT luồng worker tại một thời điểm, có tiến trình và hủy hợp tác. |
 | `testgcode.py` | ~4,472 | Sinh G-code cho các tờ thử máy (docs/07_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệ |
@@ -243,20 +243,20 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `03_CAU_TRUC_PHAN_MEM.md` | ~5,702 |  |
 | `04_TAB_DIEU_KHIEN.md` | ~5,569 |  |
 | `05_TAB_TAO_BAN_VE.md` | ~5,135 |  |
-| `06_THUAT_TOAN_XU_LY_ANH.md` | ~18,376 |  |
+| `06_THUAT_TOAN_XU_LY_ANH.md` | ~17,555 |  |
 | `07_THU_NGHIEM.md` | ~5,713 |  |
 | `08_TRIEN_KHAI.md` | ~5,743 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~7,869 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~7,813 |  |
 | `10_HUONG_PHAT_TRIEN.md` | ~4,929 |  |
-| `11_VIEC_CAN_LAM.md` | ~3,030 |  |
-| `AI_CODEMAP.md` | ~6,902 |  |
+| `11_VIEC_CAN_LAM.md` | ~2,888 |  |
+| `AI_CODEMAP.md` | ~6,900 |  |
 | `AI_START.md` | ~3,533 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~35,757 |  |
+| `index.html` | ~35,720 |  |
 
 ### `frontend/assets/css/`
 
@@ -335,7 +335,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `canvas.js` | ~6,749 | canvas khung vẽ: tờ giấy (A6/A5/A4 như khung dán thật trên bàn), lề, nét xem nháp |
 | `crop.js` | ~3,108 | cắt ảnh ngay trên khung "ảnh gốc" của tab Tạo bản vẽ. |
-| `params.js` | ~5,971 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
+| `params.js` | ~5,964 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
 | `presets.js` | ~995 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
 | `subject.js` | ~2,190 | khoanh vùng chủ thể trên ảnh gốc (elip / chữ nhật). Ngoài vùng bản vẽ nhạt đi (backend |
 | `tonepreview.js` | ~1,090 | khung "ảnh gốc" của tab Tạo bản vẽ: xem ảnh gốc hoặc ảnh SAU chỉnh sáng |
@@ -344,8 +344,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~18,732 |  |
-| `vi.json` | ~17,831 |  |
+| `en.json` | ~18,607 |  |
+| `vi.json` | ~17,722 |  |
 
 ### `frontend/tests/`
 

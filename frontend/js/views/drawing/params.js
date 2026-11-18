@@ -240,7 +240,7 @@ export function syncVisibility() {
         if (label) label.hidden = outlineOnly;
     }
     const refine = $("style-refine")?.closest("label");
-    if (refine) refine.hidden = outlineOnly || kind === "flow" || kind === "sketch";       // vòng sửa sai không áp cho Nét viền và Theo dáng ảnh (backend styles.REFINE_KINDS)
+    if (refine) refine.hidden = outlineOnly || kind === "flow";       // vòng sửa sai không áp cho Nét viền và Theo dáng ảnh (backend styles.REFINE_KINDS)
     // Sóng biến thiên và Theo dáng ảnh không chia mức: ẩn số mức và ô chuyển mức mềm
     const levelless = outlineOnly || kind === "wave_am" || kind === "flow";
     const levels = $("style-levels")?.closest("label");

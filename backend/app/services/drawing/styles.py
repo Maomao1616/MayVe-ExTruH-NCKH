@@ -410,20 +410,9 @@ def flow_fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = No
     return _flat(flow_groups(f, style, pen_mm, ctx, angle))
 
 
-# === B. Phác chì (18/11/2026): chân dung kiểu bản phác, nét bao do mô hình AI vẽ + gạch bóng ở chỗ tối. Lõi ở sketch.py ----------
-def sketch_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
-    from . import sketch
-    return sketch.sketch_groups(f, style, pen_mm, ctx, angle)
-
-
-@FILLERS.register("sketch")
-def sketch_fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    return _flat(sketch_groups(f, style, pen_mm, ctx, angle))
-
-
 GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_groups,
             "crosshatch": crosshatch_groups, "crosshatch3": crosshatch3_groups, "wave_am": wave_am_groups,
-            "flow": flow_groups, "sketch": sketch_groups}
+            "flow": flow_groups}
 
 
 # === B. Nét viền ==========================================================================================================
