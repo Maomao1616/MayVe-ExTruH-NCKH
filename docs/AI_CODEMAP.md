@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~526,354 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~538,975 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -79,7 +79,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `CLAUDE.md` | ~1,898 |  |
-| `README.md` | ~1,563 |  |
+| `README.md` | ~3,658 |  |
 
 ### `.clinerules/`
 
@@ -89,7 +89,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `01-an-toan.md` | ~502 |  |
 | `02-cau-truc.md` | ~731 |  |
 | `03-quy-trinh.md` | ~918 |  |
-| `04-giao-tiep.md` | ~568 |  |
+| `04-giao-tiep.md` | ~574 |  |
 
 ### `backend/app/`
 
@@ -155,19 +155,20 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `optimize.py` | ~1,148 | Tối ưu nét bằng vpype: nối nét gần nhau, đơn giản hóa, bỏ nét ngắn, sắp xếp giảm quãng bút nâng. |
 | `palette.py` | ~1,124 | Chia 2–4 màu: k-means (OpenCV) trên Lab, ảnh thu nhỏ ~300 px; mỗi màu một vùng, mỗi vùng một lớp bút. |
 | `preview.py` | ~409 | Nét xem nháp: rút gọn để vẽ lên canvas (tọa độ NGUỒN, trước bố trí; frontend tự di chuyển/co giãn). |
-| `raster.py` | ~3,102 | Dây chuyền ảnh raster -> đường nét: đọc -> chỉnh sắc độ -> tô nét -> tối ưu vpype. |
+| `raster.py` | ~3,112 | Dây chuyền ảnh raster -> đường nét: đọc -> chỉnh sắc độ -> tô nét -> tối ưu vpype. |
 | `raster_in.py` | ~1,891 | Nạp ảnh raster -> ảnh xám ở độ phân giải làm việc + kích thước thật (mm). |
+| `refine.py` | ~2,220 | Vòng sửa sai (17/11/2026, docs/06 mục 8.13): vẽ thử → dựng lại mực → so với độ phủ định vẽ → chỉnh ảnh mục tiê |
 | `registry.py` | ~379 | Sổ đăng ký: gom các biến thể cùng loại (kiểu vector hóa...). Thêm kiểu mới không sửa chỗ khác. |
 | `service.py` | ~1,353 | Ghép các bước: kiểm tra tham số -> bố trí -> G-code (mỗi lớp một tệp) -> kiểm bằng chính bộ làm sạch |
 | `shapes.py` | ~174 | Kiểu dữ liệu dùng chung. Tọa độ đường nét: (x, y) tính bằng mm, gốc ở góc trên trái, Y xuống. |
-| `spec.py` | ~4,000 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
+| `spec.py` | ~4,053 | Khai báo tham số MỘT chỗ: tên, kiểu, mặc định, giới hạn. Dùng để kiểm tra đầu vào VÀ để trả cho |
 | `store.py` | ~463 | Bộ nhớ tạm các bản vẽ đã nạp (để đổi tham số bố trí/G-code không phải nạp lại ảnh/SVG). |
-| `styles.py` | ~9,074 | Kiểu tô: mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
+| `styles.py` | ~9,137 | Kiểu tô: mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
 | `svg_in.py` | ~1,559 | Nạp SVG (nhiều lớp) bằng vpype -> các lớp đường nét tính bằng mm. |
 | `tasks.py` | ~1,287 | Tác vụ nền của tab vẽ: MỘT luồng worker tại một thời điểm, có tiến trình và hủy hợp tác. |
 | `testgcode.py` | ~4,472 | Sinh G-code cho các tờ thử máy (docs/07_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệ |
 | `testsheets.py` | ~1,729 | Tờ thử máy thành BẢN THẢO thường (xem trước, nạp sang Điều khiển, chạy): nhấc bút, mất bước, gia tốc / góc, tố |
-| `tone.py` | ~1,143 | Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất). |
+| `tone.py` | ~1,384 | Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất). |
 | `trace.py` | ~1,726 | Mặt nạ nét -> làm mảnh (skeleton) -> dò thành các nét liền (mm). |
 
 ### `backend/tests/`
@@ -218,11 +219,12 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_isolated.py` | ~1,131 | Xử lý ảnh trong tiến trình riêng: kết quả như chạy thẳng, hủy / quá giờ / sập đều gọn. |
 | `test_outline_cleanup.py` | ~760 | Viền nét đơn: cắt râu của nét dày, khép vòng kín. |
 | `test_palette.py` | ~743 |  |
-| `test_raster_in.py` | ~1,314 |  |
+| `test_raster_in.py` | ~1,615 |  |
+| `test_refine.py` | ~1,539 | Vòng sửa sai (refine.py, 17/11/2026): dựng mực đúng độ rộng, chỉnh mục tiêu làm sai số nhỏ đi, không thêm nét  |
 | `test_soft_styles.py` | ~3,040 | Chuyển mức mềm (soft_levels), gạch chéo chồng lớp (crosshatch), sóng biến thiên (wave_am). Đo bằng mô phỏng mự |
 | `test_subject.py` | ~916 | Vùng chủ thể (tone.apply_subject, 17/11/2026): ngoài vùng nhạt đi, trong vùng giữ nguyên, tính đúng khi ảnh bị |
 | `test_testsheets.py` | ~2,845 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
-| `test_tone_curve.py` | ~613 | Đường cong tông (styles.TONE_CURVES, đo 13/11/2026) (kiểu lai đan chéo + theo dáng đã xóa 17/11/2026). |
+| `test_tone_curve.py` | ~595 | Đường cong tông (styles.TONE_CURVES, đo 13/11/2026) (kiểu lai đan chéo + theo dáng đã xóa 17/11/2026). |
 | `test_upload_names.py` | ~920 | Nạp ảnh: nhận dạng bằng nội dung, tên tệp dài / ký tự lạ không làm hỏng (lỗi thật 11/11/2026: ảnh 200 KB tên d |
 | `test_xdog.py` | ~642 | XDoG cho lớp ranh giới mảng (edges.xdog_edges, 13/11/2026): Nét viền tích "Dùng XDoG", lớp viền phủ lên kiểu t |
 
@@ -237,24 +239,24 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `01_TONG_QUAN.md` | ~3,013 |  |
-| `02_PHAN_CUNG_MAY.md` | ~3,804 |  |
+| `02_PHAN_CUNG_MAY.md` | ~3,926 |  |
 | `03_CAU_TRUC_PHAN_MEM.md` | ~5,702 |  |
 | `04_TAB_DIEU_KHIEN.md` | ~5,555 |  |
-| `05_TAB_TAO_BAN_VE.md` | ~4,948 |  |
-| `06_THUAT_TOAN_XU_LY_ANH.md` | ~17,123 |  |
-| `07_THU_NGHIEM.md` | ~4,770 |  |
+| `05_TAB_TAO_BAN_VE.md` | ~4,978 |  |
+| `06_THUAT_TOAN_XU_LY_ANH.md` | ~17,396 |  |
+| `07_THU_NGHIEM.md` | ~5,713 |  |
 | `08_TRIEN_KHAI.md` | ~5,743 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~7,489 |  |
-| `10_HUONG_PHAT_TRIEN.md` | ~3,141 |  |
-| `11_VIEC_CAN_LAM.md` | ~2,625 |  |
-| `AI_CODEMAP.md` | ~6,769 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~7,594 |  |
+| `10_HUONG_PHAT_TRIEN.md` | ~4,929 |  |
+| `11_VIEC_CAN_LAM.md` | ~2,870 |  |
+| `AI_CODEMAP.md` | ~6,900 |  |
 | `AI_START.md` | ~3,533 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~35,217 |  |
+| `index.html` | ~35,451 |  |
 
 ### `frontend/assets/css/`
 
@@ -270,7 +272,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `drawing.css` | ~2,556 | 9. TAB TAO BAN VE |
 | `jobchart.css` | ~1,592 | Biểu đồ số liệu chạy máy (views/jobchart.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
 | `polish.css` | ~12,976 | POLISH: lop tinh chinh giao dien |
-| `style.css` | ~13,193 |  |
+| `style.css` | ~13,213 |  |
 | `testsheet.css` | ~649 | Tờ thử / hiệu chỉnh (Cài đặt, views/settings.js initTestSheets). Chỉ dùng biến màu có sẵn ở tokens.css. |
 
 ### `frontend/js/`
@@ -315,7 +317,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `auth.js` | ~695 | khung "Khách / Quản lý" ở đầu trang: chủ ghi #auth-box và các phần tử con. |
 | `confirm.js` | ~810 | hộp xác nhận chung của app (cùng kiểu "Bỏ điểm dừng"), thay cho window.confirm của trình duyệt. |
-| `control.js` | ~11,094 | Tab Điều khiển. |
+| `control.js` | ~11,081 | Tab Điều khiển. |
 | `customer.js` | ~2,416 | ảnh khách gửi (backend: api/customer.py, services/customer.py). |
 | `dock.js` | ~2,833 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
@@ -325,7 +327,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `preview.js` | ~6,733 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
 | `settings.js` | ~14,125 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
 | `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
-| `terminal.js` | ~3,882 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |
+| `terminal.js` | ~3,878 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |
 
 ### `frontend/js/views/drawing/`
 
@@ -333,8 +335,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `canvas.js` | ~5,334 | canvas khung vẽ: tờ giấy (A6/A5/A4 như khung dán thật trên bàn), lề, nét xem nháp |
 | `crop.js` | ~3,108 | cắt ảnh ngay trên khung "ảnh gốc" của tab Tạo bản vẽ. |
-| `params.js` | ~5,948 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
-| `presets.js` | ~882 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
+| `params.js` | ~5,964 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
+| `presets.js` | ~995 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
 | `subject.js` | ~2,190 | khoanh vùng chủ thể trên ảnh gốc (elip / chữ nhật). Ngoài vùng bản vẽ nhạt đi (backend |
 | `tonepreview.js` | ~943 | khung "ảnh gốc" của tab Tạo bản vẽ: xem ảnh gốc hoặc ảnh SAU chỉnh sáng |
 
@@ -342,8 +344,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~17,888 |  |
-| `vi.json` | ~17,072 |  |
+| `en.json` | ~18,269 |  |
+| `vi.json` | ~17,423 |  |
 
 ### `frontend/tests/`
 
@@ -363,8 +365,9 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `export_context.py` | ~4,890 | Xuất mã nguồn thành MỘT tệp markdown gọn để đưa cho AI khác, tiết kiệm token. |
+| `ink_real.py` | ~1,152 | Đo sai tông của một kiểu tô trên ẢNH THẬT, trước / sau vòng sửa sai (backend/app/services/drawing/refine.py). |
 | `ink_sim.py` | ~1,915 | Mô phỏng mực: nét (mm) -> ảnh độ phủ mực với bề rộng nét thật, so với độ đậm mong muốn. Không cần in giấy. |
 | `log_read.py` | ~1,388 | Đọc nhật ký chạy máy data/job_logs/<id>.csv (services/joblog.py): hàng đợi cạn lúc nào, tốc độ thật, từng vùng |
 | `make_test_gcode.py` | ~845 | Sinh sẵn các tệp G-code cho các bài thử máy (docs/07_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn. |
-| `style_preview.py` | ~1,439 | Vẽ thử một ảnh với nhiều kiểu tô / preset ra PNG để so (không cần mở giao diện), kèm số nét, thời gian ước tín |
+| `style_preview.py` | ~1,663 | Vẽ thử một ảnh với nhiều kiểu tô / preset ra PNG để so (không cần mở giao diện), kèm số nét, thời gian ước tín |
 | `tone_read.py` | ~3,350 | Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/07 mục 2, docs/06 mục 8.12). |

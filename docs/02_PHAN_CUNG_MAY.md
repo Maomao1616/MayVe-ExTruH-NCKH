@@ -84,7 +84,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | F13 | (13/11/2026) Gửi từng dòng chờ `ok` qua USB 115200 đạt **~125 dòng/giây** (124–130, mọi độ dài đoạn); hàng đợi chuyển động **15 khối**; `G4` bắt máy chạy hết hàng đợi rồi mới chờ | ước tính thời gian tính giới hạn này (`EST_LINES_PER_S`, `EST_DWELL_FLUSH_S`); nét cong ghi bằng G2/G3 |
 | F14 | (13/11/2026) **G2/G3 chạy đúng và đủ tốc** (vòng R10 ở 8000: 5,7 s, hàng đợi đầy) | `drawing/arcs.py` |
 | F15 | (13/11/2026) Tốc độ báo trong `FS:` (biểu đồ Tốc độ thật) **cao hơn thật tới 1,41 lần** tùy hướng chạy (máy CoreXY: vòng G2 thật ~7 900 mm/phút, biểu đồ 10 000–11 300; đường ngang G0 10 000 báo 14 142) | đọc tốc độ thật bằng quãng đường ÷ thời gian, không đọc số trên biểu đồ ([11](11_VIEC_CAN_LAM.md) mục 4.3: sửa biểu đồ) |
-| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án). 17/11: nghi do xung điều khiển trong firmware, không do mã; nút bút đổi sang `G90 G0 Z…` để so với `$J=` ([07](07_THU_NGHIEM.md) B2); tụt thì xem Terminal có `pen re-lift not sent` |
+| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án). 17/11: nghi do xung điều khiển trong firmware, không do mã; nút bút đổi sang `G90 G0 Z…` để so với `$J=` ([07](07_THU_NGHIEM.md) B2); tụt thì xem Terminal có `pen re-lift not sent`. **18/11: chốt, thôi.** Bấm nút bút liên tục (đổi Lên / Giữa / Xuống nhanh) thì có lúc servo **nhảy xung và giật về vị trí 1250** (chủ dự án ghi "1250 ms"; dải xung cấu hình là 1350–1950 µs, tôi chưa kiểm số này); dùng bình thường không ảnh hưởng. Coi là giới hạn xung của firmware, không sửa mã |
 
 ## 6. Kết quả thử máy
 
@@ -104,7 +104,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 
 ## 7. Còn phải thử ⏳
 
-Gộp về một danh sách ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md) nhóm B (còn: bản vẽ thật có G2/G3, servo sau Home F16, laptop yếu; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
+Gộp về một danh sách ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md) nhóm B (còn: laptop yếu, tiếng "khực" góc trái; bản vẽ có G2/G3 và servo F16 đã xong 18/11; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
 
 ## 8. Ghi chú điện tử cho người nối dây
 

@@ -38,12 +38,21 @@ Thuật toán đã tạm ổn. **Chân dung bỏ khỏi danh sách**: bạn tự
 | A5 | **Sửa sai tông** (mới 17/11) | một ảnh chân dung, cùng preset Chân dung, ô **Sửa sai tông** = **0** rồi **1** (rồi 2 nếu muốn), cùng khổ | A5 ×2 | so hai tờ cạnh nhau: tờ 1 lượt có đúng đậm nhạt hơn không (vùng giữa, da), có đậm lên quá không; nét có rối hơn không; thời gian thật (dự tính +4–8 %). Thấy đậm quá: hạ gamma hoặc để 0 |
 | A6 | **Theo dáng ảnh** (⏳ **chờ ảnh thật**, làm cuối) | ảnh người + ảnh thú (lông rõ), kiểu Theo dáng ảnh | A4 | đã chỉnh 17/11 theo nhận xét: nền tối thưa bớt (`FLOW_MAX_COVER` 0,9 → 0,85), vùng sáng dày thêm (`FLOW_MAX_SEP_LINES` 5 → 4,5, `FLOW_WHITE` 0,1 → 0,08); nét chạy theo tầm nhìn trung bình đã ổn. Khi có ảnh thật: vùng tối còn **đặc** / **vụn**, vùng sáng đủ nét chưa (→ báo AI chỉnh) |
 
-### B. Máy (còn 3 bài; các bài đã đạt đã dồn về [11](11_VIEC_CAN_LAM.md) mục 3)
+**Kết quả in giấy 18/11/2026** (chủ dự án báo bằng ảnh, chưa có số; chưa đổi hằng nào):
+| Bài | Đã in | Nhận xét của chủ dự án (và điều tôi thấy trên ảnh) |
+|---|---|---|
+| A4 tờ tông | Thang tông, **UB-155**, A5 | nét không đủ đậm vì cụm bút **thiếu lực tì** ngòi, "có lẽ không chuẩn lắm"; số đo tông từ tờ này kém tin cậy; UB-155 **dừng ở đây** |
+| A1 Ảnh 2D | hoạt hình (Tom), kiểu 2D | chưa nhận xét |
+| A5 Sửa sai tông | chân dung, bút **UM-100**: trái = **1 lượt**, phải = **2 lượt + nét viền** | **Chốt (chủ dự án): 1 lượt, không viền tốt hơn**; viền gây rối ở ảnh nhiều góc nét, lượt 2 làm đậm hơn bình thường (mặc định giữ 1 lượt, preset Chân dung giữ không viền). Bản phải đậm và rõ nét mặt hơn; trên ảnh, đường viền ở áo / cổ nhìn **rối như vết nứt** (chưa kiểm là do viền hay do 2 lượt). Nhật ký chạy (CSV, ~901 s) là của bản phải; trong đó hàng đợi **cạn hai lần** (~2 s ở giây 117, ~13 s ở giây 527–540: máy bò chậm, bút còn hạ), nguyên nhân chưa rõ (máy tính / mạng gửi chậm) |
+| A6 Theo dáng ảnh | mèo, **Theo dáng ảnh** + 2 lượt + elip tập trung | chưa nhận xét |
+| A3 Vùng chủ thể | ảnh hoa, **Xoắn ốc**, nền ngoài vùng **50 %** | "cũng được": phần bên phải mờ đi chấp nhận được |
+| A2 Phong cảnh | **Sakura nhập 0,4** (đo thật là **0,5**, 02) | nét đậm, chưa rõ; **phân vùng** (các mảng sáng / tối) cần cải thiện. Đậm hơn dự kiến một phần vì khoảng cách nét tính theo 0,4 trong khi nét thật 0,5 |
+
+### B. Máy (còn 2 bài; B1 bản vẽ G2/G3, B2 servo, tab Điều khiển mượt đã xong 18/11, dồn về [11](11_VIEC_CAN_LAM.md) mục 3 và [02](02_PHAN_CUNG_MAY.md) F16)
 | # | Bài | Làm | Nhìn và ghi |
 |---|---|---|---|
-| B1 | **Bản vẽ thật đầu tiên có G2/G3** | tạo nét một ảnh bất kỳ (có đường cong: viền, sóng, xoắn ốc, theo dáng đều ra cung, không chỉ xoắn ốc). Ở tab Tạo bản vẽ, dòng **G-code** ghi `… dòng · N cung G2/G3`: N > 0 là có. Vẽ A5 | chạy hết, **không `error`** ở Terminal; nét cong mượt; thời gian thật / ước tính |
-| B2 | **Servo sau Home** | từ 17/11 nút Bút **Lên / Giữa / Xuống** gửi `G90 G0 Z…` (trước là `$J=…`), Giữa = **Z3**. Bật nguồn → nối → Home → bấm Lên / Giữa / Xuống vài lần; một lần sau khi chạy xong tờ | bút có **tụt** về giữa không; lúc nào (sau bật nguồn / Home / tác vụ). Nghi nguyên nhân ở xung điều khiển của firmware chứ không ở mã; nếu vẫn tụt mà `G0` không khác `$J` thì ghi vào 02 F16 là lỗi firmware, thôi |
-| B3 | **Tab Điều khiển mượt** (laptop yếu) | nạp tệp lớn (ảnh A5 nhiều nét), chạy, đổi tab / bấm nút khi đang chạy. Đã mượt hơn; thuật toán **Tạo nét** còn chậm, nhiều khả năng do máy | **cách lấy thông số** (ghi 4 dòng): (1) tên CPU + RAM laptop (Cài đặt Windows → System → About); (2) số dòng G-code (dòng G-code ở tab Tạo bản vẽ); (3) thời gian từ lúc bấm **Tạo nét** tới lúc xong (đếm giây); (4) nếu còn khựng: F12 → Performance → Record 5 giây khi chạy, chụp màn hình |
+| B3 | **Tạo nét chậm** (laptop yếu; tab Điều khiển đã mượt 18/11) | tạo nét một ảnh A5 nhiều nét; thuật toán **Tạo nét** còn chậm, nhiều khả năng do máy | **cách lấy thông số** (ghi 4 dòng): (1) tên CPU + RAM laptop (Cài đặt Windows → System → About); (2) số dòng G-code (dòng G-code ở tab Tạo bản vẽ); (3) thời gian từ lúc bấm **Tạo nét** tới lúc xong (đếm giây); (4) nếu còn khựng: F12 → Performance → Record 5 giây khi chạy, chụp màn hình |
+| B4 | **Tiếng "khực" ở góc trái** (18/11/2026, **đang tạm hoãn**, chờ xem kết quả vẽ) | xảy ra sau khi chỉnh đai; chỉ với **zigzag / đan chéo** (nét 45°); sóng, theo dáng, xoắn ốc êm hoặc kêu nhỏ. Gia tốc 2800 + junction 0,01 thì bớt kêu. Đã loại: nguồn 23 V, TMC có quạt nhiệt ổn, đẩy tay tắt nguồn mượt, hai đai căng đều, tốc độ 10000 đã dùng từ trước. Vì sao nghi 45°: CoreXY có motor kéo `x+y` và `x−y`; nét 45° thì **một motor làm hết**, nhanh 1,41×, gia tốc 2× (giới hạn gia tốc theo trục X/Y của FluidNC), motor kia đứng yên; zigzag / đan chéo ~90 % chiều dài ở hướng đó, sóng 26 %, flow 11 %, xoắn ốc 21 % (mô hình, chưa đo máy thật). Thử, mỗi bài đổi một thứ: **(1)** chạy bài kêu nhưng **nhấc bút cao**; **(2)** giữ 10000, hạ gia tốc 1500; **(3)** khối nét 45° ở 4 góc + giữa giấy; **(4)** nét chỉ ↗ rồi chỉ ↖ ở góc trái (mỗi hướng một motor); áp ống giấy cuộn vào thân motor trái / phải để nghe, tay xa đai. Kiểm: vít puly dưới lực, vít chân motor, dây / xích / cần công tắc gần góc trái | kêu theo **vị trí** (cơ khí ở đó) hay theo **hướng nét** (motor / đai bên đó) hay theo **gia tốc** (đảo chiều gấp); có mất bước không (về điểm xuất phát, dấu trùng khít). Nếu kết luận là tải: cân nhắc cho phần mềm hạ tốc độ nét gần 45° hoặc đổi góc tô mặc định (cần chốt với chủ dự án, đổi hành vi) |
 
 ### C. Người dùng, mạng
 **Cách vào giao diện từ điện thoại khi laptop đã có Wi-Fi:** [08](08_TRIEN_KHAI.md) mục C, khối "Vào giao diện từ điện thoại" (5 bước: nối Wi-Fi **trước**, bấm icon, mở đúng địa chỉ, tường lửa Mạng riêng tư).
@@ -95,7 +104,7 @@ AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đ�
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |
 |---|---|---|
-| Gạch chéo | râu ở mép mảng; má / nền sáng trống quá; móc chữ U ở mảng sáng hẹp (còn, đã thử bỏ không được, 09 P28) | `HATCH_WHITE` 0,2 · `HATCH_THIN_SPACINGS` 1,5 · `HATCH_MIN_RUN_MM` 1,5 (`styles.py`) |
+| Gạch chéo | râu ở mép mảng; má / nền sáng trống quá; móc chữ U ở mảng sáng hẹp (còn, đã thử bỏ không được, 09 P28) | `HATCH_WHITE` 0,2 · `HATCH_THIN_SPACINGS` 1,5 · `HATCH_MIN_RUN_MM` 6 (`styles.py`) |
 | Theo dáng ảnh | vùng tối vụn hay đặc; nét chạy theo lông | `FLOW_TEST_RATIO` 0,7 · `FLOW_MIN_LEN_SEPS` 3 · `FLOW_MAX_COVER` 0,85 · `FLOW_MAX_SEP_LINES` 4,5 (`flow.py`) |
 | Sóng biến thiên | vệt trắng ở da; rung ở sóng dày; ô 90 % đen chưa | ô "Phủ đều đường ở vùng sáng" · `AM_DARK_LAYER` · `AM_SPACING_LINES` |
 | Xoắn ốc | tâm xoắn bết mực; vệt nối ngang vùng sáng | `SPIRAL_BRIDGE_PITCHES` (`hatch.py`) |
@@ -111,7 +120,7 @@ Thử 3 loại ảnh: (a) hình vẽ / sticker có viền đen, (b) mảng màu 
 | `SPUR_MM` 2,4 / 1,6 / 1,0 | râu ngắn hơn chừng này bị cắt | còn râu ở góc chữ → tăng; mất chân linh kiện ngắn → giảm |
 | `FDOG_ALONG_MM` 4,0 | làm mượt **dọc** hướng nét (FDoG) | nét đứt → tăng; góc gắt bị tròn → giảm (0 = XDoG thường) |
 | `SMOOTH_MM` 0,8 (`trace.py`) | làm mượt đường theo chiều dài | còn run → tăng |
-| `OUTLINE_MIN_LEN_MM` 4,0 (`styles.py`) | bỏ nét viền ngắn hơn | còn gạch vụn → tăng; mất chi tiết nhỏ → giảm |
+| `OUTLINE_MIN_LEN_MM` 8,0 (`styles.py`) | bỏ nét viền ngắn hơn | còn gạch vụn → tăng; mất chi tiết nhỏ → giảm |
 
 ## 5. Preset với ảnh thật
 Vẽ mỗi preset bằng một ảnh đúng loại (A5), ghi thời gian thật / ước tính, số lần nhấc bút, nhận xét.

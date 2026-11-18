@@ -39,7 +39,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | Ô **Sửa sai tông (lượt)** | 0 = tắt, **1 mặc định**, tối đa 3 (tham số `style.refine_passes`): tô xong dựng lại ảnh mực, thiếu thì thêm nét, thừa thì bớt, tô lại; đúng tông hơn, nhiều mực và thời gian hơn 4–8 %. Không áp cho Theo dáng ảnh và Nét viền ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
 | **Chủ thể** (cạnh Cắt ảnh) | khoanh người / vật bằng **elip** hoặc **chữ nhật** trên ảnh gốc (kéo thả như khung cắt; thanh "Nền ngoài vùng còn" 0–100 %, mặc định 50): ngoài vùng bản vẽ nhạt đi, nền vẫn vẽ. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
-| Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu) |
+| Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu / làm nét) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
 | Khổ giấy, lề, rộng / cao, căn giữa, lật, đảo thứ tự | bố trí; đổi là G-code tự tính lại sau 0,4 s. Khổ "Cả vùng máy" = hành trình máy, mặc định 285 × 318 mm (lề chỉnh ở ô Lề an toàn, mặc định 5) |
@@ -58,7 +58,7 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 | Preset | Kiểu | Thông số đặc biệt | Hợp với |
 |---|---|---|---|
 | Chân dung (14/11/2026) | **sóng biến thiên**, góc 135°, không viền | mức đen 20, **tương phản 1,3** | ảnh người chụp thật |
-| Phong cảnh | sóng biến thiên, góc 30° | CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
+| Phong cảnh (từ 18/11/2026) | sóng biến thiên, góc 30°, không viền | mức đen 15, **tương phản 1,4**, **làm nét 1,5**, không CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
 | Ảnh 2D / Hình vẽ (14/11/2026) | **gạch chéo 5 mức + lớp viền** | khử nhiễu | hoạt hình, truyện tranh, hình vẽ, sticker |
 | Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
 

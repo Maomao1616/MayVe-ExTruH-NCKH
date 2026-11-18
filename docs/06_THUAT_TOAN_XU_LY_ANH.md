@@ -164,6 +164,7 @@ Trình duyệt làm trước một phần (`frontend/js/lib/imageprep.js`): thu 
 | 4 | Gamma | `x = x^(1/gamma)`. Gamma > 1 làm sáng vùng giữa | Gamma |
 | 4b | Tương phản (14/11/2026) | `x = (x − 0,5) × tương phản + 0,5`, kẹp 0..1. > 1: sáng sáng thêm, tối tối thêm (vùng gần trắng thành giấy trắng, chủ thể nổi); 1 = bỏ qua | Tương phản |
 | 5 | Cân bằng sáng cục bộ (tùy chọn) | `cv2.createCLAHE(clipLimit=2, tileGridSize=8×8)`: cân bằng từng ô nhỏ, chỗ tối sáng lên mà chỗ sáng không cháy | CLAHE |
+| 5b | Làm nét cục bộ (18/11/2026, tùy chọn, mặc định 0) | unsharp mask: `x = x + hệ số × (x − Gauss(x, 1,5 mm))`, kẹp 0..1 (`tone.SHARPEN_SIGMA_MM`). Ranh sáng / tối rõ hơn mà **không thêm nét**: ảnh bưu điện A4, hệ số 1,5: 314 → 328 nét, vòm, cột, vòng đồng hồ nổi hơn; so với lớp viền (nguệch ngoạc) và tương phản 1,8 (mất tông giữa). Quá 2,5 sinh viền giả. Khung xem trước ở trình duyệt chưa có bước này | Làm nét |
 | 6 | Đảo thành độ đậm | `độ đậm = 1 − x` (ô Đảo sáng tối thì đảo lại lần nữa) | Đảo sáng/tối |
 
 Ví dụ: một điểm xám 191 trong ảnh đã cân sáng, gamma 1 → x = 191/255 = 0,75 → **độ đậm 0,25** (xám nhạt).
@@ -257,7 +258,7 @@ Các dải **không chồng nhau**. Hàm `styles._passes` trả lần lượt (m
 | Kiểu (tên mã) | Trạng thái | Dùng ở | Mục |
 |---|---|---|---|
 | Gạch chéo (`crosshatch`) | hiện, mặc định | preset Ảnh 2D (kèm lớp viền) | 8.8 |
-| Sóng biến thiên (`wave_am`) | hiện | preset Chân dung, Phong cảnh | 8.9 |
+| Sóng biến thiên (`wave_am`) | hiện | preset Chân dung, Phong cảnh (từ 18/11/2026: không CLAHE, tương phản 1,4, mức đen 15) | 8.9 |
 | Theo dáng ảnh (`flow`) | hiện | chọn tay | 8.10 |
 | Xoắn ốc (`spiral`) | hiện | chọn tay | 8.4 |
 | Nét viền (`outline`) | hiện | preset Schematic; làm lớp viền | 9 |
@@ -277,7 +278,7 @@ Các dải **không chồng nhau**. Hàm `styles._passes` trả lần lượt (m
    diff:    0 +1 0 0 0 −1 0 +1 0 −1
    →  đoạn 1: mẫu 2…5        đoạn 2: mẫu 8…9
    ```
-5. **Bỏ đoạn ngắn hơn 0,3 mm** (`MIN_RUN_MM`): bút không vẽ nổi. Kiểu gạch / đan chéo (14/11/2026) bỏ đoạn ngắn hơn **1,5 mm** (`styles.HATCH_MIN_RUN_MM`): mẩu ngắn thành chấm lẻ ở mép mảng.
+5. **Bỏ đoạn ngắn hơn 0,3 mm** (`MIN_RUN_MM`): bút không vẽ nổi. Kiểu gạch / đan chéo (14/11/2026) bỏ đoạn ngắn hơn **6 mm (từ 18/11/2026; trước 1,5)** (`styles.HATCH_MIN_RUN_MM`): mẩu ngắn thành chấm lẻ ở mép mảng.
 
 Kết quả: mỗi đường một danh sách đoạn `(u đầu, u cuối)`.
 
@@ -338,7 +339,7 @@ Một hàm có dòng `@FILLERS.register("tên")` trong `styles.py` + thêm tên 
 ### 8.8 Gạch chéo chồng lớp (`crosshatch`)
 Độ phủ mong muốn T tách thành hai lớp a (góc gạch) và b (góc + 90°) sao cho `1 − (1 − a)(1 − b) = T` (`styles.cross_split`): T ≤ 0,45 chỉ lớp a (= T); trên đó a tăng nửa phần, b gánh phần còn lại. T = 0,9: a ≈ b ≈ 0,68, tức mỗi hướng cách ~0,65 mm thay vì một hướng cách 0,49 mm (ít ướt giấy). Mỗi lớp là một lượt zigzag đủ mức (mềm nếu bật); vẽ hết lớp a rồi mới lớp b (mực lớp dưới có thời gian khô). Tốn hơn zigzag ~20 % chiều dài ở ảnh nhiều mảng đậm.
 
-**Bớt râu, trắng hẳn (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27)**, áp cho mọi kiểu gạch (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mẩu gạch < 1,5 mm (`HATCH_MIN_RUN_MM`) bỏ; độ phủ dưới 0,2 (`HATCH_WHITE`) để trắng hẳn, mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`), không kẻ chéo sang dòng khác. Ảnh chân dung A4 bút 0,4: 1120 → 867 nét, 19,4 → 16,2 phút.
+**Bớt râu, trắng hẳn (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27)**, áp cho mọi kiểu gạch (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mẩu gạch < 6 mm (`HATCH_MIN_RUN_MM`, 18/11/2026, trước 1,5) bỏ; độ phủ dưới 0,2 (`HATCH_WHITE`) để trắng hẳn, mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`), không kẻ chéo sang dòng khác. Ảnh chân dung A4 bút 0,4: 1120 → 867 nét, 19,4 → 16,2 phút.
 
 ### 8.9 Sóng biến thiên (`wave_am`): tông liền, không chia mức
 Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4: 1,76 mm), bước sóng **cố định** `λ = 2 × nét thật`, cùng pha nên không cắt nhau. Chỉ **biên độ** đổi theo độ đậm:
@@ -433,7 +434,7 @@ Lớp B bỏ phần nằm sát nét mực (Canny cho hai mép của một nét m
 
 **XDoG, rồi FDoG (13–14/11/2026, `edges.xdog_edges` / `fdog_response`)** thay Canny cho lớp ranh giới mảng khi tích "Dùng XDoG" ở kiểu Nét viền, và luôn dùng cho lớp viền phủ lên kiểu tô. XDoG: ảnh xám làm mờ σ và 1,6σ, lấy `mờ(σ) − 0,98 × mờ(1,6σ)`; vùng phẳng ra ~0, phía tối của cạnh ra âm, âm hơn ngưỡng (3 / 2 / 1 mức xám cho Ít / Vừa / Nhiều) là viền. Vì so với vùng xung quanh nên ảnh tối, ngược sáng vẫn ra nét (σ 0,7 mm; 0,35 mất viền đầu). **FDoG** lấy hiệu **ngang** nét (dọc gradient) rồi trung bình Gauss **dọc** hướng nét (σ 4 mm, `FDOG_ALONG_MM`; trường hướng từ tensor mịn 1,5 mm): đoạn đứt do nhiễu được nối lại, nét lẻ không cùng hướng nhạt đi (ảnh chân dung A4: 145 → 130 nét, viền mắt khép). Khối đậm dày hơn 2 mm (`XDOG_RIM_MM`, tròng mắt) chỉ lấy **vành**, không thì làm mảnh ra một chấm rồi mất khung mắt. Hạn chế: chỉ nhìn độ sáng nên bỏ sót ranh giới hai màu cùng độ sáng (Canny có thêm kênh màu Lab bắt được); ảnh 2D / Schematic giữ Canny.
 
-**Làm mượt nét viền (`trace.smooth`, 14/11/2026):** lấy mẫu lại mỗi 0,5 điểm ảnh, làm mượt Gauss dọc chiều dài σ = **0,8 mm** (`SMOOTH_MM`); nét hở giữ hai đầu, vòng kín σ ≤ 5 % chu vi (chấm mắt không co). Bỏ nét ngắn hơn 4 mm (`OUTLINE_MIN_LEN_MM`). Trước đó: trung bình 3 điểm × 2 lượt (~0,3 mm), nét còn run.
+**Làm mượt nét viền (`trace.smooth`, 14/11/2026):** lấy mẫu lại mỗi 0,5 điểm ảnh, làm mượt Gauss dọc chiều dài σ = **0,8 mm** (`SMOOTH_MM`); nét hở giữ hai đầu, vòng kín σ ≤ 5 % chu vi (chấm mắt không co). Bỏ nét ngắn hơn 8 mm (từ 18/11/2026, trước 4) (`OUTLINE_MIN_LEN_MM`). Trước đó: trung bình 3 điểm × 2 lượt (~0,3 mm), nét còn run.
 
 ### 9.2 Làm mảnh: lấy đường giữa (`skimage.morphology.skeletonize`)
 Bào mòn nét từ hai mép vào, mỗi lượt một lớp điểm ảnh, đến khi chỉ còn **1 điểm ảnh** mà không làm đứt nét. Kết quả là **đường giữa** (skeleton).
@@ -637,7 +638,7 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 | Xóa đoạn vẽ chồng | plugin `deduplicate` của vpype | bớt nét trùng | `vpype deduplicate` |
 | Phân vùng siêu điểm ảnh | `skimage.segmentation.slic` | mảng màu sạch hơn mean shift | `SLIC superpixels` |
 | Đo chất lượng | SSIM, OCR `pytesseract` (gói `vie`) | số liệu "giống bản gốc bao nhiêu %" cho báo cáo | `SSIM`, `character error rate` |
-| **Nặng** (laptop, hoặc khi máy vẽ rảnh): AI tìm viền, ảnh → tranh nét | TEED, PiDiNet, HED qua `cv2.dnn` / onnxruntime; Informative Drawings (ONNX ~8,6 MB, MIT); Anime2Sketch (chỉ có PyTorch ~218 MB) | viền ảnh chụp sạch hơn Canny | ⚠ đo tốc độ trên i5-3210M trước |
+| **Nặng** (laptop, hoặc khi máy vẽ rảnh): AI tìm viền, ảnh → tranh nét | TEED, PiDiNet, HED qua `cv2.dnn` / onnxruntime; Informative Drawings (ONNX bản rocca 17 193 338 byte (16,4 MiB), mã MIT nhưng **trọng số không ghi giấy phép** (hỏi tác giả nếu bán máy); chuẩn hóa đầu vào: notebook [-1,1], một nguồn khác [0,1], phải thử mới biết); Anime2Sketch (chỉ có PyTorch ~218 MB) | viền ảnh chụp sạch hơn Canny | ⚠ đo tốc độ trên i5-3210M trước |
 
 ---
 
@@ -663,7 +664,7 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Đường cong tông | `USE_TONE_CURVE`, `TONE_CURVE_STRENGTH` | bật · 0,75 |
 | Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM` (`styles.py`); `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
 | Gạch chéo | `CROSS_START`, `CROSS_SLOPE`, `CROSS_ANGLE` | 0,45 · 0,5 · 90° |
-| Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 1,5 mm · 0,2 |
+| Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 6 mm (18/11/2026, trước 1,5) · 0,2 |
 | Sóng biến thiên | `AM_SPACING_LINES`, `AM_AMPLITUDE`, `AM_WAVE_LINES`, `AM_DITHER`, `AM_WHITE`, `AM_FILL`, `AM_MIN_RUN` | 4,0 · 0,45 · 2,0 · 0,35 · 1,6 (độ phủ 0,10) · tắt (bật ở Chân dung) · 3,0 |
 | Sóng: lớp đậm | `AM_DARK_LAYER`, `AM_EFF_KNEE`, `AM_EFF_SLOPE` | bật · 0,45 · 0,78 |
 | Xoắn ốc | `BRIDGE_MM`, `SPIRAL_BRIDGE_PITCHES`, `SPIRAL_MIN_PITCHES` (`hatch.py`) | 3,0 mm · 6,0 · 4,0 |
@@ -673,7 +674,7 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Nét viền: nét mực, khe | `INK_MAX_MM`, `LIGHT_MAX_MM`, `GAP_MM`, `GAP_ANGLE`, `SPUR_MM` (`edges.py`) | 4,0 · 1,2 · 1,5 · 55° · 2,4 / 1,6 / 1,0 |
 | Nét viền: XDoG / FDoG | `XDOG_SIGMA_MM`, `XDOG_K`, `XDOG_TAU`, `XDOG_THRESHOLD`, `XDOG_RIM_MM` | 0,7 · 1,6 · 0,98 · 3 / 2 / 1 · 2,0 |
 | | `FDOG_ALONG_MM`, `FDOG_TENSOR_MM`, `FDOG_GRAD_MM` | 4,0 · 1,5 · 0,5 (`FDOG_ALONG_MM = 0` = XDoG) |
-| Dò nét liền | `SMOOTH_MM`, `SIMPLIFY_PX`, `CLOSE_PX`, `CLOSED_SIGMA_FRAC` (`trace.py`); `OUTLINE_MIN_LEN_MM` (`styles.py`) | 0,8 mm · 0,6 · 2,0 · 0,05 · 4,0 mm |
+| Dò nét liền | `SMOOTH_MM`, `SIMPLIFY_PX`, `CLOSE_PX`, `CLOSED_SIGMA_FRAC` (`trace.py`); `OUTLINE_MIN_LEN_MM` (`styles.py`) | 0,8 mm · 0,6 · 2,0 · 0,05 · 8,0 mm (18/11/2026, trước 4,0) |
 | Đọc ảnh | `OVERSAMPLE`, `UPSCALE_TO_PX`, `DRAFT_FACTOR`, `MAX_PIXELS` (`raster_in.py`) | 1,3 · 720 · 0,5 · 60 triệu |
 | Vùng chủ thể | `SUBJECT_FEATHER` (`tone.py`); `subject_outside` (`spec.py`) | 0,08 · 0,5 |
 | Sửa sai | `REFINE_GAIN`, `REFINE_SIGMA_MM`, `REFINE_STOP_RATIO`, `REFINE_RAISE_FROM` (`refine.py`); `refine_passes` (`spec.py`) | 0,8 · 2,0 mm · 0,97 · 0,15 · 1 lượt |
@@ -682,5 +683,5 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Cung G2/G3 | `ARC_TOL_MM`, `ARC_MIN_POINTS`, `ARC_MIN_R_MM`, `ARC_MAX_R_MM`, `ARC_MAX_SWEEP_DEG`, `USE_ARCS` (`arcs.py`, `gcode.py`) | 0,02 mm · 4 · 0,2 · 2000 · 300° · bật |
 | Ước tính thời gian | `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | **0,03** · 0,025 s · 0,025 s · 125 |
 | G-code mặc định (`spec.py`) | vẽ / di chuyển / bút / chờ nâng / chờ hạ | 8000 / 8000 / 3000 / 0 / 0 |
-| Tiền xử lý mặc định | gamma, tương phản, đen, trắng, tự cân sáng, CLAHE, khử nhiễu | 1 · 1 · 0 · 255 · bật · tắt · tắt |
+| Tiền xử lý mặc định | gamma, tương phản, đen, trắng, tự cân sáng, làm nét, CLAHE, khử nhiễu | 1 · 1 · 0 · 255 · bật · 0 · tắt · tắt |
 | Bút (`spec.PENS`) | UB-155, UM-100, Sakura (nét đo trên giấy) | 0,38 · 0,40 · 0,50 mm |
