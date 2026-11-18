@@ -21,7 +21,7 @@ import { forget as forgetImage, imageSize, prepareForUpload } from "../lib/image
 import * as crop from "./drawing/crop.js";
 import * as subject from "./drawing/subject.js";
 import { initCustomer } from "./customer.js";
-import { initTonePreview, refresh as refreshTone, setFile as showOriginal } from "./drawing/tonepreview.js";
+import { initTonePreview, refresh as refreshTone, setFile as showOriginal, source as toneSource } from "./drawing/tonepreview.js";
 
 const $ = (id) => document.getElementById(id);
 // Ảnh tải từ mạng về Windows hay có đuôi .jfif (= JPEG). Backend nhận dạng bằng nội dung tệp, không tin đuôi.
@@ -59,7 +59,11 @@ export function initDrawing() {
 
     canvas = createCanvas({ canvas: canvasEl, stage, zoomLabel: $("drawing-canvas-zoom"), onBox });
     params.initParams(onParamChange);
-    initTonePreview({ stageEl: $("original-image-holder") ?? $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings });
+    initTonePreview({
+        stageEl: $("original-image-holder") ?? $("original-image-stage"), toggleEl: $("preview-tone-toggle"), read: params.toneSettings,
+        rendered: () => { setButtons(); canvas?.redraw(); }                       // ảnh đổi (chỉnh sáng, nạp xong): ô so sánh + khung vẽ cập nhật theo
+    });
+    canvas.setCompare({ source: toneSource, crop: () => crop.current(), snap: snapshotScene });
     // Cắt ảnh: áp dụng = nạp lại như tệp mới (tỷ lệ ảnh đổi nên khung vừa lại phần trong lề).
     const regenerate = () => {
         if (S.file && S.taskId) startImport("final", { fresh: true });        // đã tạo nét: tạo lại với vùng cắt / chủ thể mới
@@ -190,7 +194,13 @@ function clearTrace() {
     if (S.busy && S.jobId) api.drawTaskCancel(S.jobId).catch(() => {});
     if (S.taskId) api.drawTaskDrop(S.taskId).catch(() => {});
     Object.assign(S, { taskId: null, jobId: null, busy: false, preview: null, src: null, layers: [], source: null,
-                       importWarnings: [], savedDraft: null, savedKey: null, importDirty: false, importKeep: false });
+                       importWarnings: [], savedDraft: null, savedKey: null, importDirty: false, importKeep: false, snap: null });
+    const compareSelect = $("drawing-compare");                                  // ảnh mới: bỏ bản đã giữ, về chế độ Tắt
+    if (compareSelect) {
+        compareSelect.value = "off";
+        compareSelect.querySelector('option[value="snap"]').disabled = true;
+        canvas?.setCompare({ mode: "off" });
+    }
     setProgress(0);
     invalidateResult();
     refreshScene();
@@ -426,6 +436,50 @@ function onBox(rect, { final }) {
     }
 }
 
+/* ==================== So sánh hai bản nét (18/11/2026) ==================== */
+// "Giữ bản này": nhớ các nét đang hiện; đổi thông số, tạo lại nét rồi chọn So sánh → "Bản đã giữ" để xem hai bản chia đôi một khung.
+function strokeStats(preview) {
+    let strokes = 0;
+    let mm = 0;
+    for (const layer of preview?.layers ?? []) {
+        for (const s of layer.strokes) {
+            strokes += 1;
+            for (let i = 1; i < s.length; i++) mm += Math.hypot(s[i][0] - s[i - 1][0], s[i][1] - s[i - 1][1]);
+        }
+    }
+    return { strokes, meters: mm / 1000 };
+}
+
+function keepSnapshot() {
+    if (!S.preview || !S.src) return;
+    S.snap = { layers: S.layers, src: S.src, stats: strokeStats(S.preview) };
+    const select = $("drawing-compare");
+    if (select) {
+        select.querySelector('option[value="snap"]').disabled = false;
+        select.value = "snap";
+        canvas?.setCompare({ mode: "snap" });
+    }
+    refreshScene();
+    renderCompareInfo();
+}
+
+function snapshotScene() {
+    if (!S.snap) return null;
+    const plan = planLayout(S.snap.src, params.layoutInput(), params.machineInput());   // cùng cách đặt hiện tại: hai bản chồng khít khi cùng khung ảnh
+    return { layers: S.snap.layers, plan };
+}
+
+function renderCompareInfo() {
+    const el = $("drawing-compare-info");
+    if (!el) return;
+    const mode = $("drawing-compare")?.value;
+    if (mode !== "snap" || !S.snap || !S.preview) { el.textContent = ""; return; }
+    const a = S.snap.stats;
+    const b = strokeStats(S.preview);
+    el.textContent = t("drawing.compare.info").replace("{a}", a.strokes).replace("{am}", a.meters.toFixed(1))
+        .replace("{b}", b.strokes).replace("{bm}", b.meters.toFixed(1));
+}
+
 function refreshScene() {
     S.plan = S.src ? planLayout(S.src, params.layoutInput(), params.machineInput()) : null;
     const bad = S.plan && !S.plan.ok;
@@ -442,6 +496,7 @@ function refreshScene() {
     if (empty) empty.hidden = Boolean(S.src);
     renderWarnings();
     setButtons();
+    renderCompareInfo();
 }
 
 /* ==================== G-code (chỉ để lấy số liệu; bản thật nằm trong bản thảo) ==================== */
@@ -504,6 +559,8 @@ function initButtons() {
         try { await api.drawTaskCancel(S.jobId); } catch { /* tác vụ đã xong */ }
     });
     $("drawing-fit-btn")?.addEventListener("click", () => canvas?.resetView());
+    $("drawing-compare")?.addEventListener("change", (event) => { canvas?.setCompare({ mode: event.target.value }); renderCompareInfo(); });
+    $("drawing-keep-btn")?.addEventListener("click", keepSnapshot);
     $("drawing-rotate-btn")?.addEventListener("click", () => {
         const select = $("drawing-rotate");
         select.value = String((Number(select.value) + 90) % 360);
@@ -718,6 +775,10 @@ function setButtons() {
     has("regenerate-gcode-btn", !S.taskId || S.busy || !planOk);
     has("drawing-cancel-btn", !S.busy);
     has("drawing-rotate-btn", !S.src);
+    has("drawing-compare", !S.src);                          // so sánh cần có nét vẽ; chế độ "ảnh" tự bị khóa với SVG (không có ảnh)
+    has("drawing-keep-btn", !S.src);
+    const imageOption = $("drawing-compare")?.querySelector('option[value="image"]');
+    if (imageOption) imageOption.disabled = !toneSource();
     has("drawing-confirm", !S.result);
     has("save-draft-btn", !S.result);
     has("send-to-control-btn", !S.result || !$("drawing-confirm")?.checked || S.busy);

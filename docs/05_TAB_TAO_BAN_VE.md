@@ -42,6 +42,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu / làm nét) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
+| **So sánh** (18/11/2026) | ô chọn **Tắt / Bản đã giữ \| hiện tại / Ảnh \| nét hiện tại**; chia khung làm hai bằng thanh kéo được (nút tròn giữa thanh). *Bản đã giữ*: bấm **Giữ bản này**, đổi thông số, **Tạo lại nét**, rồi so hai lần tạo nét khác nhau (kèm số nét và độ dài nét m của hai bên); chỉ nhớ khi trang còn mở, đổi ảnh thì bỏ. *Ảnh*: bên trái là ảnh đã cắt (và đã chỉnh sáng nếu ô "Xem ảnh sau chỉnh sáng" bật). Chỉ xem, không đổi bản vẽ (`canvas.js`, `drawing.js` mục "So sánh hai bản nét") |
 | Khổ giấy, lề, rộng / cao, căn giữa, lật, đảo thứ tự | bố trí; đổi là G-code tự tính lại sau 0,4 s. Khổ "Cả vùng máy" = hành trình máy, mặc định 285 × 318 mm (lề chỉnh ở ô Lề an toàn, mặc định 5) |
 | Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 8000 / 8000 / 3000 / 2000 mm/min, Z3 / Z0 (ô Z nhấc lấy mặc định từ Cài đặt → "Z nhấc khi sinh G-code", không phải Z bút lên của điều khiển), chờ 0 s (từ 13/11/2026); nét cong ghi bằng G2/G3) |
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |

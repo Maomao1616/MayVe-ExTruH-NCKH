@@ -15,11 +15,20 @@ let gray = null;                 // Uint8Array của bản thu nhỏ
 let size = null;
 let canvas = null;
 let frame = 0;
+let isSvgFile = false;
+let onRender = () => {};
 
-export function initTonePreview({ stageEl, toggleEl, read }) {
+// Nguồn cho phần "trước" của so sánh trước / sau: ảnh đã chỉnh sáng nếu đang bật ô xem, không thì ảnh gốc; null khi chưa có / SVG.
+export function source() {
+    if (!image || isSvgFile || !image.naturalWidth) return null;
+    return gray && canvas && toggle?.checked !== false ? canvas : image;
+}
+
+export function initTonePreview({ stageEl, toggleEl, read, rendered }) {
     stage = stageEl;
     toggle = toggleEl;
     readSettings = read;
+    onRender = rendered ?? onRender;
     toggle?.addEventListener("change", render);
 }
 
@@ -33,6 +42,7 @@ export async function setFile(file) {
     image.alt = file.name;
     image.src = url;
     const isSvg = file.name.toLowerCase().endsWith(".svg");
+    isSvgFile = isSvg;
     if (toggle) toggle.disabled = isSvg;
     stage.replaceChildren(image);
     if (isSvg) return;
@@ -64,6 +74,11 @@ export function refresh() {
 }
 
 function render() {
+    paint();
+    onRender();
+}
+
+function paint() {
     if (!stage || !image) return;
     if (!gray || !canvas || toggle?.checked === false) {
         if (stage.firstChild !== image) stage.replaceChildren(image);

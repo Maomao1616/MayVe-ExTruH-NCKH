@@ -84,6 +84,9 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
     let userView = false;               // người dùng đã thu phóng/kéo nền: đừng tự fit lại khi đổi cỡ cửa sổ
     let drag = null;
     let hover = null;                   // vị trí chuột (mm) để hiện tọa độ
+    // So sánh (18/11/2026), bên trái thanh chia / bên phải là nét vẽ hiện tại. mode: "off" | "image" (bên trái là ảnh đã cắt / chỉnh sáng,
+    // nguồn do drawing.js đưa) | "snap" (bên trái là bản nét đã giữ trước đó: { layers, plan } do drawing.js đưa, vẽ bằng khung riêng của nó).
+    let compare = { mode: "off", pos: 0.5, source: () => null, crop: () => null, snap: () => null };
 
     canvas.tabIndex = 0;                // nhận phím mũi tên khi đang chọn khung
 
@@ -185,9 +188,19 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
 
         // nét vẽ, bề rộng = độ rộng bút thật (tối thiểu ~1 px để vẫn thấy khi thu nhỏ)
         const plan = scene?.plan;
+        const split = compareActive() ? plan.box.x + plan.box.w * compare.pos : null;      // x (mm giấy) của thanh chia, null = không so sánh
+        if (split !== null) {
+            if (compare.mode === "snap") drawSnapshot(plan, split, token("--paper-ink", "#16181d"));
+            else drawSourceImage(plan, split);
+        }
         if (plan?.ok && scene.layers?.length) {
             const m = matrix(plan);
             ctx.save();
+            if (split !== null) {                                                          // nét vẽ chỉ ở bên phải thanh chia
+                ctx.beginPath();
+                ctx.rect(split, plan.box.y - 1, plan.box.x + plan.box.w - split + 1, plan.box.h + 2);
+                ctx.clip();
+            }
             ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
             const mean = meanScale(plan) || 1;
             ctx.lineWidth = Math.max(scene.penMm ?? 0.4, 1 / view.s) / mean;
@@ -225,6 +238,7 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         ctx.textAlign = "left";
 
         const box = activeBox();
+        if (compareActive()) drawDivider(accent, bg);
         if (box) {
             const [bx, by] = toScreen(box.x, box.y);
             const bw = box.w * view.s;
@@ -252,6 +266,65 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         updateLabel();
     }
 
+    const compareActive = () => Boolean(compare.mode !== "off" && scene?.plan?.ok
+        && (compare.mode === "snap" ? compare.snap()?.plan?.ok : compare.source()));
+
+    // Bản nét đã giữ: vẽ bằng khung của chính nó (cùng khung giấy, cùng cách đặt nên thường trùng khung hiện tại), chỉ bên trái `split`.
+    function drawSnapshot(plan, split, fallback) {
+        const snap = compare.snap();
+        const m = matrix(snap.plan);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(plan.box.x - 1, plan.box.y - 1, split - plan.box.x + 1, plan.box.h + 2);
+        ctx.clip();
+        ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        ctx.lineWidth = Math.max(scene.penMm ?? 0.4, 1 / view.s) / (meanScale(snap.plan) || 1);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.globalAlpha = 0.92;
+        snap.layers.forEach((layer, i) => {
+            ctx.strokeStyle = layerColor(layer, i, fallback);
+            ctx.stroke(layer.path);
+        });
+        ctx.restore();
+    }
+
+    // Ảnh nguồn (đã chỉnh sáng) đặt đúng chỗ khung nét (cùng ma trận với nét), chỉ phần bên trái `split`.
+    function drawSourceImage(plan, split) {
+        const img = compare.source();
+        const iw = img.naturalWidth || img.width;
+        const ih = img.naturalHeight || img.height;
+        if (!iw || !ih) return;
+        const c = compare.crop() ?? { x: 0, y: 0, w: 1, h: 1 };
+        const m = matrix(plan);
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(plan.box.x - 1, plan.box.y - 1, split - plan.box.x + 1, plan.box.h + 2);
+        ctx.clip();
+        ctx.transform(m[0], m[1], m[2], m[3], m[4], m[5]);
+        ctx.imageSmoothingQuality = "high";
+        const s = plan.src;
+        ctx.drawImage(img, c.x * iw, c.y * ih, c.w * iw, c.h * ih, s.x, s.y, s.w, s.h);
+        ctx.restore();
+    }
+
+    function drawDivider(accent, bg) {
+        const box = scene.plan.box;
+        const [x, y0] = toScreen(box.x + box.w * compare.pos, box.y);
+        const y1 = y0 + box.h * view.s;
+        ctx.save();
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x, y0); ctx.lineTo(x, y1); ctx.stroke();
+        const cy = (y0 + y1) / 2;
+        ctx.fillStyle = accent;
+        ctx.beginPath(); ctx.arc(x, cy, 9, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = bg;
+        ctx.beginPath(); ctx.moveTo(x - 4, cy); ctx.lineTo(x - 1, cy - 3); ctx.lineTo(x - 1, cy + 3); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x + 4, cy); ctx.lineTo(x + 1, cy - 3); ctx.lineTo(x + 1, cy + 3); ctx.fill();
+        ctx.restore();
+    }
+
     function handlePos(h, bx, by, bw, bh) {
         const x = h.includes("w") ? bx : h.includes("e") ? bx + bw : bx + bw / 2;
         const y = h.includes("n") ? by : h.includes("s") ? by + bh : by + bh / 2;
@@ -268,6 +341,10 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
     function hit(e) {
         const box = activeBox();
         if (!box) return { type: "pan" };
+        if (compareActive()) {                                                // thanh chia: ưu tiên hơn tay nắm và kéo khung
+            const [dx, dy0] = toScreen(box.x + box.w * compare.pos, box.y);
+            if (Math.abs(e.px - dx) <= HANDLE_PX + 3 && e.py >= dy0 && e.py <= dy0 + box.h * view.s) return { type: "divider" };
+        }
         const [bx, by] = toScreen(box.x, box.y);
         const bw = box.w * view.s;
         const bh = box.h * view.s;
@@ -315,7 +392,7 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         if (!drag) {
             const h = hit(e);
             const zoomed = view.s > baseScale * 1.001;
-            canvas.style.cursor = h.type === "resize" ? CURSORS[h.handle] : h.type === "move" ? "move" : zoomed ? "grab" : "default";
+            canvas.style.cursor = h.type === "resize" ? CURSORS[h.handle] : h.type === "divider" ? "col-resize" : h.type === "move" ? "move" : zoomed ? "grab" : "default";
             updateLabel();
             return;
         }
@@ -325,6 +402,12 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
             view.tx = drag.tx + (event.clientX - drag.cx) * k;
             view.ty = drag.ty + (event.clientY - drag.cy) * k;
             userView = true;
+            draw();
+            return;
+        }
+        if (drag.type === "divider") {
+            const b = drag.box0;
+            compare.pos = Math.min(1, Math.max(0, (e.x - b.x) / b.w));
             draw();
             return;
         }
@@ -391,6 +474,9 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
 
     return {
         setScene(next) { scene = next; draw(); },
+        // So sánh: { mode, source: () => <img> | <canvas> | null, crop: () => {x,y,w,h} | null, snap: () => { layers, plan } | null }; giữ vị trí thanh chia
+        setCompare(next) { compare = { ...compare, ...next }; draw(); },
+        compareOn: () => compareActive(),
         redraw: draw,
         resetView() { fit(); draw(); }
     };

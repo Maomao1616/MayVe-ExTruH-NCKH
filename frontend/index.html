@@ -1085,6 +1085,16 @@
                   <button data-i18n="drawing.canvas.fit" disabled="" id="drawing-fit-btn" type="button">Xem toàn bộ</button>
                   <button data-i18n="drawing.canvas.rotate" disabled="" id="drawing-rotate-btn" type="button">Xoay 90°</button>
                   <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Giữ Shift + cuộn để thu phóng</span>
+                  <button data-i18n="drawing.canvas.keep; [title]drawing.hint.keep" disabled="" id="drawing-keep-btn" type="button">Giữ bản này</button>
+                  <label class="checkbox-inline" data-i18n="[title]drawing.hint.compare" for="drawing-compare">
+                    <span data-i18n="drawing.canvas.compare">So sánh</span>
+                    <select disabled="" id="drawing-compare">
+                      <option data-i18n="drawing.compare.off" selected="" value="off">Tắt</option>
+                      <option data-i18n="drawing.compare.snap" disabled="" value="snap">Bản đã giữ | hiện tại</option>
+                      <option data-i18n="drawing.compare.image" value="image">Ảnh | nét hiện tại</option>
+                    </select>
+                  </label>
+                  <span class="muted-text" id="drawing-compare-info"></span>
                   <span class="muted-text" id="drawing-canvas-zoom">—</span>
                 </div>
                 <div class="drawing-canvas-stage" id="drawing-canvas-stage">
