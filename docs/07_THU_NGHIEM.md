@@ -31,7 +31,7 @@ Hằng số thuật toán (`FLOW_*`, `HATCH_*`, `AM_*`, `REFINE_*`) **không** �
 Thuật toán đã tạm ổn. **Chân dung bỏ khỏi danh sách**: bạn tự chỉnh thông số khi xem bản nháp trên khung vẽ; chỉ gửi ảnh khi cần AI chỉnh hằng số bên trong.
 | # | Bài | Chọn gì | Giấy | Nhìn và ghi |
 |---|---|---|---|---|
-| A1 | **Ảnh 2D** + **Nét viền** | ảnh hoạt hình, preset Ảnh 2D; rồi kiểu Nét viền (tích / bỏ tích "Dùng XDoG"), A5 | A4 + A5 | mắt / mũi có khung không; má và nền sáng có **trống quá** không (→ hạ `HATCH_WHITE`); viền có liền, mềm không; thiếu nét → Chi tiết viền "Nhiều", vụn → "Ít" |
+| A1 | **Ảnh 2D** + **Nét viền** | ảnh hoạt hình, preset Ảnh 2D; rồi kiểu Nét viền (tích / bỏ tích "Dùng FDoG"), A5 | A4 + A5 | mắt / mũi có khung không; má và nền sáng có **trống quá** không (→ hạ `HATCH_WHITE`); viền có liền, mềm không; thiếu nét → Chi tiết viền "Nhiều", vụn → "Ít" |
 | A2 | **Phong cảnh** | ảnh phong cảnh tối + ảnh trời mây, preset Phong cảnh | A5 | ô đậm nhất đã gần đen chưa; lớp gạch thẳng ở vùng đậm có làm mất vẻ mượt không (không thích → AI tắt `AM_DARK_LAYER`); máy có rung ở sóng dày không (→ `AM_SPACING_LINES` 4 → 3); **chụp cận mép khối** xem còn giọt mực ở chỗ quay đầu không |
 | A3 | **Vùng chủ thể** | ảnh có nền rối (rèm, nước), khoanh elip quanh người, nền còn 50 % rồi thử 30 % | A5 | nền thưa đủ để chủ thể nổi chưa; mép vùng có lộ thành vòng không; thời gian / mực bớt bao nhiêu |
 | A4 | **Tờ tông** (đường cong tông) | **Thang tông** (mục 2): kiểu **Gạch chéo** rồi **Xoắn ốc**; tùy chọn: bút UB-155 0,38 | A6 | 5 bậc đậm nhạt cách đều chưa (16 ô gom thành ~5 bậc là đúng); gửi ảnh gốc, AI đo bằng `tools/tone_read.py` |

@@ -73,7 +73,7 @@ Danh sách kiểu nét từ 14/11/2026 (`spec.UI_STYLES`; zigzag, sóng thườn
 | Theo dáng ảnh (flow field) | nhiều | nét uốn theo dáng ảnh, kiểu riêng, khoảng cách theo độ đậm; chưa có đường cong tông; vùng tối có mẩu ngắn |
 | Sóng biến thiên | ít nhất | tông liền, mượt; vùng rất đậm thêm lớp gạch thẳng; ô "Phủ đều đường ở vùng sáng" cho da mặt không khe trắng (bật trong Chân dung) |
 | Xoắn ốc | nhiều nhất | đậm nhanh, ô rất đậm có vệt chữ thập |
-| Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng. Ô tích **"Dùng XDoG"** (chỉ hiện ở kiểu này): viền ảnh chụp rõ hơn. Ô "Thêm lớp viền" trên kiểu tô khác luôn dùng XDoG |
+| Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng. Ô tích **"Dùng FDoG"** (chỉ hiện ở kiểu này; mã vẫn gọi `outline_xdog`): viền ảnh chụp rõ hơn. Ô "Thêm lớp viền" trên kiểu tô khác luôn dùng FDoG |
 
 Gạch chéo và xoắn ốc có **đường cong tông** đo trên giấy thật (Sakura 0,5, mặt bóng Ivory; [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12): không cần chỉnh gamma để bù vùng trung bình.
 
@@ -139,7 +139,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `machine` | vùng máy 285 × 318, hành trình Z, tốc độ G0, `invert_y` (tắt) |
 | `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (vẽ lần lượt từng mức đậm nhạt; mặc định **tắt** từ 12/11/2026), **`bridge`** (mặc định bật: ảnh tô đơn sắc, nối nét gần ≤ 4 × bề rộng nét trong vùng đậm thay vì nhấc bút) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
-| `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 0,38, UM-100 0,40, Sakura 0,50, bút bi 0,50, hoặc Tùy chọn; đo 12/11/2026), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, tự cân sáng, CLAHE, khử nhiễu |
+| `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 0,38, UM-100 0,40, Sakura 0,50, bút bi 0,50, hoặc Tùy chọn; đo 12/11/2026), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, **làm nét** (unsharp mask, 0 = tắt, tối đa 3; preset Phong cảnh 1,5), tự cân sáng, CLAHE, khử nhiễu |
 | `style` | kiểu (`spec.STYLES`; giao diện hiện `spec.UI_STYLES`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |
 | `palette` | đơn sắc / nhiều màu, số màu (2–4), bỏ nền |
 

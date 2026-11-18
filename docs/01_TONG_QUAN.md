@@ -62,7 +62,7 @@ kiểu nét ──┬─ gạch chéo        chia mức, mỗi mức một lư�
            ├─ sóng biến thiên  biên độ theo độ đậm, tông liền
            ├─ theo dáng ảnh    nét uốn theo dáng, khoảng cách theo độ đậm
            ├─ xoắn ốc          một nét, mức mềm
-           └─ nét viền         top-hat + XDoG / FDoG → đường giữa 1 điểm ảnh
+           └─ nét viền         top-hat + FDoG (XDoG có làm mượt dọc nét) → đường giữa 1 điểm ảnh
    ▼  (+ lớp viền tùy chọn, vẽ sau cùng)
 tối ưu: nối nét gần · bớt điểm · sắp thứ tự (2-opt)                              optimize
    ▼

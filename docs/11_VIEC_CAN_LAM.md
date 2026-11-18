@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động: máy chủ **563**, giao diện **58** (đều qua 17/11/2026). Còn thiếu chủ yếu: **in thật** các kiểu mới và **thử trên MiniPC**.
+Test tự động: máy chủ **564**, giao diện **58** (đều qua 18/11/2026). Còn thiếu chủ yếu: **in thật** các kiểu mới và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 
@@ -31,7 +31,7 @@ Test tự động: máy chủ **563**, giao diện **58** (đều qua 17/11/2026
 
 | Nhóm | Đã chốt |
 |---|---|
-| **Máy và G-code** | vẽ / di chuyển **8000**, gia tốc **3000**, junction **0,03**; Z nhấc **3**, hạ **2000**, chờ **0**; nút bút gửi `G90 G0 Z…`: Lên **Z5** · Giữa **Z3** · Xuống **Z0**; nét cong **G2/G3** (sai lệch ≤ 0,02 mm); giữ **115200 baud**, gửi từng dòng chờ `ok` (~125 dòng/giây); ước tính thời gian: +0,025 s mỗi lần nhấc; `$10=3` cho biểu đồ hàng đợi |
+| **Máy và G-code** | vẽ / di chuyển **8000**, gia tốc **3000**, junction **0,03** (máy đang chạy **2800 / 0,01** từ 18/11/2026, [07](07_THU_NGHIEM.md) B4 chưa kết luận); Z nhấc **3**, hạ **2000**, chờ **0**; nút bút gửi `G90 G0 Z…`: Lên **Z5** · Giữa **Z3** · Xuống **Z0**; nét cong **G2/G3** (sai lệch ≤ 0,02 mm); giữ **115200 baud**, gửi từng dòng chờ `ok` (~125 dòng/giây); ước tính thời gian: +0,025 s mỗi lần nhấc; `$10=3` cho biểu đồ hàng đợi |
 | **Máy đã thử xong** (17/11) | mất bước ở 7000–10000 ổn · tốc độ tối đa **10000** · TMC2209 đã bật **SpreadCycle** (DIP3, giữ) · Home, Z, đèn X / Y đúng · **Tiếp tục từ điểm dừng** đúng · Biểu đồ có đường hàng đợi · tab Điều khiển mượt hơn (Tạo nét còn chậm là do laptop) |
 | **Máy đã thử xong** (18/11) | bản vẽ thật có **G2/G3** chạy tốt · tab Điều khiển mượt · servo giật khi bấm nút bút liên tục (xung, firmware; thôi, ghi 02 F16) |
 | **Bút, giấy** | ô "Bút vẽ" = **nét đo trên giấy**: UB-155 **0,38** · UM-100 **0,40** · Sakura **0,50** · bút bi 0,5; `LINE_WIDTH_RATIO` **1,0**; giấy Ivory 250 g/m² mặt bóng |
@@ -40,7 +40,7 @@ Test tự động: máy chủ **563**, giao diện **58** (đều qua 17/11/2026
 | **Tạo bản vẽ** | nạp ảnh → cắt / chỉnh tông → **Tạo nét**; **vùng chủ thể** (elip / chữ nhật, ngoài vùng giữ 50 % độ đậm, mép mờ 8 %); SVG; bản thảo + hàng đợi; 2–4 màu; Tờ thử (Thang tông, nhấc bút, 7.2, 7.5); Biểu đồ số liệu chạy máy (tốc độ, hàng đợi, nhấc bút) |
 | **Kiểu nét (5)** | **Gạch chéo** (mặc định) · **Theo dáng ảnh** · **Sóng biến thiên** · **Xoắn ốc** · **Nét viền**; tờ thử vẫn chạy kiểu ẩn (zigzag, sóng thường, đan 3 hướng) |
 | **Hằng kiểu nét** | độ phủ tối đa **0,9**; trắng hẳn dưới **0,2** (sóng: **0,10**); bỏ mẩu gạch < **6 mm**, dải hẹp < **1,5 ×** khoảng cách nét; đường cong tông **75 %**; sóng: khoảng cách **4 ×** nét, bước sóng **2 ×**, phủ đều bật ở Chân dung; theo dáng: `FLOW_TEST_RATIO` **0,7**, cửa sổ tròn, phủ tối đa **0,85**, khoảng cách lớn nhất **4,5 ×** nét; viền: **FDoG** dọc nét 4 mm, làm mượt **0,8 mm**, bỏ nét < **8 mm** |
-| **4 preset** | **Chân dung** = sóng biến thiên, góc 135°, không viền, mức đen 20, tương phản 1,3, phủ đều · **Ảnh 2D** = gạch chéo 5 mức + lớp viền + khử nhiễu · **Phong cảnh** = sóng + CLAHE, góc 30° · **Schematic** = viền, đen 60 / trắng 200 |
+| **4 preset** | **Chân dung** = sóng biến thiên, góc 135°, không viền, mức đen 20, tương phản 1,3, phủ đều · **Ảnh 2D** = gạch chéo 5 mức + lớp viền + khử nhiễu · **Phong cảnh** = sóng, góc 30°, tương phản 1,4, mức đen 15, làm nét 1,5, không CLAHE, không viền (18/11/2026) · **Schematic** = viền, đen 60 / trắng 200 |
 | **Báo xong / lỗi** | âm báo WebAudio (xong: 3 nốt lên; lỗi: nốt trầm lặp; hủy: im) + tiêu đề tab nhấp nháy khi tab ẩn; công tắc ở Cài đặt → Hoạt động; không cần Internet |
 | **Sửa sai tông** (17/11) | vòng phản hồi `refine.py`: tô → dựng mực → so → chỉnh mục tiêu → tô lại; mặc định **1 lượt**, gạch chéo / sóng / xoắn ốc; sai số −40…−58 %, mực và thời gian +4…8 % ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13, 09 P34) |
 | **Giao diện** (17/11) | màu nhấn **vàng an toàn** `#ffd400` (nền sáng `#8a6d00`) thay cyan, ở `tokens.css`; hai khung vẽ (Tạo bản vẽ và xem trước ở Điều khiển) là **giấy ngà + nét đen** như bản in ở cả hai giao diện (khung giấy / lề vàng đậm `--paper-guide`); nhóm Tối ưu nét có nút **Về mặc định** và ô bị xóa trống tự trả về mặc định; dòng G-code ở tab Tạo bản vẽ ghi cả **số cung G2/G3** |
@@ -57,15 +57,20 @@ Test tự động: máy chủ **563**, giao diện **58** (đều qua 17/11/2026
 | Thứ tự | **thuật toán → nối mạng (Cloudflare) → nút cứng + cảm biến bút → ESP32 cuối cùng** |
 | Khoanh vùng chủ thể | ✅ đã làm: ngoài vùng gạch **nhạt đi** (09 P31) |
 | Bài thử A, B (17/11) | Chân dung bỏ (tự chỉnh khi xem bản nháp); Theo dáng ảnh **chờ ảnh thật**, làm cuối; các bài máy đã đạt dồn về mục 3; mất điện rồi chạy tiếp: **không cần, ghi lại sau nếu muốn** |
-| Junction | **0,03** (nhẹ máy; bút xịn, giấy mượt ít đọng mực) |
+| Junction | **0,03** (nhẹ máy; bút xịn, giấy mượt ít đọng mực) — máy đang chạy 0,01 từ 18/11/2026, [07](07_THU_NGHIEM.md) B4 chưa kết luận |
 | Nút bút | gửi `G90 G0 Z…` thay `$J=`, Giữa = **Z3** (servo giật do xung firmware, chốt 18/11, [02](02_PHAN_CUNG_MAY.md) F16) |
 | Báo "vẽ xong / lỗi" | ✅ đã làm: âm báo + tiêu đề tab (09 P32) |
 | Mã QR địa chỉ | **không làm** |
 | Tiếp tục khi mất điện | **chưa cần**, ghi lại sau nếu muốn |
+| **Thuật toán vẽ ảnh (18/11)** | **CHỐT DỨT KHOÁT** ([09](09_QUYET_DINH_THIET_KE.md) P36): 5 kiểu hiện có (gạch chéo, theo dáng, sóng biến thiên, xoắn ốc, nét viền FDoG) + vòng sửa sai + làm nét. **Không thêm kiểu vẽ hay AI mới**; chỉ chỉnh hằng số theo kết quả in giấy (nêu số trước / sau). Mở lại khi có người khác bổ sung |
+| Preset (18/11) | **Chân dung** = sóng biến thiên, 1 lượt sửa sai, không viền · **Phong cảnh** = sóng, góc 30°, tương phản 1,4, mức đen 15, làm nét 1,5, không CLAHE, không viền · **Ảnh 2D** = gạch chéo + viền FDoG + khử nhiễu (ảnh toàn thân mặt nhỏ: Cắt ảnh sát đầu mới có mắt, mũi) · **Schematic** = viền |
+| Đã thử và bỏ hẳn (18/11) | kiểu Khối (SLIC) · Phác chì bằng AI (U²-Net Portrait, Informative Drawings) · viền do AI vẽ · độ sâu (Depth Anything) làm hướng nét · lai nét cong + đan chéo ([09](09_QUYET_DINH_THIET_KE.md) P28, P35; [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 17). Gói `onnxruntime` đã gỡ |
+| Bút (18/11) | UM-100 là bút chính; Sakura phải ghi **0,5**; UB-155 dừng; nút Servo giật = giới hạn xung firmware, bỏ |
+| So với phần mềm khác (18/11) | chủ dự án **tự test riêng DrawingBotV3** (và Plotcaster) cùng ảnh, cùng bút để so; **không chặn** việc khác |
 
 ### 4.2 Làm tiếp, theo thứ tự
-1. **Thuật toán, 3 việc chốt 18/11** (theo thứ tự): **(a)** Ảnh 2D bớt râu (chỉnh hằng `SPUR_MM`, `HATCH_MIN_RUN_MM`, đo bằng ảnh Tom) **S** · **(b)** ~~kiểu tô Khối (SLIC)~~ **bỏ 18/11**: làm xong rồi chủ dự án in thử A4 thấy "đần", không hợp phong cảnh (hoa văn rằn ri; CLAHE của preset còn làm tệ hơn). Thay bằng thử 3 bản phong cảnh từ kiểu có sẵn · **(c)** ~~chân dung phác chì bằng AI~~ **bỏ 18/11**: thử 3 mô hình ONNX, không đủ đẹp / không đủ nhẹ cho MiniPC ([09](09_QUYET_DINH_THIET_KE.md) P35, [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 17). **Thuật toán chốt**, không thêm AI. Chân dung mặc định giữ **1 lượt sửa sai, không viền**.
-   Trước đó (17/11): chờ in giấy nhóm A ([07](07_THU_NGHIEM.md), nhất là A5 so 0 / 1 lượt) rồi chốt hằng cuối và mặc định lượt; cần thì tờ tông riêng cho Theo dáng ảnh và UB-155. **Tab Beta in PDF (chữ Word)** (10 mục 1.1, **L**): tôi xếp ở nhóm này vì là "nguồn nét" mới; bạn muốn chuyển sang sau mạng thì báo.
+1. **Thuật toán: ĐÃ CHỐT (xem 4.1), chỉ còn đo.** (a) **In giấy 4 tờ** rồi chỉnh hằng số nếu lệch: Phong cảnh (sóng + làm nét 1,5) · chân dung · ảnh 2D · tĩnh vật; (b) đo Tạo nét và vẽ thật trên **MiniPC** (RAM, giây); (c) *tùy chọn*: so DrawingBotV3 / Plotcaster bằng cùng 3 ảnh, bạn chấm "nét nào đẹp hơn" (tôi chỉ giúp số nét, thời gian). **S**
+   **Tab Beta in PDF (chữ Word)** ([10](10_HUONG_PHAT_TRIEN.md) mục 1.1, **L**): sau mạng; bạn muốn đưa lên trước thì báo.
 2. **Nối mạng** ([08](08_TRIEN_KHAI.md) mục E, F): MiniPC (đo xử lý ảnh, RAM) → Docker + USB cố định (udev) + IP cố định → Cloudflare Tunnel; **chỉ mở ra ngoài khi đã đặt PIN**; thử Origin / cookie qua Cloudflare. **M**
 3. **Nút cứng + cảm biến bút** (YAML + dây; 10 mục 3.1): `feed_hold_pin` + `cycle_start_pin` cho Tạm dừng / Chạy tiếp chạy cả khi mất mạng; cảm biến bút vào `probe` để biết bút thật đã nhấc, thêm đèn "Bút". **S + dây**
 4. **ESP32-S3** (cuối cùng, chọn 1–2): bảng điều khiển không dây, đo điện năng, đo nhiệt, camera. **L**
@@ -73,7 +78,7 @@ Test tự động: máy chủ **563**, giao diện **58** (đều qua 17/11/2026
 ### 4.3 Cần thử (chi tiết và cách làm: [07](07_THU_NGHIEM.md) danh sách đầu tệp)
 | Nhóm | Gồm |
 |---|---|
-| **A. In giấy** | Ảnh 2D + Nét viền · Phong cảnh · tờ tông · **vùng chủ thể trên một ảnh có nền rối** · (cuối, chờ ảnh thật) Theo dáng ảnh |
+| **A. In giấy** | Ảnh 2D + Nét viền · Phong cảnh (sóng + làm nét) · chân dung · tĩnh vật · tờ tông · **vùng chủ thể trên một ảnh có nền rối** · (cuối, chờ ảnh thật) Theo dáng ảnh |
 | **B. Máy** | ghi thông số laptop và thời gian Tạo nét · **tiếng "khực" ở góc trái** khi vẽ nét 45° (B4, tạm hoãn 18/11) |
 | **C. Người dùng, mạng** | cách vào web từ điện thoại ([08](08_TRIEN_KHAI.md) mục C) · PIN + giao diện khách · luồng khách gửi ảnh · tắt Wi-Fi mạch MKS · **âm báo xong / lỗi nghe được trên máy bạn** |
 | **D. Bản mang đi, MiniPC** | máy sạch · điện thoại thật · Docker, USB, Cloudflare ([08](08_TRIEN_KHAI.md) mục G) |

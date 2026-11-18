@@ -276,7 +276,7 @@ Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về 
 
 | Kiểm | Cách | Báo gì |
 |---|---|---|
-| Test máy chủ (~563 bài) | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng |
+| Test máy chủ (564 bài) | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng |
 | Test giao diện (58 bài) | ở thư mục gốc: `node --test` kèm đủ 8 tệp: `frontend/tests/{chart,gcode,imageprep,locales,notify,paper,preview,subject}.test.mjs` (Windows: truyền đường dẫn tệp) | như trên |
 | Xem giao diện | sửa Python thì tắt và chạy lại server; trình duyệt **Ctrl+F5**; **F12 → Console** xem dòng đỏ | lỗi chữ, nút không chạy |
 | Thử bằng máy giả | Cài đặt → Kết nối → `sim` | mọi nút chạy được khi chưa có máy |

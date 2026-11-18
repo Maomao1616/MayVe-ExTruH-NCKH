@@ -42,7 +42,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Hành trình (`$130 $131 $132`) | 285 / 318 / 5 mm | |
 | Tốc độ tối đa X, Y (`$110 $111`) | 6000 mm/min; Z 3000 | |
 | Gia tốc X / Y / Z | **2000 / 2000 / 3000 mm/s²** | nâng từ 600 / 600 / 1000 ngày 03/11/2026 |
-| `junction_deviation_mm` | 0,01 (mạch đang có; chốt **0,03** từ 17/11/2026, chờ bạn Lưu vào mạch) | nhỏ → qua góc nhọn phải giảm tốc mạnh (vì vậy zigzag quay đầu bằng nửa vòng tròn) |
+| `junction_deviation_mm` | 0,01 (mạch đang có; chốt **0,03** từ 17/11/2026, chờ bạn Lưu vào mạch — máy đang chạy 2800 / 0,01 từ 18/11/2026, [07](07_THU_NGHIEM.md) B4 chưa kết luận) | nhỏ → qua góc nhọn phải giảm tốc mạnh (vì vậy zigzag quay đầu bằng nửa vòng tròn) |
 | `planner_blocks` | 16 | hàng đợi chuyển động |
 | `arc_tolerance_mm` | 0,002 | |
 | Servo Z | `gpio.32`, 50 Hz, xung 1350–1950 µs | Z 0–5 mm ↔ ~54° ⚠ suy luận |
