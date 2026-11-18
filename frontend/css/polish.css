@@ -1917,3 +1917,63 @@ body.role-guest .coordinate-header span:nth-child(5) {
     flex: 1 1 140px;
     min-width: 120px;
 }
+
+/* ==================== 18. ĐIỆN THOẠI, bản thảo đã lưu + cỡ chữ nhỏ hơn (18/11/2026, chủ dự án) ====================
+   Ảnh chụp 390 px: dòng bản thảo ở tab Tạo bản vẽ chia 2 cột (tên + số liệu | 4 nút) nên cột số liệu chỉ còn ~70 px,
+   chữ "30/10/2026 15:58 · 566 nét · ..." rớt từng chữ một dòng. Ở đây xếp 3 tầng: tên, số liệu (một dòng, tự xuống dòng
+   theo chữ), rồi các nút gọn. Cùng lúc thu nhỏ chữ nền 14 -> 13 px, lề khối 12 -> 10 px, nút thanh trên gọn lại.
+   Máy tính (> 760 px) giữ nguyên. Đo lại ở khổ 390 px sau khi sửa (Playwright): dòng bản thảo cao ~100 px (trước ~235 px), cột nội dung 269 px. */
+@media (max-width: 760px) {
+    body {
+        font-size: 13px;
+    }
+
+    .app-shell {
+        padding: 10px 10px 36px 10px;
+    }
+
+    .panel {
+        padding: 10px;
+    }
+
+    .control-layout {
+        gap: 10px;
+    }
+
+    .toolbar-button {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-height: 0;
+    }
+
+    .draft-item {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 8px 10px;
+        gap: 4px;
+    }
+
+    .draft-item-meta {
+        grid-column: 1;
+        font-size: 11px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+    }
+
+    .draft-item-actions {
+        grid-column: 1;
+        grid-row: auto;
+        justify-content: flex-start;
+        gap: 4px;
+    }
+
+    .draft-item-actions button {
+        padding: 3px 8px;
+        font-size: 12px;
+        line-height: 1.25;
+        white-space: nowrap;
+    }
+
+    .drag-handle {
+        padding: 2px 4px;
+    }
+}
