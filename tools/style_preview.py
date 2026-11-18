@@ -1,7 +1,7 @@
 r"""Vẽ thử một ảnh với nhiều kiểu tô / preset ra PNG để so (không cần mở giao diện), kèm số nét, thời gian ước tính.
 
     cd backend && .venv\Scripts\python.exe ..\tools\style_preview.py anh.jpg [--paper a5] [--pen 0.5]
-        [--kinds crosshatch,flow] [--set style.outline_overlay=true --set raster.gamma=1.1] [--out ..\export\preview]
+        [--kinds crosshatch,flow] [--set style.outline_overlay=true --set raster.gamma=1.1] [--const blocks.BLOCK_MM=10] [--out ..\export\preview]
 
 - Mỗi kiểu một ảnh <tên ảnh>_<khổ>_<kiểu>.png (nét đen, nét bút đúng bề rộng) + một ảnh ghép tất cả cạnh nhau.
 - --set nhóm.tham_số=giá_trị (nhóm: raster / style / layout / optimize, tên tham số như spec.py) ghi đè cho mọi kiểu.
@@ -33,7 +33,11 @@ def load(src: str) -> tuple[np.ndarray, str]:
     if src in ("astronaut", "cat"):
         from skimage import data
         return (data.astronaut() if src == "astronaut" else data.chelsea()), src
-    return np.array(Image.open(src).convert("RGB")), Path(src).stem
+    im = Image.open(src)
+    if im.mode in ("RGBA", "LA", "P"):                      # nền trong suốt -> trắng (giống raster_in của ứng dụng)
+        im = im.convert("RGBA")
+        im = Image.alpha_composite(Image.new("RGBA", im.size, (255, 255, 255, 255)), im)
+    return np.array(im.convert("RGB")), Path(src).stem
 
 
 def parse_value(v: str):
@@ -54,8 +58,14 @@ def main():
     ap.add_argument("--pen", type=float, default=0.5, help="bề rộng nét (mm), như ô Bút vẽ")
     ap.add_argument("--kinds", default="crosshatch,flow", help=f"cách nhau dấu phẩy; có: {', '.join(spec.STYLES)}")
     ap.add_argument("--set", action="append", default=[], help="nhóm.tham_số=giá_trị")
+    ap.add_argument("--const", action="append", default=[], help="tệp.HẰNG=giá_trị: đổi tạm hằng số của thuật toán (vd blocks.BLOCK_MM=10)")
     ap.add_argument("--out", default=str(ROOT / "export" / "preview"))
     a = ap.parse_args()
+    import importlib
+    for item in a.const:                                    # thử hằng số mà không sửa mã
+        key, _, value = item.partition("=")
+        mod, _, const = key.partition(".")
+        setattr(importlib.import_module(f"app.services.drawing.{mod}"), const, parse_value(value))
     img, name = load(a.image)
     buf = io.BytesIO()
     Image.fromarray(img).save(buf, "PNG")

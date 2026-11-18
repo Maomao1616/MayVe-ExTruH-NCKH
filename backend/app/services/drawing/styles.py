@@ -124,7 +124,7 @@ SOFT_TURN_MM = 2.0               # nối sang dòng cách xa hơn 1 dòng chỉ 
 # thang. Bỏ cả ba: đan chéo 1120 -> 942 nét, 19,4 -> 17,1 phút. Chủ dự án: chi tiết đậm hẹp mất đi trông gọn hơn.
 HATCH_THIN_SPACINGS = 1.5        # dải đậm hẹp hơn 1,5 × khoảng cách nét (bút 0,4: 1,2 mm) không gạch. 2,5 (14/11 bản đầu)
                                  # làm mất mắt, mũi khi không có viền (chủ dự án xem bản thảo)
-HATCH_MIN_RUN_MM = 1.5           # mẩu gạch ngắn hơn chừng này bỏ (trước: 0,3 mm)
+HATCH_MIN_RUN_MM = 6.0           # mẩu gạch ngắn hơn chừng này bỏ (trước 18/11/2026: 1,5 mm; ảnh 2D Chainsaw Man A5 bút 0,5: nét < 3 mm 16 -> 0, < 6 mm 26 -> 0 cùng với OUTLINE_MIN_LEN_MM 8; đo lại 18/11 bằng 4 tổ hợp viền × sửa sai 0/1: đều 0)
 HATCH_WHITE = 0.2                # độ phủ dưới mức này để giấy trắng hẳn, mép giáp trắng không so le: nổi chủ thể
 
 
@@ -416,7 +416,7 @@ GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_group
 
 
 # === B. Nét viền ==========================================================================================================
-OUTLINE_MIN_LEN_MM = 4.0         # bỏ nét viền ngắn hơn chừng này (trước 14/11/2026: 1 mm). Ảnh chân dung A4 bút 0,4, cùng làm
+OUTLINE_MIN_LEN_MM = 8.0         # bỏ nét viền ngắn hơn chừng này (14/11/2026: 1 -> 4 mm; 18/11/2026: 4 -> 8 mm, ảnh 2D bớt râu). Ảnh chân dung A4 bút 0,4, cùng làm
                                  # mượt 0,8 mm (trace.SMOOTH_MM): XDoG 210 -> 145 nét, 1,7 -> 1,3 phút, hết gạch vụn quanh mắt
 @FILLERS.register("outline")
 def outline(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
