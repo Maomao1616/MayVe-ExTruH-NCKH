@@ -32,7 +32,7 @@ SPUR_MM = {"low": 2.4, "medium": 1.6, "high": 1.0}   # râu (nhánh cụt) ngắ
 FLATTEN_SP, FLATTEN_SR = 7, 22     # mean shift: bán kính không gian (điểm ảnh) và khoảng màu
 INK_MAX_MM = 4.0         # nét mực / chấm dày tới chừng này thì lấy đường giữa (dày hơn = mảng, lấy viền)
 LIGHT_MAX_MM = 1.2       # vạch sáng mảnh hơn chừng này thì lấy đường giữa
-GAP_MM = 1.5             # khe hở được nối (tính cả phần đầu nét co lại khi làm mảnh nét dày)
+GAP_MM = 3.0             # khe hở được nối (19/11/2026: 1,5 -> 3,0, chủ dự án muốn nét liền hơn; 4,0 nối nhầm nhiều)
 GAP_ANGLE = 55.0         # độ lệch hướng tối đa khi nối (độ)
 # XDoG / FDoG (docs/06 mục 9.1). Thử 12/11/2026 trên ảnh mẫu A5 bút 0,5: Canny "ít" 199 nét, mặt gần như trống; Canny "nhiều"
 # 341 nét, vụn như vết nứt; XDoG 215 nét, mắt / mũi / miệng rõ.

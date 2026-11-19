@@ -134,3 +134,39 @@ def test_tone_sheet_draft_via_api_is_one_to_one():
     bad = client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "sheet": "tone", "style": "hexagon"})
     assert bad.status_code == 400
     assert client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "sheet": "x"}).status_code == 400
+
+
+def test_tone_sheet_marks_and_f_survive_the_hatch_filter():
+    """Tờ thang tông phải còn 3 ô mốc + chữ F sau bộ lọc "bớt râu" (styles.HATCH_MIN_RUN_MM).
+
+    19/11/2026: ngưỡng hạ 6 -> 4 mm, mốc 4 -> 10 mm, chữ F nét 1,5 -> 6 mm. Mẩu nét chạy chéo 45° trong một
+    vùng đậm rộng `a` chỉ dài tối đa a × 1,41, nên: còn nét khi a > 0,71 × ngưỡng, "đặc" khi a >= 1,2 × ngưỡng.
+    Test khoá cả hai nơi (hằng số backend và ảnh vẽ ở giao diện) để lần sau ai nâng ngưỡng lên nữa thì đỏ ngay.
+    """
+    import re
+    from pathlib import Path
+    from types import SimpleNamespace
+
+    import numpy as np
+
+    from app.services.drawing import hatch, styles
+
+    js = (Path(__file__).resolve().parents[3] / "frontend" / "js" / "views" / "drawing.js").read_text(encoding="utf-8")
+    mark = float(re.search(r"TOP = \d+, MARK = (\d+), GRID", js).group(1))       # hằng số trong loadToneRamp
+    bar = float(re.search(r"const bar = ([\d.]+);", js).group(1))                # nét chữ F
+    assert mark == calibration.TONE_MARK                    # tone_read đọc TONE_MARK: hai nơi phải bằng nhau
+    assert mark * 1.41 > 1.5 * styles.HATCH_MIN_RUN_MM      # mốc phải "đặc", không chỉ còn vài sợi
+    assert bar * 1.41 > styles.HATCH_MIN_RUN_MM             # nét chữ F phải còn nét
+
+    style = SimpleNamespace(spacing_mm=None, angle=45.0, levels=5, soft_levels=True)
+
+    def ink(w_mm: float, h_mm: float, pen: float) -> float:
+        rows, cols = max(2, round(h_mm / 0.1)), max(2, round(w_mm / 0.1))
+        f = hatch.Field(np.full((rows, cols), 1.0, np.float32), w_mm, h_mm)
+        strokes = [s for g in styles.crosshatch_groups(f, style, pen, None, 45.0) for s in g]
+        return sum(float(np.hypot(*np.diff(np.asarray(s, float), axis=0).T).sum()) for s in strokes if len(s) > 1)
+
+    for pen in (0.4, 0.5):
+        assert ink(mark, mark, pen) > mark * mark * 1.5     # đo 19/11: 273 mm nét trên ô 10 × 10 mm
+        assert ink(bar, 20.0, pen) > 0                      # nét dọc của chữ F
+        assert ink(12.0, bar, pen) > 0                      # nét ngang của chữ F

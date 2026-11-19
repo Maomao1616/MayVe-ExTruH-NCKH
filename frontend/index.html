@@ -846,6 +846,7 @@
                       <option value="landscape" data-i18n="drawing.preset.landscape">Phong cảnh</option>
                       <option value="flat2d" data-i18n="drawing.preset.flat2d">Ảnh 2D / Hình vẽ</option>
                       <option value="schematic" data-i18n="drawing.preset.schematic">Schematic / Bản vẽ kỹ thuật</option>
+                      <option value="detail" data-i18n="drawing.preset.detail">Siêu chi tiết (chậm)</option>
                     </select>
                   </label>
                   <label for="image-black-point" data-i18n="[title]drawing.hint.blackPoint">
@@ -905,7 +906,9 @@
                     <span data-i18n="drawing.vectorize.mode">Kiểu nét vẽ</span>
                     <select id="style-kind">
                       <option data-i18n="drawing.style.crosshatch" selected="" value="crosshatch">Gạch chéo chồng lớp</option>
+                      <option data-i18n="drawing.style.crosshatchDetail" value="crosshatch_detail">Đan chéo siêu chi tiết (chậm)</option>
                       <option data-i18n="drawing.style.flow" value="flow">Theo dáng ảnh (flow field)</option>
+                      <option data-i18n="drawing.style.flowDetail" value="flow_detail">Theo dáng ảnh siêu chi tiết (chậm)</option>
                       <option data-i18n="drawing.style.waveAm" value="wave_am">Sóng biến thiên (tông liền)</option>
                       <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
                       <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
@@ -924,7 +927,7 @@
                   </label>
                   <label for="style-levels" data-i18n="[title]drawing.hint.levels">
                     <span data-i18n="drawing.style.levels">Số mức đậm nhạt</span>
-                    <input id="style-levels" type="number" min="3" max="5" step="1" value="5"/>
+                    <input id="style-levels" type="number" min="3" max="8" step="1" value="5"/>
                   </label>
                   <label for="style-angle" data-i18n="[title]drawing.hint.angle">
                     <span data-i18n="drawing.style.angle">Góc gạch (°)</span>

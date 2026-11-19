@@ -278,7 +278,7 @@ Các dải **không chồng nhau**. Hàm `styles._passes` trả lần lượt (m
    diff:    0 +1 0 0 0 −1 0 +1 0 −1
    →  đoạn 1: mẫu 2…5        đoạn 2: mẫu 8…9
    ```
-5. **Bỏ đoạn ngắn hơn 0,3 mm** (`MIN_RUN_MM`): bút không vẽ nổi. Kiểu gạch / đan chéo (14/11/2026) bỏ đoạn ngắn hơn **6 mm (từ 18/11/2026; trước 1,5)** (`styles.HATCH_MIN_RUN_MM`): mẩu ngắn thành chấm lẻ ở mép mảng.
+5. **Bỏ đoạn ngắn hơn 0,3 mm** (`MIN_RUN_MM`): bút không vẽ nổi. Kiểu gạch / đan chéo (14/11/2026) bỏ đoạn ngắn hơn **5 mm (19/11/2026; 18/11: 6; trước 18/11: 1,5)** (`styles.HATCH_MIN_RUN_MM`): mẩu ngắn thành chấm lẻ ở mép mảng.
 
 Kết quả: mỗi đường một danh sách đoạn `(u đầu, u cuối)`.
 
@@ -339,7 +339,9 @@ Một hàm có dòng `@FILLERS.register("tên")` trong `styles.py` + thêm tên 
 ### 8.8 Gạch chéo chồng lớp (`crosshatch`)
 Độ phủ mong muốn T tách thành hai lớp a (góc gạch) và b (góc + 90°) sao cho `1 − (1 − a)(1 − b) = T` (`styles.cross_split`): T ≤ 0,45 chỉ lớp a (= T); trên đó a tăng nửa phần, b gánh phần còn lại. T = 0,9: a ≈ b ≈ 0,68, tức mỗi hướng cách ~0,65 mm thay vì một hướng cách 0,49 mm (ít ướt giấy). Mỗi lớp là một lượt zigzag đủ mức (mềm nếu bật); vẽ hết lớp a rồi mới lớp b (mực lớp dưới có thời gian khô). Tốn hơn zigzag ~20 % chiều dài ở ảnh nhiều mảng đậm.
 
-**Bớt râu, trắng hẳn (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27)**, áp cho mọi kiểu gạch (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mẩu gạch < 6 mm (`HATCH_MIN_RUN_MM`, 18/11/2026, trước 1,5) bỏ; độ phủ dưới 0,2 (`HATCH_WHITE`) để trắng hẳn, mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`), không kẻ chéo sang dòng khác. Ảnh chân dung A4 bút 0,4: 1120 → 867 nét, 19,4 → 16,2 phút.
+**Đan chéo siêu chi tiết (`crosshatch_detail`, 19/11/2026):** đúng thuật toán trên nhưng **bỏ cả ba bộ lọc "bớt râu"** (`DETAIL_MIN_RUN_MM` 0,5 mm, `DETAIL_THIN_SPACINGS` 0 — không mở mặt nạ, `DETAIL_WHITE` 0,02), dùng được tới **8 mức**, và `isolated.py` cho phép tạo nét **1800 s** thay 600 s. Đo trên ảnh mèo A4, bút 0,5 (khung 200 × 133 mm): kiểu thường **1 003 nét / 20,8 m / ~3,4 phút**; siêu chi tiết 8 mức cách 1,5 × nét **3 933 nét / 40,8 m / ~8,4 phút**; cách 1,0 × nét **6 237 nét / 53,2 m / ~11,9 phút**. Mực tăng 44–156 %, số nét 3,9–6,2 lần — đây là cái giá của chi tiết, không phải lỗi.
+
+**Bớt râu, trắng hẳn (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27)**, áp cho mọi kiểu gạch (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mẩu gạch < 5 mm (`HATCH_MIN_RUN_MM`, 19/11/2026; 18/11: 6; trước: 1,5) bỏ; độ phủ dưới 0,2 (`HATCH_WHITE`) để trắng hẳn, mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`), không kẻ chéo sang dòng khác. Ảnh chân dung A4 bút 0,4: 1120 → 867 nét, 19,4 → 16,2 phút.
 
 ### 8.9 Sóng biến thiên (`wave_am`): tông liền, không chia mức
 Các đường sóng **song song**, cách nhau `s0 = 4 × nét thật` (bút 0,4: 1,76 mm), bước sóng **cố định** `λ = 2 × nét thật`, cùng pha nên không cắt nhau. Chỉ **biên độ** đổi theo độ đậm:
@@ -356,6 +358,8 @@ Nét **uốn dọc theo dáng ảnh** (má, lông, tóc) thay vì góc cố đ�
 2. **Khoảng cách** = bề rộng nét ÷ độ phủ mong muốn, giới hạn 1,1 × đến 4,5 × nét (`FLOW_MAX_SEP_LINES`, hạ từ 5 ngày 17/11); độ phủ dưới 0,08 để trắng (`FLOW_WHITE`).
 3. **Đặt đường đều nhau (Jobard–Lefer):** gieo ở chỗ đậm nhất, đi hai phía bước 0,3 mm; dừng khi ra vùng trắng, cách đường khác dưới **0,7 ×** khoảng cách (`FLOW_TEST_RATIO`), cong gắt hơn bán kính 1,5 mm, hoặc dài quá 250 mm. Xong một đường thì gieo hai bên, cách đúng khoảng tính **ở chỗ gieo** (tính ở đường cũ thì lan từ đậm sang nhạt bị dày); bỏ đường ngắn hơn 3 × khoảng cách; vùng tách rời gieo bằng lưới 2 mm, đậm trước.
 4. **Kiểm "quá gần"** bằng ảnh đánh dấu ô 0,1 mm, hỏi một ô **tròn** quanh điểm (từ 14/11/2026: ô vuông coi đường chéo 45° ở xa là xa / 1,41 nên nét kề bên không gieo được, đường chéo không bao giờ dày hơn ~1,4 mm). **Không áp đường cong tông** ([09](09_QUYET_DINH_THIET_KE.md) P30). Sau đó qua tối ưu + nối nét gần như mọi kiểu tô.
+
+**Theo dáng siêu chi tiết (`flow_detail`, 19/11/2026):** cùng thuật toán trên nhưng **nới lỏng mọi giới hạn** (`FLOW_DETAIL`): bước đi rút ngắn xuống **0,25 mm** (thay 0,3), khoảng cách nét 1,05–3,0 × nét, độ phủ trần nâng lên **0,95** (thay 0,85), vùng trắng hạ xuống **0,02** (thay 0,08), ngưỡng kiểm tra quá gần hạ xuống **0,55** (thay 0,7), giữ lại các đường ngắn (≥ 0,6 × khoảng cách thay vì 3), giới hạn chiều dài nét tối đa **80 mm** (thay 250 mm để đường không bị kéo dài xuyên mảng), và lưới gieo hạt dày **1 mm** (thay 2 mm). Đo trên ảnh mèo A4 bút 0,5: 1 047 nét (18,4 m / 3,2 phút) → **1 266 nét (24,2 m / 4,1 phút)**, lông mèo dày dặn và chi tiết hơn rõ rệt.
 
 Đo 14/11/2026: mực phủ bám độ đậm ảnh (0,45 → 0,48); `ink_sim` sai tông 0,053, sai mắt 0,043, 53 nét. In thật A4 13/11: ra hình, nhiều "hồn", hơi "nghệ thuật"; A6 độ phân giải thấp gần như không ra hình. Việc còn lại (nối đầu các đường kề nhau, tờ tông riêng): [10](10_HUONG_PHAT_TRIEN.md) mục 0.
 
@@ -434,7 +438,7 @@ Lớp B bỏ phần nằm sát nét mực (Canny cho hai mép của một nét m
 
 **FDoG (XDoG có làm mượt dọc nét; 13–14/11/2026, `edges.xdog_edges` / `fdog_response`)** thay Canny cho lớp ranh giới mảng khi tích "Dùng FDoG" ở kiểu Nét viền, và luôn dùng cho lớp viền phủ lên kiểu tô. XDoG: ảnh xám làm mờ σ và 1,6σ, lấy `mờ(σ) − 0,98 × mờ(1,6σ)`; vùng phẳng ra ~0, phía tối của cạnh ra âm, âm hơn ngưỡng (3 / 2 / 1 mức xám cho Ít / Vừa / Nhiều) là viền. Vì so với vùng xung quanh nên ảnh tối, ngược sáng vẫn ra nét (σ 0,7 mm; 0,35 mất viền đầu). **FDoG** lấy hiệu **ngang** nét (dọc gradient) rồi trung bình Gauss **dọc** hướng nét (σ 4 mm, `FDOG_ALONG_MM`; trường hướng từ tensor mịn 1,5 mm): đoạn đứt do nhiễu được nối lại, nét lẻ không cùng hướng nhạt đi (ảnh chân dung A4: 145 → 130 nét, viền mắt khép). Khối đậm dày hơn 2 mm (`XDOG_RIM_MM`, tròng mắt) chỉ lấy **vành**, không thì làm mảnh ra một chấm rồi mất khung mắt. Hạn chế: chỉ nhìn độ sáng nên bỏ sót ranh giới hai màu cùng độ sáng (Canny có thêm kênh màu Lab bắt được); ảnh 2D / Schematic giữ Canny.
 
-**Làm mượt nét viền (`trace.smooth`, 14/11/2026):** lấy mẫu lại mỗi 0,5 điểm ảnh, làm mượt Gauss dọc chiều dài σ = **0,8 mm** (`SMOOTH_MM`); nét hở giữ hai đầu, vòng kín σ ≤ 5 % chu vi (chấm mắt không co). Bỏ nét ngắn hơn 8 mm (từ 18/11/2026, trước 4) (`OUTLINE_MIN_LEN_MM`). Trước đó: trung bình 3 điểm × 2 lượt (~0,3 mm), nét còn run.
+**Làm mượt nét viền (`trace.smooth`, 14/11/2026):** lấy mẫu lại mỗi 0,5 điểm ảnh, làm mượt Gauss dọc chiều dài σ = **0,8 mm** (`SMOOTH_MM`); nét hở giữ hai đầu, vòng kín σ ≤ 5 % chu vi (chấm mắt không co). Bỏ nét ngắn hơn **6 mm** (`OUTLINE_MIN_LEN_MM`, 19/11/2026; trước 8 mm, ban đầu 4 mm). Trước đó: trung bình 3 điểm × 2 lượt (~0,3 mm), nét còn run.
 
 ### 9.2 Làm mảnh: lấy đường giữa (`skimage.morphology.skeletonize`)
 Bào mòn nét từ hai mép vào, mỗi lượt một lớp điểm ảnh, đến khi chỉ còn **1 điểm ảnh** mà không làm đứt nét. Kết quả là **đường giữa** (skeleton).
@@ -449,7 +453,7 @@ nét dày 5 điểm:     sau khi làm mảnh:
 Vì sao không dò đường bao (`findContours`, potrace): dò bao cho **hai đường** ở hai mép nét, bút sẽ vẽ hai lần và nét dày gấp đôi.
 
 ### 9.3 Sửa lỗi sau khi làm mảnh
-1. **Nối khe hở** (`bridge`): mỗi đầu mút ước lượng hướng đi ra (trung bình các điểm nét trong bán kính 5 điểm ảnh). Nhìn thẳng ra phía trước trong góc 55°, gặp điểm nét khác trong ~1,5 mm (`GAP_MM`) thì kẻ đoạn nối. Tìm điểm gần nhanh bằng **KD-tree** (`scipy.spatial.cKDTree`: cây chia không gian, tra "điểm nào gần đây nhất" mà không phải so với mọi điểm).
+1. **Nối khe hở** (`bridge`): mỗi đầu mút ước lượng hướng đi ra (trung bình các điểm nét trong bán kính 5 điểm ảnh). Nhìn thẳng ra phía trước trong góc 55°, gặp điểm nét khác trong **≤ 3,0 mm** (`GAP_MM`, 19/11/2026; trước 1,5 mm) thì kẻ đoạn nối. Tìm điểm gần nhanh bằng **KD-tree** (`scipy.spatial.cKDTree`: cây chia không gian, tra "điểm nào gần đây nhất" mà không phải so với mọi điểm).
 2. **Cắt râu** (`prune_spurs`): làm mảnh nét dày luôn đẻ ra nhánh cụt ngắn ở góc (đỉnh chữ A, đáy chữ V). Cách nhận ra: đếm **số lần chuyển từ trắng sang đen khi đi một vòng 8 ô quanh một điểm** (`_crossing_number`):
    ```
    1 = đầu mút        2 = giữa nét (kể cả bậc thang)        ≥ 3 = ngã ba
@@ -464,7 +468,7 @@ Vì sao không dò đường bao (`findContours`, potrace): dò bao cho **hai đ
 | 3 | Khép vòng | hai đầu một nét cách nhau ≤ 2 điểm ảnh thì nối lại (chữ o, số 0, hình tròn không hở) |
 | 4 | Làm mượt | Gauss dọc chiều dài σ 0,8 mm (xem trên): bỏ bậc thang của lưới điểm ảnh |
 | 5 | Bớt điểm | `cv2.approxPolyDP` (thuật toán Douglas–Peucker, dung sai 0,6 điểm ảnh ≈ 0,18 mm): bỏ điểm thừa trên đoạn gần thẳng |
-| 6 | Đổi sang mm | `(điểm + 0,5) × mm mỗi điểm ảnh`; bỏ nét ngắn hơn max(4 mm, 3 × cỡ bút) |
+| 6 | Đổi sang mm | `(điểm + 0,5) × mm mỗi điểm ảnh`; bỏ nét ngắn hơn 6 mm (`OUTLINE_MIN_LEN_MM`, 19/11/2026) |
 
 ---
 
@@ -664,7 +668,10 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Đường cong tông | `USE_TONE_CURVE`, `TONE_CURVE_STRENGTH` | bật · 0,75 |
 | Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM` (`styles.py`); `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
 | Gạch chéo | `CROSS_START`, `CROSS_SLOPE`, `CROSS_ANGLE` | 0,45 · 0,5 · 90° |
-| Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 6 mm (18/11/2026, trước 1,5) · 0,2 |
+| Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 5 mm (19/11/2026; 18/11: 6; trước: 1,5) · 0,2 |
+| Siêu chi tiết (19/11) | `DETAIL_MIN_RUN_MM`, `DETAIL_THIN_SPACINGS`, `DETAIL_WHITE` (`styles.py`); `DETAIL_TIMEOUT_S` (`isolated.py`) | 0,5 mm · 0 (không mở mặt nạ) · 0,02 · 1800 s |
+| Flow siêu chi tiết (19/11) | `FLOW_DETAIL` (`styles.py`); các hằng số `FLOW_*` (`flow.py`) | bước 0,25 · sep 1,05–3,0 · phủ 0,95 · trắng 0,02 · test 0,55 · min len 0,6 · dài ≤ 80 mm · gieo 1 mm |
+| Nét viền liền hơn (19/11) | `GAP_MM` (`edges.py`); `OUTLINE_MIN_LEN_MM` (`styles.py`) | 3,0 mm · 6,0 mm (trước 1,5 · 8,0) |
 | Sóng biến thiên | `AM_SPACING_LINES`, `AM_AMPLITUDE`, `AM_WAVE_LINES`, `AM_DITHER`, `AM_WHITE`, `AM_FILL`, `AM_MIN_RUN` | 4,0 · 0,45 · 2,0 · 0,35 · 1,6 (độ phủ 0,10) · tắt (bật ở Chân dung) · 3,0 |
 | Sóng: lớp đậm | `AM_DARK_LAYER`, `AM_EFF_KNEE`, `AM_EFF_SLOPE` | bật · 0,45 · 0,78 |
 | Xoắn ốc | `BRIDGE_MM`, `SPIRAL_BRIDGE_PITCHES`, `SPIRAL_MIN_PITCHES` (`hatch.py`) | 3,0 mm · 6,0 · 4,0 |
