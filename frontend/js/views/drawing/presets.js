@@ -33,6 +33,13 @@ export const PRESETS = {
         ...BASE, "image-denoise": true,
         "style-kind": "crosshatch", "style-levels": "5", "style-outline": true
     },
+    // 19/11/2026 (chủ dự án): "Siêu chi tiết" = đan chéo BỎ hết lọc bớt râu (giữ mẩu 0,5 mm, dải đậm hẹp), 8 mức,
+    // khoảng cách nét 0,9 × bút (0,45 cho bút 0,5), sửa sai 2 lượt, không đơn giản hoá / không bỏ nét ngắn.
+    // Đo ảnh mèo A4 bút 0,5: 40,8 m / ~8,4 phút (kiểu thường 20,8 m / 3,4 phút). Bút khác: spacing = 0,9 × bút.
+    detail: {
+        ...BASE, "style-kind": "crosshatch_detail", "style-levels": "8", "style-spacing": "0.45",
+        "style-refine": "2", "simplify-tolerance": "0", "min-path-length": "0"
+    },
     schematic: {                 // schematic / bản vẽ kỹ thuật, ảnh scan nền xám: cắt nền xám, chỉ viền
         ...BASE, "image-black-point": "60", "image-white-point": "200",
         "style-kind": "outline", "style-outline-detail": "medium"

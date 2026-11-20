@@ -101,7 +101,10 @@ TONE_PIXEL_MM = 0.1              # độ phân giải ô đậm đều dùng cho
 TONE_ANGLE = 45.0                # góc gạch như mặc định của kiểu tô
 TONE_GRID = 4                    # 4 × 4 ô
 TONE_TOP = 24.0                  # phần đầu: chữ F + mốc góc trên
-TONE_MARK = 4.0                  # cạnh ô mốc đen (mm)
+TONE_MARK = 10.0                 # cạnh ô mốc đen (mm). 4 -> 10 (19/11/2026): mốc 4 mm bị bộ lọc bớt râu
+                                 # (styles.HATCH_MIN_RUN_MM) xoá sạch nên tờ in 18/11 không đo được; 10 mm thì đặc
+                                 # (đo 19/11, bút 0,4: 273 mm nét; mốc 8 mm 146, mốc 6 mm 60). tone_read.py đọc
+                                 # hằng số này nên hình học đo tự khớp — đổi số ở đây là công cụ đo theo luôn.
 TONE_SOLID = 0.8                 # ô mốc: khoảng cách dòng = 0,8 × nét (đặc hẳn)
 TONE_SIZES = {
     "a6": {"patch": 20.0, "gap": 3.0},       # 4 × 20 + 3 × 3 = 89 mm ≤ 95 (A6 trừ lề)

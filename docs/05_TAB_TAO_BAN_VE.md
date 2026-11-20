@@ -62,18 +62,21 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 | Phong cảnh (từ 18/11/2026) | sóng biến thiên, góc 30°, không viền | mức đen 15, **tương phản 1,4**, **làm nét 1,5**, không CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
 | Ảnh 2D / Hình vẽ (14/11/2026) | **gạch chéo 5 mức + lớp viền** | khử nhiễu | hoạt hình, truyện tranh, hình vẽ, sticker |
 | Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
+| **Siêu chi tiết** (19/11/2026) | **đan chéo bỏ hết lọc "bớt râu"**, 8 mức, khoảng cách nét 0,9 × bút (0,45 cho bút 0,5), sửa sai **2 lượt** | không đơn giản hoá, không bỏ nét ngắn; cho phép tạo nét tới 30 phút | ảnh cần chi tiết nhất; đo ảnh mèo A4 bút 0,5: 40,8 m / ~8,4 phút (kiểu thường 20,8 m / 3,4 phút) |
 
 Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của một bộ chung `BASE`. Cận cảnh (xoắn ốc) và Phác họa ảnh (Nét viền + XDoG) bỏ 14/11/2026: chọn tay kiểu nét khi cần ([09](09_QUYET_DINH_THIET_KE.md) P29).
 
-Danh sách kiểu nét từ 14/11/2026 (`spec.UI_STYLES`; zigzag, sóng thường, đan 3 hướng, kiểu lai Đan chéo + theo dáng đã ẩn, mã vẫn giữ, [09](09_QUYET_DINH_THIET_KE.md) P23, P25, P28):
+Danh sách 7 kiểu nét trên giao diện (`spec.UI_STYLES`, cập nhật 19/11/2026; zigzag, sóng thường, đan 3 hướng đã ẩn trong mã, xem [09](09_QUYET_DINH_THIET_KE.md) P23, P25, P28):
 
-| Kiểu nét | Số nét / nhấc bút | Ghi chú |
+| Kiểu nét | Mật độ nét / Nhấc bút | Đặc điểm & Ứng dụng |
 |---|---|---|
-| Gạch chéo chồng lớp | vừa | **mặc định**; tông nhạt một hướng, đậm thêm hướng vuông góc; bỏ "râu" (dải hẹp, mẩu ngắn), vùng độ phủ < 0,2 để trắng. Tích "Thêm lớp viền" (FDoG) cho nét cong mịn ở mắt, tóc, mép mặt |
-| Theo dáng ảnh (flow field) | nhiều | nét uốn theo dáng ảnh, kiểu riêng, khoảng cách theo độ đậm; chưa có đường cong tông; vùng tối có mẩu ngắn |
-| Sóng biến thiên | ít nhất | tông liền, mượt; vùng rất đậm thêm lớp gạch thẳng; ô "Phủ đều đường ở vùng sáng" cho da mặt không khe trắng (bật trong Chân dung) |
-| Xoắn ốc | nhiều nhất | đậm nhanh, ô rất đậm có vệt chữ thập |
-| Viền | ít | nét mực ≤ 4 mm → một đường giữa; mảng → viền quanh mảng. Ô tích **"Dùng FDoG"** (chỉ hiện ở kiểu này; mã vẫn gọi `outline_xdog`): viền ảnh chụp rõ hơn. Ô "Thêm lớp viền" trên kiểu tô khác luôn dùng FDoG |
+| **Gạch chéo chồng lớp** | Vừa | **Mặc định**; vùng nhạt 1 hướng 45°, vùng đậm thêm hướng 135°; lọc bỏ mẩu ngắn < 5 mm, vùng độ phủ < 0,2 để trắng. Tùy chọn "Thêm lớp viền" (FDoG) giúp viền mắt, tóc, mép mặt cong mịn |
+| **Đan chéo siêu chi tiết** (19/11/2026) | Nhiều (gấp ~2,6–6 lần) | Cùng thuật toán đan chéo nhưng **bỏ toàn bộ lọc "bớt râu"**: giữ mẩu nét từ 0,5 mm, giữ dải đậm hẹp, chỉ trắng hẳn dưới độ phủ 0,02; mở tới **8 mức**; preset "Siêu chi tiết" đặt cách nét 0,9 × bút + sửa sai 2 lượt. Giới hạn tạo nét nới lên 30 phút |
+| **Theo dáng ảnh (flow field)** | Nhiều | Nét uốn lượn theo cấu trúc khối của ảnh; mật độ tự động dãn cách theo độ đậm; chưa áp đường cong tông |
+| **Theo dáng siêu chi tiết** (19/11/2026) | Nhiều hơn flow ~1,2 lần | Cùng flow nhưng **nới lỏng mọi giới hạn**: giữ đường ngắn (≥ 0,6 × khoảng cách thay vì 3), khoảng cách nét tối thiểu 0,55 × (thay vì 0,7), độ phủ trần **0,95** (thay vì 0,85), bước đi **0,25 mm**, đường dài tối đa **80 mm**, lưới gieo hạt dày 1 mm |
+| **Sóng biến thiên** | Ít nhất | Tông chuyển liền mượt; vùng rất đậm bổ sung lớp gạch thẳng; tùy chọn "Phủ đều đường ở vùng sáng" giúp da mặt không bị khe trắng (bật ở preset Chân dung) |
+| **Xoắn ốc** | Nhiều nhất | Đậm nhanh; vùng rất đậm có vân chữ thập tự nhiên |
+| **Viền** | Ít | Nét mực ≤ 4 mm → lấy 1 đường giữa; mảng khối → lấy viền ngoài. Tích "Dùng FDoG" cho ảnh chụp rõ viền. Ô "Thêm lớp viền" ở kiểu tô khác luôn dùng FDoG. **19/11/2026:** nối khe tới **3 mm** (trước 1,5) và giữ nét ≥ **6 mm** (trước 8) → nét liền khối, giữ thêm chi tiết nhỏ |
 
 Gạch chéo và xoắn ốc có **đường cong tông** đo trên giấy thật (Sakura 0,5, mặt bóng Ivory; [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12): không cần chỉnh gamma để bù vùng trung bình.
 
@@ -140,7 +143,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (vẽ lần lượt từng mức đậm nhạt; mặc định **tắt** từ 12/11/2026), **`bridge`** (mặc định bật: ảnh tô đơn sắc, nối nét gần ≤ 4 × bề rộng nét trong vùng đậm thay vì nhấc bút) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
 | `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 0,38, UM-100 0,40, Sakura 0,50, bút bi 0,50, hoặc Tùy chọn; đo 12/11/2026), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, **làm nét** (unsharp mask, 0 = tắt, tối đa 3; preset Phong cảnh 1,5), tự cân sáng, CLAHE, khử nhiễu |
-| `style` | kiểu (`spec.STYLES`; giao diện hiện `spec.UI_STYLES`), thêm viền, chi tiết viền, số mức (3–5), góc (45°), khoảng cách nét, biên độ sóng, đảo |
+| `style` | kiểu (`spec.STYLES`; giao diện hiện `spec.UI_STYLES`), thêm viền, chi tiết viền, số mức (**3–8**), góc (45°), khoảng cách nét, biên độ sóng, đảo |
 | `palette` | đơn sắc / nhiều màu, số màu (2–4), bỏ nền |
 
 **Thêm một ô mới** phải chạm 5 chỗ: dòng `Param(...)` trong `spec.py` → tệp Python dùng nó → ô trong `index.html` → một dòng trong bảng `FIELDS` của `views/drawing/params.js` → khóa chữ trong `vi.json` và `en.json` ([03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 6).

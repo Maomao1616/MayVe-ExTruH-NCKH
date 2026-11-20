@@ -608,13 +608,14 @@ const baseName = () => {
 
 // Ảnh thang tông (13/11/2026, gộp "thang xám" + "tờ hiệu chỉnh tông"): 16 ô xám độ đậm TONE_STEPS xếp 4 × 4, 3 ô mốc
 // đen ở góc (trên phải, dưới trái, dưới phải), chữ F ở góc trên trái. Hình học GIỐNG HỆT tờ tông A6 của backend
-// (calibration.tone_layers: ô 20 mm, khe 3 mm, phần đầu 24 mm, mốc 4 mm) để AI đo ảnh chụp bằng cùng công cụ.
+// (calibration.tone_layers: ô 20 mm, khe 3 mm, phần đầu 24 mm, mốc 10 mm, chữ F nét 6 mm) để AI đo ảnh chụp bằng
+// cùng công cụ. 19/11/2026: mốc 4 mm / F nét 1,5 mm bị bộ lọc bớt râu (HATCH_MIN_RUN_MM) xoá sạch -> phóng to.
 // Vẽ ngay trong trình duyệt rồi nạp như tệp người dùng chọn; bút / kiểu tô / preset chọn ở tab này như ảnh thường.
 // Ô vẽ ra đi qua đường cong tông của kiểu tô (backend styles.TONE_CURVES): đo được kết quả cuối cùng mắt thấy.
 const RAMP_NAME = "thang-tong.png";
 const TONE_STEPS = [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.8, 0.9];
 async function loadToneRamp() {
-    const K = 12, PATCH = 20, GAP = 3, TOP = 24, MARK = 4, GRID = 4;      // K điểm ảnh / mm
+    const K = 12, PATCH = 20, GAP = 3, TOP = 24, MARK = 10, GRID = 4;     // K điểm ảnh / mm; mốc 4 -> 10 mm (19/11/2026
     const wMm = GRID * PATCH + (GRID - 1) * GAP;
     const hMm = TOP + GRID * PATCH + (GRID - 1) * GAP + 3 + MARK;
     const canvas = document.createElement("canvas");
@@ -633,7 +634,7 @@ async function loadToneRamp() {
         rect(col * (PATCH + GAP), TOP + row * (PATCH + GAP), PATCH, PATCH, dark);
     });
     for (const [x, y] of [[wMm - MARK, 0], [0, hMm - MARK], [wMm - MARK, hMm - MARK]]) rect(x, y, MARK, MARK, 1);
-    const bar = 1.5;                                                        // chữ F nét 1,5 mm (đủ dày để tô được)
+    const bar = 6;                                                          // chữ F nét 6 mm (1,5 mm bị HATCH_MIN_RUN_MM xoá; khớp calibration.TONE_MARK)
     rect(2, 2, bar, 20, 1);
     rect(2, 2, 12, bar, 1);
     rect(2, 11.25, 9, bar, 1);

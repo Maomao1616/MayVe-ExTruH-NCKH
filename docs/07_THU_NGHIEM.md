@@ -86,7 +86,7 @@ Làm **một lần cho mỗi bút + giấy + kiểu tô**. Kết quả dùng đ�
 
 1. Cài đặt → **Tờ thử / hiệu chỉnh** → khối **Thang tông** → chọn khổ (A6 gọn nhất) → **"Mở ảnh thang tông ở tab Tạo bản vẽ"** (tự chuyển tab, nạp ảnh 16 ô xám + 3 ô mốc đen + chữ F). Ô vẽ ra đã đi qua đường cong tông của kiểu tô, nên đo đúng cái mắt thấy khi vẽ thật.
 2. Chọn **bút + kiểu tô**; để đo: **tắt CLAHE / khử nhiễu, gamma 1, tương phản 1, mức đen 0 / trắng 255, Số mức 5**. Tạo nét → Lưu bản thảo → vẽ.
-3. Chụp bằng điện thoại: **thẳng góc**, ánh sáng đều (cửa sổ hoặc đèn trần, tránh chiếu một phía), **không flash**, giấy phẳng, thấy đủ 3 ô đen ở góc và chữ F; giấy bóng thì nghiêng nhẹ tránh phản chiếu. Không chỉnh sáng / lọc. Gửi ảnh gốc; chụp nhiều tờ một ảnh vẫn đo được nếu tờ nào cũng thấy đủ 3 ô mốc.
+3. Chụp bằng điện thoại: **thẳng góc**, ánh sáng đều (cửa sổ hoặc đèn trần, tránh chiếu một phía), **không flash**, giấy phẳng, thấy đủ 3 ô đen ở góc và chữ F; giấy bóng thì nghiêng nhẹ tránh phản chiếu. Không chỉnh sáng / lọc. Gửi ảnh gốc; chụp nhiều tờ một ảnh vẫn đo được nếu tờ nào cũng thấy đủ 3 ô mốc. Mốc **10 mm**, chữ F nét **6 mm** (19/11/2026; trước 4 mm / 1,5 mm — mốc nhỏ bị bộ lọc bớt râu xoá sạch nên tờ in 18/11 không đo được).
 4. 16 ô đọc từ trái sang phải, trên xuống dưới, độ phủ: 0 (giấy) · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 45 · 50 · 55 · 60 · 70 · 80 · 90 %. Ô nào bết mực / ướt giấy thì ghi.
 
 AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đậm nhìn thấy*. Với 5 mức, 16 ô gộp thành **5 bậc trên giấy** (giấy trắng + 4 mật độ 22 / 45 / 68 / 90 %); hai ô kề ra cùng mật độ là đúng thiết kế.
@@ -104,7 +104,7 @@ AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đ�
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |
 |---|---|---|
-| Gạch chéo | râu ở mép mảng; má / nền sáng trống quá; móc chữ U ở mảng sáng hẹp (còn, đã thử bỏ không được, 09 P28) | `HATCH_WHITE` 0,2 · `HATCH_THIN_SPACINGS` 1,5 · `HATCH_MIN_RUN_MM` 6 (`styles.py`) |
+| Gạch chéo | râu ở mép mảng; má / nền sáng trống quá; móc chữ U ở mảng sáng hẹp (còn, đã thử bỏ không được, 09 P28) | `HATCH_WHITE` 0,2 · `HATCH_THIN_SPACINGS` 1,5 · `HATCH_MIN_RUN_MM` 5 (`styles.py`) |
 | Theo dáng ảnh | vùng tối vụn hay đặc; nét chạy theo lông | `FLOW_TEST_RATIO` 0,7 · `FLOW_MIN_LEN_SEPS` 3 · `FLOW_MAX_COVER` 0,85 · `FLOW_MAX_SEP_LINES` 4,5 (`flow.py`) |
 | Sóng biến thiên | vệt trắng ở da; rung ở sóng dày; ô 90 % đen chưa | ô "Phủ đều đường ở vùng sáng" · `AM_DARK_LAYER` · `AM_SPACING_LINES` |
 | Xoắn ốc | tâm xoắn bết mực; vệt nối ngang vùng sáng | `SPIRAL_BRIDGE_PITCHES` (`hatch.py`) |
@@ -116,11 +116,11 @@ Thử 3 loại ảnh: (a) hình vẽ / sticker có viền đen, (b) mảng màu 
 | Hằng số | Ý nghĩa | Khi nào đổi |
 |---|---|---|
 | `INK_MAX_MM` 4,0 (`edges.py`) | nét mực dày tới chừng này → một đường giữa | viền hoạt hình rất dày vẫn ra hai đường → tăng |
-| `GAP_MM` 1,5 | khe hở được nối | còn đứt → tăng; nối nhầm hai nét → giảm |
+| `GAP_MM` 3,0 | khe hở được nối (19/11/2026: 1,5 → 3,0, chủ dự án muốn nét liền hơn) | còn đứt → tăng; nối nhầm hai nét → giảm |
 | `SPUR_MM` 2,4 / 1,6 / 1,0 | râu ngắn hơn chừng này bị cắt | còn râu ở góc chữ → tăng; mất chân linh kiện ngắn → giảm |
 | `FDOG_ALONG_MM` 4,0 | làm mượt **dọc** hướng nét (FDoG) | nét đứt → tăng; góc gắt bị tròn → giảm (0 = XDoG thường) |
 | `SMOOTH_MM` 0,8 (`trace.py`) | làm mượt đường theo chiều dài | còn run → tăng |
-| `OUTLINE_MIN_LEN_MM` 8,0 (`styles.py`) | bỏ nét viền ngắn hơn | còn gạch vụn → tăng; mất chi tiết nhỏ → giảm |
+| `OUTLINE_MIN_LEN_MM` 6,0 (`styles.py`) | bỏ nét viền ngắn hơn (19/11/2026: 8 → 6 mm, cùng GAP 1,5 → 3,0) | còn gạch vụn → tăng; mất chi tiết nhỏ → giảm |
 
 ## 5. Preset với ảnh thật
 Vẽ mỗi preset bằng một ảnh đúng loại (A5), ghi thời gian thật / ước tính, số lần nhấc bút, nhận xét.

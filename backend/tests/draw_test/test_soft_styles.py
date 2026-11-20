@@ -143,6 +143,22 @@ def test_join_rows_turn_only_refuses_staircase_links():
     rows = [[np.array([[0.0, 0.0], [10.0, 0.0]])], [np.array([[10.2, 1.0], [20.0, 1.0]])]]
     assert len(hatch.join_rows(rows, 1.0)) == 1                            # nối chéo kiểu bậc thang được phép mặc định
     assert len(hatch.join_rows(rows, 1.0, turn_only=True)) == 2            # sóng: chỉ nối khi quay đầu
+
+
+def test_detail_style_keeps_short_runs_and_draws_more_ink_than_crosshatch():
+    """19/11/2026: kiểu "Đan chéo siêu chi tiết" bỏ lọc bớt râu (giữ mẩu 0,5 mm, dải đậm hẹp) nên nhiều nét và
+    nhiều mực hơn kiểu thường; spec cho `levels` tới 8."""
+    f = ramp()
+    base = styles.fill(f, style(kind="crosshatch"), PEN)
+    det = styles.fill(f, style(kind="crosshatch_detail", levels=8), PEN)
+
+    def total(strokes):
+        return sum(float(np.hypot(*np.diff(np.asarray(s, float), axis=0).T).sum()) for s in strokes)
+
+    assert len(det) > 1.3 * len(base)                     # nhiều nét hơn (giữ mẩu ngắn)
+    assert total(det) > 1.1 * total(base)                 # nhiều mực hơn (đo trên dải thử: +13 %; ảnh mèo A4: +44 %)
+    assert spec.parse("style", {"levels": 8}).levels == 8  # siêu chi tiết dùng 8 mức
+
     back = [[np.array([[0.0, 0.0], [10.0, 0.0]])], [np.array([[3.0, 1.0], [10.1, 1.0]])]]
     [joined] = hatch.join_rows(back, 1.0, turn_only=True)                  # quay đầu: nửa vòng tròn rồi đi ngược lại
     assert joined[-1][0] == pytest.approx(3.0)

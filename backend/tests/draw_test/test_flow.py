@@ -78,3 +78,20 @@ def test_strokes_stay_inside_and_turn_no_sharper_than_min_radius():
 def cv2_blur(img, sigma):
     import cv2
     return cv2.GaussianBlur(img, (0, 0), sigma)
+
+
+def test_flow_detail_is_denser_and_restores_the_flow_constants():
+    """19/11/2026: bản "Theo dáng ảnh siêu chi tiết" nới hết giới hạn (giữ đường ngắn, cho sát nhau, phủ 0,95)
+    -> nhiều nét và nhiều mực hơn kiểu thường; các hằng số của flow.py phải được trả lại sau khi vẽ."""
+    dark = np.tile(np.linspace(0.0, 0.9, 120, dtype=np.float32), (120, 1))
+    f = Field(dark, 40.0, 40.0)
+    base = [s for g in styles.GROUPERS["flow"](f, STYLE, 0.5) for s in g]
+    det = [s for g in styles.GROUPERS["flow_detail"](f, STYLE, 0.5) for s in g]
+
+    def total(strokes):
+        return sum(float(np.hypot(*np.diff(np.asarray(s, float), axis=0).T).sum()) for s in strokes)
+
+    assert len(det) > len(base)
+    assert total(det) > total(base)
+    assert flow.FLOW_MAX_COVER == 0.85 and flow.FLOW_MIN_LEN_SEPS == 3.0      # trả lại như cũ
+

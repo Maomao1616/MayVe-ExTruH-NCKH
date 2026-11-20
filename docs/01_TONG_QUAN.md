@@ -39,7 +39,7 @@ Quy tắc quan trọng nhất: **giao diện không bao giờ tự nói chuyện
 | Tab | Việc | Tài liệu |
 |---|---|---|
 | **Điều khiển** | kết nối, xem trạng thái, jog, Home, đặt gốc, nâng hạ bút, nạp G-code + xem khung vẽ + chạy, hủy an toàn, tiếp tục từ điểm dừng, terminal, macro, hàng đợi | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) |
-| **Tạo bản vẽ** | ảnh / SVG → nét (gạch chéo, theo dáng ảnh, sóng biến thiên, xoắn ốc, viền; 1–4 màu; 4 preset: Chân dung, Ảnh 2D, Phong cảnh, Schematic) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
+| **Tạo bản vẽ** | ảnh / SVG → nét (7 kiểu nét: gạch chéo, đan chéo siêu chi tiết, theo dáng ảnh, theo dáng siêu chi tiết, sóng biến thiên, xoắn ốc, viền; 1–4 màu; 5 preset: Chân dung, Phong cảnh, Ảnh 2D, Schematic, Siêu chi tiết) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
 | **Cài đặt** | cổng kết nối, ngôn ngữ, giao diện sáng / tối, cấu hình máy (đọc / ghi cấu hình trên mạch qua USB), hồ sơ bút, hạn mức bản thảo, xem dữ liệu | [03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 7 |
 
 Hai tab chính nối nhau qua **bản thảo trên đĩa**:
