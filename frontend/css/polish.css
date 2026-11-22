@@ -2,11 +2,19 @@
    Nap SAU style.css va drawing.css, chi de ghi de. Muon bo toan bo tinh chinh nay: xoa dong
    <link ... polish.css> trong index.html. Mau lay tu assets/css/tokens.css (--highlight, --paper...). */
 
+/* Chu nho nhat 12 px (the <small> mac dinh la 83 % = 11,67 px) */
+small { font-size: max(12px, 0.8333em); }
+
 /* ---- Tieu de: cam la mau nhan, chu thuong xam trung tinh ---- */
 .panel-heading h2,
 .drawing-section-title {
-    color: var(--highlight);
+    color: var(--text-main);          /* cam chi con o gach nho truoc tieu de va 2 khoi chinh duoi day (22/11/2026) */
     letter-spacing: 0.01em;
+}
+
+.controller-panel .panel-heading h2,
+.drawing-preview-panel .drawing-section-title {
+    color: var(--highlight);
 }
 
 /* ---- Khoi noi len khoi nen ---- */
@@ -17,10 +25,6 @@
 
 [data-theme="light"] .panel {
     box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 6px 18px rgb(15 23 42 / 6%);
-}
-
-.panel:hover {
-    box-shadow: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 8px 24px rgb(0 0 0 / 22%);
 }
 
 /* ---- Tab dang chon: vach cam duoi chan ---- */
@@ -90,7 +94,7 @@ input:out-of-range {
 
 /* ---- Tab Tao ban ve ---- */
 .drawing-info .detail-list dt {
-    font-size: 0.78em;
+    font-size: max(12px, 0.78em);
     letter-spacing: 0.04em;
     text-transform: uppercase;
 }
@@ -155,11 +159,6 @@ input:out-of-range {
 /* ==================== TAB DIEU KHIEN: bo cuc moi ====================
    Hang tren: tieu de | khoi trang thai may (chu to) | che do.
    Than: cot trai RONG (vi tri, jog, tep G-code) | cot phai HEP (khung 2D + tien trinh, terminal, hang doi). */
-:root {
-    --jog-button-size: 56px;
-    --icon-button-size: 38px;
-}
-
 .control-heading {
     align-items: stretch;
     flex-wrap: wrap;
@@ -191,7 +190,7 @@ input:out-of-range {
 }
 
 .control-heading .controller-panel .detail-list dt {
-    font-size: 10.5px;
+    font-size: 12px;
     letter-spacing: 0.03em;
     line-height: 1.25;
     text-transform: uppercase;
@@ -302,7 +301,7 @@ input:out-of-range {
 }
 
 .jog-button small {
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.04em;
 }
 
@@ -338,7 +337,7 @@ input:out-of-range {
 }
 
 .pen-z {
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .jog-settings {
@@ -552,7 +551,7 @@ button:not(.nav-tab):active:not(:disabled) {
 }
 
 .brand-text small {
-    font-size: 10.5px;
+    font-size: 12px;
     letter-spacing: 0.28em;
     text-transform: uppercase;
 }
@@ -724,7 +723,7 @@ button:not(.nav-tab):active:not(:disabled) {
 
 .resume-facts dt {
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
 }
@@ -1207,7 +1206,7 @@ button:not(.nav-tab):active:not(:disabled) {
     .coordinates-panel .coordinate-header span {
         min-width: 0;
         overflow: hidden;
-        font-size: 10px;
+        font-size: 12px;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
@@ -1913,6 +1912,44 @@ body.role-guest .coordinate-header span:nth-child(5) {
 .subject-overlay.is-ellipse .subject-rect {
     border-radius: 50%;
 }
+/* Vẽ tay: lớp SVG phủ ảnh; xanh = tô thêm, đỏ = tô bớt. Khi sửa, cả khung nhận chuột để kéo nét */
+.subject-free-svg {
+    display: none;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.subject-overlay.is-free .subject-free-svg {
+    display: block;
+}
+.subject-overlay.is-free .subject-rect {
+    display: none;
+}
+.subject-overlay.is-free.is-editing {
+    cursor: crosshair;
+    touch-action: none;
+}
+.subject-free-svg .free-fill { opacity: 0.35; }
+.subject-free-svg .free-fill-add polygon { fill: #00be78; }
+.subject-free-svg .free-fill-sub polygon { fill: #eb3c3c; }
+.subject-free-svg .free-ring { stroke-width: 3; vector-effect: non-scaling-stroke; }
+.subject-free-svg .free-ring-add { fill: #00a870; stroke: #00a870; }
+.subject-free-svg .free-ring-sub { fill: #d93a3a; stroke: #d93a3a; }
+.subject-free-svg .free-live { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.subject-free-svg .free-live-add { stroke: #00a870; }
+.subject-free-svg .free-live-sub { stroke: #d93a3a; }
+.subject-free-tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 6px 0;
+}
+.subject-free-tools .is-active {
+    border-color: var(--accent-text);
+    background: var(--accent);
+}
 .subject-panel input[type="range"] {
     flex: 1 1 140px;
     min-width: 120px;
@@ -1954,7 +1991,7 @@ body.role-guest .coordinate-header span:nth-child(5) {
 
     .draft-item-meta {
         grid-column: 1;
-        font-size: 11px;
+        font-size: 12px;
         line-height: 1.35;
         overflow-wrap: anywhere;
     }
@@ -1975,5 +2012,12 @@ body.role-guest .coordinate-header span:nth-child(5) {
 
     .drag-handle {
         padding: 2px 4px;
+    }
+}
+
+/* Dien thoai hep: header chi giu Backend + May (trang thai Cong viec co o tab Dieu khien) */
+@media (max-width: 520px) {
+    .header-status #job-status {
+        display: none;
     }
 }

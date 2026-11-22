@@ -182,7 +182,7 @@
 
 .drawing-canvas-toolbar .drawing-canvas-hint {
     margin-left: auto;
-    font-size: 0.85em;
+    font-size: max(12px, 0.85em);
 }
 
 .drawing-canvas-toolbar #drawing-canvas-zoom {
@@ -290,7 +290,7 @@
 .draft-item-meta {
     grid-column: 1;
     color: var(--text-muted);
-    font-size: 0.85em;
+    font-size: max(12px, 0.85em);
     font-variant-numeric: tabular-nums;
 }
 
@@ -371,7 +371,7 @@
 
 .drawing-info .detail-list dt {
     color: var(--text-muted);
-    font-size: 0.82em;
+    font-size: max(12px, 0.82em);
 }
 
 .drawing-info .detail-list dd {

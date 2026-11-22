@@ -4,8 +4,8 @@
     color-scheme: dark;
 
     --bg-main: #0f0f0f;
-    --bg-panel: #131821;
-    --bg-elevated: #1c2330;
+    --bg-panel: #1a2230;       /* nen khoi: sang hon nen trang 1,2 lan (truoc #131821 = 1,08) */
+    --bg-elevated: #26324a;    /* nut, o noi len khoi (phai sang hon --bg-panel) */
 
     --text-main: #e6e9ef;       /* chu thuong: xam sang trung tinh */
     --text-muted: #9aa4b6;
@@ -14,14 +14,15 @@
 
     --paper: #c4c0b2;           /* to giay tren canvas ve: giay nga, net den nhu ban in (tu 17/11/2026; truoc do xam xanh #1a212c) */
     --paper-ink: #15181d;       /* nut ve mac dinh tren giay */
-    --paper-text: #565c68;      /* chu nho tren giay */
+    --paper-text: #43484f;      /* chu nho tren giay (tuong phan 5,06; truoc #565c68 = 3,69) */
     --paper-guide: #8a6000;     /* khung giay A4/A5/A6, le, khung dang chinh: vang dam, doc duoc ca tren giay nga va nen toi */
 
     --accent: #2a2400;          /* nen dam: nut chinh, tab dang chon, song nen (nau vang toi) */
     --accent-hover: #ffb04a;    /* di chuot: cam sang (do danh rieng cho nguy hiem) */
     --accent-text: #ffd400;     /* mau nhan nhin thay duoc: vien, thanh tien trinh, chu nhan (vang an toan) */
 
-    --border: #293244;
+    --border: #46536e;          /* vien khoi, duong ke (2,07 so voi nen khoi; truoc #293244 = 1,38) */
+    --border-control: #6b7b99;  /* vien o nhap / o chon: WCAG 1.4.11 can >= 3:1 (3,74) */
     --success: #00ffa2;
     --warning: #ff7b00;
     --danger: #f80000;
@@ -52,9 +53,10 @@
 
     --accent: #fbf0c2;
     --accent-hover: #d96d00;
-    --accent-text: #8a6d00;     /* vang dam: #ffd400 qua nhat tren nen trang */
+    --accent-text: #6f5600;     /* vang dam: tuong phan 6,10 tren --accent (truoc #8a6d00 = 4,30) */
 
-    --border: #d5dce3;
+    --border: #b4bfcc;          /* 1,86 (truoc #d5dce3 = 1,38) */
+    --border-control: #7d8a9c;  /* o nhap: 3,51 tren nen trang (WCAG 1.4.11 >= 3:1) */
     --success: #00875a;
     --warning: #b86b00;
     --danger: #c62828;
@@ -80,6 +82,6 @@
     --progress-max-width: 480px; /* chieu rong toi da cua tien trinh canh tieu de */
 
     /* --- Nut --- */
-    --jog-button-size: 54px;     /* kich thuoc nut jog X/Y */
-    --icon-button-size: 32px;    /* kich thuoc nut Zero / Home tung truc */
+    --jog-button-size: 56px;     /* kich thuoc nut jog X/Y */
+    --icon-button-size: 38px;    /* kich thuoc nut Zero / Home tung truc */
 }

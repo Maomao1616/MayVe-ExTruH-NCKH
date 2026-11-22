@@ -317,7 +317,7 @@ p {
 .toolbar-safety-note {
     grid-column: 1 / -1;
     margin: 0;
-    font-size: 10px;
+    font-size: 12px;
     text-align: right;
 }
 
@@ -333,7 +333,7 @@ p {
 .eyebrow {
     margin-bottom: 4px;
     color: var(--accent-text);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     letter-spacing: 0.14em;
 }
@@ -467,7 +467,7 @@ p {
     border: 1px solid var(--border);
     border-radius: 20px;
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
 }
 
@@ -488,7 +488,7 @@ textarea {
     width: 100%;
     min-height: var(--control-height);
     padding: 7px 11px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--border-control);
     border-radius: var(--radius-button);
     background: var(--bg-main);
     color: var(--text-main);
@@ -696,7 +696,7 @@ label select {
 .coordinate-header {
     padding: 0 0 6px;
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 12px;
     text-align: center;
 }
 
@@ -739,7 +739,7 @@ label select {
 
 .axis-note {
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 12px;
     text-align: center;
 }
 
@@ -819,7 +819,7 @@ label select {
 
 .jog-button small {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
 }
 
@@ -863,13 +863,13 @@ label select {
 }
 
 .pen-bar small {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
 }
 
 .pen-z {
     color: var(--text-muted);
-    font-size: 10px;
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
 }
 
@@ -893,7 +893,7 @@ label select {
 .file-section h3 {
     margin: 0 0 8px;
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
@@ -1142,7 +1142,7 @@ label select {
 .work-area-size {
     position: absolute;
     color: var(--text-muted);
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .work-area-origin { top: 6px; left: 8px; }
@@ -1395,7 +1395,7 @@ label select {
     padding: 0 6px;
     border: 1px solid currentColor;
     border-radius: 10px;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.04em;
     line-height: 16px;
@@ -1407,7 +1407,7 @@ label select {
 
 .mc-flag {
     color: var(--warning);
-    font-size: 10px;
+    font-size: 12px;
 }
 
 .mc-groups {
@@ -1465,7 +1465,7 @@ fieldset.mc-group > * + * {
 }
 
 .mc-unit {
-    font-size: 11px;
+    font-size: 12px;
     white-space: nowrap;
 }
 
@@ -1910,11 +1910,15 @@ body::after {
 
     .header-status {
         order: 3;
-        display: grid;
+        display: flex;                     /* 3 trang thai nam cung hang (truoc: xep doc, header cao 192 px) */
+        flex-wrap: wrap;
         width: 100%;
-        grid-template-columns: 1fr;
-        gap: 6px;
+        gap: 4px 16px;
         margin-left: 0;
+    }
+
+    .brand-text small {
+        display: none;                     /* bo dong phu "Plotter Control System" tren dien thoai */
     }
 
     .icon-button {
@@ -1945,7 +1949,7 @@ body::after {
 
     .toolbar-actions button {
         padding: 6px 4px;
-        font-size: 11px;
+        font-size: 12px;
     }
 
     /* Thanh tren dinh o dau trang: tren dien thoai chi giu tab + nut dung cho gon */
