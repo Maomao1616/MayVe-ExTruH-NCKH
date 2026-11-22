@@ -50,6 +50,7 @@ const FIELDS = [
     ["style-outline", "style", "outline_overlay", "bool"],
     ["style-soft", "style", "soft_levels", "bool"],
     ["style-am-fill", "style", "am_fill", "bool"],
+    ["style-unlimited", "style", "unlimited", "bool"],
     ["style-invert", "style", "invert", "bool"],
     ["style-levels", "style", "levels", "int"],
     ["style-refine", "style", "refine_passes", "int"],
@@ -242,7 +243,10 @@ export function syncVisibility() {
     const refine = $("style-refine")?.closest("label");
     if (refine) refine.hidden = outlineOnly || kind === "flow";       // vòng sửa sai không áp cho Nét viền và Theo dáng ảnh (backend styles.REFINE_KINDS)
     // Sóng biến thiên và Theo dáng ảnh không chia mức: ẩn số mức và ô chuyển mức mềm
-    const levelless = outlineOnly || kind === "wave_am" || kind === "flow";
+    const unlimitedLabel = $("style-unlimited")?.closest("label");
+    if (unlimitedLabel) unlimitedLabel.hidden = !["crosshatch", "flow", "wave_am"].includes(kind);   // Nét viền và Xoắn ốc chỉ có một chế độ
+    const unlimited = Boolean($("style-unlimited")?.checked) && !unlimitedLabel?.hidden;
+    const levelless = outlineOnly || kind === "wave_am" || kind === "flow" || unlimited;                  // Bỏ giới hạn luôn dùng 8 mức
     const levels = $("style-levels")?.closest("label");
     if (levels) levels.hidden = levelless;
     const soft = $("style-soft")?.closest("label");
@@ -305,6 +309,9 @@ export function customerRestore(values) {
 
 // Ghi nhiều ô cùng lúc (bộ thông số dựng sẵn). Không phát sự kiện: drawing.js tự tạo lại nét sau đó.
 export function setValues(values) {
+    // Bản đã lưu trước 22/11/2026: "siêu chi tiết" là hai kiểu riêng, nay là kiểu gốc + ô Bỏ giới hạn
+    const old = { crosshatch_detail: "crosshatch", flow_detail: "flow" }[values["style-kind"]];
+    if (old) values = { ...values, "style-kind": old, "style-unlimited": true };
     for (const [id, v] of Object.entries(values)) {
         const el = $(id);
         if (!el) continue;

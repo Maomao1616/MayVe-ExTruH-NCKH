@@ -80,13 +80,15 @@ def cv2_blur(img, sigma):
     return cv2.GaussianBlur(img, (0, 0), sigma)
 
 
-def test_flow_detail_is_denser_and_restores_the_flow_constants():
-    """19/11/2026: bản "Theo dáng ảnh siêu chi tiết" nới hết giới hạn (giữ đường ngắn, cho sát nhau, phủ 0,95)
-    -> nhiều nét và nhiều mực hơn kiểu thường; các hằng số của flow.py phải được trả lại sau khi vẽ."""
-    dark = np.tile(np.linspace(0.0, 0.9, 120, dtype=np.float32), (120, 1))
+def test_flow_unlimited_is_denser_and_restores_the_flow_constants():
+    """22/11/2026 (trước là flow_detail 19/11): Theo dáng + "Bỏ giới hạn" nới hết giới hạn (giữ đường ngắn, cho sát nhau,
+    phủ 0,95) -> nhiều nét và nhiều mực hơn kiểu thường; các hằng số của flow.py phải được trả lại sau khi vẽ."""
+    yy, xx = np.mgrid[0:160, 0:160]             # ảnh có kết cấu (dải ngang thuần thì bản bỏ giới hạn không hơn: đo 22/11 177 / 117 nét trên ảnh này)
+    dark = np.clip(0.45 + 0.3 * np.sin(xx / 9.0) * np.cos(yy / 7.0) + 0.25 * np.sin((xx + yy) / 20.0), 0, 0.9).astype(np.float32)
     f = Field(dark, 40.0, 40.0)
     base = [s for g in styles.GROUPERS["flow"](f, STYLE, 0.5) for s in g]
-    det = [s for g in styles.GROUPERS["flow_detail"](f, STYLE, 0.5) for s in g]
+    unl = SimpleNamespace(**{**vars(STYLE), "unlimited": True})
+    det = [s for g in styles.GROUPERS["flow"](f, unl, 0.5) for s in g]
 
     def total(strokes):
         return sum(float(np.hypot(*np.diff(np.asarray(s, float), axis=0).T).sum()) for s in strokes)

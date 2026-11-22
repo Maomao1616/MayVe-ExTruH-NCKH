@@ -4,9 +4,9 @@ Mục lục (14/11/2026; danh sách hiện trên giao diện = spec.UI_STYLES, c
   A. Nền dùng chung     level_plan (chia mức), đường cong tông (tone_cover), _passes / _link (mặt nạ từng mức, nối dòng),
                         zigzag_groups (một lượt gạch: nền của đan chéo và lớp đậm của sóng biên độ)
   B. Kiểu đang hiện     crosshatch       Gạch chéo chồng lớp (Chân dung, kèm lớp viền FDoG)
-                        crosshatch_detail Đan chéo siêu chi tiết (19/11/2026: bỏ hết lọc bớt râu, 8 mức, 30 phút)
                         flow             Theo dáng ảnh (flow field, lõi ở flow.py; hiện lại 14/11/2026)
                         wave_am          Sóng biên độ (Phong cảnh)
+                        Ba kiểu trên có chế độ "Bỏ giới hạn" (style.unlimited, 22/11/2026): xem mục B2 (unlimited_style)
                         spiral           Xoắn ốc (Cận cảnh)
                         outline          Nét viền (Ảnh 2D, Schematic; thuật toán ở edges.py / trace.py)
   C. Kiểu đã ẩn         zigzag (13/11: đan chéo đẹp hơn), wave (sóng thường, như trên), crosshatch3 (đan 3 hướng: tông
@@ -75,7 +75,7 @@ TONE_CURVES = {
     "spiral": (0.0, 0.023, 0.086, 0.107, 0.163, 0.193, 0.266, 0.319, 0.380, 0.452, 0.552, 0.683, 0.712, 0.804, 0.822,
                0.927),
 }
-TONE_CURVE_STYLES = {"crosshatch": "crosshatch", "spiral": "spiral", "crosshatch_detail": "crosshatch"}
+TONE_CURVE_STYLES = {"crosshatch": "crosshatch", "spiral": "spiral"}
 USE_TONE_CURVE = True            # False = bỏ đường cong (độ phủ = độ đậm ảnh như trước 13/11/2026)
 TONE_CURVE_STRENGTH = 0.75       # áp 75 % đường cong. Mô phỏng (tools/ink_sim.py, cột "sai mắt"; đan chéo): áp đủ thì ô đậm
                                  # ĐỀU đúng nhất (sai 0,14 -> 0,05) nhưng dải chuyển liền đậm quá (0,037 -> 0,047, chỗ giáp hai
@@ -229,12 +229,28 @@ def wave(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -
 
 
 # === B. Xoắn ốc ===========================================================================================================
+# 22/11/2026 (chủ dự án: "xoắn ốc đã dùng thì phải đẹp"): bản cũ chia mức, mỗi mức một xoắn ốc đồng tâm khoảng cách riêng nên ảnh
+# (mèo A4) chỉ ra các vòng tròn, không nhận ra hình. Bản mới = Sóng biến thiên chạy dọc MỘT xoắn ốc: bước xoắn cố định, biên độ sóng
+# theo độ đậm (hatch.spiral_am_strokes). Mèo A4 bút 0,4: 701 nét / 8,7 phút -> xem docs/06 mục 8.x.
+SPIRAL_PITCH_LINES = 5.5         # bước xoắn = 5,5 × nét thật (bút 0,4: 2,2 mm); đường thẳng phủ ~18 %. Xem trước mèo A4: 3,2 ×: cả ảnh một màu xám đều; 4,5 ×; 6 ×: độ dày nét đổi theo tông rõ nhất
+SPIRAL_AMPLITUDE = 0.45          # biên độ tối đa = 0,45 × bước xoắn (như AM_AMPLITUDE: hai vòng kề gần chạm nhau ở chỗ đậm nhất)
+SPIRAL_WAVE_LINES = 2.0          # bước sóng = 2 × nét thật (như AM_WAVE_LINES)
+SPIRAL_WHITE = 0.9               # dưới 0,9 × độ phủ của đường thẳng thì nhấc bút (giấy trắng)
+SPIRAL_MIN_RUN_PITCHES = 3.0     # bỏ mẩu ngắn hơn 3 bước xoắn
+SPIRAL_BRIDGE_PITCHES = 4.0      # khe trắng ngắn hơn 4 bước xoắn thì vẽ liền (đỡ một lần nhấc bút)
+
+
 def spiral_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
-    f = _toned(f, "spiral")
-    groups = []
-    for mask, _angle, s in _passes(f, style, pen_mm, ctx, angle):
-        groups.append(_clip_out(hatch.spiral_runs(mask, f, s), f))
-    return groups
+    line_w = LINE_WIDTH_RATIO * pen_mm
+    pitch = style.spacing_mm if style.spacing_mm is not None else SPIRAL_PITCH_LINES * line_w
+    c_base = min(MAX_COVERAGE, line_w / pitch)                    # độ phủ khi đường xoắn thẳng
+    cov = np.minimum(hatch.blur(f, pitch / 2), MAX_COVERAGE)
+    if ctx:
+        ctx.check()
+    local = lambda c: np.full_like(c, c_base)                    # luôn một đường: độ phủ của đường thẳng không đổi
+    strokes = hatch.spiral_am_strokes(cov, f, pitch, local, SPIRAL_AMPLITUDE * pitch, SPIRAL_WAVE_LINES * line_w,
+                                      SPIRAL_WHITE * c_base, SPIRAL_MIN_RUN_PITCHES * pitch, SPIRAL_BRIDGE_PITCHES * pitch)
+    return [_clip_out(strokes, f)]
 
 
 @FILLERS.register("spiral")
@@ -261,6 +277,8 @@ def cross_split(dark: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 def crosshatch_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
     """Hai lượt zigzag (mỗi lượt đủ các mức, chuyển mức mềm nếu bật): lớp một ở góc gạch, lớp hai lệch CROSS_ANGLE chỉ
     ở vùng đậm. Thứ tự vẽ: hết lớp một (nhạt → đậm) rồi mới lớp hai, mực lớp dưới có thời gian khô."""
+    if getattr(style, "unlimited", False):
+        return crosshatch_groups_unlimited(f, style, pen_mm, ctx, angle)
     return _cross_layers(_toned(f, "crosshatch"), style, pen_mm, ctx, angle)
 
 
@@ -281,25 +299,50 @@ def crosshatch(f: Field, style, pen_mm: float, ctx=None, angle: float | None = N
     return _flat(crosshatch_groups(f, style, pen_mm, ctx, angle))
 
 
-# === B2. Đan chéo SIÊU CHI TIẾT (19/11/2026, chủ dự án yêu cầu) =========================================================
-# Cùng thuật toán đan chéo nhưng BỎ hết bộ lọc "bớt râu" (giữ cả mẩu gạch 0,5 mm và dải đậm hẹp) -> ra chi tiết nhất.
-# Dùng với `levels` tới 8 (spec) và khoảng cách nét ~0,9 × bút; preset "Siêu chi tiết" đặt sẵn. Thời gian xử lý ảnh
-# được nới riêng cho kiểu này (isolated.DETAIL_TIMEOUT_S = 30 phút). Đo trên ảnh mèo A4 bút 0,5: 8 mức, cách 1,5 × nét
-# = 3 933 nét / 40,8 m / ~8,4 phút; cách 1,0 × nét = 6 237 nét / 53,2 m / ~11,9 phút (kiểu thường: 1 003 nét / 20,8 m).
-DETAIL_MIN_RUN_MM = 0.5          # giữ mẩu gạch ngắn tới 0,5 mm (kiểu thường bỏ dưới 5 mm)
+# === B2. Chế độ "BỎ GIỚI HẠN" (22/11/2026, chủ dự án) ===================================================================
+# Ô "Bỏ giới hạn" (style.unlimited) cho Gạch chéo, Theo dáng ảnh, Sóng biến thiên: bỏ mọi giới hạn "gọn" (lọc râu, số nhấc bút,
+# thời gian) để ra nét đẹp và nhiều tầng tông nhất, giống phần mềm vẽ không kể thời gian. Kiểu nhanh vẫn giữ nguyên.
+# Thay hai kiểu "siêu chi tiết" 19/11/2026 (`crosshatch_detail`, `flow_detail`): bản thảo cũ mang tên đó vẫn mở được (DETAIL_ALIASES).
+# Nét viền và Xoắn ốc chỉ có một chế độ (chỉnh thẳng, không có ô này).
+DETAIL_ALIASES = {"crosshatch_detail": "crosshatch", "flow_detail": "flow"}
+UNLIMITED_KINDS = ("crosshatch", "flow", "wave_am")
+UNLIMITED_LEVELS = 8             # đủ 8 mức đậm nhạt (kiểu thường 5)
+UNLIMITED_REFINE = 2             # sửa sai ít nhất 2 lượt (kiểu thường 1)
+UNLIMITED_SPACING_PEN = 1.4      # gạch chéo: khoảng cách nét tham chiếu = 1,4 × bút (kiểu thường 2 × bút), trừ khi người dùng tự đặt.
+                                 # Xem trước ảnh 2D A4 bút 0,4, 4 mức: thường 11,5 phút · 2,0 × 16,0 · 1,4 × 20,2 · 0,9 × 24,5 (0,9: nền đen kịt,
+                                 # mất tầng tông; 2,0: tầng tông rõ nhưng nhạt hơn bản in chủ dự án thích 19/11; 1,4 giữa hai bên)
+DETAIL_MIN_RUN_MM = 0.5          # gạch chéo: giữ mẩu gạch ngắn tới 0,5 mm (kiểu thường bỏ dưới 5 mm)
 DETAIL_THIN_SPACINGS = 0.0       # 0 = không mở mặt nạ: dải đậm hẹp vẫn được gạch
 DETAIL_WHITE = 0.02              # chỉ để trắng hẳn chỗ gần trắng (kiểu thường 0,2)
+# Sóng biến thiên bỏ giới hạn (đo trên ảnh mèo A4 bút 0,5, tài liệu 11 mục 4.2: 125 -> 592 nét, 21,5 -> 21,2 m, 2,8 -> 3,1 phút).
+# Chỉnh 22/11 trên ảnh phong cảnh A4 bút 0,4 (nhà gỗ, cây, phản chiếu hiện ra; phủ đều tắt vì nền tối thêm): bản đo 19/11 (2,8 / 0,6 / phủ đều)
+# đậm kịt cả trời. 29 phút, 1 041 nét (kiểu thường 25 phút, 418 nét).
+WAVE_UNLIMITED = {"spacing_lines": 3.4, "amplitude": 0.50, "wave_lines": 2.5, "min_run": 1.0, "white": 1.0}
 
 
-def crosshatch_detail_groups(f: Field, style, pen_mm: float, ctx=None,
-                             angle: float | None = None) -> list[list[Stroke]]:
+def is_unlimited(style) -> bool:
+    return style.kind in DETAIL_ALIASES or (bool(getattr(style, "unlimited", False)) and style.kind in UNLIMITED_KINDS)
+
+
+def unlimited_style(style, pen_mm: float):
+    """Kiểu tô đã chuẩn hóa: kind gốc + unlimited = True + các giá trị mặc định của chế độ này (8 mức, sửa sai >= 2 lượt,
+    gạch chéo thì khoảng cách 0,9 × bút). Không ở chế độ này thì trả nguyên `style`."""
+    if not is_unlimited(style):
+        return style
+    from types import SimpleNamespace
+    values = style.as_dict() if hasattr(style, "as_dict") else dict(vars(style))
+    kind = DETAIL_ALIASES.get(values["kind"], values["kind"])
+    values.update(kind=kind, unlimited=True, levels=UNLIMITED_LEVELS,
+                  refine_passes=max(int(values.get("refine_passes") or 0), UNLIMITED_REFINE))
+    if kind == "crosshatch" and values.get("spacing_mm") is None:
+        values["spacing_mm"] = UNLIMITED_SPACING_PEN * LINE_WIDTH_RATIO * pen_mm
+    return SimpleNamespace(**values)
+
+
+def crosshatch_groups_unlimited(f: Field, style, pen_mm: float, ctx=None,
+                                angle: float | None = None) -> list[list[Stroke]]:
     return _cross_layers(_toned(f, "crosshatch"), style, pen_mm, ctx, angle,
                          min_run=DETAIL_MIN_RUN_MM, thin=DETAIL_THIN_SPACINGS, white=DETAIL_WHITE)
-
-
-@FILLERS.register("crosshatch_detail")
-def crosshatch_detail(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    return _flat(crosshatch_detail_groups(f, style, pen_mm, ctx, angle))
 
 
 # === C. Kiểu ẩn (13/11/2026): đan 3 hướng, như gạch chéo nhưng ba lớp lệch nhau 60° (12/11/2026, chủ dự án đề xuất) --------------------------
@@ -380,10 +423,12 @@ def wave_am_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None
     bớt đi kết thúc so le. Không có ngưỡng chia mức nên không có ranh giới mức; đổi lại vùng đậm nhiều chỗ đổi hướng,
     máy vẽ chậm hơn zigzag."""
     line_w = LINE_WIDTH_RATIO * pen_mm
-    s0 = style.spacing_mm if style.spacing_mm is not None else AM_SPACING_LINES * line_w
+    unl = getattr(style, "unlimited", False)                # bỏ giới hạn: lưới dày hơn, sóng cao hơn, giữ đoạn ngắn, phủ đều
+    k = WAVE_UNLIMITED if unl else {}
+    s0 = style.spacing_mm if style.spacing_mm is not None else k.get("spacing_lines", AM_SPACING_LINES) * line_w
     c_base = min(MAX_COVERAGE, line_w / s0)                 # độ phủ khi mọi đường đều thẳng
-    thresholds = (AM_WHITE * c_base / 4, c_base / 2, c_base)   # lưới 0 / 1 / 2 có mặt từ độ phủ này
-    if getattr(style, "am_fill", AM_FILL):                  # phủ đều: mọi lưới có mặt cùng lúc từ độ phủ 0,10 (14/11/2026, chủ dự án:
+    thresholds = (k.get("white", AM_WHITE) * c_base / 4, c_base / 2, c_base)   # lưới 0 / 1 / 2 có mặt từ độ phủ này
+    if k.get("fill", getattr(style, "am_fill", AM_FILL)):                  # phủ đều: mọi lưới có mặt cùng lúc từ độ phủ 0,10 (14/11/2026, chủ dự án:
         thresholds = (thresholds[0],) * 3                   # "cả vùng mặt đều có nét", không khe trắng do bớt đường)
     offsets = hatch.dither_offsets(AM_DITHER)
     a = style.angle if angle is None else angle
@@ -400,11 +445,11 @@ def wave_am_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None
     def local_cover(c: np.ndarray) -> np.ndarray:            # độ phủ trung bình của các đường thẳng đang có mặt
         return c_base * (0.25 + 0.25 * present(c, 1) + 0.5 * present(c, 2))
 
-    wave = AM_WAVE_LINES * line_w
+    wave = k.get("wave_lines", AM_WAVE_LINES) * line_w
     if ctx:
         ctx.check()
-    d, n, rows = hatch.am_wave_rows(cov, f, a % 180.0, s0, row_threshold, local_cover, AM_AMPLITUDE * s0,
-                                    wave, wave, AM_MIN_RUN * s0)
+    d, n, rows = hatch.am_wave_rows(cov, f, a % 180.0, s0, row_threshold, local_cover, k.get("amplitude", AM_AMPLITUDE) * s0,
+                                    wave, wave, k.get("min_run", AM_MIN_RUN) * s0)
     # Chỉ nối khi quay đầu và hai đầu gần thẳng hàng (thường ở mép ảnh), vòng tối đa 2 khoảng cách đường. Nối chỗ khác
     # (giữa vùng sáng, hai đường kết thúc so le) ra các móc chữ U / Z lạc lõng: thà nhấc bút (thử 11/11/2026).
     joined = hatch.join_rows(rows, s0, max_turn_mm=2 * s0, reach_mm=s0, turn_only=True)
@@ -419,7 +464,8 @@ def wave_am_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None
             from types import SimpleNamespace
             hatch_style = SimpleNamespace(levels=getattr(style, "levels", 5), soft_levels=getattr(style, "soft_levels", True),
                                           spacing_mm=None, angle=a)     # khoảng cách gạch mặc định, không theo khoảng cách sóng
-            groups += zigzag_groups(Field(extra, f.width_mm, f.height_mm), hatch_style, pen_mm, ctx, (a + 90.0) % 180.0)
+            filt = dict(min_run=DETAIL_MIN_RUN_MM, thin=DETAIL_THIN_SPACINGS, white=DETAIL_WHITE) if unl else {}
+            groups += zigzag_groups(Field(extra, f.width_mm, f.height_mm), hatch_style, pen_mm, ctx, (a + 90.0) % 180.0, **filt)
     return groups
 
 
@@ -430,6 +476,20 @@ def wave_am(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None
 
 # === C. Kiểu ẩn (13/11/2026): theo dáng ảnh thuần (flow field, bản thô 12/11/2026): nét uốn dọc theo dáng ảnh, độ đậm liền. Thuật toán ở flow.py ------
 def flow_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
+    from . import flow
+    if getattr(style, "unlimited", False):
+        old = {k: getattr(flow, k) for k in FLOW_UNLIMITED}
+        try:
+            for k, v in FLOW_UNLIMITED.items():
+                setattr(flow, k, v)
+            return _flow_groups(f, style, pen_mm, ctx, angle)
+        finally:
+            for k, v in old.items():
+                setattr(flow, k, v)
+    return _flow_groups(f, style, pen_mm, ctx, angle)
+
+
+def _flow_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
     from . import flow
     line_w = LINE_WIDTH_RATIO * pen_mm
     scale = spacing_of(style, pen_mm) / (DEFAULT_SPACING_PEN * line_w)      # người dùng đặt khoảng cách khác mặc định
@@ -444,12 +504,16 @@ def flow_fill(f: Field, style, pen_mm: float, ctx=None, angle: float | None = No
     return _flat(flow_groups(f, style, pen_mm, ctx, angle))
 
 
-# === B4. Flow SIÊU CHI TIẾT (19/11/2026, chủ dự án yêu cầu) ==============================================================
-# Cùng thuật toán flow nhưng nới hết các giới hạn "gọn": giữ đường ngắn, cho đường sát nhau, phủ tới 0,95, bước mảnh hơn.
-# Đổi tạm hằng số của flow.py trong lúc vẽ rồi trả lại (raster chạy ở tiến trình con; test chạy tuần tự).
-FLOW_DETAIL = {
+# Flow bỏ giới hạn (22/11/2026): nới hết giới hạn "gọn" của flow.py, trả lại hằng số sau khi vẽ (raster chạy ở tiến trình
+# con; test chạy tuần tự). So trên ảnh mèo A4 bút 0,4 (mắt, mũi có hay mất): bản 19/11 (đường thưa nhất 3 × nét -> mọi tông sáng
+# hơn 0,33 ra như nhau, mặt mèo thành giấy trắng) -> MAX_SEP 8 (tông sáng tách được) + tensor 4 -> 2 mm, độ mờ đạo hàm 1 -> 0,6 mm,
+# bán kính cong tối thiểu 1,5 -> 1 mm (hướng bám nét nhỏ: mắt, mũi, sợi lông hiện ra; bản 2,8 / 0,7 / 1,2 lại mất mắt).
+FLOW_UNLIMITED = {
     "FLOW_STEP_MM": 0.25,          # bước mảnh hơn 0,3: đường bám dáng kỹ hơn
-    "FLOW_MAX_SEP_LINES": 3.0,     # vùng nhạt: đường cách nhau tối đa 3 × nét (thay 4,5) -> nhiều nét hơn
+    "FLOW_GRAD_SIGMA_MM": 0.6,     # làm mờ trước đạo hàm 0,6 mm (thường 1,0): thấy nét nhỏ hơn
+    "FLOW_TENSOR_SIGMA_MM": 2.0,   # hướng đổi trong ~2 mm (thường 4,0): bám mắt, mũi, sợi lông
+    "FLOW_MIN_RADIUS_MM": 1.0,     # cho cong gắt hơn (thường 1,5)
+    "FLOW_MAX_SEP_LINES": 8.0,     # vùng nhạt: đường cách nhau tới 8 × nét (thường 4,5) để tông sáng tách được
     "FLOW_MIN_SEP_LINES": 1.05,    # vùng đậm: sát hơn 1,1
     "FLOW_MAX_COVER": 0.95,        # đậm hơn 0,85
     "FLOW_WHITE": 0.02,            # chỉ để trắng hẳn dưới 0,02 (thay 0,08)
@@ -461,34 +525,19 @@ FLOW_DETAIL = {
 }
 
 
-def flow_detail_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[list[Stroke]]:
-    from . import flow
-    old = {k: getattr(flow, k) for k in FLOW_DETAIL}
-    try:
-        for k, v in FLOW_DETAIL.items():
-            setattr(flow, k, v)
-        return flow_groups(f, style, pen_mm, ctx, angle)
-    finally:
-        for k, v in old.items():
-            setattr(flow, k, v)
-
-
-@FILLERS.register("flow_detail")
-def flow_detail(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
-    return _flat(flow_detail_groups(f, style, pen_mm, ctx, angle))
-
-
 GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_groups,
             "crosshatch": crosshatch_groups, "crosshatch3": crosshatch3_groups, "wave_am": wave_am_groups,
-            "flow": flow_groups, "flow_detail": flow_detail_groups, "crosshatch_detail": crosshatch_detail_groups}
+            "flow": flow_groups}
 
 
 # === B. Nét viền ==========================================================================================================
 # 19/11/2026 (chủ dự án: "bỏ bớt giới hạn để nét liền nhau hơn"): giữ nét ngắn hơn (8 -> 2 mm) và nối khe rộng hơn
 # (edges.GAP_MM 1,5 -> 2,8 mm). Đo trước/sau trên ảnh mèo A4 và ảnh 2D (xem THAY_DOI.md).
-OUTLINE_MIN_LEN_MM = 6.0         # bỏ nét viền ngắn hơn chừng này (14/11: 1 -> 4; 18/11: 4 -> 8; 19/11: 8 -> 6 cùng với
+OUTLINE_MIN_LEN_MM = 6.0         # lớp viền phủ lên kiểu tô (ảnh 2D): bỏ nét viền ngắn hơn chừng này (14/11: 1 -> 4; 18/11: 4 -> 8; 19/11: 8 -> 6 cùng với
                                  # GAP_MM 1,5 -> 3,0. Đo 19/11, bút 0,5: ảnh mèo A4 110 -> 192 nét, nét dài TB 14,8 -> 15,2 mm;
                                  # ảnh 2D 85 -> 105 nét, TB 19,0 -> 20,9 mm. Muốn "liền" hơn nữa: GAP 4,0 (TB 17,2 mm) nhưng dễ nối nhầm)
+OUTLINE_ONLY_MIN_LEN_MM = 2.5    # kiểu Nét viền riêng (ảnh đen trắng, bản vẽ kỹ thuật, chữ, vạch chia): giữ nét ngắn tới 2,5 mm. Thử 22/11 trên
+                                 # bản vẽ giả lập A4 bút 0,4: ngưỡng 6 mm làm mất vạch chia, nét gạch mảnh, nét chữ (38 nét); 2,5 mm: 73 nét, đủ vạch / gạch
 @FILLERS.register("outline")
 def outline(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None) -> list[Stroke]:
     """Nét viền phác họa (edges.py): nét mực + ranh giới mảng sáng tối / màu + nối khe hở -> nét liền.
@@ -499,13 +548,13 @@ def outline(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None
     skel = edges.outline_mask(f.dark, f.rgb, f.width_mm / f.w, style.outline_detail, ctx, method)
     if ctx:
         ctx.check()
-    return trace.to_strokes(skel, f.width_mm / f.w, f.height_mm / f.h, min_len_mm=max(OUTLINE_MIN_LEN_MM, 3.0 * pen_mm))
+    return trace.to_strokes(skel, f.width_mm / f.w, f.height_mm / f.h, min_len_mm=max(OUTLINE_ONLY_MIN_LEN_MM if style.kind == "outline" else OUTLINE_MIN_LEN_MM, 3.0 * pen_mm))
 
 
 # === Điểm vào cho raster.py ===============================================================================================
 # Kiểu có vòng sửa sai (refine.py). Không có: "outline" (không phải kiểu tô tông) và "flow" (đo 17/11/2026: nét dừng theo khoảng cách
 # nên đổi ảnh mục tiêu gần như không đổi mực, 4 lượt cũng vậy, mà mỗi lượt tốn 3–7 s trên ảnh A4).
-REFINE_KINDS = ("zigzag", "wave", "spiral", "crosshatch", "crosshatch_detail", "crosshatch3", "wave_am")
+REFINE_KINDS = ("zigzag", "wave", "crosshatch", "crosshatch3", "wave_am")   # Xoắn ốc (từ 22/11/2026 sóng dọc một xoắn ốc, không theo đường cong tông) không có vòng sửa sai
 
 
 def fill_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = None,
@@ -513,6 +562,7 @@ def fill_groups(f: Field, style, pen_mm: float, ctx=None, angle: float | None = 
     """Nét tô chia nhóm theo mức đậm nhạt (nhạt → đậm), nhóm viền (nếu có) cuối cùng. Nhóm rỗng bị bỏ.
     `angle` ghi đè góc gạch (mỗi màu một góc); `overlay` ghi đè outline_overlay (đa màu chỉ phủ viền một lần).
     Ô "Sửa sai" (style.refine_passes > 0): tô, đo mực dựng lại, chỉnh mục tiêu, tô lại (refine.py). `report` nhận số đo."""
+    style = unlimited_style(style, pen_mm)                  # "Bỏ giới hạn" / bản thảo cũ crosshatch_detail, flow_detail
     grouper = GROUPERS.get(style.kind)
 
     def build(fld: Field) -> list[list[Stroke]]:

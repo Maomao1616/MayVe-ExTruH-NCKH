@@ -71,7 +71,7 @@ def test_refine_lowers_the_error_and_reports_it():
 
 
 def test_refine_never_returns_a_result_worse_than_the_first_fill():
-    for kind in ("crosshatch", "wave_am", "spiral"):
+    for kind in ("crosshatch", "wave_am"):
         report = {}
         styles.fill_groups(gradient(), style(kind=kind, refine_passes=3), PEN, report=report)
         assert report["error_after"] <= report["error_before"] + 1e-9
@@ -89,7 +89,7 @@ def test_blank_paper_stays_blank():
 
 def test_flow_and_outline_are_not_refined():
     f = gradient()
-    for kind in ("flow", "outline"):
+    for kind in ("flow", "outline", "spiral"):         # xoắn ốc: sóng dọc một xoắn ốc từ 22/11/2026, không theo đường cong tông
         report = {}
         styles.fill_groups(f, style(kind=kind, refine_passes=3), PEN, report=report)
         assert report == {}

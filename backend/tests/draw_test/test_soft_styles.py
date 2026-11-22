@@ -145,19 +145,26 @@ def test_join_rows_turn_only_refuses_staircase_links():
     assert len(hatch.join_rows(rows, 1.0, turn_only=True)) == 2            # sóng: chỉ nối khi quay đầu
 
 
-def test_detail_style_keeps_short_runs_and_draws_more_ink_than_crosshatch():
-    """19/11/2026: kiểu "Đan chéo siêu chi tiết" bỏ lọc bớt râu (giữ mẩu 0,5 mm, dải đậm hẹp) nên nhiều nét và
-    nhiều mực hơn kiểu thường; spec cho `levels` tới 8."""
+def test_unlimited_crosshatch_keeps_short_runs_and_draws_more_ink_than_crosshatch():
+    """22/11/2026 (trước là kiểu crosshatch_detail 19/11): Gạch chéo + "Bỏ giới hạn" bỏ lọc bớt râu (giữ mẩu 0,5 mm,
+    dải đậm hẹp) nên nhiều nét và nhiều mực hơn kiểu thường; luôn 8 mức; bản thảo cũ crosshatch_detail cho cùng kết quả."""
     f = ramp()
     base = styles.fill(f, style(kind="crosshatch"), PEN)
-    det = styles.fill(f, style(kind="crosshatch_detail", levels=8), PEN)
+    det = styles.fill(f, style(kind="crosshatch", unlimited=True), PEN)
+    old = styles.fill(f, style(kind="crosshatch_detail"), PEN)
+    assert len(old) == len(det)                           # tên cũ = kiểu gốc + bỏ giới hạn
 
     def total(strokes):
         return sum(float(np.hypot(*np.diff(np.asarray(s, float), axis=0).T).sum()) for s in strokes)
 
     assert len(det) > 1.3 * len(base)                     # nhiều nét hơn (giữ mẩu ngắn)
     assert total(det) > 1.1 * total(base)                 # nhiều mực hơn (đo trên dải thử: +13 %; ảnh mèo A4: +44 %)
-    assert spec.parse("style", {"levels": 8}).levels == 8  # siêu chi tiết dùng 8 mức
+    assert spec.parse("style", {"levels": 8}).levels == 8
+    un = styles.unlimited_style(style(kind="crosshatch", unlimited=True, levels=3), PEN)
+    assert un.levels == styles.UNLIMITED_LEVELS and un.refine_passes >= styles.UNLIMITED_REFINE
+    assert un.spacing_mm == pytest.approx(styles.UNLIMITED_SPACING_PEN * PEN)
+    assert styles.unlimited_style(style(kind="spiral", unlimited=True), PEN).kind == "spiral"   # Xoắn ốc không có chế độ này
+    assert not styles.is_unlimited(style(kind="spiral", unlimited=True))
 
     back = [[np.array([[0.0, 0.0], [10.0, 0.0]])], [np.array([[3.0, 1.0], [10.1, 1.0]])]]
     [joined] = hatch.join_rows(back, 1.0, turn_only=True)                  # quay đầu: nửa vòng tròn rồi đi ngược lại

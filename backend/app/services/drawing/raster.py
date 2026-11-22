@@ -16,6 +16,10 @@ from .store import TASKS, Parsed
 from .svg_in import document_to_layers, layer_stats
 
 
+UNLIMITED_SIMPLIFY_MM = 0.02      # Bỏ giới hạn: đơn giản hóa nét tối đa 0,02 mm (thường 0,05): đường cong mượt, vẫn bớt điểm thừa
+UNLIMITED_MIN_LENGTH_MM = 0.2     # ... và chỉ bỏ nét ngắn hơn 0,2 mm (thường 0,5)
+
+
 def reference_box(layout_raw) -> tuple[float, float]:
     """Hộp (mm) mà ảnh phải nằm gọn: khung vẽ thật nếu frontend gửi width_mm/height_mm (cạnh theo hướng
     ảnh gốc, chưa xoay), không thì phần trong lề của tờ giấy. Nhờ vậy khoảng cách nét luôn tính theo
@@ -39,7 +43,10 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
     op = spec.parse("optimize", opts.get("optimize"))
     pp = spec.parse("palette", opts.get("palette"))
     ref_w, ref_h = reference_box(opts.get("layout"))
-    if sp.kind not in styles.FILLERS.names():
+    if styles.is_unlimited(sp):                              # Bỏ giới hạn: không đơn giản hóa / bỏ nét ngắn thêm (styles.UNLIMITED_*)
+        op = spec.Params({**op.as_dict(), "simplify_tolerance_mm": min(op.simplify_tolerance_mm, UNLIMITED_SIMPLIFY_MM),
+                          "min_length_mm": min(op.min_length_mm, UNLIMITED_MIN_LENGTH_MM)})
+    if sp.kind not in styles.FILLERS.names() and sp.kind not in styles.DETAIL_ALIASES:
         raise DrawError("unsupported_style", f"Kiểu tô '{sp.kind}' chưa có.")
 
     timings: dict[str, float] = {}

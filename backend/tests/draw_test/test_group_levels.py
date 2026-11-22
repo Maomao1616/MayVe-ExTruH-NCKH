@@ -18,10 +18,10 @@ def gradient_png(w=600, h=400):
     return buf.getvalue()
 
 
-def build(data, kind="spiral", group=True, **style):
+def build(data, kind="zigzag", group=True, **style):
     # soft_levels tắt: test đoán mức của nét theo vị trí ngang, mà chuyển mức mềm cho các mức đan sâu vào nhau
     opts = {"raster": {"pen_width_mm": 0.4, "auto_levels": False, "gamma": 1.0, "max_side_px": 600},
-            "style": {"kind": kind, "levels": 5, "outline_overlay": False, "soft_levels": False, "refine_passes": 0, **style},
+            "style": {"kind": kind, "angle": 90.0, "levels": 5, "outline_overlay": False, "soft_levels": False, "refine_passes": 0, **style},
             "optimize": {"group_levels": group, "bridge": False}, "layout": {"paper": "a4", "margin_mm": 5}}
     return raster.build_raster(data, "t", opts)
 
@@ -51,18 +51,19 @@ def test_default_is_off_and_can_be_turned_on():
     assert spec.parse("optimize", {"group_levels": True}).group_levels is True
 
 
-def test_spiral_draws_one_level_after_another_light_to_dark(monkeypatch):
+def test_levels_are_drawn_one_after_another_light_to_dark(monkeypatch):   # trước 22/11/2026 dùng xoắn ốc (nay không chia mức)
     # Kiểm THỨ TỰ vẽ; mức đoán từ vị trí trên dải xám nên tắt đường cong tông (nó dời ranh giới mức, 13/11/2026)
     monkeypatch.setattr(styles, "USE_TONE_CURVE", False)
     layers, _, info, _ = build(gradient_png(), group=True)
     seq = level_sequence(layers, info)
-    assert len(seq) > 100 and seq == sorted(seq)                          # mức chỉ tăng dần: nhạt → đậm
+    assert len(seq) >= 4 and seq == sorted(seq)                           # mức chỉ tăng dần: nhạt → đậm (gạch dọc nối liền: mỗi mức một nét)
     assert changes(seq) == len(set(seq)) - 1                              # mỗi mức một lần liền, không quay lại
 
 
 def test_without_grouping_levels_are_interleaved_like_before():
     layers, _, info, _ = build(gradient_png(), group=False)
-    assert changes(level_sequence(layers, info)) > 20                     # vpype xáo trộn các mức để rút ngắn quãng nhấc bút
+    seq = level_sequence(layers, info)
+    assert seq != sorted(seq)                                             # vpype xáo trộn các mức để rút ngắn quãng nhấc bút
 
 
 def test_grouping_changes_order_not_content():

@@ -28,7 +28,7 @@ from .errors import DrawError
 from .store import TASKS, Parsed
 
 DEFAULT_TIMEOUT_S = 600
-DETAIL_TIMEOUT_S = 1800         # kiểu "Đan chéo siêu chi tiết" (crosshatch_detail): chủ dự án cho phép chạy lâu,
+DETAIL_TIMEOUT_S = 1800         # chế độ "Bỏ giới hạn" (style.unlimited): chủ dự án cho phép chạy lâu,
                                 # đo 19/11 trên ảnh mèo A4: 8 mức cách 1× nét mất ~11,9 phút in + thời gian tô
 DEFAULT_MAX_MB = 4096
 BACKEND_DIR = Path(__file__).resolve().parents[3]            # thư mục chứa gói `app`
@@ -100,8 +100,9 @@ def run_import(data: bytes, name: str, opts: dict, token: str, ctx) -> dict:
 
     threading.Thread(target=feed, daemon=True, name="draw-feed").start()
     threading.Thread(target=drain, daemon=True, name="draw-drain").start()
-    kind = (opts.get("style") or {}).get("kind")
-    limit = DETAIL_TIMEOUT_S if kind == "crosshatch_detail" else DEFAULT_TIMEOUT_S
+    st = opts.get("style") or {}
+    unlimited = bool(st.get("unlimited")) or st.get("kind") in ("crosshatch_detail", "flow_detail")
+    limit = DETAIL_TIMEOUT_S if unlimited else DEFAULT_TIMEOUT_S
     deadline = time.monotonic() + _env_int("EXTRUXY_DRAW_TIMEOUT_S", limit)
     try:
         while True:

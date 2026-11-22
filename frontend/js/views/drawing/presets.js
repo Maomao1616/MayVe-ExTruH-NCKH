@@ -6,7 +6,7 @@ const BASE = {                   // mặc định chung, từng preset ghi đè
     "image-auto-levels": true, "image-clahe": false, "image-denoise": false,
     "image-black-point": "0", "image-white-point": "255", "image-gamma": "1", "image-contrast": "1", "image-sharpen": "0",
     "style-levels": "5", "style-angle": "45", "style-spacing": "", "style-amplitude": "",
-    "style-outline": false, "style-outline-detail": "medium", "style-xdog": false, "style-invert": false, "style-soft": true, "style-am-fill": false, "palette-mode": "mono"
+    "style-outline": false, "style-outline-detail": "medium", "style-xdog": false, "style-invert": false, "style-soft": true, "style-am-fill": false, "style-unlimited": false, "palette-mode": "mono"
 };
 
 // 14/11/2026 (chủ dự án): còn 4 preset — Chân dung (ảnh người thật), Ảnh 2D, Phong cảnh, Schematic. Bỏ Cận cảnh và Phác họa:
@@ -33,16 +33,14 @@ export const PRESETS = {
         ...BASE, "image-denoise": true,
         "style-kind": "crosshatch", "style-levels": "5", "style-outline": true
     },
-    // 19/11/2026 (chủ dự án): "Siêu chi tiết" = đan chéo BỎ hết lọc bớt râu (giữ mẩu 0,5 mm, dải đậm hẹp), 8 mức,
-    // khoảng cách nét 0,9 × bút (0,45 cho bút 0,5), sửa sai 2 lượt, không đơn giản hoá / không bỏ nét ngắn.
-    // Đo ảnh mèo A4 bút 0,5: 40,8 m / ~8,4 phút (kiểu thường 20,8 m / 3,4 phút). Bút khác: spacing = 0,9 × bút.
+    // 19/11/2026 (chủ dự án), đổi 22/11/2026: "Siêu chi tiết" = Gạch chéo + ô "Bỏ giới hạn" (8 mức, bỏ lọc râu, khoảng cách
+    // nét 1,4 × bút, sửa sai >= 2 lượt; backend styles.unlimited_style). Ô Bỏ giới hạn dùng được với Gạch chéo, Theo dáng, Sóng.
     detail: {
-        ...BASE, "style-kind": "crosshatch_detail", "style-levels": "8", "style-spacing": "0.45",
-        "style-refine": "2", "simplify-tolerance": "0", "min-path-length": "0"
+        ...BASE, "style-kind": "crosshatch", "style-unlimited": true, "style-refine": "2"
     },
     schematic: {                 // schematic / bản vẽ kỹ thuật, ảnh scan nền xám: cắt nền xám, chỉ viền
         ...BASE, "image-black-point": "60", "image-white-point": "200",
-        "style-kind": "outline", "style-outline-detail": "medium"
+        "style-kind": "outline", "style-outline-detail": "high", "style-xdog": true      // 22/11/2026: FDoG + nhiều chi tiết giữ được nét gạch mảnh, vạch chia trên ảnh scan nhiễu (Canny làm đứt / mất)
     }
 };
 

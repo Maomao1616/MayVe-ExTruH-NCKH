@@ -427,3 +427,43 @@ def spiral_runs(mask, f: Field, pitch_mm: float, phase: float = 0.0):
             if (a1 - a0) * step >= min_run:
                 strokes.append(np.stack([x[a0:a1 + 1], y[a0:a1 + 1]], axis=1))
     return strokes
+
+
+def spiral_am_strokes(cov: np.ndarray, f: Field, pitch_mm: float, local_cover, amp_cap: float, wavelength: float,
+                      white: float, min_run_mm: float, bridge_mm: float) -> list[np.ndarray]:
+    """Xoắn ốc Archimedes từ tâm ảnh, bước `pitch_mm` cố định, SÓNG BIẾN THIÊN dọc đường xoắn (22/11/2026): chỗ đậm sóng
+    cao nên phủ nhiều mực, chỗ sáng vừa đường thẳng, dưới độ phủ `white` thì nhấc bút. Tông liền, không chia mức, nét gần
+    như một sợi (chỉ đứt ở chỗ trắng; khe ngắn hơn `bridge_mm` vẽ liền). `local_cover(c)` = độ phủ của đường thẳng ở độ phủ c."""
+    cx, cy = f.width_mm / 2, f.height_mm / 2
+    r_max = math.hypot(cx, cy) + pitch_mm
+    du = max(wavelength / AM_WAVE_POINTS / 2, 1e-3)                 # bước lấy mẫu theo chiều dài cung
+    n = int(math.pi * r_max * r_max / pitch_mm / du) + 1
+    min_run = max(2, int(round(min_run_mm / du)))
+    min_gap = max(1, int(round(bridge_mm / du)))
+    strokes: list[np.ndarray] = []
+    for k0 in range(0, n, CHUNK_CELLS):
+        k = np.arange(k0, min(n, k0 + CHUNK_CELLS + 1), dtype=np.float64)
+        s = k * du
+        theta = np.sqrt(4 * math.pi * s / pitch_mm)
+        r = pitch_mm * theta / (2 * math.pi)
+        nx, ny = np.cos(theta), np.sin(theta)                         # pháp tuyến ~ hướng bán kính (xoắn ốc gần tròn)
+        x0, y0 = cx + r * nx, cy + r * ny
+        inside = (x0 >= 0) & (x0 <= f.width_mm) & (y0 >= 0) & (y0 <= f.height_mm)
+        c = np.where(inside, _sample(cov, f, x0, y0), 0.0)
+        on = _clean_1d(inside & (c >= white), min_gap, min_run)
+        if not on.any():
+            continue
+        F = np.maximum(1.0, c / np.maximum(local_cover(c), 1e-6))
+        amp = np.minimum(sine_k_for_length(F) * wavelength / (2 * math.pi), amp_cap)
+        phi = 2 * math.pi * s / wavelength
+        off = amp * np.sin(phi)
+        q = np.floor(phi / (2 * math.pi) * AM_TIGHT_POINTS)
+        _, a, b = _runs(on[None, :])
+        for a0, a1 in zip(a.tolist(), b.tolist()):
+            idx = np.arange(a0, a1 + 1)
+            keep = np.zeros(len(idx), dtype=bool)
+            keep[0] = keep[-1] = True
+            keep[1:] |= q[idx[1:]] != q[idx[:-1]]
+            idx = idx[keep]
+            strokes.append(np.stack([x0[idx] + nx[idx] * off[idx], y0[idx] + ny[idx] * off[idx]], axis=1))
+    return strokes

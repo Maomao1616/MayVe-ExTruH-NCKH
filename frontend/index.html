@@ -906,9 +906,7 @@
                     <span data-i18n="drawing.vectorize.mode">Kiểu nét vẽ</span>
                     <select id="style-kind">
                       <option data-i18n="drawing.style.crosshatch" selected="" value="crosshatch">Gạch chéo chồng lớp</option>
-                      <option data-i18n="drawing.style.crosshatchDetail" value="crosshatch_detail">Đan chéo siêu chi tiết (chậm)</option>
                       <option data-i18n="drawing.style.flow" value="flow">Theo dáng ảnh (flow field)</option>
-                      <option data-i18n="drawing.style.flowDetail" value="flow_detail">Theo dáng ảnh siêu chi tiết (chậm)</option>
                       <option data-i18n="drawing.style.waveAm" value="wave_am">Sóng biến thiên (tông liền)</option>
                       <option data-i18n="drawing.style.spiral" value="spiral">Xoắn ốc (một nét)</option>
                       <option data-i18n="drawing.style.outline" value="outline">Nét viền (khối + nét mực)</option>
@@ -955,6 +953,10 @@
                   </label>
                 </div>
                 <div class="checkbox-list">
+                  <label data-i18n="[title]drawing.hint.unlimited">
+                    <input id="style-unlimited" type="checkbox"/>
+                    <span data-i18n="drawing.style.unlimited">Bỏ giới hạn (chi tiết nhất, rất chậm)</span>
+                  </label>
                   <label data-i18n="[title]drawing.hint.xdog">
                     <input id="style-xdog" type="checkbox"/>
                     <span data-i18n="drawing.style.xdog">Dùng FDoG (viền rõ hơn ở ảnh chụp, ảnh tối / ngược sáng)</span>
