@@ -36,6 +36,8 @@ Thuật toán đã tạm ổn. **Chân dung bỏ khỏi danh sách**: bạn tự
 | A3 | **Vùng chủ thể** | ảnh có nền rối (rèm, nước), khoanh elip quanh người, nền còn 50 % rồi thử 30 % | A5 | nền thưa đủ để chủ thể nổi chưa; mép vùng có lộ thành vòng không; thời gian / mực bớt bao nhiêu |
 | A4 | **Tờ tông** (đường cong tông) | **Thang tông** (mục 2): kiểu **Gạch chéo** rồi **Xoắn ốc**; tùy chọn: bút UB-155 0,38 | A6 | 5 bậc đậm nhạt cách đều chưa (16 ô gom thành ~5 bậc là đúng); gửi ảnh gốc, AI đo bằng `tools/tone_read.py` |
 | A5 | **Sửa sai tông** (mới 17/11) | một ảnh chân dung, cùng preset Chân dung, ô **Sửa sai tông** = **0** rồi **1** (rồi 2 nếu muốn), cùng khổ | A5 ×2 | so hai tờ cạnh nhau: tờ 1 lượt có đúng đậm nhạt hơn không (vùng giữa, da), có đậm lên quá không; nét có rối hơn không; thời gian thật (dự tính +4–8 %). Thấy đậm quá: hạ gamma hoặc để 0 |
+| A7 | **Tờ tông cho 3 bản mới** (22/11) | **Thang tông**: (1) Gạch chéo + ô **Bỏ giới hạn** · (2) Theo dáng + **Bỏ giới hạn** · (3) **Xoắn ốc** viết lại — bút UM-100, A6 mỗi tờ | A6 ×3 | 5 bậc đậm nhạt cách đều chưa; ô 0,05–0,35 của theo dáng **đã tách tông** chưa (19/11 dính một mức ~0,3); xoắn ốc mới có ra mảng đậm nhạt theo độ đậm không. Gửi ảnh gốc, AI đo bằng `tools/tone_read.py` |
+| A8 | **Chế độ Bỏ giới hạn trên 4 ảnh** (22/11) | 2D (mặt, tai, tay) · mèo (lông, mắt) · phong cảnh (nhà gỗ, mây, cây) · chân dung — preset **Siêu chi tiết**, A4 | A4 ×4 | chi tiết nhỏ còn không; mực có bết / loang ở chỗ gạch dày; **thời gian thật** so với ước tính (2D 977 nét / 20,2 phút · mèo 849 / 9,2 · phong cảnh 1 041 / 29,3) |
 | A6 | **Theo dáng ảnh** (⏳ **chờ ảnh thật**, làm cuối) | ảnh người + ảnh thú (lông rõ), kiểu Theo dáng ảnh | A4 | đã chỉnh 17/11 theo nhận xét: nền tối thưa bớt (`FLOW_MAX_COVER` 0,9 → 0,85), vùng sáng dày thêm (`FLOW_MAX_SEP_LINES` 5 → 4,5, `FLOW_WHITE` 0,1 → 0,08); nét chạy theo tầm nhìn trung bình đã ổn. Khi có ảnh thật: vùng tối còn **đặc** / **vụn**, vùng sáng đủ nét chưa (→ báo AI chỉnh) |
 
 **Kết quả in giấy 18/11/2026** (chủ dự án báo bằng ảnh, chưa có số; chưa đổi hằng nào):
@@ -100,6 +102,17 @@ AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đ�
 | Tông giữa lệch | gửi ảnh, AI cập nhật bảng ở `styles.TONE_CURVES` |
 
 ✅ Đã đo 13/11/2026 (Sakura 0,5, mặt bóng; bảng ở 06 mục 8.12): vùng giữa trông nhạt hơn độ phủ → đường cong tông 75 % cho Gạch chéo và Xoắn ốc. Chưa đo cho Theo dáng ảnh và UB-155.
+
+**Tờ tông in 19/11/2026 bằng UM-100** (bút xanh, chủ dự án coi là chuẩn; ảnh `D:\OneDrive\Live-Work\IMG20261119174516.jpg`). Tờ có 4 phần: trên-trái **đan chéo thường** · dưới-trái **đan chéo bỏ giới hạn** · trên-phải **theo dáng bỏ giới hạn** · dưới-phải **xoắn ốc**. Mốc ở phần gạch / xoắn ốc là ô gạch thưa, `tone_read.py` chỉ bắt được mốc ở phần theo dáng → đo bằng cách chỉ tay 3 mốc, **sai số ±0,05** (chụp nghiêng, vết mực).
+
+| Phần | Kết luận |
+|---|---|
+| Đan chéo thường | ô 0,15 → 0,9 tăng đều gần thẳng; ô 0–0,1 để trắng đúng thiết kế → **đường cong tông hiện tại đúng, không chỉnh** |
+| Đan chéo bỏ giới hạn | tăng dần nhưng lổn nhổn; viền gạch đứt ở mép mỗi ô (do làm mờ mặt nạ ở mép) |
+| Theo dáng bỏ giới hạn | ô 0,05–0,35 cùng độ đậm (~0,3) → do đường thưa nhất 3 × nét, **đã sửa** (`FLOW_UNLIMITED`: 8 × nét); chưa in lại |
+| Xoắn ốc | ảnh xoay, đo lệch → **không dùng số**; xoắn ốc đã viết lại nên `TONE_CURVES["spiral"]` cũ hết ý nghĩa với bản mới; cần in lại |
+
+**Cần in lại (22/11/2026):** (1) tờ tông cho **3 bản mới**: gạch chéo bỏ giới hạn · theo dáng bỏ giới hạn · xoắn ốc viết lại; (2) **4 ảnh mẫu** bằng chế độ Bỏ giới hạn (xem A8).
 
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |

@@ -307,18 +307,18 @@ Ví dụ s = 1,22 mm: biên độ 0,22 mm, bước sóng = max(1,32; 2,4; …) =
 Pha sóng tính theo `u` (không theo từng đoạn) nên các sóng kề nhau song song. Ảnh quá đậm thì bước sóng tự dài ra, sóng thưa hơn, nhưng G-code luôn hợp lệ.
 Biên độ 0,18 (cũ 0,35) chọn bằng mô phỏng: sai số 0,123 → 0,090.
 
-### 8.4 Xoắn ốc (`hatch.spiral_runs`)
-Không kẻ đường thẳng mà dùng **xoắn ốc Archimedes** từ tâm ảnh ra ngoài; khoảng cách giữa hai vòng chính là `s`.
-```
-bán kính  r = s × θ ÷ 2π              (θ tăng 2π thì r tăng đúng s)
-chiều dài cung từ tâm ≈ s × θ² ÷ 4π   ⇒   θ = √(4π × L ÷ s)
-```
-Lấy mẫu đều theo chiều dài: mẫu thứ k ở `L = k × bước`, nên các mẫu cách đều nhau trên đường.
-Sau đó tra mặt nạ, lấy đoạn Có như 8.1, rồi:
-- **nối qua khe trắng** ngắn hơn `max(3 mm, 6 × s)` (đỡ một lần nhấc bút),
-- **bỏ mẩu** ngắn hơn `max(0,3 mm, 4 × s)` (gần như không thấy).
+### 8.4 Xoắn ốc (`styles.spiral_groups` → `hatch.spiral_am_strokes`)
+**Một xoắn ốc duy nhất** từ tâm ảnh ra ngoài, bước cố định **5,5 × bút** (`SPIRAL_PITCH_LINES`, bút 0,4: 2,2 mm). Không chia mức: cả bức là một đường xoắn, chỗ đậm thì đường **uốn cao** (sóng dọc đường, dài ra nên phủ nhiều mực), chỗ nhạt thì gần thẳng.
 
-Mô phỏng: sai số 0,106 → 0,058. Nhưng mỗi bậc cắt xoắn ốc thành nhiều mẩu, nên thời gian vẽ khoảng **gấp đôi zigzag**; khi chọn Xoắn ốc nên dùng 4 mức.
+```
+bán kính  r = bước × θ ÷ 2π               (θ tăng 2π thì r tăng đúng một bước)
+độ cao    v = biên độ × sin(2π × L ÷ λ)
+          biên độ = 0,45 × bước  (SPIRAL_AMPLITUDE, tối đa để vòng kề gần chạm)
+          λ = 2 × bút             (SPIRAL_WAVE_LINES, cố định để các đoạn cùng pha)
+```
+- Dưới **0,9 ×** độ phủ của một đường thẳng thì **nhấc bút** (`SPIRAL_WHITE`); khe ngắn hơn **4 bước** thì vẽ liền (`SPIRAL_BRIDGE_PITCHES`); mẩu ngắn hơn **3 bước** thì bỏ (`SPIRAL_MIN_RUN_PITCHES`).
+- **22/11/2026 viết lại.** Bản cũ (mỗi mức đậm nhạt một xoắn đồng tâm, khoảng cách riêng) ra các **vòng tròn đồng tâm**: ảnh mèo chỉ thấy vòng, không nhận ra hình (701 nét / 8,7 phút / 32,3 m). Bản mới trên cùng ảnh: **83 nét / 14,8 phút / 26,6 m** (ảnh tối bão hòa: 39,3 m). Thử bước 3,2 × thì cả ảnh ra một màu xám đều → chọn **5,5**.
+- Bỏ khỏi `REFINE_KINDS` và **không dùng** `TONE_CURVES["spiral"]` (bảng vẫn giữ cho tờ thang tông). Hàm cũ `hatch.spiral_runs` vẫn còn dùng ở `calibration.py` (vẽ ô xoắn ốc trên tờ tông), chỉ không còn dùng cho kiểu tô. **Chưa in giấy.**
 
 ### 8.5 Thêm lớp viền lên kiểu tô
 Bật "Thêm lớp viền" thì sau khi tô xong, phần mềm chạy thêm kiểu Viền (mục 9) và vẽ lớp viền **sau cùng** để nét rõ.
@@ -339,7 +339,18 @@ Một hàm có dòng `@FILLERS.register("tên")` trong `styles.py` + thêm tên 
 ### 8.8 Gạch chéo chồng lớp (`crosshatch`)
 Độ phủ mong muốn T tách thành hai lớp a (góc gạch) và b (góc + 90°) sao cho `1 − (1 − a)(1 − b) = T` (`styles.cross_split`): T ≤ 0,45 chỉ lớp a (= T); trên đó a tăng nửa phần, b gánh phần còn lại. T = 0,9: a ≈ b ≈ 0,68, tức mỗi hướng cách ~0,65 mm thay vì một hướng cách 0,49 mm (ít ướt giấy). Mỗi lớp là một lượt zigzag đủ mức (mềm nếu bật); vẽ hết lớp a rồi mới lớp b (mực lớp dưới có thời gian khô). Tốn hơn zigzag ~20 % chiều dài ở ảnh nhiều mảng đậm.
 
-**Đan chéo siêu chi tiết (`crosshatch_detail`, 19/11/2026):** đúng thuật toán trên nhưng **bỏ cả ba bộ lọc "bớt râu"** (`DETAIL_MIN_RUN_MM` 0,5 mm, `DETAIL_THIN_SPACINGS` 0 — không mở mặt nạ, `DETAIL_WHITE` 0,02), dùng được tới **8 mức**, và `isolated.py` cho phép tạo nét **1800 s** thay 600 s. Đo trên ảnh mèo A4, bút 0,5 (khung 200 × 133 mm): kiểu thường **1 003 nét / 20,8 m / ~3,4 phút**; siêu chi tiết 8 mức cách 1,5 × nét **3 933 nét / 40,8 m / ~8,4 phút**; cách 1,0 × nét **6 237 nét / 53,2 m / ~11,9 phút**. Mực tăng 44–156 %, số nét 3,9–6,2 lần — đây là cái giá của chi tiết, không phải lỗi.
+**Bỏ giới hạn (`style.unlimited`, 22/11/2026 — thay hai kiểu "siêu chi tiết" 19/11/2026):** một ô duy nhất, chỉ mở cho **Gạch chéo · Theo dáng · Sóng biến thiên** (`UNLIMITED_KINDS`; Xoắn ốc và Nét viền không có ô này). Bật thì:
+
+| Chỗ | Đổi gì | Hằng |
+|---|---|---|
+| Chung | 8 mức (thường 5); sửa sai ≥ 2 lượt (thường 1); đơn giản hóa ≤ 0,02 mm (thường 0,05); chỉ bỏ nét < 0,2 mm (thường 0,5); tạo nét tối đa **1 800 s** | `UNLIMITED_LEVELS` · `UNLIMITED_REFINE` · `raster.UNLIMITED_SIMPLIFY_MM` · `UNLIMITED_MIN_LENGTH_MM` · `isolated.DETAIL_TIMEOUT_S` |
+| Gạch chéo | bỏ cả ba bộ lọc bớt râu (giữ mẩu từ 0,5 mm, không mở mặt nạ, chỉ trắng dưới 0,02); khoảng cách nét tham chiếu **1,4 × bút** (thường 2 ×) | `DETAIL_MIN_RUN_MM` · `DETAIL_THIN_SPACINGS` · `DETAIL_WHITE` · `UNLIMITED_SPACING_PEN` |
+| Theo dáng | nới hết giới hạn của `flow.py`: đường thưa nhất **8 × nét** (thường 4,5), tensor **2 mm**, grad **0,6 mm**, bán kính cong tối thiểu **1 mm**, bước 0,25 mm, giữ đường ≥ 0,6 × khoảng cách, dài ≤ 80 mm, lưới gieo 1 mm, phủ tới 0,95, trắng 0,02 | `FLOW_UNLIMITED` (dict trong `styles.py`, `flow.py` trả lại hằng số sau khi vẽ) |
+| Sóng | đường cách **3,4 ×** nét (thường 4), biên độ **0,50**, bước sóng **2,5 ×**, bỏ mẩu **1,0 ×**, trắng **1,0 ×** | `WAVE_UNLIMITED` |
+
+Đo (xem trước A4, bút 0,4): 2D gạch chéo 497 nét / 11,5 phút / 57,9 m → **977 / 20,2 / 74,1 m** (cách 2,0 × bút: 780 nét / 16,0 phút; 0,9 × bút: 24,5 phút nhưng nền đen kịt, mất tầng tông); mèo theo dáng 709 / 7,4 / 23,9 → **849 / 9,2 / 27,8 m**; phong cảnh sóng 418 / 25,2 / 50,4 → **1 041 / 29,3 / 56,0 m** (nhà gỗ, cây, phản chiếu hiện ra).
+
+Hai kiểu `crosshatch_detail`, `flow_detail` (19/11/2026) **đã gộp vào ô này**; tên cũ vẫn mở được bản thảo cũ qua `DETAIL_ALIASES` (thành kiểu gốc + bỏ giới hạn).
 
 **Bớt râu, trắng hẳn (14/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P27)**, áp cho mọi kiểu gạch (`styles._passes(clean=True)`): mặt nạ mỗi mức mở bằng nhân 1,5 × khoảng cách nét (`HATCH_THIN_SPACINGS`; bút 0,4 ≈ 1,2 mm) nên dải đậm hẹp (song cửa, sợi tóc) không gạch thành răng cưa; mẩu gạch < 5 mm (`HATCH_MIN_RUN_MM`, 19/11/2026; 18/11: 6; trước: 1,5) bỏ; độ phủ dưới 0,2 (`HATCH_WHITE`) để trắng hẳn, mép giáp trắng không so le; dòng chỉ nối bằng vòng quay đầu (`join_rows(turn_only=True)`), không kẻ chéo sang dòng khác. Ảnh chân dung A4 bút 0,4: 1120 → 867 nét, 19,4 → 16,2 phút.
 
@@ -359,7 +370,7 @@ Nét **uốn dọc theo dáng ảnh** (má, lông, tóc) thay vì góc cố đ�
 3. **Đặt đường đều nhau (Jobard–Lefer):** gieo ở chỗ đậm nhất, đi hai phía bước 0,3 mm; dừng khi ra vùng trắng, cách đường khác dưới **0,7 ×** khoảng cách (`FLOW_TEST_RATIO`), cong gắt hơn bán kính 1,5 mm, hoặc dài quá 250 mm. Xong một đường thì gieo hai bên, cách đúng khoảng tính **ở chỗ gieo** (tính ở đường cũ thì lan từ đậm sang nhạt bị dày); bỏ đường ngắn hơn 3 × khoảng cách; vùng tách rời gieo bằng lưới 2 mm, đậm trước.
 4. **Kiểm "quá gần"** bằng ảnh đánh dấu ô 0,1 mm, hỏi một ô **tròn** quanh điểm (từ 14/11/2026: ô vuông coi đường chéo 45° ở xa là xa / 1,41 nên nét kề bên không gieo được, đường chéo không bao giờ dày hơn ~1,4 mm). **Không áp đường cong tông** ([09](09_QUYET_DINH_THIET_KE.md) P30). Sau đó qua tối ưu + nối nét gần như mọi kiểu tô.
 
-**Theo dáng siêu chi tiết (`flow_detail`, 19/11/2026):** cùng thuật toán trên nhưng **nới lỏng mọi giới hạn** (`FLOW_DETAIL`): bước đi rút ngắn xuống **0,25 mm** (thay 0,3), khoảng cách nét 1,05–3,0 × nét, độ phủ trần nâng lên **0,95** (thay 0,85), vùng trắng hạ xuống **0,02** (thay 0,08), ngưỡng kiểm tra quá gần hạ xuống **0,55** (thay 0,7), giữ lại các đường ngắn (≥ 0,6 × khoảng cách thay vì 3), giới hạn chiều dài nét tối đa **80 mm** (thay 250 mm để đường không bị kéo dài xuyên mảng), và lưới gieo hạt dày **1 mm** (thay 2 mm). Đo trên ảnh mèo A4 bút 0,5: 1 047 nét (18,4 m / 3,2 phút) → **1 266 nét (24,2 m / 4,1 phút)**, lông mèo dày dặn và chi tiết hơn rõ rệt.
+**Bỏ giới hạn cho Theo dáng:** bật ô **Bỏ giới hạn** (`style.unlimited`) thì dùng bảng `FLOW_UNLIMITED` thay các hằng của `flow.py` — đường thưa nhất **8 × nét** thay vì 4,5 (lỗi 19/11: 3 × nét làm mọi tông sáng hơn 0,33 ra như nhau, **mặt mèo thành giấy trắng**; đo tờ tông in 19/11 ô 0,05–0,35 cùng độ đậm ~0,3), tensor 4 → **2 mm**, grad 1 → **0,6 mm**, bán kính cong 1,5 → **1,0 mm** (hướng bám nét nhỏ: mắt, mũi, sợi lông hiện ra; thử 2,8 / 0,7 / 1,2 lại mất mắt). Xem bảng ở mục 8.8.
 
 Đo 14/11/2026: mực phủ bám độ đậm ảnh (0,45 → 0,48); `ink_sim` sai tông 0,053, sai mắt 0,043, 53 nét. In thật A4 13/11: ra hình, nhiều "hồn", hơi "nghệ thuật"; A6 độ phân giải thấp gần như không ra hình. Việc còn lại (nối đầu các đường kề nhau, tờ tông riêng): [10](10_HUONG_PHAT_TRIEN.md) mục 0.
 
@@ -632,7 +643,9 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 
 ## 17. Còn có thể thêm
 
-Đã làm (bỏ khỏi danh sách): đường cong tông, làm mượt nét viền, XDoG / FDoG, flow field, gộp cung G2/G3. Việc lớn (tab Beta PDF, chữ tay, IoT, AI tạo ảnh, tự hiệu chỉnh bằng ArUco) ở [10](10_HUONG_PHAT_TRIEN.md). Từ khóa tiếng Anh để tự tra.
+Đã làm (bỏ khỏi danh sách): đường cong tông, làm mượt nét viền, XDoG / FDoG, flow field, gộp cung G2/G3, kiểu "siêu chi tiết" (nay là ô **Bỏ giới hạn**), Xoắn ốc viết lại (22/11/2026). Việc lớn (tab Beta PDF, chữ tay, IoT, AI tạo ảnh, tự hiệu chỉnh bằng ArUco) ở [10](10_HUONG_PHAT_TRIEN.md). Từ khóa tiếng Anh để tự tra.
+
+**Tách lớp màu (việc kế tiếp, chốt 22/11/2026)** — k-means trên Lab + GCR/UCR, mỗi kênh mực một lớp bút (`palette.py` đã chia 2–4 màu, chưa theo CMYK). In ra màu gần tranh in offset; đây là chỗ khác biệt thật so với DrawingBotV3 (mục 20). Từ khóa: `CMYK separation`, `GCR under color removal`.
 
 | Hướng | Thư viện / cách | Được gì | Từ khóa |
 |---|---|---|---|
@@ -658,7 +671,7 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 
 ---
 
-## 19. Bảng hằng đã chốt (lấy từ mã, 17/11/2026)
+## 19. Bảng hằng đã chốt (lấy từ mã, 22/11/2026)
 
 Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đổi một dòng là đổi hành vi; thử trước bằng `tools/ink_sim.py` và `tools/style_preview.py`, nêu số trước / sau ([07](07_THU_NGHIEM.md) mục 3 nói khi nào đổi cái nào).
 
@@ -669,12 +682,12 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Chuyển mức mềm | `SOFT_SPREAD`, `SOFT_WHITE`, `SOFT_TURN_MM` (`styles.py`); `DITHER_RANKS`, `TURN_POINTS` (`hatch.py`) | 0,9 · 0,5 · 2,0 mm · 8 · 7 |
 | Gạch chéo | `CROSS_START`, `CROSS_SLOPE`, `CROSS_ANGLE` | 0,45 · 0,5 · 90° |
 | Bớt râu, trắng hẳn | `HATCH_THIN_SPACINGS`, `HATCH_MIN_RUN_MM`, `HATCH_WHITE` | 1,5 × · 5 mm (19/11/2026; 18/11: 6; trước: 1,5) · 0,2 |
-| Siêu chi tiết (19/11) | `DETAIL_MIN_RUN_MM`, `DETAIL_THIN_SPACINGS`, `DETAIL_WHITE` (`styles.py`); `DETAIL_TIMEOUT_S` (`isolated.py`) | 0,5 mm · 0 (không mở mặt nạ) · 0,02 · 1800 s |
-| Flow siêu chi tiết (19/11) | `FLOW_DETAIL` (`styles.py`); các hằng số `FLOW_*` (`flow.py`) | bước 0,25 · sep 1,05–3,0 · phủ 0,95 · trắng 0,02 · test 0,55 · min len 0,6 · dài ≤ 80 mm · gieo 1 mm |
-| Nét viền liền hơn (19/11) | `GAP_MM` (`edges.py`); `OUTLINE_MIN_LEN_MM` (`styles.py`) | 3,0 mm · 6,0 mm (trước 1,5 · 8,0) |
-| Sóng biến thiên | `AM_SPACING_LINES`, `AM_AMPLITUDE`, `AM_WAVE_LINES`, `AM_DITHER`, `AM_WHITE`, `AM_FILL`, `AM_MIN_RUN` | 4,0 · 0,45 · 2,0 · 0,35 · 1,6 (độ phủ 0,10) · tắt (bật ở Chân dung) · 3,0 |
+| Bỏ giới hạn (22/11) | `UNLIMITED_KINDS`, `UNLIMITED_LEVELS`, `UNLIMITED_REFINE`, `UNLIMITED_SPACING_PEN` (`styles.py`); `DETAIL_MIN_RUN_MM`, `DETAIL_THIN_SPACINGS`, `DETAIL_WHITE` (`styles.py`); `raster.UNLIMITED_SIMPLIFY_MM`, `UNLIMITED_MIN_LENGTH_MM`; `isolated.DETAIL_TIMEOUT_S` | gạch chéo · theo dáng · sóng · 8 mức · 2 lượt · 1,4 × bút · 0,5 mm · 0 · 0,02 · 0,02 mm · 0,2 mm · 1 800 s |
+| Flow bỏ giới hạn (22/11) | `FLOW_UNLIMITED` (`styles.py`); các hằng `FLOW_*` (`flow.py`) | bước 0,25 · sep 1,05–**8,0** · phủ **0,95** · trắng **0,02** · test 0,55 · min len 0,6 · dài ≤ 80 mm · tensor 2 · grad 0,6 · bán kính 1,0 · gieo 1 mm |
+| Nét viền (19–22/11) | `GAP_MM` (`edges.py`); `OUTLINE_MIN_LEN_MM`, `OUTLINE_ONLY_MIN_LEN_MM` (`styles.py`) | 3,0 mm · 6,0 mm (lớp phủ lên kiểu tô) · **2,5 mm** (kiểu Nét viền riêng, 22/11) |
+| Sóng biến thiên | `AM_SPACING_LINES`, `AM_AMPLITUDE`, `AM_WAVE_LINES`, `AM_DITHER`, `AM_WHITE`, `AM_FILL`, `AM_MIN_RUN` | 4,0 · 0,45 · 2,0 · 0,35 · 1,6 (độ phủ 0,10) · tắt (bật ở Chân dung) · 3,0; bỏ giới hạn (`WAVE_UNLIMITED`): 3,4 · 0,50 · 2,5 · 1,0 · 1,0 |
 | Sóng: lớp đậm | `AM_DARK_LAYER`, `AM_EFF_KNEE`, `AM_EFF_SLOPE` | bật · 0,45 · 0,78 |
-| Xoắn ốc | `BRIDGE_MM`, `SPIRAL_BRIDGE_PITCHES`, `SPIRAL_MIN_PITCHES` (`hatch.py`) | 3,0 mm · 6,0 · 4,0 |
+| Xoắn ốc (22/11, bản mới) | `SPIRAL_PITCH_LINES`, `SPIRAL_AMPLITUDE`, `SPIRAL_WAVE_LINES`, `SPIRAL_WHITE`, `SPIRAL_MIN_RUN_PITCHES`, `SPIRAL_BRIDGE_PITCHES` (`styles.py`) | 5,5 × bút · 0,45 × bước · 2 × bút · 0,9 × phủ đường thẳng · 3 bước · 4 bước |
 | Theo dáng ảnh | `FLOW_STEP_MM`, `FLOW_GRAD_SIGMA_MM`, `FLOW_TENSOR_SIGMA_MM`, `FLOW_COHERENCE_FULL`, `FLOW_MIN_RADIUS_MM` (`flow.py`) | 0,3 · 1,0 · 4,0 · 0,35 · 1,5 |
 | | `FLOW_MIN/MAX_SEP_LINES`, `FLOW_MAX_COVER`, `FLOW_WHITE`, `FLOW_TEST_RATIO`, `FLOW_SEED_RATIO` | 1,1 / **4,5** · **0,85** · **0,08** · 0,7 · 0,95 (17/11: sáng dày hơn, tối thưa hơn; chờ ảnh thật) |
 | | `FLOW_MIN_LEN_SEPS`, `FLOW_MAX_LEN_MM`, `FLOW_SEED_EVERY`, `FLOW_GRID_SEED_MM` | 3,0 · 250 · 3 · 2,0 |
@@ -685,10 +698,62 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | Đọc ảnh | `OVERSAMPLE`, `UPSCALE_TO_PX`, `DRAFT_FACTOR`, `MAX_PIXELS` (`raster_in.py`) | 1,3 · 720 · 0,5 · 60 triệu |
 | Vùng chủ thể | `SUBJECT_FEATHER` (`tone.py`); `subject_outside` (`spec.py`) | 0,08 · 0,5 |
 | Sửa sai | `REFINE_GAIN`, `REFINE_SIGMA_MM`, `REFINE_STOP_RATIO`, `REFINE_RAISE_FROM` (`refine.py`); `refine_passes` (`spec.py`) | 0,8 · 2,0 mm · 0,97 · 0,15 · 1 lượt |
-| | `REFINE_LINE_PX`, `REFINE_GRID_PX_MM`, `REFINE_MAX_PIXELS` (dựng mực), `REFINE_KINDS` (`styles.py`) | 7 điểm / nét · 4 ô / mm · 16 triệu · gạch chéo, sóng, xoắn ốc |
+| | `REFINE_LINE_PX`, `REFINE_GRID_PX_MM`, `REFINE_MAX_PIXELS` (dựng mực), `REFINE_KINDS` (`styles.py`) | 7 điểm / nét · 4 ô / mm · 16 triệu · gạch chéo, đan 3 hướng, sóng (xoắn ốc bỏ 22/11) |
 | Tối ưu nét | `BRIDGE_PEN`, `BRIDGE_MIN_DARK`, `TWO_OPT_MAX_STROKES` (`optimize.py`) | 4,0 × · 0,2 · 15 000 |
 | Cung G2/G3 | `ARC_TOL_MM`, `ARC_MIN_POINTS`, `ARC_MIN_R_MM`, `ARC_MAX_R_MM`, `ARC_MAX_SWEEP_DEG`, `USE_ARCS` (`arcs.py`, `gcode.py`) | 0,02 mm · 4 · 0,2 · 2000 · 300° · bật |
 | Ước tính thời gian | `EST_ACCEL_MM_S2`, `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | **2700** · **0,02** (22/11/2026) · 0,025 s · 0,025 s · 125 |
 | G-code mặc định (`spec.py`) | vẽ / di chuyển / bút / chờ nâng / chờ hạ | 8000 / 8000 / 3000 / 0 / 0 |
 | Tiền xử lý mặc định | gamma, tương phản, đen, trắng, tự cân sáng, làm nét (`SHARPEN_SIGMA_MM`, `SHARPEN_SIGMA_PX` — `tone.py`), CLAHE, khử nhiễu | 1 · 1 · 0 · 255 · bật · 0 · tắt · tắt; σ làm nét **1,5 mm** · 4,0 điểm (18/11/2026) |
 | Bút (`spec.PENS`) | UB-155, UM-100, Sakura (nét đo trên giấy) | 0,38 · 0,40 · 0,50 mm |
+
+## 20. So với DrawingBotV3 bản miễn phí (22/11/2026)
+
+### 20.1 Bức tranh một dòng
+- **Triết lý:** DrawingBotV3 bản miễn phí hướng tới nhiều kiểu tranh, nhiều lớp và chi tiết cao; dự án này đang chọn một bộ kiểu gọn, đo bằng máy thật, giữ máy chạy nhanh và ít nhấc bút.
+- Nhận xét của chủ dự án (đã thử): màn hình DrawingBotV3 đẹp, nhưng SVG/G-code không hơn mấy vì không hạ cỡ ảnh, dùng nhiều lớp nhiều đầu bút, không giới hạn thời gian và số lần nhấc bút.
+
+### 20.2 Bảng so sánh
+| Việc | DrawingBotV3 bản miễn phí | Dự án này |
+|---|---|---|
+| Các họ kiểu vẽ | Trên tài liệu tổng hợp: 8 nhóm, gồm Sketch, Scribble/Spiral, Streamlines, Hatch, Adaptive, LBG, Voronoi/Mosaics, Contours/Outlines (chưa kiểm chứng mã nguồn). | 5 kiểu đang hiện: Gạch chéo, Theo dáng, Sóng biến thiên, Xoắn ốc, Nét viền; thêm ô Bỏ giới hạn. Còn zigzag/sóng thường/đan 3 hướng dùng cho bản thảo cũ hoặc nền. |
+| Đổi độ đậm thành nét | Khoảng cách theo công thức mức phủ; vòng tẩy sáng ảo; tần số đường/chập sai số cho xoắn ốc và chấm. (Theo tài liệu tổng hợp, chưa kiểm chứng.) | Cùng dùng khoảng cách bút; chia mức, mặt nạ và quét nét. Gạch chéo: 3–8 mức; Sóng: biên độ đổi theo tông; Theo dáng: đường uốn theo tensor; Xoắn ốc: một xoắn + sóng dọc. Chi tiết xem mục 6–9). |
+| Khoảng cách nét | Nhiều PFM cho phép vạn biến; công thức chung `s = w / D` và trần phủ khoảng 0,85–0,90 (theo tài liệu tổng hợp). | Nền tham chiếu: `DEFAULT_SPACING_PEN = 2,0 × bút`, trần `MAX_COVERAGE = 0,9`; ô Khoảng cách nét nhân tỷ lệ mọi mức. |
+| Biên độ sóng / xóa ảo | Sketch dùng xóa sáng ảo; Scribble điều biên độ/bán kính; Hatching/Sweep điều hình học (theo tài liệu tổng hợp). | Sóng thường: biên độ 0,18 × khoảng cách; Sóng biến thiên: khoảng cách 4 × nét, bước sóng 2 × nét, biên độ 0,45. Bỏ giới hạn: 3,4 ×; 0,50; 2,5 ×. Không dùng xóa ảo. |
+| Tương phản, mức đen/trắng, làm nét, CLAHE | Tài liệu tổng hợp nêu gamma, mức đen/trắng, tương phản, CLAHE; chi tiết cài đặt chưa kiểm chứng. | Thứ tự đã đọc mã: khử nhiễu; tự cân sáng; mức đen/trắng; gamma; tương phản; CLAHE; làm nét; đảo sáng/tối. Mặc định gamma 1, tương phản 1, làm nét 0, CLAHE tắt. |
+| Đường cong tông | Nêu “Tone Curve / Tone Conversion” và chập sai số; không có bảng cục bộ trong tài liệu tổng hợp để so. | Đo tông riêng cho gạch chéo và xoắn ốc bằng 16 ô; áp 75% trước khi chia mức. Xoắn ốc mới không còn dùng bảng này; xem mục 8.12). |
+| Nhiều bút / nhiều lớp màu | Có bộ 3–5 bút sắc độ hoặc CMYK 4 kênh, thứ tự lớp theo độ sáng và từ sáng đến tối (theo tài liệu tổng hợp). | Hiện tại 2–4 màu Lab/k-means; mỗi màu một lớp; sắc độ đơn bút qua mật độ nét. Chưa xếp lớp CMYK/C,M,Y,K như DrawingBot. |
+| Hạ cỡ / độ phân giải | Tài liệu tổng hợp không nêu bước hạ cỡ hoặc giới hạn điểm trước lọc. | Hạ cỡ trước lọc: cạnh dài ≈ khung/bút × 1,3, kẹp 400–4000 px; ảnh nhỏ phóng tới 720 px; `MAX_PIXELS = 60 triệu` (`raster_in.py`). Trình duyệt thu nhỏ trước khi gửi. |
+| Giới hạn nhấc bút / thời gian | Tài liệu tổng hợp mô tả ưu tiên single-line và 2-opt/TSP, nhưng không nêu giới hạn cứng hoặc thời gian thực. Chủ dự án tự thử: không giới hạn thời gian/nhấc bút trong bản xuất. | Ước thời gian có cộng 0,025 s mỗi nhấc; ghép dòng G-code; tạo nét tối đa 10 phút (30 phút khi Bỏ giới hạn); vẽ lần lượt từng mức mặc định tắt. |
+| Tối ưu đường chạy | Ramer-Douglas-Peucker, line merging, linesort/2-opt; có thể TSP toàn bức (theo tài liệu tổng hợp). | vpype: line merge 0,1 mm, line simplify 0,05 mm, bỏ nét 0,5 mm, 2-opt tối đa 15.000 nét; nối nét gần tùy 4× nét. Chi tiết xem mục 11). |
+| Sửa sai tông | Nêu vòng chập sai số để điều chỉnh quảng đường; chưa nêu báo sai số sau mỗi lượt cho bản miễn phí (theo tài liệu tổng hợp). | `refine.py`: dựng ảnh mực 2 mm, trừ 0,8 × sai số khỏi mục tiêu, giữ lượt nhỏ sai nhất; mặc định 1 lượt, Bỏ giới hạn ≥2; Xoắn ốc không sửa sai. |
+| Nét viền | Canny, Sobel, FDoG, Marching Squares, Trace Outlines (theo tài liệu tổng hợp). | Canny hoặc FDoG/XDoG, skeletonize, nối khe 3 mm, cắt râu, làm mượt; viền riêng giữ nét ≥2,5 mm; viền phủ kiểu tô giữ ≥6 mm. |
+
+### 20.3 Dự án có mà DrawingBotV3 không; hoặc ngược lại
+- Đo bề rộng bút trên giấy thật là nguồn khoảng cách; `LINE_WIDTH_RATIO = 1,0` (`styles.py`).
+- Thu nhỏ bằng mm/bút trước lọc: `OVERSAMPLE = 1,3`, `UPSCALE_TO_PX = 720` (`raster_in.py`).
+- Tờ tông đo riêng cho bút/gách và áp bảng tông 75%: `TONE_CURVE_STRENGTH = 0,75` (`styles.py`).
+- Sửa sai tông bằng ảnh mực mô phỏng: `REFINE_GAIN = 0,8`, `REFINE_SIGMA_MM = 2,0` (`refine.py`).
+- DrawingBotV3 có họ ảnh Adaptive, LBG, Voronoi, Mosaic và CMYK rộng hơn; đây là mô tả trong tài liệu tổng hợp, chưa kiểm chứng mã.
+- DrawingBotV3 nêu tẩy sáng ảo và Dark-Seeking theo vòng lặp; dự án không dùng cơ chế đó.
+- Tài liệu nguồn lỗi thời ở chỗ này: tài liệu DrawingBotV3 vẫn nhắc giá trị lọc râu và kiểu chi tiết cũ; mã hiện tại và phiếu 22/11 mới là nguồn chuẩn.
+
+### 20.4 Chế độ "Bỏ giới hạn"
+| Kiểu | Thay đổi | Số trước → sau | Vì sao |
+|---|---|---|---|
+| Gạch chéo | 8 mức, sửa sai ≥2; bỏ lọc râu/dải hẹp, trắng 0,02; khoảng cách tham chiếu 1,4× bút (trước 2×). | A4 2D: 497 nét/11,5 phút/57,9 m → 977/20,2/74,1 m; 2,0× là 780/16,0; 0,9× nền đen kịt/24,5. | Giữ chi tiết mắt/ria và tông hơn; 1,4× cân bằng so với 0,9× quá đen. |
+| Theo dáng | Max sep 8× nét; tensor 2 mm, grad 0,6 mm, radius 1 mm; giữ đường 0,6×sep tới 80 mm; phủ tới 0,95. | Mèo A4: 709 nét/7,4 phút/23,9 m → 849/9,2/27,8 m. | Cắt lỗi sep 3× nét làm tông sáng dính nhau; mắt/mũi/sợi lông hiện lại. |
+| Sóng | Khoảng 3,4× nét; biên độ 0,50; bước 2,5×; đoạn ngắn 1,0×; trắng 1,0×; phủ đều giữ do ô người dùng. | Phong cảnh A4: 418 nét/25,2 phút/50,4 m → 1.041/29,3/56,0 m. | Nhà gỗ/cây/phản chiếu hiện ra; thử 2,8/0,6/phủ đều làm trời đậm kịt nên không dùng. |
+
+Nút Bỏ giới hạn chỉ dành cho Gạch chéo, Theo dáng, Sóng; Xoắn ốc và Nét viền không có nút. Hằng chính: `UNLIMITED_KINDS`, `UNLIMITED_LEVELS`, `UNLIMITED_REFINE`, `UNLIMITED_SPACING_PEN` (`styles.py`).
+
+### 20.5 Bài học cho thuật toán
+- **Khác biệt thật** nằm ở nhiều bút / nhiều lớp và không kể thời gian: dự án đã thêm "Bỏ giới hạn"; còn thiếu tách lớp màu (CMYK hoặc đen-đỏ-navy), là bước tiếp theo đã định.
+- Chưa có và chưa cần: tẩy sáng ảo (Sketch), nguệch ngoạc, chấm Adaptive / LBG / Voronoi (chủ dự án: chưa cần).
+- Không làm: AI (Informative Drawings, U²-Net Portrait, Depth Anything), viền AI, độ sâu làm hướng nét, kiểu Khối (SLIC), lai nét cong + đan chéo; đã thử và bỏ ([09](09_QUYET_DINH_THIET_KE.md) P28, P35).
+- Thuật toán đã chốt: 5 kiểu + chế độ Bỏ giới hạn; chỉ chỉnh hằng số theo kết quả in.
+
+### 20.6 Độ tin cậy
+- **Đã đo/đã đọc mã:** các số 22/11, hằng và hành vi Bỏ giới hạn trong `styles.py`, `raster_in.py`, `refine.py`, `tone.py`; các số tờ in 19/11 trong phiếu.
+- **Đã thử chủ dự án:** nhận xét về DrawingBotV3 trên màn hình và bản SVG/G-code.
+- **Chưa kiểm chứng:** mọi tính năng DrawingBotV3 miễn phí nói theo tài liệu tổng hợp; chưa đọc/mở mã nguồn DrawingBotV3; chưa in lại tờ tông Xoắn ốc/Bỏ giới hạn và chưa so in thật hai phần mềm bằng cùng ảnh/bút.
+- **Chưa đo trên máy thật:** hiệu quả 2700/0,02, thời gian Bỏ giới hạn và độ đẹp Xoắn ốc mới chưa xác nhận bằng in giấy đầy đủ.

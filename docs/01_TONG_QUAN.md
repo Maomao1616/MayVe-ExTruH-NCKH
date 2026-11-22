@@ -39,7 +39,7 @@ Quy tắc quan trọng nhất: **giao diện không bao giờ tự nói chuyện
 | Tab | Việc | Tài liệu |
 |---|---|---|
 | **Điều khiển** | kết nối, xem trạng thái, jog, Home, đặt gốc, nâng hạ bút, nạp G-code + xem khung vẽ + chạy, hủy an toàn, tiếp tục từ điểm dừng, terminal, macro, hàng đợi | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) |
-| **Tạo bản vẽ** | ảnh / SVG → nét (7 kiểu nét: gạch chéo, đan chéo siêu chi tiết, theo dáng ảnh, theo dáng siêu chi tiết, sóng biến thiên, xoắn ốc, viền; 1–4 màu; 5 preset: Chân dung, Phong cảnh, Ảnh 2D, Schematic, Siêu chi tiết) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
+| **Tạo bản vẽ** | ảnh / SVG → nét (**5 kiểu nét**: gạch chéo, theo dáng ảnh, sóng biến thiên, xoắn ốc, viền + **ô "Bỏ giới hạn"** cho gạch chéo / theo dáng / sóng: 8 mức, chi tiết cao; 2–4 màu; 5 preset: Chân dung, Phong cảnh, Ảnh 2D, Schematic, Siêu chi tiết) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
 | **Cài đặt** | cổng kết nối, ngôn ngữ, giao diện sáng / tối, cấu hình máy (đọc / ghi cấu hình trên mạch qua USB), hồ sơ bút, hạn mức bản thảo, xem dữ liệu | [03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 7 |
 
 Hai tab chính nối nhau qua **bản thảo trên đĩa**:
@@ -56,13 +56,14 @@ Tạo bản vẽ  ──lưu──►  bản thảo (G-code + ảnh minh họa) 
    ▼
 tiền xử lý: tự cân sáng · mức đen / trắng · gamma · tương phản · (CLAHE) · (khử nhiễu)      tone
    ▼
-bản đồ độ đậm 0..1 ──► đường cong tông (gạch chéo, xoắn ốc)
+bản đồ độ đậm 0..1 ──► đường cong tông (gạch chéo)
    ▼
 kiểu nét ──┬─ gạch chéo        chia mức, mỗi mức một lượt gạch, mức mềm
            ├─ sóng biến thiên  biên độ theo độ đậm, tông liền
            ├─ theo dáng ảnh    nét uốn theo dáng, khoảng cách theo độ đậm
-           ├─ xoắn ốc          một nét, mức mềm
+           ├─ xoắn ốc          một xoắn, biên độ theo độ đậm (sóng dọc đường)
            └─ nét viền         top-hat + FDoG (XDoG có làm mượt dọc nét) → đường giữa 1 điểm ảnh
+   ▼  (+ ô "Bỏ giới hạn" cho gạch chéo / theo dáng / sóng: 8 mức, chi tiết cao)
    ▼  (+ lớp viền tùy chọn, vẽ sau cùng)
 tối ưu: nối nét gần · bớt điểm · sắp thứ tự (2-opt)                              optimize
    ▼
