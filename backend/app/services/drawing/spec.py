@@ -119,7 +119,7 @@ RASTER = (
 
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
 STYLE = (
-    Param("kind", "choice", "zigzag", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch_detail",
+    Param("kind", "choice", "crosshatch", choices=("outline", "zigzag", "wave", "spiral", "crosshatch", "crosshatch_detail",
                                                           "crosshatch3", "wave_am", "flow", "flow_detail")),
     Param("soft_levels", "bool", True),                               # chuyển mức mềm (ranh giới các mức đan so le)
     Param("unlimited", "bool", False),                                # BỎ GIỚI HẠN (22/11/2026; Gạch chéo, Theo dáng, Sóng biến thiên): chi tiết nhất, không kể thời gian / nhấc bút (styles.unlimited_style)

@@ -74,7 +74,7 @@ def test_gradient_shows_as_separate_bands_with_denser_lines_to_the_dark_side():
 
 def test_zigzag_joins_lines_into_few_strokes():
     f = field(np.ones((100, 150)))
-    one_pass = styles.fill(f, style(levels=3), 0.4)
+    one_pass = styles.fill(f, style(kind="zigzag", levels=3), 0.4)
     # 60x40 mm đặc, khoảng cách 0,8 mm: hàng chục dòng mà ít nét (nối đi-về)
     assert len(one_pass) < 20
 

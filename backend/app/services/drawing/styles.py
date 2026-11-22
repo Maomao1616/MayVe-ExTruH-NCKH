@@ -532,7 +532,7 @@ GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_group
 
 # === B. Nét viền ==========================================================================================================
 # 19/11/2026 (chủ dự án: "bỏ bớt giới hạn để nét liền nhau hơn"): giữ nét ngắn hơn (8 -> 2 mm) và nối khe rộng hơn
-# (edges.GAP_MM 1,5 -> 2,8 mm). Đo trước/sau trên ảnh mèo A4 và ảnh 2D (xem THAY_DOI.md).
+# (edges.GAP_MM 1,5 -> 2,8 mm). Đo trước/sau trên ảnh mèo A4 và ảnh 2D (xem docs/09 P39).
 OUTLINE_MIN_LEN_MM = 6.0         # lớp viền phủ lên kiểu tô (ảnh 2D): bỏ nét viền ngắn hơn chừng này (14/11: 1 -> 4; 18/11: 4 -> 8; 19/11: 8 -> 6 cùng với
                                  # GAP_MM 1,5 -> 3,0. Đo 19/11, bút 0,5: ảnh mèo A4 110 -> 192 nét, nét dài TB 14,8 -> 15,2 mm;
                                  # ảnh 2D 85 -> 105 nét, TB 19,0 -> 20,9 mm. Muốn "liền" hơn nữa: GAP 4,0 (TB 17,2 mm) nhưng dễ nối nhầm)

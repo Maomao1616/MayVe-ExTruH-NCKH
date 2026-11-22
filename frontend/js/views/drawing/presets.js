@@ -16,7 +16,9 @@ export const PRESETS = {
     // trên da thành nét cứng), mức đen 20 (tóc đen sâu), tương phản 1,3 (thử 1 / 1,3 / 1,6: 1,3 mặt tách nền, da còn tông;
     // 1,6 da trắng), góc 135°. Bộ số chủ dự án chỉnh trên ảnh cô gái, xem bản thảo.
     portrait: {                  // chân dung / ảnh người chụp thật
-        ...BASE, "image-black-point": "20", "image-contrast": "1.3",
+        // 22/11/2026 (chủ dự án, ảnh cô gái nền rèm): mắt / mũi / môi chỉ rõ khi tương phản 1,5 + cân bằng sáng cục bộ + làm nét 1,5
+        // (xem trước: 1,3 không có làm nét thì mặt chìm). KHÔNG bật Chất lượng tối đa: đan mảng, kém mịn hơn.
+        ...BASE, "image-black-point": "20", "image-contrast": "1.5", "image-clahe": true, "image-sharpen": "1.5",
         "style-kind": "wave_am", "style-angle": "135", "style-am-fill": true
     },
     // 14/11/2026 giữ nguyên: thử ảnh chùa + hồ A4: sóng + CLAHE nhiều sắc độ trời nhất; thêm viền -> cây cối vụn; gạch chéo +
@@ -31,6 +33,9 @@ export const PRESETS = {
     // Khử nhiễu bớt vệt nén JPEG của ảnh chụp màn hình. Cận cảnh (xoắn ốc) bỏ: chủ dự án tự chọn xoắn ốc khi cần.
     flat2d: {                    // ảnh 2D: hình vẽ, hoạt hình, truyện tranh, sticker
         ...BASE, "image-denoise": true,
+        // 22/11/2026 (chủ dự án): ảnh nhân vật 2D tối + sáng lẫn, mắt nhỏ chỉ hiện khi tương phản cao. Thử trên ảnh nhân vật toàn thân:
+        // tương phản 1,5 + cân bằng sáng cục bộ + làm nét 1,5 ra mắt, lông mày rõ nhất (chỉ tương phản 1,3 thì mắt chìm vào da). Mức đen 40 / trắng 250: cắt nền xám.
+        "image-black-point": "40", "image-white-point": "250", "image-contrast": "1.5", "image-clahe": true, "image-sharpen": "1.5",
         "style-kind": "crosshatch", "style-levels": "5", "style-outline": true
     },
     // 19/11/2026 (chủ dự án), đổi 22/11/2026: "Siêu chi tiết" = Gạch chéo + ô "Bỏ giới hạn" (8 mức, bỏ lọc râu, khoảng cách
