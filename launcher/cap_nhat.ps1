@@ -50,10 +50,10 @@ Write-Host "5/5 Kiem tra thu vien..."
 $newReq = Get-Content $reqPath -Raw
 if ($newReq -ne $oldReq) {
   Write-Host "    requirements.txt da doi: cai them thu vien (can Internet)..."
-  # cung Python ma start.ps1 dung: Python\ mang theo, khong co thi backend\.venv
-  $python = Join-Path $root "Python\python.exe"
-  if (-not (Test-Path $python)) { $python = Join-Path $root "backend\.venv\Scripts\python.exe" }
-  if (-not (Test-Path $python)) { Fail "Khong tim thay Python (Python\ hoac backend\.venv) de cai thu vien." }
+  # cung Python ma start.ps1 dung: backend\.venv (Python cua may) truoc, khong co thi Python\ mang theo
+  $python = Join-Path $root "backend\.venv\Scripts\python.exe"
+  if (-not (Test-Path $python)) { $python = Join-Path $root "Python\python.exe" }
+  if (-not (Test-Path $python)) { Fail "Khong tim thay Python (backend\.venv hoac Python\) de cai thu vien." }
   & $python -m pip install --no-warn-script-location -r $reqPath
   if ($LASTEXITCODE -ne 0) { Fail "Cai thu vien bi loi. Kiem tra Internet roi chay lai Cap nhat (ban moi da chep xong)." }
 } else {

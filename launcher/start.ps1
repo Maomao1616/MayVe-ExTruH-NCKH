@@ -2,9 +2,9 @@
 # Goi tu start.vbs (chay an). Server tu tat khi dong het trang 10 phut (backend/app/idle.py), dang ve thi khong tat.
 $root = Split-Path $PSScriptRoot -Parent
 $port = 8000
-# Python mang theo (Python\, ban embeddable) neu co; khong thi dung venv cua may da cai Python (backend\.venv)
-$python = Join-Path $root "Python\python.exe"
-if (-not (Test-Path $python)) { $python = Join-Path $root "backend\.venv\Scripts\python.exe" }
+# Python cua may (venv: backend\.venv) uu tien truoc; khong co thi dung Python mang theo (Python\, ban embeddable)
+$python = Join-Path $root "backend\.venv\Scripts\python.exe"
+if (-not (Test-Path $python)) { $python = Join-Path $root "Python\python.exe" }
 
 # Co server dang nghe cong khong: thu ket noi TCP, cho toi da 100 ms (cong mo tra loi ~1 ms).
 # Khong dung Connect() thuong: tren Windows cong dong mat ~2 giay moi lan thu; Get-NetTCPConnection mat ~130 ms.
