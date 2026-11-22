@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~626,489 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~625,091 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -262,19 +262,20 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `01_TONG_QUAN.md` | ~3,133 |  |
+| `01_TONG_QUAN.md` | ~3,233 |  |
 | `02_PHAN_CUNG_MAY.md` | ~4,012 |  |
-| `03_CAU_TRUC_PHAN_MEM.md` | ~5,701 |  |
+| `03_CAU_TRUC_PHAN_MEM.md` | ~5,767 |  |
 | `04_TAB_DIEU_KHIEN.md` | ~5,569 |  |
-| `05_TAB_TAO_BAN_VE.md` | ~6,078 |  |
-| `06_THUAT_TOAN_XU_LY_ANH.md` | ~22,605 |  |
-| `07_THU_NGHIEM.md` | ~7,456 |  |
-| `08_TRIEN_KHAI.md` | ~5,744 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~11,359 |  |
-| `10_HUONG_PHAT_TRIEN.md` | ~5,052 |  |
-| `11_VIEC_CAN_LAM.md` | ~3,543 |  |
-| `AI_CODEMAP.md` | ~6,942 |  |
-| `AI_START.md` | ~3,619 |  |
+| `05_TAB_TAO_BAN_VE.md` | ~5,496 |  |
+| `06_THUAT_TOAN_XU_LY_ANH.md` | ~19,696 |  |
+| `07_THU_NGHIEM.md` | ~6,688 |  |
+| `08_TRIEN_KHAI.md` | ~5,758 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~6,587 |  |
+| `10_HUONG_PHAT_TRIEN.md` | ~3,351 |  |
+| `11_VIEC_CAN_LAM.md` | ~2,169 |  |
+| `12_TAB_BETA_PDF.md` | ~9,604 |  |
+| `AI_CODEMAP.md` | ~7,834 |  |
+| `AI_START.md` | ~3,651 |  |
 
 ### `frontend/`
 

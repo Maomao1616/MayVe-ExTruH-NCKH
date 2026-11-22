@@ -5,7 +5,7 @@
 ## 1. Dự án
 **VMU PlotterPen** (thư mục `ExtruXY`): phần mềm điều khiển máy vẽ bút CoreXY. Mạch **MKS DLC32 V2.1**, firmware **FluidNC v4.1.1** (không sửa), nối USB (CH340, 115200). Vùng làm việc **285 × 318 mm**, Z bút 5 mm (servo, bút hạ bằng trọng lực). Giấy A6 ⊂ A5 ⊂ A4 neo ở O(0,0) góc trên trái, Y xuống. **Hướng trục đã xác nhận đúng 05/11/2026** (`VIEW.flipX/flipY = false`, `invert_y = false`).
 Backend **Python 3.12 / FastAPI**; frontend **JS thuần** (không framework, không build). Chạy trên laptop (bản mang đi Windows); kế hoạch MiniPC Ubuntu + Docker + Cloudflare Tunnel. Dữ liệu ở `data/` cùng cấp `backend/`.
-Bút: Sakura 0,4 / Uniball 150 trên giấy Ivory 250 g/m² (tranh; từ 11/11/2026 ô "Bút vẽ" chọn theo tên bút và ghi thẳng nét đo trên giấy: đo 12/11/2026: UB-155 0,38, UM-100 0,40, Sakura 0,50 (mặt nhám 0,55: Tùy chọn); `LINE_WIDTH_RATIO` 1,0; giấy thường từng loang ra 0,55), bút bi 0,5 (chữ, Word cỡ 14–16). Mặc định vẽ / di chuyển 8000 mm/min, Z3 / Z0, chờ 0 s (từ 13/11/2026; G-code ghi nét cong bằng G2/G3), hạ bút 2000, nối nét gần bật, vẽ lần lượt từng mức tắt; máy thật đang chạy tối đa 8000 (10000 được ở đoạn dài), gia tốc 3000 (không tăng: sợ gãy ngòi), junction 0,03, SpreadCycle.
+Bút (ô "Bút vẽ" = nét đo trên giấy Ivory 250 g/m², 12/11/2026): UB-155 0,38 · UM-100 0,40 (chính) · Sakura 0,50; `LINE_WIDTH_RATIO` 1,0; chữ dùng bút bi 0,5 (Word cỡ 14–16). Mặc định vẽ / di chuyển 8000 mm/min, Z3 / Z0, chờ 0 s, hạ bút 2000, nét cong G2/G3, nối nét gần bật, vẽ lần lượt từng mức tắt. Máy: gia tốc **2700**, junction **0,02**, servo 5,3 V (22/11/2026), SpreadCycle. MiniPC đích: i5-6100T, 12 GB, không GPU.
 Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, đề tài cấp trường, mục tiêu sản phẩm IoT chạy thật, demo **không cần Internet**.
 
 ## 2. Tài liệu
@@ -34,7 +34,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 7. **Không bịa số máy.** Lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `02_PHAN_CUNG_MAY.md`; ghi rõ điều chưa kiểm chứng.
 8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`). Thêm route cho khách = một dòng trong danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
 9. **Thuật toán tô:** đánh giá thay đổi bằng `tools/ink_sim.py` (ảnh thử tổng hợp) **và `tools/ink_real.py` (ảnh thật; dựng mực đã đối chiếu hình học đúng)** trước khi đề xuất; nêu số trước / sau. Kiểu tô có vòng sửa sai (`refine.py`, ô `refine_passes`, mặc định 1): thử bộ tô riêng lẻ thì đặt `refine_passes=0`.
-   Công cụ có sẵn (chạy bằng `backend\.venv`, đừng viết lại): `tools/tone_read.py` đọc ảnh chụp Thang tông / tờ tông ra 16 ô độ đậm (`--crop` khi nhiều tờ một ảnh, `--kind` so với đường cong, `--out` ảnh kiểm tra); `tools/log_read.py` đọc `data/job_logs/*.csv` (hàng đợi cạn, tốc độ thật theo vị trí, `--split-x` tách vùng); `tools/style_preview.py` vẽ thử ảnh với nhiều kiểu tô ra PNG (`--kinds`, `--set nhóm.tham_số=giá_trị`; đường theo dáng tô đỏ).
+   Công cụ có sẵn (chạy bằng `backend\.venv`, đừng viết lại; bảng ở `07` mục 9): `tools/do_thoi_gian.py` đo giây từng bước + RAM đỉnh + thông tin máy (so laptop / MiniPC); `tools/tone_read.py` đọc ảnh chụp Thang tông / tờ tông ra 16 ô độ đậm (`--crop` khi nhiều tờ một ảnh, `--kind` so với đường cong, `--out` ảnh kiểm tra); `tools/log_read.py` đọc `data/job_logs/*.csv` (hàng đợi cạn, tốc độ thật theo vị trí, `--split-x` tách vùng); `tools/style_preview.py` vẽ thử ảnh với nhiều kiểu tô ra PNG (`--kinds`, `--set nhóm.tham_số=giá_trị`; đường theo dáng tô đỏ).
 10. **Báo trung thực:** test fail, bước bỏ qua, điều chưa chạy trên Ubuntu / máy thật / giấy.
 
 ## 4. Làm việc với chủ dự án
@@ -90,7 +90,7 @@ Việc hôm nay: <một việc cụ thể>. Cần tệp nào thì nói, tôi g�
 
 ## 7. Giữ tài liệu đúng
 - Thêm / đổi tệp lớn → `python tools/export_context.py --map`.
-- **Việc chưa làm chỉ có hai danh sách:** cần thử → `07` (đầu tệp); cần chọn / cần code → `11` mục 4. Việc đã xong chỉ ghi **từ khóa + hằng đã chốt** ở `11` mục 3 (đừng kể lại quá trình); quyết định bị thay thì gạch ngang ở `09` (giữ mã), thử rồi bỏ thì ghi một dòng ở `09`.
+- **Việc chưa làm chỉ có hai danh sách:** cần thử → `07` (đầu tệp); cần chọn / cần code → `11` mục 4. Việc đã xong chỉ ghi **từ khóa + hằng đã chốt** ở `11` mục 3 (đừng kể lại quá trình, lịch sử số nằm ở Git); quyết định bị thay thì sửa dòng cũ hoặc bỏ dòng đó ở `09` (mã số không dùng lại), thử rồi bỏ thì ghi một dòng ở `09`. Tên trên giao diện khác tên trong tài liệu (vd "Bỏ giới hạn" = ô "Chất lượng tối đa"): bảng ở `05` mục 3.
 - Xong một việc → `11_VIEC_CAN_LAM.md`. Đổi hành vi đã chốt → `09_QUYET_DINH_THIET_KE.md`. Đổi API tab vẽ → `05_TAB_TAO_BAN_VE.md` mục 7 + `spec.py`. Đổi con số thuật toán → `06_THUAT_TOAN_XU_LY_ANH.md`. Số đo máy mới → `02_PHAN_CUNG_MAY.md`.
 - **Tệp luật cho AI khác:** `CLAUDE.md` (Claude Code) và thư mục `.clinerules/` (Cline, các tệp 00–04) là bản rút gọn của mục 3–5 của tệp này. Đổi luật ở đây thì sửa cả hai nơi cho khớp; `AI_START.md` là bản gốc.
 - Không tạo tệp tài liệu mới nếu nội dung thuộc một tệp đã có. Tệp mới cho người đọc thì đánh số; tệp chỉ cho AI thì đặt tiền tố `AI_` và ghi "FOR AI" ở dòng đầu.

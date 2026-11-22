@@ -1,6 +1,6 @@
 # 12 — Tab Beta: in trang PDF (chữ Word, bảng, khung, ảnh)
 
-> Tính năng **tách riêng hoàn toàn** khỏi phần còn lại (xem mục 10 "Cách gỡ"). Tài liệu này giải thích hướng phát triển, thuật toán, thư viện và hằng số, theo cách viết của [06](06_THUAT_TOAN_XU_LY_ANH.md). Ý tưởng gốc và lý do chọn hướng: [10](10_HUONG_PHAT_TRIEN.md) mục 1.1–1.2; quyết định: [09](09_QUYET_DINH_THIET_KE.md) P47.
+> Tính năng **tách riêng hoàn toàn** khỏi phần còn lại (xem mục 10 "Cách gỡ"). Tài liệu này giải thích hướng phát triển, thuật toán, thư viện và hằng số, theo cách viết của [06](06_THUAT_TOAN_XU_LY_ANH.md). Quyết định và lý do: [09](09_QUYET_DINH_THIET_KE.md) P47.
 
 **Trạng thái (22/11/2026):** đã làm xong phần mềm và test; **chưa in giấy, chưa đo trên MiniPC**. Số đo ở mục 7 là trên máy phát triển.
 
@@ -22,7 +22,7 @@ Bạn xuất tài liệu Word thành PDF, mở tab **Beta PDF**, chọn một tr
 ## 2. Cách dùng
 1. Trong Word: **Lưu thành PDF** (giữ font Times New Roman và dấu tiếng Việt).
 2. Tab **Beta PDF** → chọn tệp → chọn trang (← Trước / Sau →). Bên trái là trang gốc.
-3. Chọn cách vẽ chữ (mặc định **Nét đơn**, font **Chữ viết tay nối nét**), bút chữ 0,5, bút ảnh 0,4 → **Tạo nét trang này**. Bên phải hiện nét sẽ vẽ, kèm số nét, độ dài, ước thời gian.
+3. Chọn cách vẽ chữ (mặc định **Nét đơn**, font **Chữ viết tay nối nét**), bút chữ 0,5, bút ảnh 0,4 → **Tạo nét trang này**. Bên phải hiện nét sẽ vẽ, số nét, độ dài, ước thời gian; hai khung phóng to được (nút − / +, Ctrl + lăn chuột).
 4. **Mở ở Tạo bản vẽ →**: đặt tờ giấy, kéo khung, tạo G-code, lưu bản thảo như mọi bản vẽ. Hai lớp (chữ + khung bút bi, ảnh bút tô) ra **hai tệp G-code**, đổi bút giữa hai tệp.
 Chỉ quản lý dùng tab này (khách không thấy).
 
@@ -54,10 +54,10 @@ Kết quả cùng dạng với `drawing.raster.build_raster` (lớp, khung, thô
 - Nguồn: font **Hershey** có sẵn trong gói vpype (`timesr` / `timesrb` / `timesi` / `timesib` = giống Times; `futural` / `futuram` = nét đơn kiểu sans). Dữ liệu: ASCII 32–127, mỗi ký tự là các đường gấp khúc, y hướng xuống, đường cơ sở y = 9; **chiều cao chữ hoa 21, chữ thường 14, chân chữ sâu 7** (đơn vị Hershey). Đổi y thành "so với đường cơ sở" để ghép dấu dễ.
 - **Đổi sang mm:** cỡ chữ (em) = 21 / 0,662 ≈ **31,7 đơn vị**, vì chữ hoa của Times New Roman cao 0,662 em. Vậy 1 đơn vị = cỡ chữ / 31,7; chữ 14 pt (4,94 mm) → 0,156 mm mỗi đơn vị.
 - Ba họ font (tham số `font`):
-  - **`script`** (mặc định, từ 22/11/2026): chữ viết tay nối nét (Hershey `cursive`). Mỗi chữ cái chủ yếu là **một nét liền**, vào ở mép trái và ra ở mép phải ngang cùng độ cao (y = 4), nên đặt sát nhau là **nối liền cả từ** (mục 4.4b). **Chỉ một kiểu**: đậm và nghiêng của Word bị bỏ, chỉ còn khác cỡ chữ (yêu cầu chủ dự án). **Chữ HOA và chữ SỐ viết kiểu in** như chữ tiếng Anh (chủ dự án 22/11/2026: chữ hoa viết tay của font này trông lệch, SSNN thành "ᔕᔕNN"): lấy glyph từ họ `simplex`, co `PRINT_SCALE` 0,9 (chữ hoa cao ~1,9 lần chữ thường), **đứng riêng, không nối** với chữ bên cạnh (`Glyph.solo`); dấu trên chữ hoa đặt theo chiều cao chữ in. Chữ thường của font này chỉ cao 9 (Times 14) nên co giãn `FAMILY_SCALE` = 0,85 ngang × 1,1 dọc (chọn sau khi so 4 mức trên PDF thật: 1,0 × 1,45 chồng dòng, 0,8 × 1,0 nhỏ).
+  - **`script`** (mặc định): chữ viết tay nối nét (Hershey `cursive`). Mỗi chữ cái chủ yếu là **một nét liền**, vào ở mép trái và ra ở mép phải ngang cùng độ cao (y = 4), nên đặt sát nhau là **nối liền cả từ** (mục 4.4b). **Chỉ một kiểu**: bỏ đậm, nghiêng của Word, chỉ khác cỡ chữ. **Chữ HOA và chữ SỐ viết kiểu in** như chữ tiếng Anh (chữ hoa viết tay của font này trông lệch): lấy từ họ `simplex`, co `PRINT_SCALE` 0,9, **đứng riêng, không nối** (`Glyph.solo`). Chữ thường chỉ cao 9 (Times 14) nên co giãn `FAMILY_SCALE` 0,85 ngang × 1,1 dọc (1,0 × 1,45 chồng dòng, 0,8 × 1,0 nhỏ).
   - **`simplex`**: chữ rời, một nét cho mỗi đường, ít nét; chữ nghiêng làm bằng cách xô ngang 0,2.
   - **`times`**: giống Times nhưng nhiều nét kép nên đặc, gấp đôi số nét (mục 7).
-  Chiều cao chữ thường / hoa / chữ có đuôi (`fontdata.metrics`) **đo từ chính glyph x, H, d của họ font** (Times và simplex ra 14, 21, 21; script ra 9,9, 23,1, 23,1), nên dấu tiếng Việt đặt đúng chỗ ở mọi họ font.
+  Chiều cao chữ thường / hoa / chữ có đuôi (`fontdata.metrics`) **đo từ chính glyph x, H, d của họ font** (Times và simplex: 14, 21, 21; script: 9,9, 18,9 (chữ hoa in), 23,1), nên dấu tiếng Việt đặt đúng chỗ ở mọi họ font.
 - Font Hershey **không có chữ tiếng Việt** (kiểm: "Giới thiệu đề tài" chỉ còn 45 nét thay vì 64, chữ có dấu bị rụng hết).
 
 ### 4.3 Ghép chữ tiếng Việt (`viet.py`)
@@ -81,7 +81,7 @@ Mỗi chữ như ấ, ặ, ữ, Đ dựng từ **chữ gốc + dấu phụ + d�
 - Kiểm: 146 chữ cái tiếng Việt (73 thường + 73 hoa) × 2 họ font × 4 kiểu (thường, đậm, nghiêng, đậm nghiêng) đều dựng được (test `test_viet_glyphs.py`); đã xem ảnh bảng chữ ở cả thường lẫn hoa.
 
 ### 4.4 Đặt chữ theo từ (`text.py`, `word_strokes`)
-Layout (xuống dòng, căn đều hai bên, kerning) **do Word làm sẵn**; ta chỉ vẽ lại chữ **vào đúng khoảng mà PDF cho**. Ban đầu mỗi chữ cái được co cho vừa ô chữ Times của nó, nhưng như vậy chữ này rộng chữ kia hẹp, nét nhìn **run** (chủ dự án phát hiện khi xem ảnh 22/11/2026). Cách hiện tại đặt **theo từng từ**:
+Dàn trang (xuống dòng, căn đều, kerning) **do Word làm sẵn**; ta chỉ vẽ lại chữ **vào đúng khoảng mà PDF cho**, đặt **theo từng từ** (co từng chữ cái theo ô Times thì chữ rộng chữ hẹp, nhìn run):
 1. Cắt dòng thành từ bằng dấu cách (dấu cách không có nét). Cỡ: `đơn vị = cỡ chữ PDF / 31,7`.
 2. Trong một từ, chữ cái cách nhau **theo bề rộng tự nhiên của font nét đơn** (nhịp đều).
 3. Cả từ co hoặc giãn **đều một hệ số** `s = bề rộng từ trong PDF / bề rộng tự nhiên`, kẹp trong `WORD_FIT_MIN` 0,55 … `WORD_FIT_MAX` 1,25. Từ bắt đầu đúng chỗ ký tự đầu, kết thúc đúng chỗ ký tự cuối nên dòng căn đều hai bên vẫn đúng.
@@ -90,7 +90,7 @@ Layout (xuống dòng, căn đều hai bên, kerning) **do Word làm sẵn**; ta
 6. Gạch dài (– — −) đứng riêng thì kéo giãn kín ô (`glyph_strokes`). Ngoặc cong, dấu ba chấm, nhân, chia… đổi về ASCII (`CHAR_MAP`).
 
 ### 4.4b Nối chữ thành một nét (chỉ họ `script`; `text._connected_word`)
-Yêu cầu chủ dự án 22/11/2026: "chỉ cần vẽ ra đúng chữ và đọc được; rung, nguệch ngoạc không sao; nếu được thì các chữ **nối nét thành một từ hoàn chỉnh như viết tay**, nét đều nhau, chỉ khác cỡ chữ".
+Yêu cầu chủ dự án: "chỉ cần đúng chữ và đọc được; rung, nguệch ngoạc không sao; nếu được thì **nối nét thành một từ như viết tay**, nét đều, chỉ khác cỡ chữ".
 1. Mỗi glyph tách thành **thân** và **nét phụ** (`_split_body`): thân = nét dài nhất cộng các nét nối tiếp nó (đầu / cuối chạm nhau, ≤ `BODY_TOL` 1,6).
 2. **Nét phụ của chữ cái sát thân** (vòm của n, m, h; đuôi của d, g, p, q; gạch ngang của t; **râu ơ ư và gạch đ**) có một đầu cách thân ≤ `ATTACH_TOL` 6,5 (và dài ≥ `ATTACH_MIN_LEN` 5,0; râu và gạch đ luôn thử nối) thì **nối vào thân bằng một chuyến đi ra rồi quay lại** tại điểm chạm: bút không nhấc, đầu và cuối thân giữ nguyên để còn nối sang chữ kế, mực chồng đúng lên nét cũ nên không thấy. Đo: font `cursive` có hầu hết nét phụ bắt đầu cách thân 0–6 đơn vị, còn chấm của i, j dài 3,9.
 3. Các thân trong cùng một từ nối đuôi nhau thành **một nét** (đoạn thẳng nối khi đuôi và đầu cách ≤ `CONNECT_UNITS` 10 đơn vị Hershey).
@@ -123,8 +123,7 @@ Mỗi khung ảnh (≥ 3 mm mỗi cạnh) được **nhận diện** rồi đi m
 | **Hình vẽ nét**: sơ đồ khối, mạch điện, đồ thị, công thức hoặc ký hiệu Hy Lạp lưu dạng ảnh | ≥ **70 %** điểm ảnh gần trắng (> 200) **và** ≤ **20 %** điểm xám trung gian (64–192) | lấy **đường giữa nét** như chữ: kết xuất khung ở `skeleton_dpi` → làm mịn Gauss 0,25 mm → nhị phân → skeleton → dò nét (`text.skeleton_strokes`) | cùng bút và cùng tệp G-code với chữ (`lineart_with_text` = bật); tắt thì thành lớp ảnh |
 | **Ảnh chụp, ảnh nhiều tông** | còn lại | cắt từ trang ở `image_dpi` (150), chạy `drawing.raster.build_raster` với kiểu Đan chéo (hoặc kiểu đã chọn), bút ảnh, trong đúng khung; nét tịnh tiến về vị trí trên trang | lớp ảnh riêng (bút tô, tệp G-code riêng) |
 
-**Vì sao phải nhận diện:** thử trên PDF thật "Đáp án đo lường" (32 trang) lần đầu, **mọi sơ đồ và mạch điện gần như mất hết** (cả sơ đồ khối chỉ ra 2 nét) vì kiểu tô đan chéo tô theo độ tối mà hình nét đen trên nền trắng gần như không có vùng tối; ký hiệu Hy Lạp 6 mm cũng bị bỏ và mỗi ảnh nhỏ như vậy tốn ~2 s tạo nét (trang có 7 ảnh mất 10 s). Sau khi thêm đường lấy nét: sơ đồ, mạch điện, công thức đều hiện đủ, trang nhiều ảnh còn < 1 s.
-Đo ngưỡng trên PDF này: sơ đồ trắng 0,82–0,96 / xám 0,03–0,11; ký hiệu 6 mm trắng 0,75–0,84 / xám 0,11–0,16. Ép kiểu bằng `image_kind` (`lineart`, `crosshatch`, `flow`, `wave_am`, `spiral`, `outline`) khi nhận diện sai.
+**Vì sao phải nhận diện:** lần đầu thử PDF thật 32 trang, **sơ đồ và mạch điện gần như mất hết** (kiểu tô theo độ tối, mà hình nét đen trên nền trắng gần như không có vùng tối), trang 7 ảnh mất 10 s. Có đường lấy nét: hiện đủ, < 1 s. Ngưỡng đo trên PDF này: sơ đồ trắng 0,82–0,96 / xám 0,03–0,11; ký hiệu 6 mm trắng 0,75–0,84 / xám 0,11–0,16. Ép kiểu bằng `image_kind` (`lineart`, `crosshatch`, `flow`, `wave_am`, `spiral`, `outline`) khi nhận diện sai.
 **Chạy ngay trong tiến trình hiện tại** (không tách tiến trình con như tab Tạo bản vẽ), nên giữ `image_dpi ≤ 300`; nhận diện và lấy nét hình vẽ không tốn đáng kể.
 
 ### 4.9 Đóng gói (`service.py`)
@@ -143,15 +142,7 @@ Mỗi khung ảnh (≥ 3 mm mỗi cạnh) được **nhận diện** rồi đi m
 Cài đặt: `requirements.txt` có `pymupdf`; **phải cài vào đúng Python mà `launcher\start.ps1` chạy** (ưu tiên `backend\.venv`, nếu không có mới `Python\python.exe` mang theo): `backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt`; `Cap nhat.bat` tự cài khi tệp này đổi (cần Internet). Thiếu thư viện thì tab báo rõ ("chạy `pip install pymupdf`"), phần mềm vẫn chạy bình thường.
 
 ## 6. Quyết định và lý do
-| Quyết định | Lý do |
-|---|---|
-| Viết lại chữ bằng font nét đơn thay vì làm skeleton | đo trên trang mẫu: skeleton làm mất dấu và đứt nét ở Times 14 (mục 7); nét đơn đọc rõ, **ít nét hơn một nửa** (font gọn) |
-| Mặc định font **viết tay nối nét** | chủ dự án chỉ cần đọc được và muốn chữ nối liền như viết tay, nét đều; trang mẫu 578 nét (rời 1152, Times 2530), ước 4 phút; 32 trang PDF thật ước ~2,4 giờ (rời ~4–5 giờ) |
-| Đặt chữ **theo từ** (không theo ô chữ từng chữ cái) | co từng chữ theo ô Times làm bề rộng chữ lệch nhau, nhìn run; nhịp đều trong từ + co đều cả từ vẫn giữ đúng dàn trang Word (căn đều, kerning) |
-| Đường kẻ vẽ từ vector | thẳng, đều, 1 lần nhấc bút cho cả khung; ảnh + skeleton cho đường kẻ bị lệch và dày |
-| Hai lớp (chữ + khung / ảnh) | hai bút khác nhau (bút bi 0,5 và Sakura 0,4), hai tệp G-code |
-| Giao bản vẽ qua sự kiện | tab Beta không import view khác, không nhân đôi phần bố trí / G-code (luật cây thư mục) |
-| Tách riêng mọi thứ | yêu cầu chủ dự án: dễ xóa, sửa, gộp (mục 10) |
+Ở [09](09_QUYET_DINH_THIET_KE.md) P47. Tóm tắt: viết lại bằng font nét đơn vì skeleton làm mất dấu và đứt nét (mục 7); đặt chữ theo từ cho nhịp đều; đường kẻ từ vector cho thẳng và ít nhấc bút; hai lớp vì hai bút; giao bản vẽ qua sự kiện để không import view khác; tách riêng để dễ gỡ (mục 10).
 
 ## 7. Số đo (trang mẫu: tiêu đề 20 / 18, chữ 14, bảng 3×3, khung, thử dấu; ~510 ký tự; máy phát triển)
 | Cách | Số nét (≈ lần nhấc bút) | Độ dài vẽ | Ước thời gian vẽ* | Giây dựng nét | Chất lượng |
@@ -161,9 +152,8 @@ Cài đặt: `requirements.txt` có `pymupdf`; **phải cài vào đúng Python 
 | **Nét đơn, chữ viết tay nối nét (mặc định)** | **578** | 7,0 m | **4 phút** | ~2 | đọc rõ khi phóng to, như viết tay, nét đều |
 | Nét đơn, chữ rời gọn (`simplex`) | 1152 | 5,6 m | 6 phút | ~0,9 | đọc rõ, nhịp đều, hơi "máy" |
 | Hỗn hợp (chữ ≥ 17 pt skeleton) | 1204 | 5,1 m | 6 phút | ~1,0 | tiêu đề giữ hình gốc |
-| Skeleton thuần 600 dpi | 1567 | 4,6 m | 8 phút | ~1,5 | như trên, kém hơn nét đơn |
 \* 0,25 s mỗi lần nhấc / hạ + 8000 mm/phút (cả đường di chuyển); ước, không phải đo bằng máy.
-Kết xuất trang A4 bằng PyMuPDF / pypdfium2: 0,02–0,05 s ở 300–600 dpi (RAM 9–35 MB cho ảnh xám). **Chưa đo trên MiniPC i5-6100T; chưa in giấy.**
+**Chưa đo trên MiniPC i5-6100T; chưa in giấy.**
 
 ### 7b. PDF thật: "Đáp án đo lường" (32 trang, Times New Roman, có sơ đồ, mạch điện, công thức; máy phát triển)
 | Việc | Kết quả |
@@ -173,7 +163,7 @@ Kết xuất trang A4 bằng PyMuPDF / pypdfium2: 0,02–0,05 s ở 300–600 dp
 | Ước thời gian vẽ mỗi trang | chữ viết tay nối nét: **1–7 phút, cả 32 trang ước ~2,4 giờ**; chữ rời gọn: 2–13 phút, ~4–5 giờ (0,25 s mỗi lần nhấc / hạ + 8000 mm/phút; chưa tính đổi bút) |
 | Ký tự font không có (rơi về skeleton) | 0–60 mỗi trang; nhiều nhất ở trang công thức (Hy Lạp, √, ∫, Σ…) |
 | Ảnh | sơ đồ khối, mạch điện, công thức dạng ảnh, ký hiệu Hy Lạp 6 mm đều vẽ được (hình nét); xem ảnh so sánh trang 2 và 11 |
-| Chưa tốt | ký hiệu toán đặc biệt (∫, √, Σ, chữ Hy Lạp nằm trong chữ) vẽ theo hình gốc bằng skeleton nên chất lượng như chữ skeleton; chữ nhỏ nằm trong hình bị đứt nét; công thức nhiều tầng (phân số, chỉ số) giữ đúng vị trí ký tự nhưng chưa có kiểm tra bằng mắt kỹ trên giấy |
+| Chưa tốt | ký hiệu toán (∫, √, Σ, Hy Lạp) vẽ bằng skeleton; chữ nhỏ trong hình đứt nét; công thức nhiều tầng chưa kiểm kỹ trên giấy |
 Nhận xét về độ đậm: chữ 12–13 pt bằng bút 0,5 ra khá **đặc** (x-height ~2,2 mm, nét 0,5 mm). Nên thử bút 0,38–0,40 cho chữ thân bài; con số chính xác phải xem trên giấy.
 
 ## 8. Hằng số (đặt đầu mỗi tệp, có chú thích tiếng Việt)
@@ -230,7 +220,7 @@ Mã lỗi mới: `pdf_engine_missing`, `bad_pdf`, `pdf_encrypted`, `too_many_pag
 - Khối tô nền, tô màu, bóng: không vẽ (cảnh báo `beta_filled_areas`).
 - Chữ trắng trên nền tối: màu gần trắng bị coi là không có mực ở đường kẻ; ở chữ nét đơn vẫn vẽ như chữ thường.
 - Ảnh chụp trong trang chạy trong tiến trình chính (không tách tiến trình con): ảnh lớn có thể làm giật máy.
-- Hình vẽ nét lấy đường giữa nét nên mũi tên đặc thành một nét. **Chữ nhỏ nằm trong hình** (nhãn sơ đồ như "Tín hiệu cần đo", "Mạch vào") là ảnh mờ cao chừng 10 điểm ảnh nên skeleton ra nét **nguệch ngoạc**, nhìn như run (phóng to 400 % thấy rõ); làm mịn 0,25 mm đỡ hơn nhưng không hết. Muốn đẹp phải nhận dạng chữ (OCR) rồi viết lại bằng font nét đơn: chưa làm (ý ở mục 1, giai đoạn 8).
+- Hình vẽ nét lấy đường giữa nét nên mũi tên đặc thành một nét. **Chữ nhỏ nằm trong hình** (nhãn sơ đồ) chỉ cao ~10 điểm ảnh nên skeleton ra nét nguệch ngoạc; muốn đẹp phải nhận dạng chữ (OCR) rồi viết lại: chưa làm (mục 1, giai đoạn 8).
 - Mỗi lần chỉ nạp **một trang**; chưa có "tạo tất cả trang".
 - Font Hershey chỉ có kiểu Times / sans / viết tay; font lạ vẫn được vẽ bằng kiểu gần nhất. Họ viết tay bỏ đậm, nghiêng; tiêu đề chỉ khác cỡ.
 - Chữ viết tay nhìn **đặc ở khung xem trước nhỏ** vì nét 0,5 mm chỉ còn 1–2 điểm ảnh (dùng zoom); chữ thường chỉ cao ~1,7 mm nên với bút 0,5 vòng của e, l có thể kín: thử bút 0,38–0,40.
@@ -314,4 +304,4 @@ Giới hạn bảo vệ: tối đa 12 nét mỗi chữ, 300 điểm mỗi chữ,
 - `test_layout_pieces.py`: tham số, nối nét, sắp nét, đường kẻ (gộp, góc vuông, lưới, hai đường), xếp chữ (căn ô, co ngang, cỡ, dòng, đoạn), skeleton và hỗn hợp bằng bộ kết xuất giả.
 - `test_service_and_api.py` (cần PyMuPDF, thiếu thì bỏ qua): PDF thật tạo trong test (chữ, bảng, ảnh, nhiều trang): đọc, dựng lớp, lưu bản vẽ, tạo G-code qua `/api/draw/gcode`, tải / xem / nạp qua API, các lỗi.
 - `frontend/tests/beta.test.mjs`: tùy chọn gửi backend, số trang, đường SVG, tổng hợp số liệu; `locales.test.mjs` kiểm khóa dịch.
-- Thử bằng trình duyệt thật: tải PDF mẫu, tạo nét, mở ở tab Tạo bản vẽ (~1150 nét, G-code ~9100 dòng, không lỗi trang). Thử trên PDF thật 32 trang (mục 7b).
+- Thử bằng trình duyệt thật: tải PDF mẫu, tạo nét, mở ở tab Tạo bản vẽ, tạo G-code; PDF thật 32 trang (mục 7b).

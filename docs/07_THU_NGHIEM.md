@@ -41,10 +41,10 @@ Tổng quát: bút **UM-100**, giấy Ivory 250 g/m² mặt bóng, A4; ghi ở g
 | A9 | **Tách mực 3 bút** (22/11) | ảnh có màu rõ (bông hoa đỏ, tóc tối): Palette = **Tách mực theo bộ bút**, bộ **Đen + đỏ + xanh navy**, kiểu **Đường dòng** hoặc **Sóng điều biên**, A5; bút: đỏ UB-155, xanh UM-100 (thay navy), đen Micron (hoặc bộ mới: UM-151 đen 0,28 + prussian blue 0,38; nhập nét đo vào ô "Nét bút 1–3"); vẽ đỏ → xanh → đen, đổi bút giữa các tệp G-code | màu có ra đúng không (hoa đỏ, tóc xanh đậm); ba lớp có khớp nhau không (chồng đúng chỗ); bút khác bề rộng nét có làm lớp nào đậm lệch |
 | A8 | **Vùng chủ thể** | ảnh có nền rối, khoanh elip, nền còn 50 % | nền thưa đủ để chủ thể nổi; mép vùng không lộ vòng |
 
-### B. Máy (còn 1 bài; B1 bản vẽ G2/G3, B2 servo, B4 tiếng "khực" (hết với gia tốc 2700 / junction 0,02, 22/11), tab Điều khiển mượt đã xong, dồn về [11](11_VIEC_CAN_LAM.md) mục 3 và [02](02_PHAN_CUNG_MAY.md) F16)
+### B. Máy (còn 1 bài; các bài khác đã xong, ghi ở [02](02_PHAN_CUNG_MAY.md) F16)
 | # | Bài | Làm | Nhìn và ghi |
 |---|---|---|---|
-| B3 | **Tạo nét chậm** (laptop yếu; tab Điều khiển đã mượt 18/11) | tạo nét một ảnh A5 nhiều nét; thuật toán **Tạo nét** còn chậm, nhiều khả năng do máy | **cách lấy thông số** (ghi 4 dòng): (1) tên CPU + RAM laptop (Cài đặt Windows → System → About); (2) số dòng G-code (dòng G-code ở tab Tạo bản vẽ); (3) thời gian từ lúc bấm **Tạo nét** tới lúc xong (đếm giây); (4) nếu còn khựng: F12 → Performance → Record 5 giây khi chạy, chụp màn hình |
+| B3 | **Tạo nét chậm** (laptop yếu, MiniPC) | chạy `tools/do_thoi_gian.py` (mục 9.2) trên máy đó | gửi 2 tệp kết quả; giao diện còn khựng thì F12 → Performance → Record 5 giây, chụp màn hình |
 
 ### C. Người dùng, mạng
 **Cách vào giao diện từ điện thoại khi laptop đã có Wi-Fi:** [08](08_TRIEN_KHAI.md) mục C, khối "Vào giao diện từ điện thoại" (5 bước: nối Wi-Fi **trước**, bấm icon, mở đúng địa chỉ, tường lửa Mạng riêng tư).
@@ -58,7 +58,7 @@ Tổng quát: bút **UM-100**, giấy Ivory 250 g/m² mặt bóng, A4; ghi ở g
 | C5 | **Âm báo xong / lỗi** | chạy một bản vẽ ngắn (hoặc máy giả), chuyển sang tab khác | nghe 3 nốt lên khi xong; tiêu đề tab nhấp nháy; tắt được ở Cài đặt → Hoạt động; lỗi thì 2 nốt trầm |
 
 ### D. Bản mang đi, MiniPC
-Máy sạch không cài gì (Visual C++ của OpenCV), điện thoại thật, thời gian xử lý ảnh / RAM trên MiniPC, Docker + USB, Cloudflare: [08](08_TRIEN_KHAI.md) mục G.
+Máy sạch không cài gì (Visual C++ của OpenCV), điện thoại thật, Docker + USB, Cloudflare: [08](08_TRIEN_KHAI.md) mục G. Thời gian xử lý ảnh / RAM trên MiniPC: mục 9.
 
 **Gửi lại (một lần cuối buổi):** ảnh từng tờ (thẳng góc, đủ sáng, không flash; tờ tông thấy đủ 3 ô mốc đen) + bảng: bài · kiểu / preset · khổ · thời gian thật / ước tính · nhận xét. Bài máy: ảnh chụp màn hình Biểu đồ + tải CSV từ Biểu đồ (hoặc nén `data\job_logs`). Có `error` ở Terminal thì chụp lại.
 
@@ -78,7 +78,7 @@ Làm **một lần cho mỗi bút + giấy + kiểu tô**. Kết quả dùng đ�
 
 1. Cài đặt → **Tờ thử / hiệu chỉnh** → khối **Thang tông** → chọn khổ (A6 gọn nhất) → **"Mở ảnh thang tông ở tab Tạo bản vẽ"** (tự chuyển tab, nạp ảnh 16 ô xám + 3 ô mốc đen + chữ F). Ô vẽ ra đã đi qua đường cong tông của kiểu tô, nên đo đúng cái mắt thấy khi vẽ thật.
 2. Chọn **bút + kiểu tô**; để đo: **tắt CLAHE / khử nhiễu, gamma 1, tương phản 1, mức đen 0 / trắng 255, Số mức 5**. Tạo nét → Lưu bản thảo → vẽ.
-3. Chụp bằng điện thoại: **thẳng góc**, ánh sáng đều (cửa sổ hoặc đèn trần, tránh chiếu một phía), **không flash**, giấy phẳng, thấy đủ 3 ô đen ở góc và chữ F; giấy bóng thì nghiêng nhẹ tránh phản chiếu. Không chỉnh sáng / lọc. Gửi ảnh gốc; chụp nhiều tờ một ảnh vẫn đo được nếu tờ nào cũng thấy đủ 3 ô mốc. Mốc **10 mm**, chữ F nét **6 mm** (19/11/2026; trước 4 mm / 1,5 mm — mốc nhỏ bị bộ lọc bớt râu xoá sạch nên tờ in 18/11 không đo được).
+3. Chụp bằng điện thoại: **thẳng góc**, ánh sáng đều (cửa sổ hoặc đèn trần, tránh chiếu một phía), **không flash**, giấy phẳng, thấy đủ 3 ô đen ở góc và chữ F; giấy bóng thì nghiêng nhẹ tránh phản chiếu. Không chỉnh sáng / lọc. Gửi ảnh gốc; chụp nhiều tờ một ảnh vẫn đo được nếu tờ nào cũng thấy đủ 3 ô mốc. Mốc **10 mm**, chữ F nét **6 mm** (mốc nhỏ hơn bị bộ lọc bớt râu xóa mất).
 4. 16 ô đọc từ trái sang phải, trên xuống dưới, độ phủ: 0 (giấy) · 5 · 10 · 15 · 20 · 25 · 30 · 35 · 40 · 45 · 50 · 55 · 60 · 70 · 80 · 90 %. Ô nào bết mực / ướt giấy thì ghi.
 
 AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đậm nhìn thấy*. Với 5 mức, 16 ô gộp thành **5 bậc trên giấy** (giấy trắng + 4 mật độ 22 / 45 / 68 / 90 %); hai ô kề ra cùng mật độ là đúng thiết kế.
@@ -91,9 +91,9 @@ AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đ�
 | Vùng nhạt lộ từng sợi | giảm `style-spacing` (trống = 2 × nét thật) |
 | Tông giữa lệch | gửi ảnh, AI cập nhật bảng ở `styles.TONE_CURVES` |
 
-✅ Đã đo 13/11/2026 (Sakura 0,5, mặt bóng; bảng ở 06 mục 8.12): vùng giữa trông nhạt hơn độ phủ → đường cong tông 75 % cho Gạch chéo và Xoắn ốc. Chưa đo cho Theo dáng ảnh và UB-155.
+✅ Đã đo 13/11/2026 (Sakura 0,5, mặt bóng; bảng ở 06 mục 8.12): vùng giữa trông nhạt hơn độ phủ → đường cong tông 75 % cho Gạch chéo. Chưa đo cho Theo dáng ảnh và UB-155.
 
-**Tờ tông in 19/11/2026 bằng UM-100** (bút xanh, chủ dự án coi là chuẩn; ảnh `D:\OneDrive\Live-Work\IMG20261119174516.jpg`). Tờ có 4 phần: trên-trái **đan chéo thường** · dưới-trái **đan chéo bỏ giới hạn** · trên-phải **theo dáng bỏ giới hạn** · dưới-phải **xoắn ốc**. Mốc ở phần gạch / xoắn ốc là ô gạch thưa, `tone_read.py` chỉ bắt được mốc ở phần theo dáng → đo bằng cách chỉ tay 3 mốc, **sai số ±0,05** (chụp nghiêng, vết mực).
+**Tờ tông in 19/11/2026 bằng UM-100** (4 phần; đo bằng chỉ tay 3 mốc, sai số ±0,05):
 
 | Phần | Kết luận |
 |---|---|
@@ -102,7 +102,7 @@ AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đ�
 | Theo dáng bỏ giới hạn | ô 0,05–0,35 cùng độ đậm (~0,3) → do đường thưa nhất 3 × nét, **đã sửa** (`FLOW_UNLIMITED`: 8 × nét); chưa in lại |
 | Xoắn ốc | ảnh xoay, đo lệch → **không dùng số**; xoắn ốc đã viết lại nên `TONE_CURVES["spiral"]` cũ hết ý nghĩa với bản mới; cần in lại |
 
-**Cần in lại (22/11/2026):** (1) tờ tông cho **3 bản mới**: gạch chéo bỏ giới hạn · theo dáng bỏ giới hạn · xoắn ốc viết lại; (2) **4 ảnh mẫu** bằng chế độ Bỏ giới hạn (xem A8).
+**Cần in lại:** tờ tông cho 3 bản mới (bài A7) và các ảnh mẫu (A1–A5).
 
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |
@@ -119,11 +119,11 @@ Thử 3 loại ảnh: (a) hình vẽ / sticker có viền đen, (b) mảng màu 
 | Hằng số | Ý nghĩa | Khi nào đổi |
 |---|---|---|
 | `INK_MAX_MM` 4,0 (`edges.py`) | nét mực dày tới chừng này → một đường giữa | viền hoạt hình rất dày vẫn ra hai đường → tăng |
-| `GAP_MM` 3,0 | khe hở được nối (19/11/2026: 1,5 → 3,0, chủ dự án muốn nét liền hơn) | còn đứt → tăng; nối nhầm hai nét → giảm |
+| `GAP_MM` 3,0 | khe hở được nối | còn đứt → tăng; nối nhầm hai nét → giảm |
 | `SPUR_MM` 2,4 / 1,6 / 1,0 | râu ngắn hơn chừng này bị cắt | còn râu ở góc chữ → tăng; mất chân linh kiện ngắn → giảm |
 | `FDOG_ALONG_MM` 4,0 | làm mượt **dọc** hướng nét (FDoG) | nét đứt → tăng; góc gắt bị tròn → giảm (0 = XDoG thường) |
 | `SMOOTH_MM` 0,8 (`trace.py`) | làm mượt đường theo chiều dài | còn run → tăng |
-| `OUTLINE_MIN_LEN_MM` 6,0 (`styles.py`) | bỏ nét viền ngắn hơn (19/11/2026: 8 → 6 mm, cùng GAP 1,5 → 3,0) | còn gạch vụn → tăng; mất chi tiết nhỏ → giảm |
+| `OUTLINE_MIN_LEN_MM` 6,0 · `OUTLINE_ONLY_MIN_LEN_MM` 2,5 (`styles.py`) | bỏ nét viền ngắn hơn (lớp viền phủ kiểu tô · kiểu Nét viền riêng) | còn gạch vụn → tăng; mất chi tiết nhỏ → giảm |
 
 ## 5. Preset với ảnh thật
 Vẽ mỗi preset bằng một ảnh đúng loại (A5), ghi thời gian thật / ước tính, số lần nhấc bút, nhận xét.
@@ -148,7 +148,7 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước. 
 |---|---|---|---|---|
 | 7.1 | Chi phí nhấc bút | 100 gạch 2 mm; thời gian thật ÷ 100 = một chu kỳ; đổi chờ, Z nhấc | kéo vệt, hụt đầu nét, bút nảy | ✅ chờ **0**, Z**3**, hạ **2000** |
 | 7.2 | Mất bước | vẽ dấu + ở góc → chạy nhanh nhiều lần → vẽ lại dấu +; **7.2b**: mỗi tốc độ một cặp dấu, 10 vòng G1 (~1,3 m) giữa hai lần vẽ | hai dấu trùng khít = không mất bước | ✅ 6000 (03/11); 7000–10000 đạt (17/11) |
-| 7.3 | Gia tốc + góc | răng cưa bước 2 mm, mỗi tốc độ một hàng; đổi gia tốc / junction rồi chạy lại | gợn sóng sau góc; giọt mực ở góc | ✅ gia tốc **3000** (không tăng thêm, để giữ ngòi bút và linh kiện); junction **0,03** (17/11, nhẹ máy; bút xịn, giấy mượt ít đọng mực) |
+| 7.3 | Gia tốc + góc | răng cưa bước 2 mm, mỗi tốc độ một hàng; đổi gia tốc / junction rồi chạy lại | gợn sóng sau góc; giọt mực ở góc | ✅ gia tốc **2700**, junction **0,02** (22/11/2026, đỡ rung lắc, giữ linh kiện) |
 | 7.4 | Tốc độ vẽ từng bút | dải đường thẳng 7000 / 8000 / 9000 / 10000, chụp cận đo bề rộng nét | tốc độ cao nhất mà nét chưa nhạt / đứt | ✅ **8000** (10000 được ở đoạn dài) |
 | 7.5 | Vệt kéo khi đi xa | hai chấm cách 240 mm, G0 qua lại 5 lần, mỗi lần một mức chờ; đổi Z 3 / 4 / 5; giấy phẳng | vệt mảnh nối hai chấm = bút chưa rời giấy | bỏ 17/11 (không cần) |
 | 7.6 | Đoạn ngắn và cung G2 | 5 vòng tròn R10 chồng 12 lần: G1 đoạn 1 / 0,5 / 0,25 / 0,1 mm rồi G2; mở Biểu đồ xem hàng đợi từng vòng | tốc độ thật tụt không; hàng đợi cạn (chấm đỏ) | ✅ 13/11: G1 6,0 / 11,6 / 23,3 / 60,7 s, **G2 5,7 s** → dùng G2/G3 (09 D12) |
@@ -177,19 +177,19 @@ Bài tông (A5): thêm *bút · giấy · tốc độ · kiểu gạch · ô nà
 > Dùng khi cần biết **máy tính nào chậm ở bước nào** — nhất là lúc quyết định có phải viết lại phần tô nét hay không.
 > Số đo ở đây **không nói gì về độ đẹp trên giấy**; muốn chốt tông thì vẫn phải in (mục A).
 
-### 9.1 Bộ công cụ đo có sẵn (7 cái + 1 công cụ dò thư viện)
-Chạy bằng Python của phần mềm: `cd backend` rồi `.\.venv\Scripts\python.exe ..\tools\<tên>.py` (máy chạy bằng `Python\` mang theo thì dùng Python đó).
+### 9.1 Bộ công cụ đo có sẵn
+Chạy bằng Python của phần mềm: `cd backend` rồi `.\.venv\Scripts\python.exe ..\tools\<tên>.py`. Kết quả ghi vào `export\` (không lên Git).
 
-| Công cụ | Đo gì | Cần gì để chạy | Ngày 22/11/2026 |
+| Công cụ | Đo gì | Cần gì | Trạng thái 22/11/2026 |
 |---|---|---|---|
-| `ink_sim.py` | Sai tông / chiều dài nét / thời gian của từng kiểu tô trên ảnh thử tổng hợp (80 × 50 mm) | không cần gì | ✅ chạy được, số ở 9.3 |
-| `ink_real.py` | Như trên nhưng trên **ảnh thật**, so 0 / 1 / 2 / 3 lượt sửa sai | một ảnh | ✅ chạy được (ảnh mẫu `skimage`), số ở 9.3 |
-| `tone_read.py` | Đọc ảnh chụp **tờ Thang tông** ra 16 ô độ đậm (mục 2) | ảnh chụp tờ tông | ⏳ chưa có ảnh tờ tông mới; mới kiểm chạy `--help` |
-| `log_read.py` | Đọc `data/job_logs/<id>.csv`: hàng đợi cạn lúc nào, tốc độ thật | tệp CSV (chỉ có sau khi vẽ thật) | ⏳ `data/job_logs` hiện chỉ có 4 tệp `.json`, **chưa có CSV** nên chưa chạy |
-| `style_preview.py` | Vẽ thử một ảnh với nhiều kiểu ra PNG + số nét, thời gian | một ảnh (hoặc `astronaut` / `cat`) | ✅ chạy được, ghi `export/preview/` |
-| `make_test_gcode.py` | Sinh 11 tệp G-code cho các bài thử máy (mục 6) | không cần gì | ✅ chạy được, ghi `export/test-gcode/` |
-| `export_context.py` | Xuất mã / tài liệu gọn cho AI, sinh lại `docs/AI_CODEMAP.md` | không cần gì | ✅ chạy được (`--list`, `--map`) |
-| `probe_vpype.py` | In phiên bản `vpype` + các gói hình học (dò lỗi cài đặt) | không cần gì | ✅ đã chuyển từ `backend/tools/` sang `tools/`, chạy được |
+| `ink_sim.py` | sai tông, chiều dài nét, thời gian từng kiểu tô trên ảnh thử tổng hợp | không | ✅ số ở 9.3 |
+| `ink_real.py` | như trên trên **ảnh thật** (Gạch chéo, Sóng: so 0–3 lượt sửa sai; Theo dáng, Xoắn ốc: lượt 0) | một ảnh | ✅ |
+| `do_thoi_gian.py` | giây từng bước, RAM đỉnh, thông tin máy (mục 9.2) | không (tùy chọn một ảnh) | ✅ |
+| `tone_read.py` | đọc ảnh chụp **tờ Thang tông** ra 16 ô độ đậm (mục 2) | ảnh chụp tờ tông | ⏳ chưa có ảnh tờ mới |
+| `log_read.py` | đọc `data/job_logs/<id>.csv`: hàng đợi cạn, tốc độ thật | CSV (có sau khi vẽ thật, cần `$10=3`) | ⏳ chưa có CSV |
+| `style_preview.py` | vẽ thử một ảnh nhiều kiểu ra PNG + số nét | một ảnh | ✅ |
+| `make_test_gcode.py` | sinh G-code các bài thử máy (mục 6) | không | ✅ |
+| `export_context.py`, `probe_vpype.py` | xuất mã cho AI / dò phiên bản gói khi lỗi cài đặt | không | ✅ |
 
 ### 9.2 Đo thời gian + RAM đỉnh: `tools/do_thoi_gian.py` (mới 22/11/2026)
 ```powershell
@@ -216,39 +216,19 @@ cd backend
 
 Đọc: **Theo dáng là kiểu tạo nét chậm nhất** (1,84 s ở bước tô). Ở **Sóng / Xoắn ốc**, *sinh G-code* tốn hơn cả *tạo nét* vì hai kiểu này ra rất nhiều dòng (16 000–25 000 dòng). RAM đỉnh cộng dồn qua các kiểu nên số ở dòng dưới là **cận trên** của kiểu đó; chạy lại cùng máy thì số dao động khoảng ±10 %.
 
-### 9.3 Số mô phỏng hôm 22/11 và chỗ lệch so với tài liệu
-`ink_sim.py` (ảnh thử tổng hợp; "sai số" = lệch độ phủ trung bình, nhỏ là đúng tông):
+### 9.3 Số mô phỏng 22/11/2026 (mốc để so lần sau)
+`ink_sim.py` ("sai số" = lệch độ phủ trung bình, nhỏ là đúng tông):
 
-| Kiểu (ink_sim) | Sai số | Sai mắt | Bậc | Dài (mm) | Số nét | Phút |
+| Kiểu | Sai số | Sai mắt | Bậc | Dài (mm) | Số nét | Phút |
 |---|---|---|---|---|---|---|
 | Gạch chéo mềm | 0,030 | 0,077 | 0,041 | 3 050 | 111 | 1,07 |
 | Theo dáng | 0,028 | 0,091 | 0,085 | 2 388 | 52 | 0,69 |
 | Sóng biến thiên | 0,049 | 0,120 | 0,019 | 2 482 | 34 | 0,64 |
-| Xoắn ốc (bản mới) | 0,060 | 0,060 | 0,052 | 2 341 | 10 | 0,51 |
-| Sóng mềm (kiểu ẩn) | 0,027 | 0,092 | 0,048 | 2 674 | 128 | 1,07 |
+| Xoắn ốc | 0,060 | 0,060 | 0,052 | 2 341 | 10 | 0,51 |
 
-`ink_real.py` trên ảnh thật (`skimage`: `retina` 1411 px, `astronaut` 512 px, `chelsea` 300 px; A4 trừ lề, bút 0,5):
+`ink_real.py` (ảnh mẫu `skimage` retina / chelsea, A4, bút 0,5), sai số trước → sau 1 lượt sửa sai: Gạch chéo 0,068 → 0,043 / 0,136 → 0,063; Sóng biến thiên 0,047 → 0,034 / 0,056 → 0,028. Theo dáng 0,057, Xoắn ốc 0,100 (không sửa sai).
 
-| Ảnh · kiểu | Sửa sai 0 | Sửa sai 1 | Dài nét | Nhận xét |
-|---|---|---|---|---|
-| retina · Gạch chéo | 0,068 | **0,043** | 47,2 → 50,3 m | 1 lượt bớt 37 % sai số |
-| chelsea · Gạch chéo | 0,136 | **0,063** | 21,1 → 27,1 m | ảnh nhỏ (300 px) nên nét thô, sai số cao |
-| retina · Sóng biến thiên | 0,047 | **0,034** | 42,4 → 44,4 m | |
-| chelsea · Sóng biến thiên | 0,056 | **0,028** | 21,0 → 23,4 m | |
-| retina · Theo dáng | 0,057 | (không áp) | 32,1 m | kiểu này không có vòng sửa sai |
-| retina · Xoắn ốc | 0,100 | (không áp) | 34,5 m | bản viết lại 22/11, **chưa có số chuẩn** |
-| retina · Nét viền | — | — | 1,1 m · 24 nét | kiểu Viền **không vẽ theo độ đậm** nên không đo tông |
-
-**Chỗ lệch hơn 10 % so với số trong [06](06_THUAT_TOAN_XU_LY_ANH.md)** (số tài liệu ghi 14–17/11, mã đã đổi 18–22/11 nên chưa rõ do đâu):
-
-| Số tài liệu | Nay | Lệch |
-|---|---|---|
-| Sóng biến thiên sai tông **0,027**, bậc **0,012** (06 mục 8.9) | 0,049 / 0,019 | **+81 % / +58 %** (tệ hơn) |
-| Theo dáng "sai mắt" **0,043** (06 mục 8.10) | 0,091 | **+112 %** (tệ hơn) |
-| Gạch chéo sai tông **0,071** (06 mục 6.3, trước khi có chuyển mức mềm) | 0,030 | −58 % (tốt hơn) |
-| Sóng mềm / zigzag mềm **0,051** (06 mục 8.7) | 0,027 / 0,066 | −47 % / **+30 %** |
-
-Ghi chú: **kiểu Viền và Xoắn ốc bản mới chưa có số chuẩn** để so. Trong `ink_sim`, dòng "+ sửa sai" nhắm độ phủ **đã qua đường cong tông** nên sai số so với độ đậm ảnh gốc có thể **tăng** dù nét đúng hơn — muốn thấy vòng sửa sai có ích thì đọc `ink_real`.
+Số trong [06](06_THUAT_TOAN_XU_LY_ANH.md) ghi 14–17/11 lệch nhiều so với bảng này (vd Sóng biến thiên 0,027 → 0,049) vì bộ dựng mực và mã đã đổi 17–22/11. Đã kiểm: mã commit và mã đang sửa ra **cùng số**, nên không phải lỗi mới; 06 đã ghi số mới. Trong `ink_sim`, dòng "+ sửa sai" nhắm độ phủ đã qua đường cong tông nên có thể **tăng** sai số so với ảnh gốc; muốn thấy vòng sửa sai có ích thì đọc `ink_real`.
 
 ### 9.4 Gửi lại số sau khi đo
 1. Chạy đúng một lệnh ở 9.2 trên **laptop** và trên **MiniPC** (cùng ảnh, cùng `--paper`).

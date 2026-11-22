@@ -34,12 +34,13 @@ Mục tiêu: một **sản phẩm thật chạy được**, tích hợp IoT (đi
 
 Quy tắc quan trọng nhất: **giao diện không bao giờ tự nói chuyện với máy vẽ.** Mọi lệnh đi qua máy chủ, máy chủ kiểm lại cho an toàn.
 
-## 3. Ba tab của giao diện
+## 3. Các tab của giao diện
 
 | Tab | Việc | Tài liệu |
 |---|---|---|
 | **Điều khiển** | kết nối, xem trạng thái, jog, Home, đặt gốc, nâng hạ bút, nạp G-code + xem khung vẽ + chạy, hủy an toàn, tiếp tục từ điểm dừng, terminal, macro, hàng đợi | [04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) |
-| **Tạo bản vẽ** | ảnh / SVG → nét (**5 kiểu nét**: gạch chéo, theo dáng ảnh, sóng biến thiên, xoắn ốc, viền + **ô "Bỏ giới hạn"** cho gạch chéo / theo dáng / sóng: 8 mức, chi tiết cao; 2–4 màu; 5 preset: Chân dung, Phong cảnh, Ảnh 2D, Schematic, Siêu chi tiết) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
+| **Tạo bản vẽ** | ảnh / SVG → nét (**5 kiểu nét**: Đan chéo, Đường dòng, Sóng điều biên, Xoắn ốc, Đường bao + ô **Chất lượng tối đa**; vùng chủ thể tự động / vẽ tay; nhiều màu hoặc **tách mực** đen–đỏ–navy / CMYK; 5 preset) → đặt lên giấy → G-code → lưu bản thảo. **Không bao giờ gọi máy** | [05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md), [06_THUAT_TOAN_XU_LY_ANH.md](06_THUAT_TOAN_XU_LY_ANH.md) |
+| **Beta PDF** (chỉ quản lý) | trang PDF từ Word → chữ viết tay nối nét có dấu tiếng Việt + khung bảng + hình → mở ở tab Tạo bản vẽ | [12_TAB_BETA_PDF.md](12_TAB_BETA_PDF.md) |
 | **Cài đặt** | cổng kết nối, ngôn ngữ, giao diện sáng / tối, cấu hình máy (đọc / ghi cấu hình trên mạch qua USB), hồ sơ bút, hạn mức bản thảo, xem dữ liệu | [03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 7 |
 
 Hai tab chính nối nhau qua **bản thảo trên đĩa**:
@@ -54,7 +55,7 @@ Tạo bản vẽ  ──lưu──►  bản thảo (G-code + ảnh minh họa) 
 ảnh / SVG
    │  cắt, thu nhỏ theo khung ÷ bút × 1,3              raster_in
    ▼
-tiền xử lý: tự cân sáng · mức đen / trắng · gamma · tương phản · (CLAHE) · (khử nhiễu)      tone
+tiền xử lý: tự cân sáng · mức đen / trắng · gamma · tương phản · (CLAHE) · (làm nét) · vùng chủ thể      tone
    ▼
 bản đồ độ đậm 0..1 ──► đường cong tông (gạch chéo)
    ▼
@@ -63,8 +64,9 @@ kiểu nét ──┬─ gạch chéo        chia mức, mỗi mức một lư�
            ├─ theo dáng ảnh    nét uốn theo dáng, khoảng cách theo độ đậm
            ├─ xoắn ốc          một xoắn, biên độ theo độ đậm (sóng dọc đường)
            └─ nét viền         top-hat + FDoG (XDoG có làm mượt dọc nét) → đường giữa 1 điểm ảnh
-   ▼  (+ ô "Bỏ giới hạn" cho gạch chéo / theo dáng / sóng: 8 mức, chi tiết cao)
+   ▼  (+ ô "Chất lượng tối đa" cho gạch chéo / theo dáng / sóng: 8 mức, chi tiết cao)
    ▼  (+ lớp viền tùy chọn, vẽ sau cùng)
+   ▼  (+ tách mực: mỗi bút một lớp, nhạt trước, đen sau)                          palette
 tối ưu: nối nét gần · bớt điểm · sắp thứ tự (2-opt)                              optimize
    ▼
 đặt lên giấy (khổ, lề, xoay) ──► G-code: G1 + cung G2/G3, Z nhấc 3, hạ 2000       layout, gcode
@@ -84,7 +86,7 @@ Khách (điện thoại)           Quản lý (laptop, có PIN)                 
  chọn ảnh + preset ──► bản thảo trên màn hình ──► in thử ra giấy ──► chụp ảnh + ghi số (07)
         ▲                                                                   │
         │                                                                   ▼
- ghi: việc xong / cần làm (11)  ◄── sửa hằng số 1 dòng + test ◄── AI đọc ảnh bằng tools/ (tone_read, ink_sim, style_preview)
+ ghi: việc xong / cần làm (11)  ◄── sửa hằng số 1 dòng + test ◄── AI đọc ảnh và số bằng tools/ (tone_read, ink_sim, ink_real, do_thoi_gian)
  ghi: quyết định + lý do (09)
 ```
 
@@ -130,7 +132,7 @@ Tài liệu đánh số từ nhỏ đến lớn. Người đọc lần đầu đ
  sửa nút, API, tham số tab vẽ ─────────────────► 05      sửa điều khiển, dừng an toàn ──► 04
  tìm tệp mã, cách sửa / thêm chức năng ────────► 03 + AI_CODEMAP
  phần cứng, firmware, kết quả thử máy ─────────► 02      đóng gói, mạng, MiniPC ────────► 08
- ý tưởng để dành (chữ PDF, IoT, ESP32) ────────► 10
+ in trang PDF, Soạn font ──────────────────────► 12      ý tưởng để dành (IoT, ESP32) ► 10
 ```
 
 | # | Tệp | Nội dung | Dùng cho báo cáo |
@@ -144,9 +146,9 @@ Tài liệu đánh số từ nhỏ đến lớn. Người đọc lần đầu đ
 | 07 | [07_THU_NGHIEM.md](07_THU_NGHIEM.md) | **danh sách việc cần thử**, cách đo bề rộng nét / tông, bài thử máy, mẫu gửi kết quả | Thực nghiệm |
 | 08 | [08_TRIEN_KHAI.md](08_TRIEN_KHAI.md) | bản mang đi Windows, phân quyền, mạng / demo, MiniPC, Cloudflare | Triển khai, IoT |
 | 09 | [09_QUYET_DINH_THIET_KE.md](09_QUYET_DINH_THIET_KE.md) | chọn gì, vì sao | Lý do lựa chọn |
-| 10 | [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) | ý tưởng để dành: tab Beta PDF, chữ tay, IoT, ESP32 | Hướng phát triển |
+| 10 | [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) | ý tưởng để dành: nguồn nét mới, nhiều người dùng, IoT, ESP32 | Hướng phát triển |
 | 11 | [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) | đã xong (từ khóa + hằng chốt), cần bạn chọn, cần thử, làm tiếp | (sổ làm việc) |
-| 12 | [12_TAB_BETA_PDF.md](12_TAB_BETA_PDF.md) | tab Beta in trang PDF: hướng phát triển, thuật toán, thư viện, hằng số, cách gỡ | Văn bản Word → bản vẽ |
+| 12 | [12_TAB_BETA_PDF.md](12_TAB_BETA_PDF.md) | tab Beta in trang PDF: thuật toán chữ, thư viện, hằng số, cách gỡ, kế hoạch Soạn font | Văn bản Word → bản vẽ |
 | AI | [AI_START.md](AI_START.md), [AI_CODEMAP.md](AI_CODEMAP.md) | **chỉ cho AI**: quy tắc, bẫy, bản đồ mã sinh tự động | không |
 
 Cài đặt và chạy phần mềm: [README.md](../README.md) ở thư mục gốc.

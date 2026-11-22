@@ -45,7 +45,7 @@ Chữ hiển thị (tiếng Việt / tiếng Anh) **không** viết thẳng tron
 ```
 ExtruXY/
 ├─ README.md                 cài đặt, chạy, kiểm tra
-├─ docs/                     tài liệu (01 … 11 cho người đọc; AI_* cho AI)
+├─ docs/                     tài liệu (01 … 12 cho người đọc; AI_* cho AI)
 ├─ frontend/                 GIAO DIỆN (không cần bước build, mở là chạy)
 │  ├─ index.html             toàn bộ nút, ô, khối của 3 tab
 │  ├─ css/                   style.css (nền) → drawing.css (tab vẽ) → polish.css (lớp chỉnh sau cùng, thắng các lớp trước)
@@ -57,7 +57,7 @@ ExtruXY/
 │  ├─ app/                   xem mục 4
 │  ├─ tests/                 test tự động (pytest); draw_test/ cho tab vẽ
 │  └─ requirements.txt       danh sách thư viện
-├─ tools/                    export_context.py (xuất mã cho AI + bản đồ mã) · dong_goi.ps1 (đóng gói zip)
+├─ tools/                    công cụ đo (ink_sim, ink_real, do_thoi_gian, tone_read, log_read, style_preview, make_test_gcode; 07 mục 9) · export_context.py (bản đồ mã cho AI) · dong_goi.ps1 (đóng gói zip)
 │                            make_test_gcode.py (G-code bài thử tốc độ) · ink_sim.py (mô phỏng mực) · ink_real.py (đo tông trên ảnh thật)
 │                            tone_read.py (đọc ảnh tờ tông) · log_read.py (đọc nhật ký chạy) · style_preview.py (xem nhanh kiểu nét)
 │                            ink_real.py (đo sai tông của kiểu tô trên ảnh thật, trước / sau sửa sai)
@@ -136,6 +136,7 @@ links/     nói chuyện với máy: serial thật (pyserial) hoặc máy giả
 | `services/profile.py` | hồ sơ phần mềm (`data/profile.json`): Z bút (điều khiển) và Z nhấc khi sinh G-code, tốc độ bút, bước jog tối đa |
 | `services/macros.py` · `services/storage.py` | macro trên đĩa · xem thư mục dữ liệu (chỉ đọc) |
 | `services/drawing/` | dây chuyền tab vẽ ([05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md) mục 9) |
+| `services/beta_pdf/` | tab Beta in trang PDF, tách riêng để gỡ ([12_TAB_BETA_PDF.md](12_TAB_BETA_PDF.md)) |
 | `links/protocol.py` | đọc từng dòng máy gửi (trạng thái, `ok`, `error`, `ALARM`, `MSG`); lệnh nào là chỉ đọc; tên mã lỗi |
 | `links/serial_link.py` · `sim_link.py` · `base.py` | cổng COM thật · máy giả · khuôn chung |
 

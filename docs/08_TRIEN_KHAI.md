@@ -269,7 +269,7 @@ Khớp với máy chủ:
 |---|---|
 | Máy sạch không cài gì (Visual C++ của OpenCV); nhánh `pip install` của `Cap nhat.bat` | thử trên máy bạn bè |
 | Điện thoại thật vào giao diện khách | đặt PIN, vào bằng điện thoại |
-| Thời gian xử lý ảnh, RAM, máy có giật trên MiniPC | `info.timings` (rê chuột dòng trạng thái tab vẽ), `htop` |
+| Thời gian xử lý ảnh, RAM, máy có giật trên MiniPC | `tools/do_thoi_gian.py` ([07](07_THU_NGHIEM.md) mục 9), `htop` |
 | Giới hạn RAM của tiến trình xử lý ảnh, cài OpenCV / scikit-image trên Ubuntu | trên MiniPC |
 | Origin / Host / cookie qua Cloudflare, Codespaces | cấu hình thật |
-| Chưa đặt PIN thì mở ra ngoài sao | chờ bạn chọn: [11](11_VIEC_CAN_LAM.md) Q2 |
+| Chưa đặt PIN thì mở ra ngoài sao | đã chốt: **phải đặt PIN trước khi mở ra ngoài** ([11](11_VIEC_CAN_LAM.md) mục 4.1) |

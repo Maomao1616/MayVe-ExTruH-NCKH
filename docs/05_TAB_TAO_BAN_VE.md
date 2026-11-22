@@ -34,21 +34,21 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Gửi ảnh** (khách) | thay cho Tạo nét khi chưa đăng nhập: gửi ảnh + thông số cho chủ máy (xem 08 B4). Quản lý mở ảnh khách ở hộp thư "Ảnh khách gửi" |
 | **Tạo nét** | (chỉ ảnh) chạy xử lý ở máy chủ, nền, có thanh tiến trình. Sau lần đầu nút đổi tên thành **Tạo lại nét**. Khách (không đăng nhập) không bấm được |
 | **Hủy** (cạnh thanh tiến trình) | dừng việc tạo nét đang chạy |
-| **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Ảnh 2D – Hình vẽ / Schematic: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
+| **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Hình vẽ 2D / Bản vẽ kỹ thuật / Chất lượng tối đa: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
 | Ô **Sửa sai tông (lượt)** | 0 = tắt, **1 mặc định**, tối đa 3 (tham số `style.refine_passes`): tô xong dựng lại ảnh mực, thiếu thì thêm nét, thừa thì bớt, tô lại; đúng tông hơn, nhiều mực và thời gian hơn 4–8 %. Không áp cho Theo dáng ảnh và Nét viền ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
 | **Chủ thể** (cạnh Cắt ảnh) | chọn người / vật bằng 4 cách: **elip**, **chữ nhật** (kéo thả như khung cắt), **Tự động** (máy tự tách, ~1 s) hoặc **Vẽ tay** (giữ chuột kéo quanh chủ thể, nhiều nét; "Tô bớt" để loại chỗ thừa; "Hoàn tác nét"). Thanh "Nền ngoài vùng còn" 0–100 % (mặc định 50, kéo về 0 là bỏ hẳn nền): ngoài vùng bản vẽ nhạt đi. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu / làm nét) |
-| Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
+| Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); nút − / + hoặc Ctrl / Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
-| **So sánh** (18/11/2026) | ô chọn **Tắt / Bản đã giữ \| hiện tại / Ảnh \| nét hiện tại**; chia khung làm hai bằng thanh kéo được (nút tròn giữa thanh). *Bản đã giữ*: bấm **Giữ bản này**, đổi thông số, **Tạo lại nét**, rồi so hai lần tạo nét khác nhau (kèm số nét và độ dài nét m của hai bên); chỉ nhớ khi trang còn mở, đổi ảnh thì bỏ. *Ảnh*: bên trái là ảnh đã cắt (và đã chỉnh sáng nếu ô "Xem ảnh sau chỉnh sáng" bật). Chỉ xem, không đổi bản vẽ (`canvas.js`, `drawing.js` mục "So sánh hai bản nét") |
+| **So sánh** | ô chọn **Tắt / Bản đã giữ \| hiện tại / Ảnh \| nét hiện tại**; chia khung làm hai bằng thanh kéo được (nút tròn giữa thanh). *Bản đã giữ*: bấm **Giữ bản này**, đổi thông số, **Tạo lại nét**, rồi so hai lần tạo nét khác nhau (kèm số nét và độ dài nét m của hai bên); chỉ nhớ khi trang còn mở, đổi ảnh thì bỏ. *Ảnh*: bên trái là ảnh đã cắt (và đã chỉnh sáng nếu ô "Xem ảnh sau chỉnh sáng" bật). Chỉ xem, không đổi bản vẽ (`canvas.js`, `drawing.js` mục "So sánh hai bản nét") |
 | Khổ giấy, lề, rộng / cao, căn giữa, lật, đảo thứ tự | bố trí; đổi là G-code tự tính lại sau 0,4 s. Khổ "Cả vùng máy" = hành trình máy, mặc định 285 × 318 mm (lề chỉnh ở ô Lề an toàn, mặc định 5) |
-| Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 8000 / 8000 / 3000 / 2000 mm/min, Z3 / Z0 (ô Z nhấc lấy mặc định từ Cài đặt → "Z nhấc khi sinh G-code", không phải Z bút lên của điều khiển), chờ 0 s (từ 13/11/2026); nét cong ghi bằng G2/G3) |
+| Tốc độ vẽ / di chuyển / nâng bút / **hạ bút**, Z bút, thời gian chờ | tham số G-code (mặc định 8000 / 8000 / 3000 / 2000 mm/min, Z3 / Z0 (ô Z nhấc lấy mặc định từ Cài đặt → "Z nhấc khi sinh G-code", không phải Z bút lên của điều khiển), chờ 0 s; nét cong ghi bằng G2/G3) |
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |
 | **Chuyển sang Điều khiển** | cần tích "Tôi đã kiểm tra…". Tự lưu bản thảo (không tạo trùng) rồi nạp vào tab Điều khiển. **Không tự chạy** |
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
-| **Thang tông** (ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang tông ở tab Tạo bản vẽ"; từ 13/11/2026 thay "Thang xám" + "Tờ hiệu chỉnh tông") | nạp ảnh 16 ô xám 0 → 90 % + 3 ô mốc đen + chữ F; chọn bút / kiểu tô / preset ở tab này rồi vẽ, để thử preset và đo tông ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2, 2b) |
+| **Thang tông** (ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang tông ở tab Tạo bản vẽ") | nạp ảnh 16 ô xám 0 → 90 % + 3 ô mốc đen + chữ F; chọn bút / kiểu tô / preset ở tab này rồi vẽ, để thử preset và đo tông ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2, 2b) |
 
 Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (có gia tốc, thời gian nhấc bút và giới hạn ~125 dòng/giây; [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 12), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
 
@@ -56,44 +56,40 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 
 ## 3. Bộ thông số dựng sẵn (preset) và chọn kiểu nét
 
-| Preset | Kiểu | Thông số đặc biệt | Hợp với |
-|---|---|---|---|
-| Chân dung (14/11/2026) | **sóng biến thiên**, góc 135°, không viền | mức đen 20, **tương phản 1,3** | ảnh người chụp thật |
-| Phong cảnh (từ 18/11/2026) | sóng biến thiên, góc 30°, không viền | mức đen 15, **tương phản 1,4**, **làm nét 1,5**, không CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
-| Hình vẽ 2D (14/11/2026; tương phản đổi 22/11) | **đan chéo 5 mức + lớp đường bao** | khử nhiễu, mức đen 40 / trắng 250, tương phản 1,5, cân bằng sáng cục bộ, làm nét 1,5 (để mắt nhỏ hiện rõ) | hoạt hình, truyện tranh, hình vẽ, sticker |
-| Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
-| **Siêu chi tiết** (22/11/2026) | **Gạch chéo** + ô **Bỏ giới hạn** + sửa sai **2 lượt** | không đơn giản hóa, không bỏ nét ngắn; 8 mức; tạo nét tới 30 phút | ảnh cần chi tiết nhất; xem trước A4 bút 0,4: 2D 977 nét / 20,2 phút / 74,1 m (kiểu thường 497 nét / 11,5 phút / 57,9 m) |
+**Tên hiển thị** (đổi 22/11/2026; mã và khóa API giữ nguyên; các tài liệu khác còn dùng tên cũ):
 
-Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của một bộ chung `BASE`. Cận cảnh (xoắn ốc) và Phác họa ảnh (Nét viền + XDoG) bỏ 14/11/2026: chọn tay kiểu nét khi cần ([09](09_QUYET_DINH_THIET_KE.md) P29).
-
-**Tên hiển thị (đổi 22/11/2026, mã và khóa API giữ nguyên):**
-
-| Khóa (`style.kind` / preset) | Tên trên giao diện | Tên cũ |
+| Khóa (`style.kind` / preset) | Tên trên giao diện | Tên cũ trong tài liệu |
 |---|---|---|
-| `crosshatch` | Đan chéo (cross-hatching) | Gạch chéo chồng lớp |
+| `crosshatch` | Đan chéo (cross-hatching) | Gạch chéo |
 | `flow` | Đường dòng theo trường hướng (flow field) | Theo dáng ảnh |
 | `wave_am` | Sóng điều biên (tông liên tục) | Sóng biến thiên |
 | `spiral` | Xoắn ốc Archimedes điều biên (một nét) | Xoắn ốc |
 | `outline` | Đường bao (dò biên + trích nét) | Nét viền |
 | `style.unlimited` | Chất lượng tối đa (không giới hạn thời gian) | Bỏ giới hạn |
-| `portrait` · `landscape` · `flat2d` · `schematic` · `detail` | Chân dung · Phong cảnh · Hình vẽ 2D (line art / cel) · Bản vẽ kỹ thuật · Chất lượng tối đa (rất chậm) | …· Ảnh 2D · Schematic · Siêu chi tiết |
+| `portrait` · `landscape` · `flat2d` · `schematic` · `detail` | Chân dung · Phong cảnh · Hình vẽ 2D · Bản vẽ kỹ thuật · Chất lượng tối đa (rất chậm) | … · Ảnh 2D · Schematic · Siêu chi tiết |
 
-Phần còn lại của tài liệu vẫn dùng tên cũ ở nhiều chỗ; khi đọc thì đối chiếu bảng này.
+| Preset | Kiểu | Thông số đặc biệt | Hợp với |
+|---|---|---|---|
+| Chân dung | Sóng điều biên, góc 135°, không viền | mức đen 20, tương phản 1,5, CLAHE, làm nét 1,5, phủ đều vùng sáng | ảnh người chụp thật |
+| Phong cảnh | Sóng điều biên, góc 30°, không viền | mức đen 15, tương phản 1,4, làm nét 1,5, không CLAHE | trời mây, nhà, cảnh đêm |
+| Hình vẽ 2D | Đan chéo 5 mức + lớp đường bao | khử nhiễu, đen 40 / trắng 250, tương phản 1,5, CLAHE, làm nét 1,5 | hoạt hình, truyện tranh, sticker |
+| Bản vẽ kỹ thuật | Đường bao, FDoG, chi tiết Nhiều | đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan |
+| Chất lượng tối đa | Đan chéo + ô Chất lượng tối đa + sửa sai 2 lượt | 8 mức, giữ nét nhỏ, tạo nét tới 30 phút | ảnh cần chi tiết nhất (A4 2D: 11,5 → 20,2 phút) |
 
-Danh sách **5 kiểu nét** trên giao diện (`spec.UI_STYLES`, cập nhật 22/11/2026; zigzag, sóng thường, đan 3 hướng và hai kiểu "siêu chi tiết" đã ẩn trong mã, xem [09](09_QUYET_DINH_THIET_KE.md) P23, P25, P28, P40):
+Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi preset ghi đè vài ô của bộ chung `BASE`.
 
-| Kiểu nét | Mật độ nét / Nhấc bút | Đặc điểm & Ứng dụng |
+**5 kiểu nét** (`spec.UI_STYLES`; kiểu ẩn trong mã: zigzag, sóng thường, đan 3 hướng). Thuật toán và hằng số: [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8–9.
+
+| Kiểu nét | Mật độ nét / nhấc bút | Đặc điểm |
 |---|---|---|
-| **Gạch chéo chồng lớp** | Vừa | **Mặc định**; vùng nhạt 1 hướng 45°, vùng đậm thêm hướng 135°; lọc bỏ mẩu ngắn < 5 mm, vùng độ phủ < 0,2 để trắng. Tùy chọn "Thêm lớp viền" (FDoG) giúp viền mắt, tóc, mép mặt cong mịn |
-| **Bỏ giới hạn** (ô riêng, 22/11/2026) | Nhiều hơn ~2 lần | Áp cho **Gạch chéo · Theo dáng · Sóng biến thiên** (Xoắn ốc và Nét viền không có ô này). Bật thì: **8 mức**, sửa sai ≥ 2 lượt, đơn giản hóa ≤ 0,02 mm, bỏ nét < 0,2 mm, tạo nét tới **30 phút**. Gạch chéo bỏ lọc râu (giữ mẩu 0,5 mm · không mở mặt nạ · trắng 0,02) và gạch dày hơn (**1,4 × bút**). Sóng: đường 3,4 × nét · biên độ 0,50 · bước 2,5 × · bỏ mẩu 1,0 ×. Preset **Siêu chi tiết** = Gạch chéo + ô này + sửa sai 2. Đo (xem trước A4, bút 0,4): 2D 497 → 977 nét (11,5 → 20,2 phút); mèo 709 → 849; phong cảnh 418 → 1 041 nét |
-| **Theo dáng ảnh (flow field)** | Nhiều | Nét uốn lượn theo cấu trúc khối của ảnh; mật độ tự động dãn cách theo độ đậm; chưa áp đường cong tông |
-| **Sóng biến thiên** | Ít nhất | Tông chuyển liền mượt; vùng rất đậm bổ sung lớp gạch thẳng; tùy chọn "Phủ đều đường ở vùng sáng" giúp da mặt không bị khe trắng (bật ở preset Chân dung) |
-| **Xoắn ốc** (viết lại 22/11/2026) | Ít nét, mực vừa | **Một** xoắn duy nhất, bước cố định **5,5 × bút** (bút 0,4: 2,2 mm), **biên độ đổi theo độ đậm** dọc đường nên chỗ đậm đường uốn cao (phủ nhiều mực), chỗ nhạt gần thẳng; dưới 0,9 × độ phủ đường thẳng thì nhấc bút, khe ngắn < 4 bước thì nối, mẩu < 3 bước thì bỏ. Bản cũ (mỗi mức một xoắn đồng tâm) ra vòng tròn, không nhận ra hình. Đo mèo A4 bút 0,4: **83 nét / 14,8 phút / 26,6 m** (bản cũ 701 nét / 8,7 phút / 32,3 m) |
-| **Viền** | Ít | Nét mực ≤ 4 mm → lấy 1 đường giữa; mảng khối → lấy viền ngoài. Tích "Dùng FDoG" cho ảnh chụp rõ viền. Ô "Thêm lớp viền" ở kiểu tô khác luôn dùng FDoG. **19/11/2026:** nối khe tới **3 mm** (trước 1,5) và giữ nét ≥ **6 mm**. **22/11/2026:** kiểu **Nét viền** riêng giữ nét ≥ **2,5 mm** (bản vẽ kỹ thuật, vạch chia, nét chữ; lớp viền phủ lên kiểu tô vẫn 6 mm); preset **Schematic** bật FDoG + chi tiết **Nhiều** |
+| **Đan chéo** (mặc định) | vừa | vùng nhạt 1 hướng 45°, vùng đậm thêm hướng 135°; có đường cong tông đo trên giấy; tùy chọn "Thêm lớp viền" (FDoG) |
+| **Đường dòng** | nhiều | nét uốn theo khối của ảnh; không có vòng sửa sai |
+| **Sóng điều biên** | ít nhất | tông chuyển liền; vùng rất đậm thêm lớp gạch thẳng; "Phủ đều đường ở vùng sáng" cho da mặt |
+| **Xoắn ốc** | ít nét | **một** xoắn, bước 5,5 × bút, biên độ theo độ đậm (mèo A4: 83 nét / 14,8 phút) |
+| **Đường bao** | ít | nét mực ≤ 4 mm → một đường giữa; nối khe 3 mm; giữ nét ≥ 2,5 mm (lớp viền phủ kiểu tô: 6 mm) |
+| ô **Chất lượng tối đa** | ~2 × | cho Đan chéo · Đường dòng · Sóng: 8 mức, sửa sai ≥ 2, giữ nét nhỏ, tạo nét tới 30 phút |
 
-**Gạch chéo** có **đường cong tông** đo trên giấy thật (Sakura 0,5, mặt bóng Ivory; [06](06_THUAT_TOAN_XU_LY_ANH.md) 8.12): không cần chỉnh gamma để bù vùng trung bình. **Xoắn ốc** (bản 22/11/2026) không dùng bảng này; bảng vẫn giữ cho tờ tông.
-
-**Nhiều màu (2–4):** mỗi màu một tệp G-code riêng, tên có mã màu (vd `draw-2-3231a7.gcode`). Vẽ xong tệp nào thì đổi bút rồi nạp tệp kế. Kiểu Viền luôn đơn sắc.
+**Nhiều màu:** *2–4 màu* (k-means chia vùng màu) hoặc **Tách mực theo bộ bút** (đen + đỏ + xanh navy, hoặc CMYK; mỗi bút một lớp với độ đậm riêng như in offset; ô **Độ nổi màu** 0–1 bớt đen lấn ở chỗ tối; ô **Nét bút 1–4** khi các bút khác bề rộng; [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 10.1). Mỗi lớp một tệp G-code, tên có mã màu (vd `draw-2-3231a7.gcode`); vẽ nhạt trước, đen sau cùng, đổi bút giữa các tệp. Kiểu Đường bao luôn đơn sắc.
 
 ---
 

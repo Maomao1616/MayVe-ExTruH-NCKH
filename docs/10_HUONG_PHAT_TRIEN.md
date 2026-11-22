@@ -8,82 +8,26 @@ Nguyên tắc chung: **không sửa firmware FluidNC.** Đóng góp của đề 
 
 ---
 
-## 0. Thuật toán ảnh: đã làm xong (12–14/11/2026)
-Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F) đối chiếu với mã và số đo in thật. **Triết lý giữ nguyên: ít lần nhấc bút, không râu / nét vụn, chạy được trên CPU MiniPC, không cần mạng.** Mọi việc thêm vào dây chuyền **có sẵn**, không viết lại.
+## 0. Thuật toán ảnh: đã xong và đóng băng
+Các ý tưởng tư vấn (nối nét gần, ước tính có gia tốc, đường cong tông, FDoG, flow field, G2/G3, tách mực) **đã làm**; lý do và số đo ở [09](09_QUYET_DINH_THIET_KE.md) (P18–P47) và [06](06_THUAT_TOAN_XU_LY_ANH.md). Triết lý giữ nguyên: **ít nhấc bút, không nét vụn, chạy được trên CPU MiniPC, không cần mạng.**
 
-| Ý tưởng | Kết quả | Chi tiết |
-|---|---|---|
-| Nối nét gần thay vì nhấc bút | ✅ ảnh A5: −55–82 % lần nhấc, −30–50 % thời gian | 09 P18 |
-| Ước tính thời gian có gia tốc | ✅ khớp tờ 7.6 (110,9 / 111 s) | 09 P19 |
-| Đường cong tông (từ tờ in) | ✅ gạch chéo + xoắn ốc, 75 % | 09 P21 · 06 mục 8.12 |
-| XDoG → FDoG cho viền | ✅ viền mắt / mũi rõ, nét liền | 09 P26 |
-| Flow field (nét theo dáng) | ✅ kiểu **Theo dáng ảnh**; sửa cửa sổ tròn 14/11 | 09 P28, P30 · 06 mục 8.10 |
-| Buffer + cung G2/G3 | ✅ chờ 0, G2/G3 (sai lệch ≤ 0,02 mm); **không** gửi dồn / tăng baud | 09 C10, D10–D12 |
-| Đan 3 hướng, lai đan chéo + theo dáng | ✖ thử rồi ẩn | 09 P22, P23, P28 |
+**Không làm:** dithering 2D từng điểm ảnh (đốm, nhiều nhấc bút; "chuyển mức mềm" đã so le theo dòng) · tối ưu theo hàm chi phí 30–180 s (quá lâu cho MiniPC) · viết lại dây chuyền thành "PipelineContext" chung (mất phần kiểm tham số của `spec.py`) · AI / GPU / API ngoài (MiniPC không CUDA, demo offline; đã thử và bỏ, P35).
 
-**Không làm** (đi ngược triết lý, hoặc chưa cần):
-| Ý tưởng | Vì sao bỏ |
-|---|---|
-| Dithering 2D từng điểm ảnh (Floyd–Steinberg, Atkinson, blue-noise) | quyết định theo từng điểm → đốm, đoạn ngắn → nhiều nhấc bút, nét vụn. "Chuyển mức mềm" so le theo cả dòng gạch nên nét vẫn liền |
-| Tối ưu theo hàm chi phí, giữ thứ tự nhạt → đậm, 30–180 s | phạt nhấc bút đã có (nối nét gần); vẽ từng mức nhạt → đậm in thật thấy lâu hơn (đã tắt mặc định); quá lâu cho MiniPC |
-| Viết lại dây chuyền thành "PipelineContext" chung | mất phần kiểm tham số của `spec.py`, phải viết lại ~3600 dòng |
-| AI dò cạnh / GPU / API ngoài | MiniPC i5-6100T không CUDA; demo phải offline. Xem lại khi có máy mạnh hơn, luôn giữ đường CPU và tắt được |
-
-**Còn mở (ý nhỏ, chỉ làm khi in thấy cần):** tờ tông riêng cho Theo dáng ảnh và UB-155 · nối đầu các đường kề nhau ở Theo dáng (giảm mẩu vụn) · tự đo tờ tông từ ảnh chụp (tìm 3 ô đen, nắn phối cảnh) nếu phải hiệu chỉnh nhiều bút / giấy.
+**Còn mở (chỉ làm khi in thấy cần):** tờ tông riêng cho Theo dáng ảnh và UB-155 · nối đầu các đường kề nhau ở Theo dáng.
 
 ---
 
 ## 1. Tính năng vẽ mới: chỉ thêm "nguồn nét"
-Phần "nét → G-code" dùng chung. Mỗi tính năng mới chỉ là một nguồn nét mới đổ vào đó:
-```
-PDF từ Word  ──► ảnh từng trang → skeleton ──┐
-Câu lệnh     ──► AI tạo ảnh nét ─────────────┼──► NÉT ──► G-code (đã có)
-Mẫu chữ tay  ──► bộ chữ riêng → bộ viết chữ ─┘
-```
-Thứ tự nên làm: tab Beta PDF → bộ chữ + bộ viết chữ → lấy mẫu chữ tay → viết Word bằng chữ tay → AI tạo ảnh.
+Phần "nét → G-code" dùng chung; mỗi tính năng mới chỉ là một nguồn nét đổ vào đó.
 
-### 1.1 Tab Beta: in nguyên trang PDF ✅ (**đã làm 22/11/2026**: xem [12](12_TAB_BETA_PDF.md))
-> Ghi chú sau khi làm: hướng **kết xuất ảnh rồi skeleton** bên dưới đã thử và **không chọn làm chính** (chữ Times 14 đứt nét, mất dấu). Cách thật là đọc ký tự trong PDF rồi **viết lại bằng font nét đơn có dấu tiếng Việt tự ghép**; PyMuPDF dùng để đọc cấu trúc (không phải `get_drawings` thay cho ảnh như dự kiến). Phần dưới giữ nguyên để so sánh ý tưởng ban đầu.
-- Tab riêng: nạp PDF, xem trang như bản in, chọn trang, vector hóa trang đó, một preset **"Văn bản"**.
-- Người dùng tự "Lưu thành PDF" trong Word (giữ đúng font, dấu tiếng Việt, bố cục). Không đổi Word → PDF trên MiniPC (LibreOffice thiếu font làm chữ xuống dòng khác).
-- Kết xuất trang thành ảnh (`pypdfium2` hoặc PyMuPDF) → skeleton (đã có) → mỗi nét chữ một đường giữa.
-- Đọc cấu trúc PDF (PyMuPDF `get_text("rawdict")`, `get_drawings()`): đường kẻ bảng vẽ thẳng bằng vector, chữ đậm vẽ 2 đường, ảnh trong trang đi kiểu tô. Lớp chữ (bút bi 0,5) và lớp tranh (Sakura 0,4) thành 2 tệp G-code.
-
-| Chữ cỡ 14–16 | Nét chữ thật | Bút 0,5 vẽ một nét |
-|---|---|---|
-| Thường (Arial, Times) | ~0,45–0,55 mm | gần y bản in |
-| Đậm | ~0,8 mm | hơi mảnh; muốn giống thì 2 đường sát nhau |
-| Nét mảnh của Times | ~0,15–0,2 mm | dày bằng nét chính, vẫn dễ đọc |
-| Lỗ chữ e, a, o | ~1 mm | còn hở |
-
-**Preset "Văn bản" khác preset ảnh ở 7 điểm:** (1) độ phân giải ~10–12 điểm / mm (`OVERSAMPLE` ~5–6 thay 1,3; chữ "o" cỡ 14 chỉ ~10 điểm ảnh ở độ phân giải ảnh thường); (2) tắt nối khe hở (khe giữa hai chữ chỉ 0,5–0,8 mm); (3) cắt râu (đã có); (4) làm mượt; (5) nét dày > 1,5 × bút thì 2 đường; (6) tỷ lệ 1:1; (7) không khuyên chữ dưới cỡ 8.
-
-Thời gian: trang A4 kín chữ ~2000 ký tự × 2,5 nét ≈ **5000 lần nhấc bút**. Ở ~0,25 s mỗi lần nhấc / hạ (cấu hình hiện tại) + vẽ ≈ **35 phút** ⚠ ước. Thử ngay không cần code: xuất trang PDF ra PNG 300 dpi → tab Tạo bản vẽ → preset Schematic: sẽ thấy đúng hai lỗi (chữ thô, chữ dính), chính là điểm (1) và (2).
-
-### 1.2 Bộ chữ + bộ viết chữ
-- Định dạng bộ chữ: mỗi ký tự vài biến thể, mỗi biến thể là các nét đo theo chiều cao chữ; kèm phong cách (nghiêng, khoảng cách, độ lượn, lệch ngẫu nhiên).
-- Bộ viết chữ: văn bản → xếp dòng trên khổ giấy → chọn biến thể (không lặp liền) → lệch nhẹ → nét → G-code.
-- Dấu tiếng Việt ghép theo quy tắc (chữ gốc + 5 dấu thanh; khó nhất là chồng hai dấu ấ ầ ẩ ẫ ậ). Chưa có font nét đơn nào có sẵn dấu tiếng Việt (Hershey không có).
-
-### 1.3 Lấy mẫu chữ tay
-- Tờ mẫu có ô kẻ: mỗi ký tự viết 3 lần (~80 ký tự × 3 ≈ 2–3 trang) → hình dáng. Một đoạn văn tự nhiên → đo phong cách chung.
-- Tốt nhất: **viết thẳng lên màn hình cảm ứng** trong app (ghi đúng thứ tự nét, sạch, không cần skeleton).
-- Chỉ dùng chữ của chính mình hoặc người đã đồng ý; không dùng để nộp thay bài bắt buộc tự viết.
-
-### 1.4 Gõ câu lệnh → AI tạo ảnh → bản vẽ (làm cuối)
-- **Không chạy AI tạo ảnh trên MiniPC** (không card đồ họa: vài phút mỗi ảnh, 4–8 GB RAM).
-- Gọi dịch vụ trên mạng: nhanh, nhẹ cho MiniPC, nhưng cần Internet, mất phí theo ảnh, phải giới hạn số lần khi mở cho người ngoài.
-- Tự thêm vào câu lệnh "tranh nét đen trắng, không tô bóng".
-
-### 1.5 MiniPC có chịu nổi không
-| Việc | Tải |
+| Nguồn nét | Trạng thái |
 |---|---|
-| PDF → ảnh → skeleton | vừa (~16 lần điểm ảnh so với ảnh thường, vẫn trong giới hạn) |
-| Bộ viết chữ | rất nhẹ |
-| AI tạo ảnh qua mạng | rất nhẹ (tốn phí) |
-| AI tạo ảnh tại chỗ | **không nên** |
+| **PDF từ Word** (tab Beta) | ✅ lõi xong 22/11/2026: đọc ký tự thật rồi viết lại bằng font nét đơn, dấu tiếng Việt tự ghép ([12](12_TAB_BETA_PDF.md)). Cách "kết xuất ảnh rồi skeleton" đã thử và không chọn (chữ 14 pt đứt nét, mất dấu) |
+| **Soạn font riêng** (chữ tay của chủ dự án) | 📋 kế hoạch đã chốt, chưa làm: xuất font vpype → sửa bằng chuột trong tab Beta → nạp thẳng; sau đó bút cảm ứng và biến thể mỗi chữ ([12](12_TAB_BETA_PDF.md) mục 11b). Chỉ dùng chữ của chính mình hoặc người đã đồng ý |
+| **Nhận dạng chữ (OCR)** cho PDF quét và chữ trong hình | 💡 ([12](12_TAB_BETA_PDF.md) mục 1) |
+| **Câu lệnh → AI tạo ảnh** (làm cuối) | 💡 không chạy tại chỗ (MiniPC không GPU); gọi dịch vụ ngoài thì cần Internet, tốn phí, phải giới hạn số lần |
 
-Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, ảnh gốc ≤ 60 triệu điểm, ảnh làm việc 400–4000 điểm cạnh dài, mỗi lần xử lý ≤ 600 s, RAM tiến trình ≤ 4 GB (Linux), tổng điểm nét ≤ 2 triệu, 2-opt ≤ 15 000 nét, G-code ≤ 200 000 dòng.
+Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, PDF ≤ 40 MB / 500 trang, ảnh gốc ≤ 60 triệu điểm, ảnh làm việc 400–4000 điểm cạnh dài, mỗi lần xử lý ≤ 600 s, RAM tiến trình ≤ 4 GB (Linux), tổng điểm nét ≤ 2 triệu, 2-opt ≤ 15 000 nét, G-code ≤ 200 000 dòng.
 
 ---
 
@@ -92,7 +36,7 @@ Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, ảnh gốc �
 |---|---|
 | Tài khoản "người dùng" ✅ | chỉ tên + mật khẩu, không email; mật khẩu băm bằng `hashlib.scrypt` 💡; form đăng ký không bao giờ tạo quản lý |
 | Thư mục riêng theo tài khoản ✅ | người này không xem được của người kia; giữ 3 ngày; mọi route đọc tệp phải kiểm chủ |
-| Hàng chờ tạo nét ✅ | tách "nạp ảnh" khỏi "tạo nét" (nút "Tạo nét", đã đưa vào kế hoạch [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) mục 5 bước 4); một việc một lúc theo thứ tự đến; mỗi người chỉ hủy việc của mình; `idle.py` phải tính việc đang chờ |
+| Hàng chờ tạo nét ✅ | nút "Tạo nét" đã tách nạp ảnh khỏi tạo nét; còn: một việc một lúc theo thứ tự đến, mỗi người chỉ hủy việc của mình, `idle.py` tính việc đang chờ |
 | Lưu nét gốc `strokes.json` ✅ | đổi bố trí / G-code mà không vector lại; "dấu vân tay" = băm (ảnh + vùng cắt + tham số vector) để biết nét đã cũ |
 | Màu chỉ cho quản lý ✅ | khóa ở máy chủ, không chỉ ẩn ô |
 | Cloudflare nâng cao 💡 | Cloudflare Access làm thêm lớp đăng nhập ngoài; giới hạn tần suất theo `CF-Connecting-IP` |
@@ -129,7 +73,7 @@ ESP32 dùng hạ áp 5 V riêng (servo giật dòng làm ESP32 khởi động l�
 ---
 
 ## 4. Tính năng phần mềm nhỏ
-Thứ tự làm đã chốt 17/11/2026 ở [11](11_VIEC_CAN_LAM.md) mục 4.2: thuật toán → nối mạng → nút cứng + cảm biến → ESP32 cuối. Đã làm: khoanh vùng chủ thể, báo vẽ xong / lỗi. **Không làm:** mã QR địa chỉ, tiếp tục khi mất điện. Còn lại:
+Thứ tự làm ở [11](11_VIEC_CAN_LAM.md) mục 4.2. Còn lại:
 - 💡 Vệt bút theo dòng G-code cho cả macro / tiếp tục tác vụ (hiện chỉ cho tệp đang chạy).
 - 💡 `.devcontainer/` cho GitHub Codespaces.
 - 💡 2-opt trong Web Worker, chỉ khi đo trên MiniPC thấy sắp xếp nét lâu.
@@ -149,22 +93,22 @@ Nguồn: 4 repo cùng một tác giả, đều làm về máy vẽ bút — `SVG
 | 7 | 💡 **Chia lớp theo "bút" = màu + bề rộng nét** cho SVG không có layer (Illustrator / Figma) | Họ cho chọn `layer_mode`: layer Inkscape · nhóm gốc · theo bút. Mình chỉ theo layer Inkscape (`svg_in.py:58`) | `svg_in.py` + `spec.py` | M |
 | 8 | 💡 **"Cái gì đã đổi" từng bước tối ưu SVG** (mỗi bước: số nét, quãng nhấc trước / sau) | Mình chỉ có tổng trước / sau (`svg_in.py:135`); họ chạy vpype từng bước và báo từng bước một | `optimize.py` (chạy `execute` theo từng bước) + khối xem trước | S |
 | 9 | 💡 **Tô kín mảng đặc của SVG bằng gạch** (giữ đường bao, tô phần trong) | SVG có hình tô đặc hiện chỉ ra đường bao rỗng ⚠ (vpype đọc hình học, bỏ phần tô — **chưa thử** với tệp tô đặc). Họ tô bằng 6 kiểu: xoắn ốc, đồng tâm, đường thẳng, đan, zigzag, theo dáng chữ | `styles.py` (dùng lại kiểu tô) + `svg_in.py` (phải biết hình kín) | M–L |
-| 10 | 💡 **Chữ trong SVG: giữ `<text>`, thêm lớp "… hatched" / "… contour"** thay vì đổi hẳn thành path | Họ không phá tệp gốc, chữ vẫn sửa được; đúng hướng mục 1.1–1.2 ở trên (tab PDF, bộ chữ) | để dành cho tab Beta PDF | M |
+| 10 | 💡 **Chữ trong SVG: giữ `<text>`, thêm lớp "… hatched" / "… contour"** thay vì đổi hẳn thành path | Họ không phá tệp gốc, chữ vẫn sửa được; có thể dùng lại bộ xếp chữ của tab Beta | `svg_in.py` + `beta_pdf/text.py` | M |
 | 11 | 💡 **Tờ mẫu riêng cho từng kiểu nét** (mọi chữ, số, dấu ở 2 cỡ) | Mình có Tờ thử (thang tông, nhấc bút) nhưng chưa có tờ mẫu theo kiểu nét; họ sinh tờ A3 cho từng kiểu tô | `testsheets.py` | S |
 
 Nguồn từng việc: **1–5** SVGroom · **6–7** Plotterosaurus · **8** vpyposaurus · **9–11** PlotHatcher.
 
-**Đã có rồi, đừng làm lại** (đối chiếu mã 17/11/2026): vẽ như bút thật (đầu tròn, bề rộng bút — `views/drawing/canvas.js:193`) · thời gian có gia tốc, chậm ở góc, nét ngắn, thời gian nhấc / hạ bút (`gcode.py:175-190`) · mỗi lớp tính như một lần chạy riêng (`service.py:77`) · tên lớp + màu bút lấy từ lớp Inkscape (`svg_in.py:69`) · khổ giấy, lề, xoay, canh giữa (`lib/paper.js`) · cảnh báo đã có: `dropped_strokes`, `feed_above_rapid`, `no_page_size` · tối ưu SVG bằng vpype, có số trước / sau (`optimize.py`); riêng ảnh thì chạy ở tiến trình con, ưu tiên thấp (`isolated.py`) · bản xem trước do máy chủ tự dựng từ nét (`/drafts/{id}/preview.svg`), không nhúng SVG gốc vào trang → cùng tinh thần "không cho tệp lạ chạy mã" của vpyposaurus · ảnh khách tự xóa sau 5 ngày, ≤ 6 ảnh / giờ (≈ "giữ 30 tệp gần nhất" của họ) · báo vẽ xong bằng âm báo + tiêu đề tab (≈ webhook `job_complete`) · vùng máy: mình **chặn trước** khi vẽ (`paper_out_of_area`, `box_out_of_paper`), họ chỉ cảnh báo rồi cắt bớt — mình chặt hơn, giữ.
+**Đã có rồi, đừng làm lại** (đối chiếu mã 17/11/2026): vẽ như bút thật trên khung xem trước · thời gian có gia tốc, góc, nhấc / hạ bút · mỗi lớp tính như một lần chạy · tên lớp + màu từ lớp Inkscape · khổ giấy, lề, xoay, canh giữa · tối ưu SVG có số trước / sau · xem trước dựng từ nét (không nhúng SVG gốc) · ảnh khách tự xóa · báo vẽ xong · chặn trước khi vẽ ra ngoài vùng máy (họ chỉ cảnh báo rồi cắt).
 
-**Không lấy:** thư viện ảnh kiểu Lightroom (sao, cờ, nhãn màu, tag, lọc, tự sang ảnh sau khi chấm) — bản thảo của mình ít, thêm vào chỉ rối; catalog `.svgroom`, liên kết thư mục, tìm tệp bị mất, phím tắt, Copy to Folder — đặc thù macOS, mình không có nhu cầu; 6 tab dây chuyền của vpype Studio (Layers / Occult / Operations / …) — mình có dây chuyền riêng, dựng lại chỉ để giống họ; plugin `vpype-occult` (bỏ nét bị hình khác che) — chỉ có nghĩa với tranh nhiều lớp chồng; `disable_motors_on_complete`, `delete_on_complete`, webhook — chưa cần.
+**Không lấy:** thư viện ảnh kiểu Lightroom, catalog / phím tắt đặc thù macOS, 6 tab dây chuyền của vpype Studio, plugin `vpype-occult`, webhook, tự tắt động cơ / xóa tệp khi xong.
 
-**Để dành cho sau (không phải việc nhỏ):** Plotterosaurus có `/api/v1/*` riêng cho máy khác gọi, xác thực bằng khóa `X-API-Key` tách khỏi giao diện web — đúng thứ sẽ cần khi làm ESP32 (mục 3.2) hoặc cho máy khác điều khiển; hiện mình chưa có, và **thêm khóa API là việc bảo mật phải hỏi trước**. Còn: nút cứng Tạm dừng / Chạy tiếp họ đã làm bằng nút thật trên máy — mình đã có trong danh sách mục 3.1.
+**Để dành:** API riêng `/api/v1/*` cho máy khác gọi, xác thực bằng khóa `X-API-Key` (sẽ cần khi làm ESP32, mục 3.2); **thêm khóa API là việc bảo mật phải hỏi trước**.
 
 ---
 
 ## 5. Lời khuyên đã kiểm là sai (từ một tư vấn AI khác, 02/11/2026): đừng làm theo
 - "`pdftocairo -svg` giữ chữ trong thẻ `<text>`": không có tài liệu xác nhận; có người báo SVG ra không thấy chữ.
-- "`vpype-text` tự ép font Hershey tiếng Việt": plugin ngừng phát triển; Hershey không có dấu tiếng Việt.
+- "`vpype-text` tự ép font Hershey tiếng Việt": plugin ngừng phát triển; Hershey không có dấu tiếng Việt (tab Beta tự ghép dấu).
 - "`findContours` trên nét 1 điểm ảnh": ra hai đường bao.
 - "`potrace` vector hóa nét mượt": ra nét đôi.
 - "`docx2pdf`": cần Word cài sẵn; MiniPC Ubuntu không có.
