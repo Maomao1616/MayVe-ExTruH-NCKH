@@ -41,13 +41,16 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("image")
-    ap.add_argument("kind", nargs="?", default="crosshatch", choices=sorted(styles.REFINE_KINDS))
+    # mọi kiểu tô theo độ đậm (Nét viền không vẽ theo tông nên không đo); kiểu ngoài REFINE_KINDS chỉ đo lượt 0
+    ap.add_argument("kind", nargs="?", default="crosshatch",
+                    choices=sorted(set(styles.REFINE_KINDS) | (set(spec.UI_STYLES) - {"outline"})))
     ap.add_argument("--pen", type=float, default=0.5, help="bề rộng nét đo trên giấy (mm)")
     ap.add_argument("--passes", default="0,1,2,3", help="các số lượt sửa sai cần so, cách nhau dấu phẩy")
     a = ap.parse_args()
     line_w = styles.LINE_WIDTH_RATIO * a.pen
     print(f"{Path(a.image).name} · {a.kind} · bút {a.pen} mm")
-    for passes in (int(p) for p in a.passes.split(",")):
+    passes_list = [int(p) for p in a.passes.split(",")] if a.kind in styles.REFINE_KINDS else [0]
+    for passes in passes_list:
         f, sp = load_field(a.image, a.pen, {"kind": a.kind, "outline_overlay": False, "refine_passes": passes})
         t = time.time()
         strokes = styles.fill(f, sp, a.pen, None, overlay=False)
