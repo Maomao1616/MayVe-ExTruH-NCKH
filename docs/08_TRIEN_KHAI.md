@@ -177,7 +177,7 @@ Tab Ports → cổng 8000 → để **Private**. ⚠ Cổng chuyển tiếp có 
 
 # E. MiniPC Ubuntu ⏳ (kế hoạch, chưa có máy)
 
-MiniPC (i5-3210M, 8 GB) chạy 24/7, cắm USB vào mạch MKS, không màn hình, quản lý qua SSH. **Không dùng `Python/` của Windows.**
+MiniPC (i5-6100T, 12 GB) chạy 24/7, cắm USB vào mạch MKS, không màn hình, quản lý qua SSH. **Không dùng `Python/` của Windows.**
 
 | | **Docker (đề xuất)** | venv + systemd (dự phòng) |
 |---|---|---|

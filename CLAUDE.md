@@ -6,7 +6,7 @@ Máy vẽ bút CoreXY (mạch MKS DLC32 + firmware FluidNC 4.1.1, không sửa f
 
 ## Cây thư mục: không đổi, không tạo tầng mới
 ```
-docs/        tài liệu 01–11 (người đọc, đánh số) + AI_* (chỉ cho AI)
+docs/        tài liệu 01–12 (người đọc, đánh số) + AI_* (chỉ cho AI)
 frontend/    index.html · css/ · locales/{vi,en}.json · js/{core,lib,stores,views}/ · tests/
 backend/     app/{api,links,services,auth.py,main.py} · tests/ · tests/draw_test/
 tools/       export_context.py · ink_sim.py · ink_real.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1
@@ -27,7 +27,7 @@ launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git)
 
 ## Cách làm một việc
 1. Đọc đúng tài liệu liên quan (bảng ở `AI_START.md` mục 2). **Trước khi đổi hành vi đã chốt: đọc `docs/09_QUYET_DINH_THIET_KE.md`.**
-2. Sửa mã **và test cùng lúc**. Chạy: `cd backend && python -m pytest` (~564 test; riêng `test_old_logs_are_pruned` có thể hết giờ khi chạy chung, chạy riêng thì qua) và `node --test <các tệp trong frontend/tests/*.mjs>` (Windows: truyền **đường dẫn tệp**, không truyền thư mục).
+2. Sửa mã **và test cùng lúc**. Chạy: `cd backend && python -m pytest` (~635 test, cần `pymupdf` cho 8 bài tab Beta; riêng `test_old_logs_are_pruned` có thể hết giờ khi chạy chung, chạy riêng thì qua) và `node --test <các tệp trong frontend/tests/*.mjs>` (Windows: truyền **đường dẫn tệp**, không truyền thư mục).
 3. Đổi thuật toán tô: đo bằng `python tools/ink_sim.py` (ảnh tổng hợp) và `tools/ink_real.py` (ảnh thật), nêu số trước / sau; test từng bộ tô nhớ đặt `refine_passes=0` (vòng sửa sai `refine.py`). Đổi `layout.py` / `tone.py` / `raster_in.py`: sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS.
 4. Cập nhật tài liệu đúng chỗ: xong việc → `11`; đổi hành vi đã chốt → `09`; API tab vẽ → `05` mục 7 + `spec.py`; con số thuật toán → `06`; số đo máy → `02`; thêm / đổi tệp lớn → `python tools/export_context.py --map`. **Không tạo tệp tài liệu mới** nếu nội dung thuộc tệp đã có.
 5. Chữ hiển thị: mọi chuỗi qua `frontend/locales/vi.json` và `en.json` (cùng khóa; `"` trong tiếng Việt phải thoát). `DrawError.code` ↔ khóa `drawing.error.<code>`. Terminal giữ tiếng Anh.
@@ -41,7 +41,7 @@ launcher/    bật / tắt bằng icon (Windows)        data/  (không lên Git)
 
 ## Giao tiếp với chủ dự án
 - **Tiếng Việt, lời thường trước, kỹ thuật sau.** Thư viện / cơ chế mới phải giải thích. Ngắn, thẳng, dùng bảng khi so sánh. Chỉ đưa đoạn thay đổi, không dán lại cả tệp.
-- Tài liệu 01–11 viết cho người không học code: giữ văn phong (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
+- Tài liệu 01–12 viết cho người không học code: giữ văn phong (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
 - Báo kèm: lỗi / tối ưu tìm thấy trong lúc làm, tiến độ, và những bài thử còn phải làm.
 - Chủ dự án thử trên giấy rồi gửi ảnh và số; AI sửa mã và tài liệu theo đó. Nêu số trước / sau khi đề xuất đổi.
 - Thông số bút hiện tại (từ 11/11/2026): Sakura 0,4 / Uniball 150, giấy Ivory 250 g/m², ô "Bút vẽ" chọn theo tên bút, ghi thẳng nét đo trên giấy (đo 12/11/2026: UB-155 0,38, UM-100 0,40, Sakura 0,50; `LINE_WIDTH_RATIO` = 1,0); vẽ 8000, gia tốc 2700, junction 0,02 (từ 22/11/2026), Z3, chờ 0 (từ 13/11/2026), nét cong ghi bằng G2/G3; chữ dùng bút bi 0,5, Word cỡ 14–16.

@@ -12,6 +12,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 | Tệp | Mở khi |
 |---|---|
 | `docs/11_VIEC_CAN_LAM.md` | **mở đầu tiên**: cái gì xong (từ khóa + hằng chốt), cần bạn chọn, cần thử, làm tiếp |
+| `docs/12_TAB_BETA_PDF.md` | tab Beta in trang PDF: thuật toán chữ nét đơn + dấu Việt, đường kẻ, thư viện / giấy phép, hằng số, **cách gỡ** |
 | `docs/AI_CODEMAP.md` | tìm tệp theo vai trò + token, danh sách route (sinh tự động, không sửa tay) |
 | `docs/03_CAU_TRUC_PHAN_MEM.md` | tầng frontend / backend, quy tắc phụ thuộc, dữ liệu, biến môi trường |
 | `docs/04_TAB_DIEU_KHIEN.md` | sửa điều khiển máy, chạy G-code, dừng an toàn, tiếp tục |
@@ -21,7 +22,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 | `docs/09_QUYET_DINH_THIET_KE.md` | **trước khi đổi một hành vi đã chốt** |
 | `docs/07_THU_NGHIEM.md` · `08_TRIEN_KHAI.md` · `10_HUONG_PHAT_TRIEN.md` | danh sách việc cần thử + cách đo · đóng gói / phân quyền / mạng / MiniPC · ý tưởng để dành |
 
-**Mã khác tài liệu thì mã là sự thật**; sửa tài liệu cho khớp. Tài liệu 01–11 viết cho **người không học code**: giữ văn phong đó khi sửa (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
+**Mã khác tài liệu thì mã là sự thật**; sửa tài liệu cho khớp. Tài liệu 01–12 viết cho **người không học code**: giữ văn phong đó khi sửa (lời thường, khối rõ, từ nhỏ đến lớn, bảng).
 
 ## 3. Quy tắc bắt buộc
 1. **An toàn máy trước hết.** Máy thật mặc định chỉ đọc (`allow_motion`); không bao giờ tự chạy G-code (người bấm ▶ Chạy; từ 12/11/2026 không còn bước bắt buộc Xem trước + tích xác nhận, công tắc `REQUIRE_PREVIEW_CONFIRM` ở `views/control.js`, xem 09 C9); tab vẽ **không bao giờ gọi máy**; nút web không phải dừng khẩn cấp. Không nới các chốt này nếu chưa được yêu cầu rõ. **Trình duyệt tự động (Playwright MCP):** chỉ bấm nút ở tab Điều khiển khi trang đang ở chế độ `sim` (Cài đặt → Kết nối; máy giả). Máy thật đang nối, hoặc chưa chắc → chỉ xem / chụp, không bấm ▶ Chạy, jog, Home, Reset hay nút nào gửi lệnh xuống máy; hỏi chủ dự án.
@@ -29,7 +30,7 @@ Chủ dự án: sinh viên điện tử, **không phải lập trình viên**, �
 3. **Phụ thuộc frontend:** `views → stores → lib`, mọi tầng → `core`. View không import view khác (trừ `control.js` → `preview.js`). Một phần tử HTML chỉ một chủ ghi.
 4. **Một nguồn sự thật cho tham số vẽ:** `backend/app/services/drawing/spec.py` (frontend lấy qua `GET /api/draw/schema`). Thêm tham số = dòng `Param` + ô `index.html` + dòng `FIELDS` trong `views/drawing/params.js` + khóa dịch.
 5. **Dịch:** mọi chữ qua `frontend/locales/vi.json` và `en.json`, hai tệp cùng khóa. Terminal giữ tiếng Anh. `DrawError.code` ↔ khóa `drawing.error.<code>`.
-6. **Test đi cùng mã.** `cd backend && python -m pytest` (567 bài; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`; 2 bài dễ hỏng khi máy bận: `test_old_logs_are_pruned`, `test_joblog.py::test_no_bf_when_report_mask_is_1_like_the_real_board` — chạy riêng thì qua). Frontend: `node --test` kèm từng tệp `frontend/tests/*.mjs` (58). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
+6. **Test đi cùng mã.** `cd backend && python -m pytest` (635 bài, trong đó 8 bài tab Beta cần PyMuPDF và tự bỏ qua nếu thiếu; `tests/conftest.py` đưa dữ liệu vào thư mục tạm, đặt `EXTRUXY_DRAW_INPROC=1`; 2 bài dễ hỏng khi máy bận: `test_old_logs_are_pruned`, `test_joblog.py::test_no_bf_when_report_mask_is_1_like_the_real_board` — chạy riêng thì qua). Frontend: `node --test` kèm từng tệp `frontend/tests/*.mjs` (68). Đổi `layout.py` / `tone.py` / `raster_in.py` thì sinh lại số chuẩn (`python frontend/tests/fixtures/make_image_fixtures.py`) và sửa bản JS (`paper.js`, `imageprep.js`).
 7. **Không bịa số máy.** Lấy từ `MACHINE` (`core/config.js`), hồ sơ máy, hoặc `02_PHAN_CUNG_MAY.md`; ghi rõ điều chưa kiểm chứng.
 8. **Route API mới mặc định chỉ quản lý** (`app/auth.py`, `GUEST_ROUTES`). Thêm route cho khách = một dòng trong danh sách đó **và** sửa `tests/test_auth.py`. Frontend chỉ ẩn nút (`body.role-guest`), không phải bảo mật.
 9. **Thuật toán tô:** đánh giá thay đổi bằng `tools/ink_sim.py` (ảnh thử tổng hợp) **và `tools/ink_real.py` (ảnh thật; dựng mực đã đối chiếu hình học đúng)** trước khi đề xuất; nêu số trước / sau. Kiểu tô có vòng sửa sai (`refine.py`, ô `refine_passes`, mặc định 1): thử bộ tô riêng lẻ thì đặt `refine_passes=0`.

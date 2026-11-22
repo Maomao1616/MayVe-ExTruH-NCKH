@@ -38,7 +38,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
 | Ô **Sửa sai tông (lượt)** | 0 = tắt, **1 mặc định**, tối đa 3 (tham số `style.refine_passes`): tô xong dựng lại ảnh mực, thiếu thì thêm nét, thừa thì bớt, tô lại; đúng tông hơn, nhiều mực và thời gian hơn 4–8 %. Không áp cho Theo dáng ảnh và Nét viền ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
-| **Chủ thể** (cạnh Cắt ảnh) | khoanh người / vật bằng **elip** hoặc **chữ nhật** trên ảnh gốc (kéo thả như khung cắt; thanh "Nền ngoài vùng còn" 0–100 %, mặc định 50): ngoài vùng bản vẽ nhạt đi, nền vẫn vẽ. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
+| **Chủ thể** (cạnh Cắt ảnh) | chọn người / vật bằng 4 cách: **elip**, **chữ nhật** (kéo thả như khung cắt), **Tự động** (máy tự tách, ~1 s) hoặc **Vẽ tay** (giữ chuột kéo quanh chủ thể, nhiều nét; "Tô bớt" để loại chỗ thừa; "Hoàn tác nét"). Thanh "Nền ngoài vùng còn" 0–100 % (mặc định 50, kéo về 0 là bỏ hẳn nền): ngoài vùng bản vẽ nhạt đi. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu / làm nét) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
@@ -140,7 +140,7 @@ Danh sách **5 kiểu nét** trên giao diện (`spec.UI_STYLES`, cập nhật 2
 
 Vì sao tách: MiniPC yếu phải vừa điều khiển máy vừa xử lý ảnh. Một lần tạo nét dùng lại được cho nhiều lần đổi vị trí. Tiến trình con ưu tiên thấp nên ảnh nặng không làm giật luồng gửi G-code.
 
-Đo trên laptop (ảnh 1200×1600, A4): zigzag 0,1–0,7 s, sóng 0,4–1,5 s, xoắn ốc 0,4–1,6 s. ⚠ Chưa đo trên MiniPC i5-3210M.
+Đo trên laptop (ảnh 1200×1600, A4): zigzag 0,1–0,7 s, sóng 0,4–1,5 s, xoắn ốc 0,4–1,6 s. ⚠ Chưa đo trên MiniPC i5-6100T.
 
 ---
 
@@ -157,7 +157,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |
 | `raster` | bút (`pen_width_mm` = bề rộng nét đo trên giấy; giao diện chọn theo tên bút: UB-155 0,38, UM-100 0,40, Sakura 0,50, bút bi 0,50, hoặc Tùy chọn; đo 12/11/2026), độ phân giải tự tính, vùng cắt, gamma, mức đen / trắng, **làm nét** (unsharp mask, 0 = tắt, tối đa 3; preset Phong cảnh 1,5), tự cân sáng, CLAHE, khử nhiễu |
 | `style` | kiểu (`spec.STYLES`; giao diện hiện `spec.UI_STYLES` = 5 kiểu), thêm viền, chi tiết viền, **bỏ giới hạn** (`style.unlimited`, 22/11/2026), số mức (**3–8** khi bỏ giới hạn), góc (45°), khoảng cách nét, biên độ sóng, đảo |
-| `palette` | đơn sắc / nhiều màu, số màu (2–4), bỏ nền |
+| `palette` | đơn sắc / nhiều màu (chia vùng màu, 2–4) / **tách mực theo bộ bút** (`mode = inks`, `ink_set` = `kdn` đen + đỏ + xanh navy, hoặc `cmyk`), bỏ nền |
 
 **Thêm một ô mới** phải chạm 5 chỗ: dòng `Param(...)` trong `spec.py` → tệp Python dùng nó → ô trong `index.html` → một dòng trong bảng `FIELDS` của `views/drawing/params.js` → khóa chữ trong `vi.json` và `en.json` ([03_CAU_TRUC_PHAN_MEM.md](03_CAU_TRUC_PHAN_MEM.md) mục 6).
 

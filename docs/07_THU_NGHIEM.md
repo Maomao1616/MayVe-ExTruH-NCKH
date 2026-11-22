@@ -38,6 +38,7 @@ Tổng quát: bút **UM-100**, giấy Ivory 250 g/m² mặt bóng, A4; ghi ở g
 | A5 | **Xoắn ốc mới** | một ảnh bất kỳ, kiểu **Xoắn ốc** | nhận ra hình không (bản cũ chỉ ra vòng tròn); mực bết ở chỗ đậm không |
 | A6 | **Bản vẽ kỹ thuật** | preset **Bản vẽ kỹ thuật**, ảnh sơ đồ hoặc đen trắng | nét gạch mảnh, vạch chia, chữ có giữ không |
 | A7 | **Tờ tông 3 bản mới** | **Thang tông** (mục 2): Đan chéo + Chất lượng tối đa · Đường dòng + Chất lượng tối đa · Xoắn ốc; A6 mỗi tờ, thấy đủ 3 ô mốc đen | 5 bậc cách đều chưa; ô 0,05–0,35 của đường dòng đã tách tông chưa. Gửi ảnh gốc, AI đo bằng `tools/tone_read.py` |
+| A9 | **Tách mực 3 bút** (22/11) | ảnh có màu rõ (bông hoa đỏ, tóc tối): Palette = **Tách mực theo bộ bút**, bộ **Đen + đỏ + xanh navy**, kiểu **Đường dòng** hoặc **Sóng điều biên**, A5; bút: đỏ UB-155, xanh UM-100 (thay navy), đen Micron (hoặc bộ mới: UM-151 đen 0,28 + prussian blue 0,38; nhập nét đo vào ô "Nét bút 1–3"); vẽ đỏ → xanh → đen, đổi bút giữa các tệp G-code | màu có ra đúng không (hoa đỏ, tóc xanh đậm); ba lớp có khớp nhau không (chồng đúng chỗ); bút khác bề rộng nét có làm lớp nào đậm lệch |
 | A8 | **Vùng chủ thể** | ảnh có nền rối, khoanh elip, nền còn 50 % | nền thưa đủ để chủ thể nổi; mép vùng không lộ vòng |
 
 ### B. Máy (còn 1 bài; B1 bản vẽ G2/G3, B2 servo, B4 tiếng "khực" (hết với gia tốc 2700 / junction 0,02, 22/11), tab Điều khiển mượt đã xong, dồn về [11](11_VIEC_CAN_LAM.md) mục 3 và [02](02_PHAN_CUNG_MAY.md) F16)
@@ -170,3 +171,86 @@ Máy: kêu lạ / rung / nóng tay (động cơ X Y, driver) / mất bước (l�
 Terminal có `error` không:
 ```
 Bài tông (A5): thêm *bút · giấy · tốc độ · kiểu gạch · ô nào bắt đầu bết mực*. Bài bề rộng nét (mục 1, 7.4): thêm *dải sát nhất còn đặc (mm)*, *bề rộng nét đo ảnh cận ở từng tốc độ*, *tốc độ nào bắt đầu nhạt / đứt*.
+
+## 9. Đo trên máy tính (không cần in giấy)
+
+> Dùng khi cần biết **máy tính nào chậm ở bước nào** — nhất là lúc quyết định có phải viết lại phần tô nét hay không.
+> Số đo ở đây **không nói gì về độ đẹp trên giấy**; muốn chốt tông thì vẫn phải in (mục A).
+
+### 9.1 Bộ công cụ đo có sẵn (7 cái + 1 công cụ dò thư viện)
+Chạy bằng Python của phần mềm: `cd backend` rồi `.\.venv\Scripts\python.exe ..\tools\<tên>.py` (máy chạy bằng `Python\` mang theo thì dùng Python đó).
+
+| Công cụ | Đo gì | Cần gì để chạy | Ngày 22/11/2026 |
+|---|---|---|---|
+| `ink_sim.py` | Sai tông / chiều dài nét / thời gian của từng kiểu tô trên ảnh thử tổng hợp (80 × 50 mm) | không cần gì | ✅ chạy được, số ở 9.3 |
+| `ink_real.py` | Như trên nhưng trên **ảnh thật**, so 0 / 1 / 2 / 3 lượt sửa sai | một ảnh | ✅ chạy được (ảnh mẫu `skimage`), số ở 9.3 |
+| `tone_read.py` | Đọc ảnh chụp **tờ Thang tông** ra 16 ô độ đậm (mục 2) | ảnh chụp tờ tông | ⏳ chưa có ảnh tờ tông mới; mới kiểm chạy `--help` |
+| `log_read.py` | Đọc `data/job_logs/<id>.csv`: hàng đợi cạn lúc nào, tốc độ thật | tệp CSV (chỉ có sau khi vẽ thật) | ⏳ `data/job_logs` hiện chỉ có 4 tệp `.json`, **chưa có CSV** nên chưa chạy |
+| `style_preview.py` | Vẽ thử một ảnh với nhiều kiểu ra PNG + số nét, thời gian | một ảnh (hoặc `astronaut` / `cat`) | ✅ chạy được, ghi `export/preview/` |
+| `make_test_gcode.py` | Sinh 11 tệp G-code cho các bài thử máy (mục 6) | không cần gì | ✅ chạy được, ghi `export/test-gcode/` |
+| `export_context.py` | Xuất mã / tài liệu gọn cho AI, sinh lại `docs/AI_CODEMAP.md` | không cần gì | ✅ chạy được (`--list`, `--map`) |
+| `probe_vpype.py` | In phiên bản `vpype` + các gói hình học (dò lỗi cài đặt) | không cần gì | ✅ đã chuyển từ `backend/tools/` sang `tools/`, chạy được |
+
+### 9.2 Đo thời gian + RAM đỉnh: `tools/do_thoi_gian.py` (mới 22/11/2026)
+```powershell
+cd backend
+.\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --label laptop        # ảnh thử tổng hợp, khổ A5, 5 kiểu
+.\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --image ..\data\anh.jpg --paper a4 --label mini-pc
+.\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --styles crosshatch,flow --refine 0
+```
+- In một bảng ra màn hình và ghi **2 tệp** vào `export\` (không lên Git): `do-thoi-gian-<tên máy>-<ngày>.md` (đọc bằng mắt) và `.json` (đưa cho AI).
+- Đo: giây của **từng bước** (đọc ảnh · chỉnh tông · tô nét · tối ưu nét), giây **sinh G-code**, số nét, chiều dài nét, số dòng G-code, **RAM đỉnh** (mức tăng so với RAM nền), thông tin máy (CPU, số luồng, RAM, hệ điều hành, phiên bản Python và các gói).
+- Nghĩa các cột: **Tạo nét** = tổng thời gian từ lúc bấm nút tới lúc có nét; cột **Tô** thường chiếm gần hết. **Vẽ ước tính** là thời gian máy vẽ, không phải thời gian tính.
+- Lúc dùng thật, bước ảnh → nét chạy ở **tiến trình con** (`isolated.py`) nên cộng thêm thời gian khởi động (đo riêng, ~0,35 s trên laptop).
+- Công cụ **nạp sẵn thư viện `vpype`** trước khi đo (lần đầu nạp ~0,7 s), nên kiểu đầu bảng không bị đội thời gian; hai máy đo cùng cách thì so được.
+
+**Số laptop 22/11/2026** (Intel i5-9400F, 6 luồng, 15,9 GB, ảnh thử 1000 × 1400, A5, bút 0,5, sửa sai 1 lượt):
+
+| Kiểu | Tạo nét | Đọc | Tông | Tô | Tối ưu | G-code | Số nét | Dài | Dòng G-code | RAM đỉnh thêm |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Gạch chéo (`crosshatch`) | 0,83 s | 0,04 | 0,00 | 0,33 | 0,46 | 0,16 s | 396 | 39,2 m | 3 859 | +24 MB |
+| Theo dáng (`flow`) | 2,31 s | 0,02 | 0,00 | 1,84 | 0,44 | 0,39 s | 201 | 23,9 m | 6 519 | +24 MB |
+| Sóng biến thiên (`wave_am`) | 0,49 s | 0,02 | 0,00 | 0,32 | 0,15 | 1,43 s | 173 | 34,6 m | 24 651 | +44 MB |
+| Xoắn ốc (`spiral`) | 0,12 s | 0,02 | 0,00 | 0,05 | 0,05 | 0,96 s | 47 | 25,3 m | 16 108 | +55 MB |
+| Nét viền (`outline`) | 0,34 s | 0,02 | 0,00 | 0,31 | 0,01 | 0,00 s | 9 | 0,5 m | 91 | +55 MB |
+
+Đọc: **Theo dáng là kiểu tạo nét chậm nhất** (1,84 s ở bước tô). Ở **Sóng / Xoắn ốc**, *sinh G-code* tốn hơn cả *tạo nét* vì hai kiểu này ra rất nhiều dòng (16 000–25 000 dòng). RAM đỉnh cộng dồn qua các kiểu nên số ở dòng dưới là **cận trên** của kiểu đó; chạy lại cùng máy thì số dao động khoảng ±10 %.
+
+### 9.3 Số mô phỏng hôm 22/11 và chỗ lệch so với tài liệu
+`ink_sim.py` (ảnh thử tổng hợp; "sai số" = lệch độ phủ trung bình, nhỏ là đúng tông):
+
+| Kiểu (ink_sim) | Sai số | Sai mắt | Bậc | Dài (mm) | Số nét | Phút |
+|---|---|---|---|---|---|---|
+| Gạch chéo mềm | 0,030 | 0,077 | 0,041 | 3 050 | 111 | 1,07 |
+| Theo dáng | 0,028 | 0,091 | 0,085 | 2 388 | 52 | 0,69 |
+| Sóng biến thiên | 0,049 | 0,120 | 0,019 | 2 482 | 34 | 0,64 |
+| Xoắn ốc (bản mới) | 0,060 | 0,060 | 0,052 | 2 341 | 10 | 0,51 |
+| Sóng mềm (kiểu ẩn) | 0,027 | 0,092 | 0,048 | 2 674 | 128 | 1,07 |
+
+`ink_real.py` trên ảnh thật (`skimage`: `retina` 1411 px, `astronaut` 512 px, `chelsea` 300 px; A4 trừ lề, bút 0,5):
+
+| Ảnh · kiểu | Sửa sai 0 | Sửa sai 1 | Dài nét | Nhận xét |
+|---|---|---|---|---|
+| retina · Gạch chéo | 0,068 | **0,043** | 47,2 → 50,3 m | 1 lượt bớt 37 % sai số |
+| chelsea · Gạch chéo | 0,136 | **0,063** | 21,1 → 27,1 m | ảnh nhỏ (300 px) nên nét thô, sai số cao |
+| retina · Sóng biến thiên | 0,047 | **0,034** | 42,4 → 44,4 m | |
+| chelsea · Sóng biến thiên | 0,056 | **0,028** | 21,0 → 23,4 m | |
+| retina · Theo dáng | 0,057 | (không áp) | 32,1 m | kiểu này không có vòng sửa sai |
+| retina · Xoắn ốc | 0,100 | (không áp) | 34,5 m | bản viết lại 22/11, **chưa có số chuẩn** |
+| retina · Nét viền | — | — | 1,1 m · 24 nét | kiểu Viền **không vẽ theo độ đậm** nên không đo tông |
+
+**Chỗ lệch hơn 10 % so với số trong [06](06_THUAT_TOAN_XU_LY_ANH.md)** (số tài liệu ghi 14–17/11, mã đã đổi 18–22/11 nên chưa rõ do đâu):
+
+| Số tài liệu | Nay | Lệch |
+|---|---|---|
+| Sóng biến thiên sai tông **0,027**, bậc **0,012** (06 mục 8.9) | 0,049 / 0,019 | **+81 % / +58 %** (tệ hơn) |
+| Theo dáng "sai mắt" **0,043** (06 mục 8.10) | 0,091 | **+112 %** (tệ hơn) |
+| Gạch chéo sai tông **0,071** (06 mục 6.3, trước khi có chuyển mức mềm) | 0,030 | −58 % (tốt hơn) |
+| Sóng mềm / zigzag mềm **0,051** (06 mục 8.7) | 0,027 / 0,066 | −47 % / **+30 %** |
+
+Ghi chú: **kiểu Viền và Xoắn ốc bản mới chưa có số chuẩn** để so. Trong `ink_sim`, dòng "+ sửa sai" nhắm độ phủ **đã qua đường cong tông** nên sai số so với độ đậm ảnh gốc có thể **tăng** dù nét đúng hơn — muốn thấy vòng sửa sai có ích thì đọc `ink_real`.
+
+### 9.4 Gửi lại số sau khi đo
+1. Chạy đúng một lệnh ở 9.2 trên **laptop** và trên **MiniPC** (cùng ảnh, cùng `--paper`).
+2. Gửi **2 tệp** của mỗi máy (`export\do-thoi-gian-*.md` và `.json`) — trong đó đã có CPU, RAM, thời gian từng bước, RAM đỉnh.
+3. Nếu định thử lại một kiểu tô: chạy thêm `ink_sim.py` trước và sau khi sửa, gửi **cả hai bảng** (nêu số trước / sau).

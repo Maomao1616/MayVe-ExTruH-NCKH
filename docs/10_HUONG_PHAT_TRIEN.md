@@ -27,7 +27,7 @@ Nguồn: tài liệu tư vấn AI khác (ý tưởng A–F) đối chiếu với
 | Dithering 2D từng điểm ảnh (Floyd–Steinberg, Atkinson, blue-noise) | quyết định theo từng điểm → đốm, đoạn ngắn → nhiều nhấc bút, nét vụn. "Chuyển mức mềm" so le theo cả dòng gạch nên nét vẫn liền |
 | Tối ưu theo hàm chi phí, giữ thứ tự nhạt → đậm, 30–180 s | phạt nhấc bút đã có (nối nét gần); vẽ từng mức nhạt → đậm in thật thấy lâu hơn (đã tắt mặc định); quá lâu cho MiniPC |
 | Viết lại dây chuyền thành "PipelineContext" chung | mất phần kiểm tham số của `spec.py`, phải viết lại ~3600 dòng |
-| AI dò cạnh / GPU / API ngoài | MiniPC i5-3210M không CUDA; demo phải offline. Xem lại khi có máy mạnh hơn, luôn giữ đường CPU và tắt được |
+| AI dò cạnh / GPU / API ngoài | MiniPC i5-6100T không CUDA; demo phải offline. Xem lại khi có máy mạnh hơn, luôn giữ đường CPU và tắt được |
 
 **Còn mở (ý nhỏ, chỉ làm khi in thấy cần):** tờ tông riêng cho Theo dáng ảnh và UB-155 · nối đầu các đường kề nhau ở Theo dáng (giảm mẩu vụn) · tự đo tờ tông từ ảnh chụp (tìm 3 ô đen, nắn phối cảnh) nếu phải hiệu chỉnh nhiều bút / giấy.
 
@@ -42,7 +42,8 @@ Mẫu chữ tay  ──► bộ chữ riêng → bộ viết chữ ─┘
 ```
 Thứ tự nên làm: tab Beta PDF → bộ chữ + bộ viết chữ → lấy mẫu chữ tay → viết Word bằng chữ tay → AI tạo ảnh.
 
-### 1.1 Tab Beta: in nguyên trang PDF ✅ (khả thi cao, làm trước)
+### 1.1 Tab Beta: in nguyên trang PDF ✅ (**đã làm 22/11/2026**: xem [12](12_TAB_BETA_PDF.md))
+> Ghi chú sau khi làm: hướng **kết xuất ảnh rồi skeleton** bên dưới đã thử và **không chọn làm chính** (chữ Times 14 đứt nét, mất dấu). Cách thật là đọc ký tự trong PDF rồi **viết lại bằng font nét đơn có dấu tiếng Việt tự ghép**; PyMuPDF dùng để đọc cấu trúc (không phải `get_drawings` thay cho ảnh như dự kiến). Phần dưới giữ nguyên để so sánh ý tưởng ban đầu.
 - Tab riêng: nạp PDF, xem trang như bản in, chọn trang, vector hóa trang đó, một preset **"Văn bản"**.
 - Người dùng tự "Lưu thành PDF" trong Word (giữ đúng font, dấu tiếng Việt, bố cục). Không đổi Word → PDF trên MiniPC (LibreOffice thiếu font làm chữ xuống dòng khác).
 - Kết xuất trang thành ảnh (`pypdfium2` hoặc PyMuPDF) → skeleton (đã có) → mỗi nét chữ một đường giữa.

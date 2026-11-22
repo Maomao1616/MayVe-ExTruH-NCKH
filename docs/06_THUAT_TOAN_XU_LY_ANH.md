@@ -62,7 +62,7 @@ Không có thuật toán nào nghĩ ra một lần là đúng. Dây chuyền c�
 | Mỗi lần nhấc + hạ bút tốn thêm ~0,025 s ngoài chuyển động (đo 13/11/2026, chờ 0) | Ưu tiên **nét dài liền** (zigzag nối đầu đuôi), nối qua khe trắng ngắn, bỏ mẩu quá ngắn |
 | Ở góc nhọn máy phải giảm tốc gần về 0 (`junction_deviation` 0,01 mm), bút đứng lâu thì mực loang thành giọt | Chỗ quay đầu dùng **nửa vòng tròn**, không dùng hai góc vuông |
 | G-code gửi từng dòng, tối đa 200 000 dòng | Giới hạn số điểm (sóng tự giãn bước), đơn giản hóa nét |
-| MiniPC i5 thế hệ 3, vừa điều khiển máy vừa xử lý ảnh | Thu nhỏ ảnh **trước** khi lọc; độ phân giải chỉ đủ cho bút; chạy ở tiến trình riêng ưu tiên thấp |
+| MiniPC i5-6100T (12 GB, không GPU), vừa điều khiển máy vừa xử lý ảnh | Thu nhỏ ảnh **trước** khi lọc; độ phân giải chỉ đủ cho bút; chạy ở tiến trình riêng ưu tiên thấp |
 | Chi tiết nhỏ hơn khoảng cách nét thì bút không vẽ nổi | Bỏ đốm và khe nhỏ hơn khoảng cách nét ngay trên ảnh |
 
 ### 2.2 Chia thành trạm, mỗi trạm một việc
@@ -377,6 +377,15 @@ Nét **uốn dọc theo dáng ảnh** (má, lông, tóc) thay vì góc cố đ�
 ### 8.11 Vùng chủ thể (17/11/2026)
 Sau khi có bản đồ độ đậm, `tone.apply_subject` nhân độ đậm với `ngoài + (1 − ngoài) × trọng số`: trọng số 1 trong vùng, 0 ngoài vùng, chuyển mờ ±8 % bán kính (`SUBJECT_FEATHER`). Elip: khoảng cách chuẩn hóa tới tâm; chữ nhật: khoảng cách Chebyshev. Vùng tính theo ảnh **gốc**, backend đổi sang tọa độ phần đã cắt (`crop_*`). Áp cho mọi kiểu (nền nhạt hơn thì cả viền ở nền cũng ít hơn). Giao diện và lý do: [09](09_QUYET_DINH_THIET_KE.md) P31.
 
+**Hai cách chọn thêm (22/11/2026), cùng công thức nhạt nền, chỉ khác cách có `trọng số`:**
+
+| Hình | Cách tính trọng số | Hằng số (`tone.py`) |
+|---|---|---|
+| `auto` (Tự động) | GrabCut của OpenCV trên bản thu nhỏ (cạnh dài 320 px), khởi tạo bằng khung chừa lề 4 %, 5 vòng; bỏ đốm / lấp lỗ nhỏ; làm mịn mép; nếu chủ thể < 5 % hoặc > 92 % ảnh coi như thất bại, giữ nguyên và cảnh báo `subject_auto_failed`. Cố định hạt ngẫu nhiên nên lặp lại cùng kết quả. Cần ảnh màu nên `raster.py` đọc ảnh màu khi chọn `auto` | `AUTO_SUBJECT_SIDE` 320 · `_MARGIN` 0,04 · `_ITERS` 5 · `_FEATHER` 0,012 · `_MIN` 0,05 · `_MAX` 0,92 |
+| `free` (Vẽ tay) | giao diện gửi các **đa giác** (x, y 0..1 của ảnh gốc) trong tham số `subject_poly` (JSON `{add, sub}`); backend tô `add` rồi tô `sub` đè lên, đổi sang tọa độ phần đã cắt, làm mịn mép. Mặt nạ rỗng hoặc JSON hỏng: giữ nguyên và cảnh báo `subject_free_invalid` | `SUBJECT_FREE_MAX_SHAPES` 60 · `_MAX_POINTS` 800 · `_FEATHER` 0,01 · `_MIN_SHARE` 0,0005; giao diện bớt một nét xuống 400 điểm (`lib/subject.js`) |
+
+Đo trên ảnh mẫu (A5, bút 0,4, Sóng biến thiên, nền còn 25 %): chân dung 13,0 → 9,1 m, ảnh Reze 9,8 → 6,0 m, ảnh mèo 15,3 → 7,4 m; GrabCut 0,5–1,5 s mỗi ảnh trên máy phát triển (**chưa đo trên MiniPC**). Tự động ôm đúng người ở chân dung, mèo, nhân vật 2D; ảnh Reze mất một chút tóc ở góc (nên dùng Vẽ tay / Tô thêm); ảnh phong cảnh không có chủ thể rõ nên không hợp.
+
 ### 8.12 Đường cong tông (13/11/2026)
 Tờ tông ([07](07_THU_NGHIEM.md) mục 2) in bằng Sakura 0,5 trên mặt bóng Ivory, chụp điện thoại, đọc bằng `tools/tone_read.py` (tìm 3 ô mốc đen, nắn phối cảnh, bù ánh sáng, đọc 60 % giữa ô, độ đậm theo CIE L*: 0 = giấy, 1 = ô mốc). Độ đậm mắt thấy:
 
@@ -493,6 +502,22 @@ Chọn "2–4 màu" thì mỗi màu là một lớp riêng, một tệp G-code r
 5. Mỗi màu: độ đậm = độ đậm ảnh + 0,35, chỉ trong vùng màu đó (để màu sáng vẫn có ít nhất một lượt gạch). Mỗi màu gạch một góc khác nhau (lệch 180° ÷ số màu) cho dễ phân biệt.
 
 Đây là phần thử nghiệm: màu chiếm diện tích rất nhỏ vẫn có thể bị gộp.
+
+### 10.1 Tách mực theo bộ bút (`palette.separate_inks`, 22/11/2026)
+Khác k-means (chia **vùng** màu): mỗi bút một lớp với **độ đậm riêng**, trộn trừ màu như in offset. Chọn "Tách mực theo bộ bút" + bộ bút.
+
+| Bộ bút (`palette.INK_SETS`) | Bút, theo thứ tự vẽ (nhạt trước, đen sau cùng) | Góc lệch so với ô Góc |
+|---|---|---|
+| `kdn` (3 bút) | đỏ `#c8283c` · xanh navy `#1e2f6e` · đen `#141414` | 60° · 120° · 0° |
+| `cmyk` (4 bút) | vàng `#f0d214` · hồng `#d2287a` · lam `#008cc8` · đen `#141414` | 0° · 75° · 15° · 45° |
+
+1. Mật độ quang học mỗi điểm ảnh `OD = −log10(RGB / 255)` ≈ Σ `a_i × OD bút i`, `a_i ≥ 0`. Giải **đúng** bằng cách thử mọi tập bút con (≤ 15 tập), chọn tập có sai số nhỏ nhất và mọi `a_i ≥ 0`, cộng phạt nhẹ cho bút màu (`0,06` ở `kdn`, `0,04` ở `cmyk`; bút đen không phạt) để chỗ xám dùng bút đen, không dùng đỏ + navy trộn lại.
+2. Phần mực bút i góp = `a_i × độ tối của bút i`, chuẩn hóa tổng = 1. **Độ đậm bút i = độ đậm ảnh (đã qua mức đen / gamma / tương phản / CLAHE) × phần mực bút i**, nên mọi ô tiền xử lý vẫn tác dụng như ảnh đơn sắc.
+3. Mỗi bút chạy bộ tô đã chọn (Đan chéo, Đường dòng, Sóng…) với góc riêng; lớp viền (nếu bật) vẽ bằng bút đen cuối cùng.
+4. Kiểm trên điểm màu thuần (test `test_separate_inks_gives_each_pen_its_own_color_of_the_image`): đỏ → bút đỏ ~0,9; xám → bút đen 1,0; tím → đỏ 0,5 + navy 0,5; xanh navy → bút navy ~0,85; giấy trắng → không bút nào.
+5. **Độ nổi màu `ink_boost` (0–1, mặc định 0,5; 22/11/2026).** Bút đen có OD lớn nhất nên lấn ở chỗ tối (ảnh Reze, boost 0: đen chiếm 66 % lượng mực, navy 27 %, đỏ 7 %). Ba hệ số cùng tăng theo boost (`palette.BOOST_*`): màu rực hơn trước khi tách (a, b trong Lab × `1 + 1,2 × boost`); phạt bút màu giảm tới 80 %; trọng số bút đen giảm tới 60 % (chỗ chỉ có đen thì không đổi vì đã chuẩn hóa). Đo trên ảnh Reze: boost 0,5 → đỏ 12 % · navy 53 % · đen 34 %; boost 1 → 20 % · 60 % · 21 %. Xám trung tính vẫn ra bút đen (test `test_ink_boost_gives_colour_pens_more_and_black_less_but_keeps_grey_black`). **Chưa in giấy;** màu xanh lá (mắt) vẫn không có bút nên chỉ ngả sang navy.
+6. **Giả định:** màu bút đúng như bảng trên. Bút khác màu thì ảnh ra lệch màu nhưng vẫn vẽ được. **Bề rộng nét riêng từng bút** (`palette.ink_w1..4`, mm, theo thứ tự vẽ; trống = ô Bút vẽ): bút mảnh (vd đen 0,28) tô nhiều nét hơn bút dày (đỏ, navy 0,38) để đủ đậm; độ phân giải xử lý theo bút mảnh nhất. Bộ bút gợi ý: Uni-ball Signo UM-151 đen 0,28 + xanh đen / prussian blue 0,38 + đỏ UB-155 sẵn có.
+7. Số đo xem trước (A5, bút 0,4, Đường dòng, ảnh nhân vật cầm bông hoa đỏ): `kdn` 3 lớp (đỏ 1,3 m · navy 5,0 m · đen 8,5 m), 3,6 s; `cmyk` 4 lớp (vàng 0,7 · hồng 1,6 · lam 2,7 · đen 10,0 m), 4,6 s. Bông hoa ra đỏ / hồng, tóc ra navy / đen. **Chưa in giấy.**
 
 ---
 
@@ -645,7 +670,7 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 
 Đã làm (bỏ khỏi danh sách): đường cong tông, làm mượt nét viền, XDoG / FDoG, flow field, gộp cung G2/G3, kiểu "siêu chi tiết" (nay là ô **Bỏ giới hạn**), Xoắn ốc viết lại (22/11/2026). Việc lớn (tab Beta PDF, chữ tay, IoT, AI tạo ảnh, tự hiệu chỉnh bằng ArUco) ở [10](10_HUONG_PHAT_TRIEN.md). Từ khóa tiếng Anh để tự tra.
 
-**Tách lớp màu (việc kế tiếp, chốt 22/11/2026)** — k-means trên Lab + GCR/UCR, mỗi kênh mực một lớp bút (`palette.py` đã chia 2–4 màu, chưa theo CMYK). In ra màu gần tranh in offset; đây là chỗ khác biệt thật so với DrawingBotV3 (mục 20). Từ khóa: `CMYK separation`, `GCR under color removal`.
+**Tách lớp màu: ĐÃ LÀM 22/11/2026 (mục 10.1); phần còn lại: giảm đen bằng GCR/UCR, in thử.** Ghi chú ban đầu — k-means trên Lab + GCR/UCR, mỗi kênh mực một lớp bút (`palette.py` đã chia 2–4 màu, chưa theo CMYK). In ra màu gần tranh in offset; đây là chỗ khác biệt thật so với DrawingBotV3 (mục 20). Từ khóa: `CMYK separation`, `GCR under color removal`.
 
 | Hướng | Thư viện / cách | Được gì | Từ khóa |
 |---|---|---|---|
@@ -662,7 +687,7 @@ Các gói khác trong `requirements.txt` (`networkx`, `svgelements`, `pnoise`, `
 ## 18. Giới hạn đã biết
 
 - **Ảnh chụp màu** ở kiểu Viền ra **bản phác** nhận ra được hình, nét hơi đứt, không phải tranh tô màu sạch. AI tìm viền đã thử và bỏ 18/11/2026 (mục 17).
-- **Chữ nhỏ** (14 pt, cao ~2 mm) đi qua đường ảnh này bị nát (mỗi điểm ảnh ~0,3 mm). Chữ phải đi dây chuyền riêng (tab Beta PDF, [10](10_HUONG_PHAT_TRIEN.md) mục 1.1).
+- **Chữ nhỏ** (14 pt, cao ~2 mm) đi qua đường ảnh này bị nát (mỗi điểm ảnh ~0,3 mm). Chữ phải đi dây chuyền riêng: **tab Beta PDF** (đọc chữ thật trong PDF rồi viết lại bằng nét đơn / chữ viết tay nối nét, tự ghép dấu tiếng Việt; thuật toán đầy đủ ở [12](12_TAB_BETA_PDF.md), ý ban đầu ở [10](10_HUONG_PHAT_TRIEN.md) mục 1.1).
 - **Mạch in đơn giản** (vết, pad, chân linh kiện, nét ≥ 1,5 mm) đi được bằng preset Schematic.
 - **Ảnh nhỏ** (vài trăm điểm ảnh) ra nét thô khi in lớn: mỗi điểm ảnh rộng hơn nét bút (ảnh 484 px trên A4: ~0,6 mm). Dùng ảnh gốc hoặc Cắt ảnh sát chủ thể.
 - Đường cong tông mới đo cho **một bút + một mặt giấy** (Sakura 0,5, mặt bóng); Theo dáng ảnh và UB-155 chưa có bảng riêng.

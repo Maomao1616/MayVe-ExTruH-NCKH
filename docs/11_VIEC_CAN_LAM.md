@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động: máy chủ **567**, giao diện **58** (qua 22/11/2026). Còn thiếu chủ yếu: **in thật** các bản mới (Bỏ giới hạn, Xoắn ốc mới, Nét viền 2,5 mm) và **thử trên MiniPC**.
+Test tự động: máy chủ **635** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua), giao diện **68** (qua 22/11/2026). Còn thiếu chủ yếu: **in thật** các bản mới (Bỏ giới hạn, Xoắn ốc mới, Nét viền 2,5 mm) và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 
@@ -44,12 +44,14 @@ Test tự động: máy chủ **567**, giao diện **58** (qua 22/11/2026). Còn
 | **5 preset** | **Chân dung** = sóng điều biên, góc 135°, không viền, mức đen 20, tương phản 1,5, cân bằng sáng cục bộ, làm nét 1,5 (22/11), phủ đều · **Hình vẽ 2D** = đan chéo 5 mức + lớp đường bao + khử nhiễu, tương phản 1,5, cân bằng sáng cục bộ, làm nét 1,5 (22/11) · **Phong cảnh** = sóng, góc 30°, tương phản 1,4, mức đen 15, làm nét 1,5, không CLAHE, không viền · **Schematic** = viền, đen 60 / trắng 200, **FDoG + chi tiết Nhiều** (22/11) · **Siêu chi tiết** (22/11/2026) = **Gạch chéo + ô Bỏ giới hạn + sửa sai 2 lượt** |
 | **Báo xong / lỗi** | âm báo WebAudio (xong: 3 nốt lên; lỗi: nốt trầm lặp; hủy: im) + tiêu đề tab nhấp nháy khi tab ẩn; công tắc ở Cài đặt → Hoạt động; không cần Internet |
 | **Sửa sai tông** (17/11) | vòng phản hồi `refine.py`: tô → dựng mực → so → chỉnh mục tiêu → tô lại; mặc định **1 lượt**, gạch chéo / sóng / xoắn ốc; sai số −40…−58 %, mực và thời gian +4…8 % ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13, 09 P34) |
-| **Giao diện** (17/11) | màu nhấn **vàng an toàn** `#ffd400` (nền sáng `#8a6d00`) thay cyan, ở `tokens.css`; hai khung vẽ (Tạo bản vẽ và xem trước ở Điều khiển) là **giấy ngà + nét đen** như bản in ở cả hai giao diện (khung giấy / lề vàng đậm `--paper-guide`); nhóm Tối ưu nét có nút **Về mặc định** và ô bị xóa trống tự trả về mặc định; dòng G-code ở tab Tạo bản vẽ ghi cả **số cung G2/G3** |
+| **Giao diện** (17/11) | màu nhấn **vàng an toàn** `#ffd400` (nền sáng `#6f5600` từ 22/11) thay cyan, ở `tokens.css`; **22/11:** viền / nền khối rõ hơn, viền ô nhập ≥ 3:1, chữ ≥ 12 px, tiêu đề bớt cam, header điện thoại gọn ([09](09_QUYET_DINH_THIET_KE.md) P45); hai khung vẽ (Tạo bản vẽ và xem trước ở Điều khiển) là **giấy ngà + nét đen** như bản in ở cả hai giao diện (khung giấy / lề vàng đậm `--paper-guide`); nhóm Tối ưu nét có nút **Về mặc định** và ô bị xóa trống tự trả về mặc định; dòng G-code ở tab Tạo bản vẽ ghi cả **số cung G2/G3** |
 | **Dọn mã** (17/11) | xóa kiểu lai `crosshatch_flow`, `HYB_*`, `edge_band`, `ink_cover`, hàng rào viền; `ink_sim` ra đúng số cũ cho mọi kiểu đang bật |
 | **Triển khai** | bản mang đi Windows + `Cap nhat.bat`; demo không cần Internet (giao diện không tải gì từ ngoài) |
 | **Tờ tông, bớt râu** (19/11) | `HATCH_MIN_RUN_MM` 6 → **5** mm (4 mm làm hỏng bài test mức mềm: 24,2 % < 25 %); tờ thang tông mốc 4 → **10** mm, chữ F nét 1,5 → **6** mm (`calibration.TONE_MARK`, `loadToneRamp`); test khoá `test_tone_sheet_marks_and_f_survive_the_hatch_filter` |
 | **Siêu chi tiết** (19/11 → **gộp 22/11**) | ~~kiểu `crosshatch_detail`~~ → nay là ô **Bỏ giới hạn** (`style.unlimited`) trên Gạch chéo: bỏ hết lọc bớt râu (0,5 mm / không mở mặt nạ / trắng 0,02), 8 mức, sửa sai 2 lượt, không đơn giản hoá; `levels` mở 3–8; tạo nét 30 phút (`DETAIL_TIMEOUT_S`) |
 | **Flow siêu chi tiết + viền liền** (19/11 → **gộp 22/11**) | ~~kiểu `flow_detail`~~ → ô **Bỏ giới hạn** trên Theo dáng (`FLOW_UNLIMITED`: bước 0,25 · sep 1,05–8,0 · phủ 0,95 · trắng 0,02 · test 0,55 · min len 0,6 · dài ≤ 80 mm · tensor 2 · grad 0,6); Nét viền: `GAP_MM` 1,5 → **3,0**, `OUTLINE_MIN_LEN_MM` 8 → **6**, kiểu Nét viền riêng **2,5** (`OUTLINE_ONLY_MIN_LEN_MM`) |
+| **Đo đạc** (22/11) | `tools/do_thoi_gian.py` (mới): giây từng bước + G-code + **RAM đỉnh** + thông tin máy, ghi `export/do-thoi-gian-<máy>-<ngày>.{md,json}`; `backend/tools/probe_vpype.py` → `tools/` (bỏ thư mục `backend/tools/`); số laptop và chỗ lệch > 10 % so với 06 ở [07](07_THU_NGHIEM.md) mục 9 |
+
 
 ## 4. Việc tiếp
 
@@ -63,13 +65,13 @@ Test tự động: máy chủ **567**, giao diện **58** (qua 22/11/2026). Còn
 | Bút | UM-100 chính; Sakura ghi 0,5; UB-155 dừng |
 | Nút bút | `G90 G0 Z…`, Giữa = Z3 (servo giật do xung firmware, bỏ, [02](02_PHAN_CUNG_MAY.md) F16) |
 | PIN | chưa đặt thì để nguyên; **phải đặt trước khi mở ra ngoài** |
-| Thứ tự | thuật toán → tách lớp màu → Tab Beta → nối mạng (Cloudflare) → nút cứng + cảm biến bút → ESP32 |
+| Thứ tự | thuật toán → ~~tách lớp màu~~ (xong 22/11) → Tab Beta → nối mạng (Cloudflare) → nút cứng + cảm biến bút → ESP32 |
 | Không làm | mã QR địa chỉ · tiếp tục khi mất điện (chưa cần) |
 
 ### 4.2 Làm tiếp, theo thứ tự
-1. **In giấy** (bạn): 8 bài ở [07](07_THU_NGHIEM.md) mục A (mèo, phong cảnh, 2D, chân dung, xoắn ốc, bản vẽ kỹ thuật, tờ tông 3 bản, vùng chủ thể). Gửi ảnh, AI chỉnh hằng số. Rồi đo Tạo nét trên **MiniPC** (RAM, giây); *tùy chọn*: bạn tự so DrawingBotV3 (so sánh ở [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 20).
-2. **Tách lớp màu** (**M**): CMYK hoặc 3 màu đen – đỏ – xanh navy, mỗi kênh một lớp bút; dựa `palette.py` (k-means trên Lab) + GCR/UCR ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 17).
-3. **Tab Beta in PDF (chữ Word)** (**L**, [10](10_HUONG_PHAT_TRIEN.md) mục 1.1).
+1. **In giấy** (bạn): 8 bài ở [07](07_THU_NGHIEM.md) mục A (mèo, phong cảnh, 2D, chân dung, xoắn ốc, bản vẽ kỹ thuật, tờ tông 3 bản, vùng chủ thể). Gửi ảnh, AI chỉnh hằng số. Rồi đo Tạo nét trên **MiniPC** bằng `tools/do_thoi_gian.py` (cách chạy + gửi số: [07](07_THU_NGHIEM.md) mục 9); *tùy chọn*: bạn tự so DrawingBotV3 (so sánh ở [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 20).
+2. ~~Tách lớp màu~~ **đã làm 22/11** (ô **Tách mực theo bộ bút**: đen + đỏ + xanh navy hoặc CMYK, [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 10.1, [09](09_QUYET_DINH_THIET_KE.md) P44); còn **in thử** với bút đỏ UB-155 + bút xanh UM-100 + bút đen Micron.
+3. ~~Tab Beta in PDF~~ **đã làm lõi 22/11** ([12](12_TAB_BETA_PDF.md), [09](09_QUYET_DINH_THIET_KE.md) P47). Còn: **cài `pymupdf`** vào Python mà launcher dùng: `launcher\start.ps1` và `Cap nhat.bat` ưu tiên **`backend\.venv` (Python của máy)**, chỉ khi không có mới dùng thư mục `Python\` mang theo (đổi 22/11/2026). Lệnh: `backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt` (máy chạy bằng `Python\` thì dùng `.\Python\python.exe -m pip install --no-warn-script-location -r backend\requirements.txt`; `Cap nhat.bat` tự cài khi `requirements.txt` đổi), **in thử** trang báo cáo (bảng, khung, tiêu đề 18–20, chữ 14–16) bằng bút bi 0,5, **đo trên MiniPC**, rồi "tạo tất cả trang" nếu cần. **Tiếp theo (đã chốt kế hoạch, chưa làm): trang Soạn font trong tab Beta** (xuất font vpype, sửa bằng chuột, nạp thẳng, ghi nguồn; [12](12_TAB_BETA_PDF.md) mục 11b).
 4. **Nối mạng** (**M**, [08](08_TRIEN_KHAI.md) mục E, F): MiniPC → Docker + USB cố định + IP cố định → Cloudflare Tunnel; chỉ mở ra ngoài khi đã đặt PIN; thử Origin / cookie qua Cloudflare.
 5. **Nút cứng + cảm biến bút** (**S** + dây, [10](10_HUONG_PHAT_TRIEN.md) 3.1): `feed_hold_pin`, `cycle_start_pin`, cảm biến bút vào `probe`.
 6. **ESP32-S3** (cuối): bảng điều khiển không dây, đo điện năng / nhiệt, camera (**L**).
