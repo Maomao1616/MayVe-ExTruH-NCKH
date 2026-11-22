@@ -104,7 +104,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 
 ## 7. Còn phải thử ⏳
 
-Gộp về một danh sách ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md) nhóm B (còn: laptop yếu, tiếng "khực" góc trái; bản vẽ có G2/G3 và servo F16 đã xong 18/11; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
+Gộp về một danh sách ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md) nhóm B (còn: laptop yếu; tiếng "khực" góc trái hết với 2700 / 0,02 từ 22/11; bản vẽ có G2/G3 và servo F16 đã xong 18/11; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
 
 ## 8. Ghi chú điện tử cho người nối dây
 

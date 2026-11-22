@@ -60,7 +60,7 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 |---|---|---|---|
 | Chân dung (14/11/2026) | **sóng biến thiên**, góc 135°, không viền | mức đen 20, **tương phản 1,3** | ảnh người chụp thật |
 | Phong cảnh (từ 18/11/2026) | sóng biến thiên, góc 30°, không viền | mức đen 15, **tương phản 1,4**, **làm nét 1,5**, không CLAHE | trời mây, nhà, cảnh đêm, hoàng hôn |
-| Ảnh 2D / Hình vẽ (14/11/2026) | **gạch chéo 5 mức + lớp viền** | khử nhiễu | hoạt hình, truyện tranh, hình vẽ, sticker |
+| Hình vẽ 2D (14/11/2026; tương phản đổi 22/11) | **đan chéo 5 mức + lớp đường bao** | khử nhiễu, mức đen 40 / trắng 250, tương phản 1,5, cân bằng sáng cục bộ, làm nét 1,5 (để mắt nhỏ hiện rõ) | hoạt hình, truyện tranh, hình vẽ, sticker |
 | Schematic | viền, chi tiết Vừa | mức đen 60 / trắng 200 (cắt nền xám) | sơ đồ mạch, bản vẽ scan, mạch in đơn giản |
 | **Siêu chi tiết** (22/11/2026) | **Gạch chéo** + ô **Bỏ giới hạn** + sửa sai **2 lượt** | không đơn giản hóa, không bỏ nét ngắn; 8 mức; tạo nét tới 30 phút | ảnh cần chi tiết nhất; xem trước A4 bút 0,4: 2D 977 nét / 20,2 phút / 74,1 m (kiểu thường 497 nét / 11,5 phút / 57,9 m) |
 
