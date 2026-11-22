@@ -1,7 +1,7 @@
 // Kiểm lib/subject.js: node --test frontend/tests/subject.test.mjs
 import assert from "node:assert/strict";
 import test from "node:test";
-import { boxFromDrag, clampRegion, DEFAULT_REGION, MIN_SIZE, payloadOf } from "../js/lib/subject.js";
+import { boxFromDrag, clampRegion, DEFAULT_REGION, FREE_MAX_POINTS, MIN_SIZE, payloadOf, simplifyStroke } from "../js/lib/subject.js";
 
 test("không chọn hình thì không gửi gì; hình lạ cũng vậy", () => {
     assert.deepEqual(payloadOf("none", DEFAULT_REGION, 0.5), {});
@@ -33,4 +33,29 @@ test("outside lạ về mặc định 0,5 và bị kẹp trong 0..1", () => {
     assert.equal(payloadOf("ellipse", DEFAULT_REGION, NaN).subject_outside, 0.5);
     assert.equal(payloadOf("ellipse", DEFAULT_REGION, 3).subject_outside, 1);
     assert.equal(payloadOf("ellipse", DEFAULT_REGION, -1).subject_outside, 0);
+});
+
+test("tự tách (auto) chỉ gửi hình và độ nhạt nền, không cần vùng", () => {
+    assert.deepEqual(payloadOf("auto", null, 0.25), { subject_shape: "auto", subject_outside: 0.25 });
+    assert.equal(payloadOf("auto", null, 3).subject_outside, 1);
+    assert.equal(payloadOf("auto", null, NaN).subject_outside, 0.5);
+});
+
+
+test("vẽ tay (free): gửi đa giác dạng JSON, không có nét thêm thì không gửi gì", () => {
+    const square = [[0.1, 0.1], [0.9, 0.1], [0.9, 0.9], [0.1, 0.9]];
+    const out = payloadOf("free", { add: [square], sub: [] }, 0.25);
+    assert.equal(out.subject_shape, "free");
+    assert.equal(out.subject_outside, 0.25);
+    assert.deepEqual(JSON.parse(out.subject_poly), { add: [square], sub: [] });
+    assert.deepEqual(payloadOf("free", { add: [], sub: [square] }, 0.25), {});
+    assert.deepEqual(payloadOf("free", null, 0.25), {});
+});
+
+test("simplifyStroke bỏ điểm sát nhau, kẹp 0..1, bỏ nét dưới 3 điểm và bớt nét quá dài", () => {
+    assert.equal(simplifyStroke([{ x: 0.1, y: 0.1 }, { x: 0.1005, y: 0.1 }, { x: 0.5, y: 0.5 }]), null);
+    const poly = simplifyStroke([{ x: -1, y: 0.2 }, { x: 0.5, y: 0.2 }, { x: 2, y: 0.9 }]);
+    assert.deepEqual(poly, [[0, 0.2], [0.5, 0.2], [1, 0.9]]);
+    const long = Array.from({ length: 2000 }, (_, i) => ({ x: i / 2000, y: (i % 2) * 0.5 }));
+    assert.ok(simplifyStroke(long).length <= FREE_MAX_POINTS);
 });

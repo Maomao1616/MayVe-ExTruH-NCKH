@@ -2,7 +2,7 @@
 // tone.apply_subject), chủ thể nổi. Cùng cách kéo thả với crop.js: kéo trong ảnh để vẽ vùng mới, kéo khung để dời, kéo góc /
 // cạnh để co giãn. Vùng là tỷ lệ 0..1 của ảnh GỐC (như vùng cắt), nên đổi vùng cắt không làm lệch chủ thể.
 // Chủ ghi của #subject-overlay, #subject-panel, #subject-shape, #subject-edit-btn. Hàm thuần: lib/subject.js.
-import { boxFromDrag, clampRegion, DEFAULT_REGION, payloadOf } from "../../lib/subject.js";
+import { boxFromDrag, clampRegion, DEFAULT_REGION, FREE_MIN_STEP, payloadOf, simplifyStroke } from "../../lib/subject.js";
 
 const $ = (id) => document.getElementById(id);
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
@@ -12,6 +12,11 @@ let applied = null;                  // vùng đã áp dụng (null = chưa có)
 let draft = null;                    // vùng đang sửa
 let outside = 0.5;                   // độ đậm giữ lại ngoài vùng
 let natural = false;                 // có ảnh raster để khoanh
+let polys = { add: [], sub: [] };    // vẽ tay đã áp dụng: các đa giác (x, y 0..1 của ảnh gốc)
+let polysDraft = null;               // vẽ tay đang sửa
+let freeMode = "add";                // "add" = tô thêm, "sub" = tô bớt
+let history = [];                    // thứ tự các nét đang sửa, để hoàn tác
+let stroke = null;                   // nét tay đang kéo
 let onApply = () => {};
 let drag = null;
 
@@ -24,6 +29,9 @@ export function initSubject({ apply }) {
     $("subject-reset-btn")?.addEventListener("click", clearRegion);
     $("subject-cancel-btn")?.addEventListener("click", cancelEdit);
     $("subject-apply-btn")?.addEventListener("click", applyDraft);
+    $("subject-free-add")?.addEventListener("click", () => { freeMode = "add"; render(); });
+    $("subject-free-sub")?.addEventListener("click", () => { freeMode = "sub"; render(); });
+    $("subject-free-undo")?.addEventListener("click", undoStroke);
     $("subject-outside")?.addEventListener("input", () => {
         outside = clamp(Number($("subject-outside").value) / 100, 0, 1);
         render();
@@ -43,12 +51,15 @@ export function setImage(ok) {
     shape = "none";
     applied = null;
     draft = null;
+    polys = { add: [], sub: [] };
+    polysDraft = null;
+    history = [];
     render();
 }
 
 // Tham số gửi kèm nhóm `raster` ({} nếu không khoanh).
 export function payload() {
-    return natural ? payloadOf(shape, applied, outside) : {};
+    return natural ? payloadOf(shape, shape === "free" ? polys : applied, outside) : {};
 }
 
 /* ---------- sửa vùng ---------- */
@@ -57,7 +68,11 @@ function onShapeChange() {
     const value = $("subject-shape").value;
     if (!natural) { $("subject-shape").value = "none"; return; }
     if (value === "none") { clearRegion(); return; }
-    shape = value;                                   // đổi elip ↔ chữ nhật giữ nguyên vùng đã chọn
+    const prev = shape;
+    shape = value;
+    if (value === "auto" || value === "free") { startEdit(applied ?? DEFAULT_REGION); return; }   // tự tách / vẽ tay: không có khung kéo
+    if (prev === "auto" || prev === "free") { startEdit(DEFAULT_REGION); return; }              // sang elip / chữ nhật: đặt khung mới
+    // đổi elip ↔ chữ nhật giữ nguyên vùng đã chọn
     if (applied && !draft) { render(); onApply(); return; }
     startEdit(draft ?? DEFAULT_REGION);
 }
@@ -67,17 +82,28 @@ function startEdit(region) {
     if ($("subject-shape").value === "none") { shape = "ellipse"; $("subject-shape").value = "ellipse"; }
     window.dispatchEvent(new Event("extruxy:subject-edit"));
     draft = clampRegion(region);
+    if (shape === "free") {                                                       // sửa trên bản sao, Hủy thì bỏ
+        polysDraft = { add: polys.add.map((p) => p.slice()), sub: polys.sub.map((p) => p.slice()) };
+        history = [...polys.add.map(() => "add"), ...polys.sub.map(() => "sub")];
+    }
     render();
 }
 
 function cancelEdit() {
     draft = null;
+    polysDraft = null;
+    stroke = null;
     if (!applied) shape = "none";                    // chưa từng áp dụng: bỏ hẳn
     render();
 }
 
 function applyDraft() {
     if (!draft) return;
+    if (shape === "free") {
+        if (!polysDraft?.add.length) { cancelEdit(); return; }                    // chưa tô gì: coi như hủy
+        polys = polysDraft;
+        polysDraft = null;
+    }
     applied = draft;
     draft = null;
     render();
@@ -89,6 +115,10 @@ function clearRegion() {
     shape = "none";
     applied = null;
     draft = null;
+    polys = { add: [], sub: [] };
+    polysDraft = null;
+    history = [];
+    stroke = null;
     render();
     if (had) onApply();
 }
@@ -103,10 +133,23 @@ function pointOf(event) {
     };
 }
 
+function undoStroke() {
+    if (!polysDraft) return;
+    const last = history.pop();
+    if (last) polysDraft[last].pop();
+    render();
+}
+
 function onDown(event) {
     if (!draft || event.button > 0) return;
     event.preventDefault();
     const p = pointOf(event);
+    if (shape === "free") {                                                       // vẽ tay: bắt đầu một nét
+        stroke = { pts: [p], mode: freeMode, id: event.pointerId };
+        try { $("subject-overlay").setPointerCapture(event.pointerId); } catch { /* con trỏ đã nhả */ }
+        renderFree();
+        return;
+    }
     const handle = event.target.closest?.("[data-handle]")?.dataset.handle;
     const inside = p.x >= draft.x && p.x <= draft.x + draft.w && p.y >= draft.y && p.y <= draft.y + draft.h;
     drag = { mode: handle ?? (inside ? "move" : "new"), start: { ...draft }, p0: p, id: event.pointerId };
@@ -114,6 +157,12 @@ function onDown(event) {
 }
 
 function onMove(event) {
+    if (stroke && event.pointerId === stroke.id) {
+        const p = pointOf(event);
+        const last = stroke.pts[stroke.pts.length - 1];
+        if (Math.hypot(p.x - last.x, p.y - last.y) >= FREE_MIN_STEP) { stroke.pts.push(p); renderFree(); }
+        return;
+    }
     if (!drag || event.pointerId !== drag.id) return;
     const p = pointOf(event);
     const s = drag.start;
@@ -135,6 +184,13 @@ function onMove(event) {
 }
 
 function onUp(event) {
+    if (stroke && event.pointerId === stroke.id) {
+        const poly = polysDraft ? simplifyStroke(stroke.pts) : null;
+        if (poly) { polysDraft[stroke.mode].push(poly); history.push(stroke.mode); }
+        stroke = null;
+        render();
+        return;
+    }
     if (!drag || event.pointerId !== drag.id) return;
     drag = null;
     renderRect();
@@ -152,15 +208,66 @@ function renderRect() {
     rect.style.height = `${shown.h * 100}%`;
 }
 
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+// Vẽ các đa giác tay lên lớp SVG (viewBox 1000 × 1000, co theo ảnh) thành MỘT vùng liền cho mỗi loại: xanh = tô thêm,
+// đỏ = tô bớt. Nhiều nét chồng nhau chỉ hiện một viền ngoài, chỗ chồng không đậm lên (22/11/2026):
+//   - phần tô: mọi đa giác cùng màu nằm trong một nhóm có độ mờ chung (không cộng dồn khi chồng);
+//   - viền: đa giác tô đặc + viền cùng màu, rồi che bằng mặt nạ (khoét đúng vùng hợp) nên chỉ còn vòng ngoài;
+//   - tô thêm bị khoét bớt phần tô bớt (tô bớt luôn thắng, như backend).
+function renderFree() {
+    const svg = $("subject-free-svg");
+    if (!svg) return;
+    const source = polysDraft ?? polys;
+    const el = (name, attrs = {}) => {
+        const node = document.createElementNS(SVG_NS, name);
+        for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+        return node;
+    };
+    const pts = (poly) => poly.map(([x, y]) => `${Math.round(x * 1000)},${Math.round(y * 1000)}`).join(" ");
+    const shapes = (list, attrs) => list.map((p) => el("polygon", { points: pts(p), ...attrs }));
+    const mask = (id, holes) => {              // trắng = hiện, đen = che; che đúng các vùng `holes`
+        const m = el("mask", { id, maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 1000, height: 1000 });
+        m.append(el("rect", { x: 0, y: 0, width: 1000, height: 1000, fill: "#fff" }), ...shapes(holes, { fill: "#000" }));
+        return m;
+    };
+    const defs = el("defs");
+    const body = [];
+    for (const [mode, own, cut] of [["add", source.add, source.sub], ["sub", source.sub, []]]) {
+        if (!own.length) continue;
+        defs.append(mask(`free-ring-${mode}`, own), ...(cut.length ? [mask(`free-fill-${mode}`, cut)] : []));
+        const fill = el("g", { class: `free-fill free-fill-${mode}` });          // độ mờ đặt ở CSS, một lần cho cả nhóm
+        fill.append(...shapes(own, {}));
+        const cutFill = cut.length ? el("g", { mask: `url(#free-fill-${mode})` }) : null;
+        if (cutFill) { cutFill.append(fill); body.push(cutFill); } else body.push(fill);
+        const ring = el("g", { mask: `url(#free-ring-${mode})` });
+        ring.append(...shapes(own, { class: `free-ring free-ring-${mode}` }));
+        body.push(ring);
+    }
+    if (stroke && stroke.pts.length > 1) {
+        body.push(el("polyline", { points: pts(stroke.pts.map((p) => [p.x, p.y])), class: `free-live free-live-${stroke.mode}` }));
+    }
+    svg.replaceChildren(defs, ...body);
+}
+
 function render() {
     const editing = Boolean(draft);
-    const visible = natural && shape !== "none" && Boolean(draft ?? applied);
+    const free = shape === "free";
+    const visible = natural && shape !== "none" && shape !== "auto" && Boolean(draft ?? applied);     // tự tách: không có khung để kéo
     const overlay = $("subject-overlay");
     if (overlay) {
         overlay.hidden = !visible;
         overlay.classList.toggle("is-editing", editing);
         overlay.classList.toggle("is-ellipse", shape === "ellipse");
+        overlay.classList.toggle("is-free", free);
     }
+    const tools = $("subject-free-tools");
+    if (tools) tools.hidden = !(free && editing);
+    $("subject-free-add")?.classList.toggle("is-active", freeMode === "add");
+    $("subject-free-sub")?.classList.toggle("is-active", freeMode === "sub");
+    const freeHelp = $("subject-free-help");
+    if (freeHelp) freeHelp.hidden = !(free && editing);
+    renderFree();
     if ($("subject-panel")) $("subject-panel").hidden = !editing;
     const select = $("subject-shape");
     if (select) { select.disabled = !natural; if (select.value !== shape) select.value = shape; }

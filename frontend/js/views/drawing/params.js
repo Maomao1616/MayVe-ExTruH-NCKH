@@ -60,7 +60,10 @@ const FIELDS = [
     ["style-outline-detail", "style", "outline_detail", "str"],
     ["style-xdog", "style", "outline_xdog", "bool"],
     ["palette-mode", "palette", "mode", "str"],
-    ["palette-colors", "palette", "colors", "int"]
+    ["palette-colors", "palette", "colors", "int"],
+    ["palette-ink-set", "palette", "ink_set", "str"], ["palette-ink-boost", "palette", "ink_boost", "num"],
+    ["palette-ink-w1", "palette", "ink_w1", "optnum"], ["palette-ink-w2", "palette", "ink_w2", "optnum"],
+    ["palette-ink-w3", "palette", "ink_w3", "optnum"], ["palette-ink-w4", "palette", "ink_w4", "optnum"]
 ];
 
 // Các ô thuộc từng bản vẽ cụ thể (vị trí/khung): không nhớ giữa các lần mở trang.
@@ -257,9 +260,18 @@ export function syncVisibility() {
     if (xdog) xdog.hidden = !outlineOnly;                         // lớp viền phủ lên kiểu tô luôn dùng XDoG (backend)
     const detail = $("style-outline-detail")?.closest("label");
     if (detail) detail.hidden = !(outlineOnly || $("style-outline")?.checked);
-    const multi = $("palette-mode")?.value === "multi";
+    const paletteMode = $("palette-mode")?.value;
     const colors = $("palette-colors")?.closest("label");
-    if (colors) colors.hidden = !multi;
+    if (colors) colors.hidden = paletteMode !== "multi";
+    const inkSet = $("palette-ink-set")?.closest("label");
+    if (inkSet) inkSet.hidden = paletteMode !== "inks";
+    const inkBoost = $("palette-ink-boost")?.closest("label");
+    if (inkBoost) inkBoost.hidden = paletteMode !== "inks";
+    const cmyk = $("palette-ink-set")?.value === "cmyk";
+    for (let i = 1; i <= 4; i++) {                                         // bề rộng riêng từng bút: bút 4 chỉ có ở CMYK
+        const w = $(`palette-ink-w${i}`)?.closest("label");
+        if (w) w.hidden = paletteMode !== "inks" || (i === 4 && !cmyk);
+    }                    // Tách mực: chọn bộ bút (backend palette.INK_SETS)
     const lock = $("drawing-lock-ratio")?.checked;
     document.body.classList.toggle("draw-lock-ratio", Boolean(lock));
 }

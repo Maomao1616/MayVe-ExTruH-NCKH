@@ -61,7 +61,15 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
             ctx.step(key, progress, message)
 
     warnings: list[dict] = []
-    multi = pp.mode == "multi"
+    inks = pp.mode == "inks"
+    ink_widths: list[float] = []                              # bề rộng nét từng bút (tách mực); thiếu = ô Bút vẽ
+    if inks:
+        n_inks = len(palette.INK_SETS[pp.ink_set])
+        ink_widths = [getattr(pp, f"ink_w{i + 1}") or rp.pen_width_mm for i in range(n_inks)]
+        thin = min(ink_widths)
+        if thin < rp.pen_width_mm:                            # độ phân giải xử lý theo bút MẢNH nhất, bút dày dùng chung
+            rp = spec.Params({**rp.as_dict(), "pen_width_mm": thin})
+    multi = pp.mode in ("multi", "inks")
     if multi and sp.kind == "outline":                       # viền đơn sắc: không chia màu
         multi = False
         warnings.append({"code": "palette_ignored", "count": 1})
@@ -69,16 +77,33 @@ def build_raster(data: bytes, name: str, opts: dict, ctx=None):
     # Viền cần ảnh màu để thấy ranh giới hai mảng khác màu cùng độ sáng (đỏ cạnh xanh lá)
     wants_outline = sp.kind == "outline" or sp.outline_overlay
     step("read", 0.05, "Đọc ảnh")
-    img = raster_in.load(data, rp, ref_w, ref_h, ctx, color=multi or wants_outline)
+    img = raster_in.load(data, rp, ref_w, ref_h, ctx, color=multi or wants_outline or rp.subject_shape == "auto")
     step("tone", 0.2, "Chỉnh sắc độ")
-    dark = tone.apply_subject(tone.darkness(img.gray, rp, sp, ctx, img.width_mm / img.gray.shape[1]), rp)
+    dark = tone.apply_subject(tone.darkness(img.gray, rp, sp, ctx, img.width_mm / img.gray.shape[1]), rp, img.rgb, warnings)
     step("style", 0.3, "Tạo nét")
     field = Field(dark, img.width_mm, img.height_mm, img.rgb if wants_outline else None)
     colors: dict[str, str] = {}
     refine_reports: list[dict] = []                              # số đo vòng sửa sai (mỗi màu / ảnh một báo cáo)
     raw_layers: list[Layer] = []
     groups_of: dict[str, list[list]] = {}                       # mã lớp -> các nhóm nét theo mức đậm nhạt (xem styles.fill_groups)
-    if multi:
+    if inks:                                                       # tách mực: mỗi bút một lớp, độ đậm theo phần mực của bút đó
+        for i, (color, offset, density) in enumerate(palette.separate_inks(img.rgb, dark, pp.ink_set, pp.ink_boost)):
+            step("style", 0.3 + 0.4 * i / len(palette.INK_SETS[pp.ink_set]), f"Tạo nét bút {i + 1}/{len(palette.INK_SETS[pp.ink_set])}")
+            f = Field(density, img.width_mm, img.height_mm)
+            report: dict = {}
+            groups = styles.fill_groups(f, sp, ink_widths[i], ctx, (sp.angle + offset) % 180.0, overlay=False, report=report)
+            if report:
+                refine_reports.append(report)
+            if groups:
+                raw_layers.append(Layer(str(len(raw_layers) + 1), [s for g in groups for s in g]))
+                groups_of[raw_layers[-1].id] = groups
+                colors[raw_layers[-1].id] = color
+        if raw_layers and sp.outline_overlay:
+            edge = styles.outline(field, sp, rp.pen_width_mm, ctx)
+            raw_layers[-1].strokes += edge                          # viền vẽ bằng bút cuối = bút đen
+            if edge:
+                groups_of[raw_layers[-1].id].append(edge)
+    elif multi:
         regions = palette.split(img.rgb, pp.colors, pp.skip_background, ctx)
         for i, region in enumerate(regions):
             step("style", 0.3 + 0.4 * i / max(1, len(regions)), f"Tạo nét màu {i + 1}/{len(regions)}")

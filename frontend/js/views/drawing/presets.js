@@ -6,7 +6,7 @@ const BASE = {                   // mặc định chung, từng preset ghi đè
     "image-auto-levels": true, "image-clahe": false, "image-denoise": false,
     "image-black-point": "0", "image-white-point": "255", "image-gamma": "1", "image-contrast": "1", "image-sharpen": "0",
     "style-levels": "5", "style-angle": "45", "style-spacing": "", "style-amplitude": "",
-    "style-outline": false, "style-outline-detail": "medium", "style-xdog": false, "style-invert": false, "style-soft": true, "style-am-fill": false, "style-unlimited": false, "palette-mode": "mono"
+    "style-outline": false, "style-outline-detail": "medium", "style-xdog": false, "style-invert": false, "style-soft": true, "style-am-fill": false, "style-unlimited": false, "palette-mode": "mono", "palette-ink-set": "kdn", "palette-ink-boost": 0.5
 };
 
 // 14/11/2026 (chủ dự án): còn 4 preset — Chân dung (ảnh người thật), Ảnh 2D, Phong cảnh, Schematic. Bỏ Cận cảnh và Phác họa:

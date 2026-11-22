@@ -436,20 +436,24 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
     canvas.addEventListener("pointercancel", finish);
     canvas.addEventListener("pointerleave", () => { hover = null; updateLabel(); });
 
-    // Khóa thu phóng: chỉ Shift + cuộn mới phóng to/nhỏ; cuộn thường để trang cuộn bình thường
-    // (khung vẽ không "nuốt" con lăn khi người dùng chỉ định kéo xuống xem phần dưới).
-    canvas.addEventListener("wheel", (event) => {
-        if (!event.shiftKey) return;
-        event.preventDefault();
-        const e = fromEvent(event);
-        const delta = event.deltaY || event.deltaX;          // Shift + cuộn có trình duyệt đổi sang cuộn ngang
-        const factor = Math.exp(-delta * 0.0015);
+    // Phóng / thu quanh điểm (px, py) của khung (tọa độ màn hình trong canvas), kẹp 60 %..1400 % so với "xem toàn bộ".
+    function zoomAt(factor, px, py) {
         const next = Math.min(baseScale * 14, Math.max(baseScale * 0.6, view.s * factor));
-        view.tx = e.px - (e.px - view.tx) * (next / view.s);
-        view.ty = e.py - (e.py - view.ty) * (next / view.s);
+        view.tx = px - (px - view.tx) * (next / view.s);
+        view.ty = py - (py - view.ty) * (next / view.s);
         view.s = next;
         userView = true;
         draw();
+    }
+
+    // Khóa thu phóng: chỉ Shift hoặc Ctrl + cuộn mới phóng to/nhỏ; cuộn thường để trang cuộn bình thường
+    // (khung vẽ không "nuốt" con lăn khi người dùng chỉ định kéo xuống xem phần dưới). Nút + / − ở thanh công cụ dùng `zoomBy`.
+    canvas.addEventListener("wheel", (event) => {
+        if (!event.shiftKey && !event.ctrlKey) return;
+        event.preventDefault();
+        const e = fromEvent(event);
+        const delta = event.deltaY || event.deltaX;          // Shift + cuộn có trình duyệt đổi sang cuộn ngang
+        zoomAt(Math.exp(-delta * 0.0015), e.px, e.py);
     }, { passive: false });
 
     canvas.addEventListener("dblclick", () => { fit(); draw(); });
@@ -478,6 +482,7 @@ export function createCanvas({ canvas, stage, zoomLabel, onBox }) {
         setCompare(next) { compare = { ...compare, ...next }; draw(); },
         compareOn: () => compareActive(),
         redraw: draw,
-        resetView() { fit(); draw(); }
+        resetView() { fit(); draw(); },
+        zoomBy(factor) { zoomAt(factor, canvas.clientWidth / 2, canvas.clientHeight / 2); }       // nút + / −: quanh tâm khung
     };
 }

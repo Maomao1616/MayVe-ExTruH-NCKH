@@ -24,6 +24,7 @@ import { initCustomer } from "./customer.js";
 import { initTonePreview, refresh as refreshTone, setFile as showOriginal, source as toneSource } from "./drawing/tonepreview.js";
 
 const $ = (id) => document.getElementById(id);
+const ZOOM_BUTTON_STEP = 1.5;                                // mỗi lần bấm + / − phóng hoặc thu 1,5 lần
 // Ảnh tải từ mạng về Windows hay có đuôi .jfif (= JPEG). Backend nhận dạng bằng nội dung tệp, không tin đuôi.
 const EXTENSIONS = [".svg", ".png", ".jpg", ".jpeg", ".jfif", ".jpe", ".webp", ".bmp", ".gif", ".avif"];
 const ACCEPT = `${EXTENSIONS.join(",")},image/png,image/jpeg,image/webp,image/bmp,image/gif,image/avif,image/svg+xml`;
@@ -247,6 +248,20 @@ async function startImport(quality, { fresh = false, box = null } = {}) {
     S.jobId = job.task;
     poll(job.task, seq);
 }
+
+// Tab Beta (docs/12_TAB_BETA_PDF.md) giao một bản vẽ đã nạp: coi như vừa nạp xong (không có tệp nguồn, nên không "Tạo lại nét" ở đây).
+window.addEventListener("extruxy:beta-task", (event) => {
+    const view = event.detail;
+    if (!view?.task) return;
+    clearTimeout(S.pollTimer);
+    clearTimeout(S.retraceTimer);
+    S.file = null;
+    S.fileName = view.source?.name ?? "PDF";
+    S.importKeep = false;
+    const seq = ++S.importSeq;
+    S.busy = true;
+    finishImport(view, seq);
+});
 
 function poll(task, seq) {
     const tick = async () => {
@@ -559,6 +574,8 @@ function initButtons() {
         try { await api.drawTaskCancel(S.jobId); } catch { /* tác vụ đã xong */ }
     });
     $("drawing-fit-btn")?.addEventListener("click", () => canvas?.resetView());
+    $("drawing-zoom-in-btn")?.addEventListener("click", () => canvas?.zoomBy(ZOOM_BUTTON_STEP));
+    $("drawing-zoom-out-btn")?.addEventListener("click", () => canvas?.zoomBy(1 / ZOOM_BUTTON_STEP));
     $("drawing-compare")?.addEventListener("change", (event) => { canvas?.setCompare({ mode: event.target.value }); renderCompareInfo(); });
     $("drawing-keep-btn")?.addEventListener("click", keepSnapshot);
     $("drawing-rotate-btn")?.addEventListener("click", () => {
@@ -776,6 +793,9 @@ function setButtons() {
     has("regenerate-gcode-btn", !S.taskId || S.busy || !planOk);
     has("drawing-cancel-btn", !S.busy);
     has("drawing-rotate-btn", !S.src);
+    has("drawing-fit-btn", !S.src);                          // trước đây không có chỗ nào bật nút này nên nó luôn bị khóa
+    has("drawing-zoom-in-btn", !S.src);
+    has("drawing-zoom-out-btn", !S.src);
     has("drawing-compare", !S.src);                          // so sánh cần có nét vẽ; chế độ "ảnh" tự bị khóa với SVG (không có ảnh)
     has("drawing-keep-btn", !S.src);
     const imageOption = $("drawing-compare")?.querySelector('option[value="image"]');

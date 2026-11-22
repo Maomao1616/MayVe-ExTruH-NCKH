@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from app.services.drawing import palette, raster
+from app.services.drawing import palette, raster, spec
 from app.services.drawing.store import TASKS
 
 
@@ -54,3 +54,56 @@ def test_multicolor_with_outline_style_warns_and_stays_mono():
     out = raster.import_raster(data, "x", {"palette": {"mode": "multi"}, "style": {"kind": "outline"},
                                            "layout": {"paper": "a5"}})
     assert out["warnings"] == [{"code": "palette_ignored", "count": 1}] and len(out["source"]["layers"]) == 1
+
+
+# --- Tách mực theo bộ bút (22/11/2026) ---
+def _share(rgb, ink_set, boost=0.0):
+    arr = np.full((20, 20, 3), rgb, np.uint8)
+    dark = np.full((20, 20), 0.8, np.float32)
+    return {c: float(d.mean()) for c, _, d in palette.separate_inks(arr, dark, ink_set, boost)}
+
+
+def test_ink_boost_gives_colour_pens_more_and_black_less_but_keeps_grey_black():
+    dull = (80, 90, 120)                                   # xanh xám tối (tóc, bóng): mặc định đen lấn
+    base, boosted = _share(dull, "kdn"), _share(dull, "kdn", 1.0)
+    assert boosted["#141414"] < base["#141414"] * 0.6      # đen giảm rõ
+    assert boosted["#1e2f6e"] > base["#1e2f6e"]            # navy được dùng nhiều hơn
+    assert _share((90, 90, 90), "kdn", 1.0)["#141414"] > 0.6      # xám trung tính vẫn là bút đen
+
+
+def test_separate_inks_gives_each_pen_its_own_color_of_the_image():
+    kdn = _share((200, 40, 60), "kdn")                    # đỏ -> bút đỏ gần như một mình
+    assert kdn["#c8283c"] > 0.6 and kdn["#141414"] < 0.1
+    grey = _share((90, 90, 90), "kdn")                    # xám trung tính -> bút đen
+    assert grey["#141414"] > 0.6
+    purple = _share((110, 40, 120), "kdn")                # tím -> đỏ + navy cùng góp
+    assert purple["#c8283c"] > 0.15 and purple["#1e2f6e"] > 0.15
+    cmyk = _share((240, 215, 20), "cmyk")                 # vàng -> bút vàng
+    assert cmyk["#f0d214"] > 0.6
+    paper = _share((255, 255, 255), "kdn")                # giấy trắng -> không bút nào
+    assert max(paper.values()) < 0.01
+
+
+def test_inks_import_makes_one_layer_per_pen_light_to_dark_black_last():
+    data, _ = bands_png([(15, 15, 15), (200, 40, 60), (30, 45, 120)])
+    out = raster.import_raster(data, "x", {"palette": {"mode": "inks", "ink_set": "kdn"},
+                                           "raster": {"quality": "draft", "auto_levels": False}, "layout": {"paper": "a5"}})
+    colors = [l["color"] for l in out["source"]["layers"]]
+    assert colors == ["#c8283c", "#1e2f6e", "#141414"] and out["warnings"] == []
+    assert all(l["strokes"] > 0 for l in out["source"]["layers"])
+    cmyk = raster.import_raster(data, "x", {"palette": {"mode": "inks", "ink_set": "cmyk"},
+                                            "raster": {"quality": "draft", "auto_levels": False}, "layout": {"paper": "a5"}})
+    assert [l["color"] for l in cmyk["source"]["layers"]][-1] == "#141414"      # bút đen vẽ sau cùng
+
+
+def test_each_pen_can_have_its_own_line_width():
+    """22/11/2026: bút mảnh (đen 0,28) vẽ nhiều nét hơn bút dày (0,38) trên cùng vùng; ô trống = ô Bút vẽ."""
+    ramp = np.tile(np.linspace(250, 15, 300).astype(np.uint8)[None, :, None], (200, 1, 3))     # dải xám trắng -> đen (có tông thật)
+    buf = io.BytesIO(); Image.fromarray(ramp, "RGB").save(buf, "PNG"); data = buf.getvalue()
+    base = {"palette": {"mode": "inks", "ink_set": "kdn"}, "raster": {"quality": "draft", "auto_levels": False, "pen_width_mm": 0.4},
+            "layout": {"paper": "a5"}}
+    thick = raster.import_raster(data, "x", base)["source"]["layers"][-1]["strokes"]
+    thin_opts = {**base, "palette": {"mode": "inks", "ink_set": "kdn", "ink_w3": 0.28}}
+    thin = raster.import_raster(data, "x", thin_opts)["source"]["layers"][-1]["strokes"]
+    assert thin > thick                                           # bút đen mảnh hơn thì dày nét hơn để đủ đậm
+    assert spec.parse("palette", {"ink_w1": 0.38}).ink_w1 == 0.38 and spec.parse("palette", {}).ink_w2 is None

@@ -111,10 +111,11 @@ RASTER = (
     Param("denoise", "bool", False),                                  # khử nhiễu NLM: chậm, chỉ cho ảnh thiếu sáng
     # Vùng chủ thể (17/11/2026): hình elip / chữ nhật, tỷ lệ 0..1 của ảnh GỐC (như crop_*); ngoài vùng độ đậm nhân với
     # subject_outside (1 = giữ nguyên, 0 = trắng). Nền vẫn vẽ nhưng nhạt hơn, chủ thể nổi.
-    Param("subject_shape", "choice", "none", choices=("none", "ellipse", "rect")),
+    Param("subject_shape", "choice", "none", choices=("none", "ellipse", "rect", "auto", "free")),   # auto = tự tách (tone.auto_subject_weight); free = vẽ tay (subject_poly)
     Param("subject_x", "float", 0.0, 0, 1), Param("subject_y", "float", 0.0, 0, 1),
     Param("subject_w", "float", 1.0, 0.01, 1), Param("subject_h", "float", 1.0, 0.01, 1),
     Param("subject_outside", "float", 0.5, 0, 1),
+    Param("subject_poly", "text", "", None, 60000),       # vẽ tay: JSON {"add": [[[x, y], ...]], "sub": [...]}, x y 0..1 của ảnh GỐC (tone.free_subject_weight)
 )
 
 # Kiểu tô. spacing_mm/amplitude_mm None = tự tính từ độ rộng bút.
@@ -137,7 +138,12 @@ STYLE = (
 
 # Đa màu: tối đa 2-4 màu, chỉ để thử mô hình.
 PALETTE = (
-    Param("mode", "choice", "mono", choices=("mono", "multi")),
+    Param("mode", "choice", "mono", choices=("mono", "multi", "inks")),      # inks = tách mực theo bộ bút (palette.separate_inks)
+    Param("ink_set", "choice", "kdn", choices=("kdn", "cmyk")),
+    Param("ink_boost", "float", 0.5, 0.0, 1.0),                   # độ nổi màu: màu rực hơn, bút màu được ưu tiên, bút đen bớt lấn (palette.BOOST_*)
+    # Bề rộng nét ĐO của từng bút trong bộ (theo thứ tự vẽ: kdn = đỏ, navy, đen; cmyk = vàng, hồng, lam, đen). None = dùng ô Bút vẽ
+    Param("ink_w1", "float", None, 0.05, 3, unit="mm"), Param("ink_w2", "float", None, 0.05, 3, unit="mm"),
+    Param("ink_w3", "float", None, 0.05, 3, unit="mm"), Param("ink_w4", "float", None, 0.05, 3, unit="mm"),               # kdn = đen + đỏ + xanh navy; cmyk = vàng, hồng, lam, đen
     Param("colors", "int", 3, 2, 4),
     Param("skip_background", "bool", True),
 )
@@ -184,6 +190,12 @@ def _coerce(group: str, p: Param, v: Any) -> Any:
     if p.kind == "bool":
         if not isinstance(v, bool):
             raise DrawError("bad_param", f"{where}: phải là true hoặc false")
+        return v
+    if p.kind == "text":                                       # chuỗi, `max` = độ dài tối đa
+        if not isinstance(v, str):
+            raise DrawError("bad_param", f"{where}: phải là chuỗi")
+        if p.max is not None and len(v) > p.max:
+            raise DrawError("bad_param", f"{where}: dài quá {int(p.max)} ký tự")
         return v
     if p.kind == "choice":
         if v not in p.choices:
