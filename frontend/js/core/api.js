@@ -95,6 +95,15 @@ export const api = {
     macroDelete: (id) => request("DELETE", `/macros/${id}`),
     storage: () => request("GET", "/storage"),
 
+    // --- tab Beta in trang PDF (docs/12_TAB_BETA_PDF.md; gỡ: xóa ba dòng này) ---
+    betaPdfUpload: (file) => {
+        const form = new FormData();
+        form.append("file", file);
+        return request("POST", "/beta/pdf/upload", form);
+    },
+    betaPdfImport: (doc, options = {}) => request("POST", "/beta/pdf/import", { doc, options }),
+    betaPdfPreviewUrl: (doc, page, dpi = 70) => `${BASE}/beta/pdf/${encodeURIComponent(doc)}/page/${page}/preview.png?dpi=${dpi}`,
+
     // --- tab Tạo bản vẽ (docs/05_TAB_TAO_BAN_VE.md mục 7) ---
     drawSchema: () => request("GET", "/draw/schema"),
     drawImport: (file, options = {}) => {

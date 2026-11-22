@@ -17,6 +17,7 @@ import { initDock } from "./views/dock.js";
 import { initDrawing } from "./views/drawing.js";
 import { initDrafts } from "./views/drafts.js";
 import { initStorage } from "./views/storage.js";
+import { initBeta } from "./views/beta/index.js";           // tab Beta (docs/12); gỡ: bỏ dòng này và initBeta() bên dưới
 async function initApp() {
     try {
         initTabs();
@@ -32,6 +33,7 @@ async function initApp() {
         initTerminal();
         initSettings();
         initStorage();
+        initBeta();
         initHeader();
         initDock();
         keepScrollSpace()

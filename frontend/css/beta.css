@@ -1,0 +1,102 @@
+/* ==================== TAB BETA: in trang PDF (docs/12_TAB_BETA_PDF.md) ====================
+   Dùng lại lưới và khối của tab Tạo bản vẽ (.drawing-layout, details.panel.drawing-section). Chỉ khai báo phần riêng của Beta.
+   Gỡ tính năng: xóa tệp này và dòng <link> có chú thích BETA trong index.html. */
+.beta-compare {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--layout-gap);
+}
+
+.beta-compare figure {
+    margin: 0;
+}
+
+.beta-compare figcaption {
+    margin-bottom: 6px;
+    color: var(--text-muted);
+    font-size: var(--font-size-base);
+}
+
+/* Khung xem trước có zoom: ảnh / SVG rộng bằng khung × --beta-zoom (JS đặt), khung cuộn được; tỷ lệ khung theo khổ trang (--beta-aspect) */
+.beta-sheet {
+    display: block;
+    overflow: auto;
+    aspect-ratio: var(--beta-aspect, 210 / 297);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-button);
+    background: var(--paper);
+    cursor: grab;
+    touch-action: none;
+}
+
+.beta-sheet.is-panning {
+    cursor: grabbing;
+    user-select: none;
+}
+
+.beta-sheet img,
+.beta-sheet svg {
+    display: block;
+    width: calc(100% * var(--beta-zoom, 1));
+    height: auto;
+    max-width: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.beta-zoom-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.beta-zoom-bar strong {
+    min-width: 52px;
+    text-align: center;
+}
+
+#beta-result path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.beta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.beta-page-nav {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.beta-stats {
+    margin-top: 12px;
+}
+
+/* Vùng thả tệp: ô input gốc ẩn đi (nhãn "for" vẫn mở hộp chọn tệp), tên tệp hiện bên dưới, như tab Tạo bản vẽ */
+#beta-file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 760px) {
+    .beta-compare {
+        grid-template-columns: 1fr;
+    }
+}
+
+.nav-tab[hidden],
+.tab-panel[hidden] {
+    display: none;
+}

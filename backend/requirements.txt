@@ -21,6 +21,7 @@ pillow==13.0.0
 pnoise==0.2.0
 pydantic==2.14.1
 pydantic_core==2.50.1
+pymupdf==2.1
 pyphen==0.15.0
 pyserial==3.5
 python-dotenv==1.2.4

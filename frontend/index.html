@@ -13,6 +13,7 @@
   <link href="./css/jobchart.css" rel="stylesheet"/>
   <link href="./css/testsheet.css" rel="stylesheet"/>
   <link href="./css/customer.css" rel="stylesheet"/>
+  <link href="./css/beta.css" rel="stylesheet"/>        <!-- BETA -->
   <script src="./js/app.js" type="module"></script>
 </head>
 <body>
@@ -80,6 +81,12 @@
           <span class="nav-icon">✎</span>
           <span data-i18n="nav.drawing">Tạo bản vẽ</span>
         </a>
+        <!-- BETA:TAB (docs/12_TAB_BETA_PDF.md) -->
+        <a class="nav-tab" href="#panel-beta" id="tab-beta">
+          <span class="nav-icon">β</span>
+          <span data-i18n="nav.beta">Beta PDF</span>
+        </a>
+        <!-- /BETA:TAB -->
         <a class="nav-tab" href="#panel-settings" id="tab-settings">
           <span class="nav-icon">⚙</span>
           <span data-i18n="nav.settings">Cài đặt</span>
@@ -719,7 +726,7 @@
               </div>
             </details>
 
-            <details class="panel drawing-section" id="customer-inbox-panel" open="">
+            <details class="panel drawing-section" id="customer-inbox-panel">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="customer.inbox.title">Ảnh khách gửi</span>
                 <span class="drawing-section-description" data-i18n="customer.inbox.desc">Mở một ảnh: nạp ảnh và điền lại thông số khách chọn; bạn bấm Tạo nét khi sẵn sàng.</span>
@@ -917,11 +924,39 @@
                     <select id="palette-mode">
                       <option data-i18n="drawing.palette.mono" selected="" value="mono">Đơn sắc</option>
                       <option data-i18n="drawing.palette.multi" value="multi">Đa màu (2–4)</option>
+                      <option data-i18n="drawing.palette.inks" value="inks">Tách mực theo bộ bút</option>
+                    </select>
+                  </label>
+                  <label for="palette-ink-set" data-i18n="[title]drawing.hint.paletteInkSet">
+                    <span data-i18n="drawing.palette.inkSet">Bộ bút</span>
+                    <select id="palette-ink-set">
+                      <option data-i18n="drawing.palette.inkKdn" selected="" value="kdn">Đen + đỏ + xanh navy (3 bút)</option>
+                      <option data-i18n="drawing.palette.inkCmyk" value="cmyk">CMYK: vàng, hồng, lam, đen (4 bút)</option>
                     </select>
                   </label>
                   <label for="palette-colors" data-i18n="[title]drawing.hint.paletteColors">
                     <span data-i18n="drawing.palette.colors">Số màu</span>
                     <input id="palette-colors" type="number" min="2" max="4" step="1" value="3"/>
+                  </label>
+                  <label for="palette-ink-boost" data-i18n="[title]drawing.hint.inkBoost">
+                    <span data-i18n="drawing.palette.inkBoost">Độ nổi màu (0–1)</span>
+                    <input id="palette-ink-boost" type="number" min="0" max="1" step="0.1" value="0.5"/>
+                  </label>
+                  <label for="palette-ink-w1" data-i18n="[title]drawing.hint.inkWidth">
+                    <span data-i18n="drawing.palette.inkW1">Nét bút 1: đỏ / vàng (mm)</span>
+                    <input id="palette-ink-w1" type="number" min="0.05" max="3" step="0.01" placeholder="như ô Bút vẽ"/>
+                  </label>
+                  <label for="palette-ink-w2" data-i18n="[title]drawing.hint.inkWidth">
+                    <span data-i18n="drawing.palette.inkW2">Nét bút 2: navy / hồng (mm)</span>
+                    <input id="palette-ink-w2" type="number" min="0.05" max="3" step="0.01" placeholder="như ô Bút vẽ"/>
+                  </label>
+                  <label for="palette-ink-w3" data-i18n="[title]drawing.hint.inkWidth">
+                    <span data-i18n="drawing.palette.inkW3">Nét bút 3: đen / lam (mm)</span>
+                    <input id="palette-ink-w3" type="number" min="0.05" max="3" step="0.01" placeholder="như ô Bút vẽ"/>
+                  </label>
+                  <label for="palette-ink-w4" data-i18n="[title]drawing.hint.inkWidth">
+                    <span data-i18n="drawing.palette.inkW4">Nét bút 4: đen, chỉ CMYK (mm)</span>
+                    <input id="palette-ink-w4" type="number" min="0.05" max="3" step="0.01" placeholder="như ô Bút vẽ"/>
                   </label>
                   <label for="style-levels" data-i18n="[title]drawing.hint.levels">
                     <span data-i18n="drawing.style.levels">Số mức đậm nhạt</span>
@@ -1087,6 +1122,8 @@
               </summary>
               <div class="drawing-section-body">
                 <div class="drawing-canvas-toolbar">
+                  <button data-i18n="[title]drawing.canvas.zoomOut" disabled="" id="drawing-zoom-out-btn" type="button">−</button>
+                  <button data-i18n="[title]drawing.canvas.zoomIn" disabled="" id="drawing-zoom-in-btn" type="button">+</button>
                   <button data-i18n="drawing.canvas.fit" disabled="" id="drawing-fit-btn" type="button">Xem toàn bộ</button>
                   <button data-i18n="drawing.canvas.rotate" disabled="" id="drawing-rotate-btn" type="button">Xoay 90°</button>
                   <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Giữ Shift + cuộn để thu phóng</span>
@@ -1120,6 +1157,8 @@
                       <option data-i18n="drawing.subject.none" selected="" value="none">Không</option>
                       <option data-i18n="drawing.subject.ellipse" value="ellipse">Elip</option>
                       <option data-i18n="drawing.subject.rect" value="rect">Chữ nhật</option>
+                      <option data-i18n="drawing.subject.auto" value="auto">Tự động</option>
+                      <option data-i18n="drawing.subject.free" value="free">Vẽ tay</option>
                     </select>
                   </label>
                   <button class="secondary-button" data-i18n="drawing.subject.edit" disabled="" id="subject-edit-btn" type="button">Sửa vùng</button>
@@ -1138,6 +1177,7 @@
                       </div>
                     </div>
                     <div class="crop-overlay subject-overlay" hidden="" id="subject-overlay">
+                      <svg aria-hidden="true" class="subject-free-svg" id="subject-free-svg" preserveAspectRatio="none" viewBox="0 0 1000 1000"></svg>
                       <div class="crop-rect subject-rect" id="subject-rect">
                         <span class="crop-handle" data-handle="nw"></span><span class="crop-handle" data-handle="n"></span><span class="crop-handle" data-handle="ne"></span><span class="crop-handle" data-handle="e"></span><span class="crop-handle" data-handle="se"></span><span class="crop-handle" data-handle="s"></span><span class="crop-handle" data-handle="sw"></span><span class="crop-handle" data-handle="w"></span>
                       </div>
@@ -1169,6 +1209,12 @@
                     <input id="subject-outside" max="100" min="0" step="5" type="range" value="50"/>
                     <strong id="subject-outside-value">50 %</strong>
                   </label>
+                  <div class="subject-free-tools" hidden="" id="subject-free-tools">
+                    <button class="is-active" data-i18n="drawing.subject.freeAdd" id="subject-free-add" type="button">Tô thêm</button>
+                    <button data-i18n="drawing.subject.freeSub" id="subject-free-sub" type="button">Tô bớt</button>
+                    <button data-i18n="drawing.subject.freeUndo" id="subject-free-undo" type="button">Hoàn tác nét</button>
+                  </div>
+                  <p class="help-text" data-i18n="drawing.subject.freeHelp" hidden="" id="subject-free-help">Giữ chuột và kéo quanh người / vật, thả ra thì nét tự khép kín. Tô nhiều nét để phủ hết; chỗ lỡ tay thì chuyển sang Tô bớt rồi tô lên. Xong bấm Áp dụng vùng.</p>
                   <div class="crop-actions">
                     <button data-i18n="drawing.subject.reset" id="subject-reset-btn" type="button">Xóa vùng</button>
                     <button data-i18n="drawing.crop.cancel" id="subject-cancel-btn" type="button">Hủy</button>
@@ -1227,6 +1273,199 @@
       <!-- ==================================================
                  TAB 3: CÀI ĐẶT
             =================================================== -->
+      <!-- BETA:START (tab Beta in trang PDF, docs/12_TAB_BETA_PDF.md; mã: js/views/beta/, css/beta.css, backend services/beta_pdf/ + api/beta_pdf.py) -->
+      <section aria-labelledby="tab-beta" class="tab-panel" id="panel-beta" role="tabpanel">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow" data-i18n="beta.eyebrow">BETA · PDF</p>
+            <h1 data-i18n="beta.title">In trang PDF</h1>
+            <p class="page-description" data-i18n="beta.desc">Xuất tài liệu Word thành PDF, chọn một trang, phần mềm viết lại chữ bằng nét đơn (có dấu tiếng Việt), vẽ thẳng đường kẻ bảng, khung và tô ảnh trong trang.</p>
+          </div>
+        </div>
+
+        <div class="drawing-layout beta-layout">
+          <div class="drawing-sidebar">
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="beta.file.title">Tệp PDF</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <label class="upload-zone" for="beta-file">
+                  <span aria-hidden="true" class="upload-icon">↑</span>
+                  <strong data-i18n="beta.file.choose">Chọn tệp PDF</strong>
+                  <span data-i18n="beta.file.hint">Trong Word: Lưu thành PDF (giữ nguyên font và dấu tiếng Việt)</span>
+                </label>
+                <input accept=".pdf,application/pdf" id="beta-file" type="file"/>
+                <p class="help-text" data-i18n="beta.file.none" id="beta-file-name">Chưa chọn tệp.</p>
+                <div class="form-grid" hidden="" id="beta-page-row">
+                  <label for="beta-page">
+                    <span data-i18n="beta.page.label">Trang</span>
+                    <input id="beta-page" min="1" step="1" type="number" value="1"/>
+                  </label>
+                  <div class="beta-page-nav">
+                    <button class="secondary-button" data-i18n="beta.page.prev" id="beta-prev" type="button">← Trước</button>
+                    <button class="secondary-button" data-i18n="beta.page.next" id="beta-next" type="button">Sau →</button>
+                  </div>
+                </div>
+                <p class="help-text" id="beta-page-info"></p>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="beta.text.title">Cách vẽ chữ</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="form-grid form-grid-spaced">
+                  <label data-i18n="[title]beta.hint.textMode" for="beta-text-mode">
+                    <span data-i18n="beta.text.mode">Kiểu chữ</span>
+                    <select id="beta-text-mode">
+                      <option data-i18n="beta.text.single" selected="" value="single">Nét đơn (khuyên dùng)</option>
+                      <option data-i18n="beta.text.skeleton" value="skeleton">Giữ hình chữ gốc</option>
+                      <option data-i18n="beta.text.mixed" value="mixed">Chữ lớn giữ hình, chữ nhỏ nét đơn</option>
+                    </select>
+                  </label>
+                  <label data-i18n="[title]beta.hint.font" for="beta-font">
+                    <span data-i18n="beta.text.font">Font nét đơn</span>
+                    <select id="beta-font">
+                      <option data-i18n="beta.text.fontScript" selected="" value="script">Chữ viết tay nối nét (khuyên dùng)</option>
+                      <option data-i18n="beta.text.fontSimplex" value="simplex">Chữ rời, gọn (ít nét)</option>
+                      <option data-i18n="beta.text.fontTimes" value="times">Giống Times (nhiều nét kép)</option>
+                    </select>
+                  </label>
+                  <label data-i18n="[title]beta.hint.mixedMin" for="beta-mixed-min">
+                    <span data-i18n="beta.text.mixedMin">Chữ từ cỡ (pt) dùng giữ hình</span>
+                    <input id="beta-mixed-min" max="200" min="6" step="0.5" type="number" value="17"/>
+                  </label>
+                  <label data-i18n="[title]beta.hint.pen" for="beta-pen">
+                    <span data-i18n="beta.text.pen">Bút chữ và khung (mm)</span>
+                    <input id="beta-pen" max="2" min="0.1" step="0.05" type="number" value="0.5"/>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="beta.parts.title">Khung, bảng và ảnh</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="checkbox-list">
+                  <label data-i18n="[title]beta.hint.frame">
+                    <input checked="" id="beta-frame" type="checkbox"/>
+                    <span data-i18n="beta.parts.frame">Vẽ đường kẻ bảng và khung</span>
+                  </label>
+                  <label data-i18n="[title]beta.hint.thick">
+                    <input checked="" id="beta-thick" type="checkbox"/>
+                    <span data-i18n="beta.parts.thick">Đường kẻ dày vẽ 2 đường sát nhau</span>
+                  </label>
+                  <label data-i18n="[title]beta.hint.images">
+                    <input checked="" id="beta-images" type="checkbox"/>
+                    <span data-i18n="beta.parts.images">Vẽ ảnh trong trang</span>
+                  </label>
+                  <label data-i18n="[title]beta.hint.lineartText">
+                    <input checked="" id="beta-lineart-text" type="checkbox"/>
+                    <span data-i18n="beta.parts.lineartText">Sơ đồ, công thức dạng ảnh vẽ cùng bút với chữ</span>
+                  </label>
+                </div>
+                <div class="form-grid">
+                  <label data-i18n="[title]beta.hint.imageKind" for="beta-image-kind">
+                    <span data-i18n="beta.parts.imageKind">Kiểu tô ảnh</span>
+                    <select id="beta-image-kind">
+                      <option data-i18n="beta.parts.kindAuto" selected="" value="auto">Tự nhận (khuyên dùng)</option>
+                      <option data-i18n="beta.parts.kindLine" value="lineart">Hình vẽ nét (sơ đồ, mạch)</option>
+                      <option data-i18n="beta.parts.kindCross" value="crosshatch">Đan chéo</option>
+                      <option data-i18n="beta.parts.kindFlow" value="flow">Đường dòng</option>
+                      <option data-i18n="beta.parts.kindWave" value="wave_am">Sóng điều biên</option>
+                      <option data-i18n="beta.parts.kindSpiral" value="spiral">Xoắn ốc</option>
+                      <option data-i18n="beta.parts.kindOutline" value="outline">Nét viền</option>
+                    </select>
+                  </label>
+                  <label data-i18n="[title]beta.hint.imagePen" for="beta-image-pen">
+                    <span data-i18n="beta.parts.imagePen">Bút tô ảnh (mm)</span>
+                    <input id="beta-image-pen" max="2" min="0.1" step="0.05" type="number" value="0.4"/>
+                  </label>
+                </div>
+              </div>
+            </details>
+
+            <details class="panel drawing-section">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="beta.adv.title">Nâng cao</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="form-grid">
+                  <label data-i18n="[title]beta.hint.fit" for="beta-fit">
+                    <span data-i18n="beta.adv.fit">Chữ chiếm tối đa (× ô chữ)</span>
+                    <input id="beta-fit" max="1.2" min="0.5" step="0.02" type="number" value="0.92"/>
+                  </label>
+                  <label data-i18n="[title]beta.hint.join" for="beta-join">
+                    <span data-i18n="beta.adv.join">Nối nét hở dưới (mm)</span>
+                    <input id="beta-join" max="2" min="0" step="0.05" type="number" value="0.25"/>
+                  </label>
+                  <label data-i18n="[title]beta.hint.skelDpi" for="beta-skel-dpi">
+                    <span data-i18n="beta.adv.skelDpi">Độ phân giải skeleton (dpi)</span>
+                    <input id="beta-skel-dpi" max="1200" min="200" step="50" type="number" value="600"/>
+                  </label>
+                  <label data-i18n="[title]beta.hint.skelThr" for="beta-skel-thr">
+                    <span data-i18n="beta.adv.skelThr">Ngưỡng mực (0–255)</span>
+                    <input id="beta-skel-thr" max="250" min="40" step="5" type="number" value="190"/>
+                  </label>
+                  <label data-i18n="[title]beta.hint.imageDpi" for="beta-image-dpi">
+                    <span data-i18n="beta.adv.imageDpi">Độ phân giải ảnh trong trang (dpi)</span>
+                    <input id="beta-image-dpi" max="300" min="50" step="10" type="number" value="150"/>
+                  </label>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="drawing-workspace">
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
+                <span class="drawing-section-title" data-i18n="beta.preview.title">Trang gốc và nét sinh ra</span>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
+                <div class="beta-zoom-bar">
+                  <button class="secondary-button" data-i18n="[title]beta.zoom.out" id="beta-zoom-out" type="button">−</button>
+                  <strong id="beta-zoom-value">100 %</strong>
+                  <button class="secondary-button" data-i18n="[title]beta.zoom.in" id="beta-zoom-in" type="button">+</button>
+                  <button class="secondary-button" data-i18n="beta.zoom.fit" id="beta-zoom-fit" type="button">Vừa khung</button>
+                  <span class="muted-text" data-i18n="beta.zoom.hint">Ctrl + cuộn chuột để phóng to / thu nhỏ; kéo để di chuyển; hai khung cuộn cùng nhau.</span>
+                </div>
+                <div class="beta-compare">
+                  <figure>
+                    <figcaption data-i18n="beta.preview.original">Trang trong PDF</figcaption>
+                    <div class="beta-sheet"><img alt="" id="beta-original" hidden=""/></div>
+                  </figure>
+                  <figure>
+                    <figcaption data-i18n="beta.preview.result">Nét sẽ vẽ</figcaption>
+                    <div class="beta-sheet"><svg id="beta-result" preserveAspectRatio="xMidYMid meet" viewBox="0 0 210 297"></svg></div>
+                  </figure>
+                </div>
+                <div aria-live="polite" class="drawing-progress">
+                  <progress id="beta-progress-bar" max="1" value="0"></progress>
+                  <span class="muted-text" data-i18n="beta.progress.idle" id="beta-progress-text">Chưa có tác vụ</span>
+                </div>
+                <div class="beta-actions">
+                  <button class="primary-button" data-i18n="beta.action.run" disabled id="beta-run-btn" type="button">Tạo nét trang này</button>
+                  <button class="secondary-button" data-i18n="beta.action.cancel" disabled id="beta-cancel-btn" type="button">Hủy</button>
+                  <button class="primary-button" data-i18n="beta.action.open" disabled id="beta-open-btn" type="button">Mở ở Tạo bản vẽ →</button>
+                </div>
+                <dl class="detail-list beta-stats" id="beta-stats" hidden=""></dl>
+                <ul class="drawing-warnings" id="beta-warnings"></ul>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+      <!-- BETA:END -->
+
       <section aria-labelledby="tab-settings" class="tab-panel" id="panel-settings" role="tabpanel">
         
         <div class="page-heading">
