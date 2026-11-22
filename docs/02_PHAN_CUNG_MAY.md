@@ -13,7 +13,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
                            │        ├─ gpio.32 (tín hiệu PWM 50 Hz) ──► servo nâng bút
                            │        ├─ gpio.36 ◄── công tắc hành trình X
                            │        └─ gpio.35 ◄── công tắc hành trình Y
-                           └──► hạ áp XL4005 → ~6 V ──► nguồn servo (GND nối chung với MKS)
+                           └──► hạ áp XL4005 → 5,3 V ──► nguồn servo (GND nối chung với MKS)
 ```
 
 ## 2. Linh kiện
@@ -23,7 +23,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
 | Khung | **CoreXY**, mẫu Extruh pen plotter (Printables 734327); đủ 3 mẫu in + video lắp ráp ở [README](../README.md) mục *Phần cứng* | vùng làm việc **285 × 318 mm**, Z (nâng bút) **5 mm** |
 | Cơ cấu bút | bút **hạ xuống giấy nhờ trọng lực**, servo chỉ **nâng** cụm bút | lực bút = trọng lượng cụm bút (muốn nét chắc hơn thì thêm khối nặng). Hạ chậm = đáp nhẹ, đỡ gãy ngòi |
 | Servo | **JX PS-1109MG** 9 g, bánh răng kim loại, analog | 4,8–6 V; 0,12 s/60° ở 4,8 V, 0,10 s/60° ở 6 V (theo nơi bán) |
-| Nguồn servo | hạ áp **XL4005**, đặt **~6 V** | GND phải nối chung với MKS. Nên có tụ 470–1000 µF sát servo |
+| Nguồn servo | hạ áp **XL4005**, đặt **5,3 V** (22/11/2026; trước ~5,9 V) | chủ dự án: 5,3 V servo trông ổn định hơn (chưa đo gợn áp). GND phải nối chung với MKS. Nên có tụ 470–1000 µF sát servo |
 | Động cơ | 2 × **NEMA17 17HS4401** | ~1,5–1,7 A mỗi pha (nhà bán ghi không thống nhất ⚠) |
 | Driver | 2 × **TMC2209**, điện trở đo **R100** (0,1 Ω), Vref **1,4 V** | Irms ≈ 0,766 × Vref ≈ **1,07 A** (đỉnh ≈ 1,5 A). Dải Vref cho phép 0,2–2,2 V |
 | Truyền động | đai **GT2**, puly **20 răng**, vi bước **1/16** | 200 bước × 16 ÷ (20 răng × 2 mm) = **80 bước/mm** |
@@ -41,8 +41,8 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Bước / mm X, Y, Z (`$100 $101 $102`) | 80 / 80 / 100 | thước 100 mm vẽ ra đúng 100 mm ✅ |
 | Hành trình (`$130 $131 $132`) | 285 / 318 / 5 mm | |
 | Tốc độ tối đa X, Y (`$110 $111`) | 6000 mm/min; Z 3000 | |
-| Gia tốc X / Y / Z | **2000 / 2000 / 3000 mm/s²** | nâng từ 600 / 600 / 1000 ngày 03/11/2026 |
-| `junction_deviation_mm` | 0,01 (mạch đang có; chốt **0,03** từ 17/11/2026, chờ bạn Lưu vào mạch — máy đang chạy 2800 / 0,01 từ 18/11/2026, [07](07_THU_NGHIEM.md) B4 chưa kết luận) | nhỏ → qua góc nhọn phải giảm tốc mạnh (vì vậy zigzag quay đầu bằng nửa vòng tròn) |
+| Gia tốc X / Y | **2700 mm/s²** (chốt 22/11/2026, chủ dự án: đỡ rung lắc, chậm hơn không đáng kể) | 600 → 2000 (03/11) → 3000 (12/11) → thử 2800 (18/11) → **2700** |
+| `junction_deviation_mm` | **0,02** (chốt 22/11/2026) | 0,05 → 0,03 (17/11) → thử 0,01 (18/11) → **0,02**. Nhỏ → qua góc nhọn phải giảm tốc mạnh (vì vậy zigzag quay đầu bằng nửa vòng tròn). Phần mềm ước tính thời gian theo 2700 / 0,02 (`gcode.py` `EST_*`, `config.js`) |
 | `planner_blocks` | 16 | hàng đợi chuyển động |
 | `arc_tolerance_mm` | 0,002 | |
 | Servo Z | `gpio.32`, 50 Hz, xung 1350–1950 µs | Z 0–5 mm ↔ ~54° ⚠ suy luận |

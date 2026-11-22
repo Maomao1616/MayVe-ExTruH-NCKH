@@ -688,7 +688,7 @@ Hằng số là chữ HOA ở đầu tệp, có chú thích tiếng Việt. Đ�
 | | `REFINE_LINE_PX`, `REFINE_GRID_PX_MM`, `REFINE_MAX_PIXELS` (dựng mực), `REFINE_KINDS` (`styles.py`) | 7 điểm / nét · 4 ô / mm · 16 triệu · gạch chéo, sóng, xoắn ốc |
 | Tối ưu nét | `BRIDGE_PEN`, `BRIDGE_MIN_DARK`, `TWO_OPT_MAX_STROKES` (`optimize.py`) | 4,0 × · 0,2 · 15 000 |
 | Cung G2/G3 | `ARC_TOL_MM`, `ARC_MIN_POINTS`, `ARC_MIN_R_MM`, `ARC_MAX_R_MM`, `ARC_MAX_SWEEP_DEG`, `USE_ARCS` (`arcs.py`, `gcode.py`) | 0,02 mm · 4 · 0,2 · 2000 · 300° · bật |
-| Ước tính thời gian | `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | **0,03** · 0,025 s · 0,025 s · 125 |
+| Ước tính thời gian | `EST_ACCEL_MM_S2`, `EST_JUNCTION_MM`, `EST_LIFT_OVERHEAD_S`, `EST_DWELL_FLUSH_S`, `EST_LINES_PER_S` (`gcode.py`) | **2700** · **0,02** (22/11/2026) · 0,025 s · 0,025 s · 125 |
 | G-code mặc định (`spec.py`) | vẽ / di chuyển / bút / chờ nâng / chờ hạ | 8000 / 8000 / 3000 / 0 / 0 |
 | Tiền xử lý mặc định | gamma, tương phản, đen, trắng, tự cân sáng, làm nét (`SHARPEN_SIGMA_MM`, `SHARPEN_SIGMA_PX` — `tone.py`), CLAHE, khử nhiễu | 1 · 1 · 0 · 255 · bật · 0 · tắt · tắt; σ làm nét **1,5 mm** · 4,0 điểm (18/11/2026) |
 | Bút (`spec.PENS`) | UB-155, UM-100, Sakura (nét đo trên giấy) | 0,38 · 0,40 · 0,50 mm |

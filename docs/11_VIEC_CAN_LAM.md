@@ -31,7 +31,7 @@ Test tự động: máy chủ **564**, giao diện **58** (đều qua 18/11/2026
 
 | Nhóm | Đã chốt |
 |---|---|
-| **Máy và G-code** | vẽ / di chuyển **8000**, gia tốc **3000**, junction **0,03** (máy đang chạy **2800 / 0,01** từ 18/11/2026, [07](07_THU_NGHIEM.md) B4 chưa kết luận); Z nhấc **3**, hạ **2000**, chờ **0**; nút bút gửi `G90 G0 Z…`: Lên **Z5** · Giữa **Z3** · Xuống **Z0**; nét cong **G2/G3** (sai lệch ≤ 0,02 mm); giữ **115200 baud**, gửi từng dòng chờ `ok` (~125 dòng/giây); ước tính thời gian: +0,025 s mỗi lần nhấc; `$10=3` cho biểu đồ hàng đợi |
+| **Máy và G-code** | vẽ / di chuyển **8000**, gia tốc **2700**, junction **0,02** (chốt 22/11/2026, đỡ rung lắc; trước 3000 / 0,03); Z nhấc **3**, hạ **2000**, chờ **0**; nút bút gửi `G90 G0 Z…`: Lên **Z5** · Giữa **Z3** · Xuống **Z0**; nét cong **G2/G3** (sai lệch ≤ 0,02 mm); giữ **115200 baud**, gửi từng dòng chờ `ok` (~125 dòng/giây); ước tính thời gian: +0,025 s mỗi lần nhấc; `$10=3` cho biểu đồ hàng đợi |
 | **Máy đã thử xong** (17/11) | mất bước ở 7000–10000 ổn · tốc độ tối đa **10000** · TMC2209 đã bật **SpreadCycle** (DIP3, giữ) · Home, Z, đèn X / Y đúng · **Tiếp tục từ điểm dừng** đúng · Biểu đồ có đường hàng đợi · tab Điều khiển mượt hơn (Tạo nét còn chậm là do laptop) |
 | **Máy đã thử xong** (18/11) | bản vẽ thật có **G2/G3** chạy tốt · tab Điều khiển mượt · servo giật khi bấm nút bút liên tục (xung, firmware; thôi, ghi 02 F16) |
 | **Bút, giấy** | ô "Bút vẽ" = **nét đo trên giấy**: UB-155 **0,38** · UM-100 **0,40** · Sakura **0,50** · bút bi 0,5; `LINE_WIDTH_RATIO` **1,0**; giấy Ivory 250 g/m² mặt bóng |
@@ -61,7 +61,7 @@ Test tự động: máy chủ **564**, giao diện **58** (đều qua 18/11/2026
 | Thứ tự | **thuật toán → nối mạng (Cloudflare) → nút cứng + cảm biến bút → ESP32 cuối cùng** |
 | Khoanh vùng chủ thể | ✅ đã làm: ngoài vùng gạch **nhạt đi** (09 P31) |
 | Bài thử A, B (17/11) | Chân dung bỏ (tự chỉnh khi xem bản nháp); Theo dáng ảnh **chờ ảnh thật**, làm cuối; các bài máy đã đạt dồn về mục 3; mất điện rồi chạy tiếp: **không cần, ghi lại sau nếu muốn** |
-| Junction | **0,03** (nhẹ máy; bút xịn, giấy mượt ít đọng mực) — máy đang chạy 0,01 từ 18/11/2026, [07](07_THU_NGHIEM.md) B4 chưa kết luận |
+| Gia tốc / junction | **2700 / 0,02** (chốt 22/11/2026, chủ dự án: đỡ rung lắc, không chậm hơn bao nhiêu; trước 3000 / 0,03) |
 | Nút bút | gửi `G90 G0 Z…` thay `$J=`, Giữa = **Z3** (servo giật do xung firmware, chốt 18/11, [02](02_PHAN_CUNG_MAY.md) F16) |
 | Báo "vẽ xong / lỗi" | ✅ đã làm: âm báo + tiêu đề tab (09 P32) |
 | Mã QR địa chỉ | **không làm** |
@@ -92,7 +92,7 @@ Test tự động: máy chủ **564**, giao diện **58** (đều qua 18/11/2026
 ### 4.4 Code nhỏ (không cần hỏi)
 1. **Biểu đồ**: tốc độ trong `FS:` cao hơn thật tới 1,41 lần trên CoreXY (02 F15); hiện tốc độ thật = quãng ÷ thời gian. **S**
 2. Mặc định `style.kind` ở `spec.py` đang là `zigzag` còn giao diện là Gạch chéo: đổi cho khớp. **S**
-3. Dòng gợi ý "0,02–0,1; lớn hơn = qua góc nhanh hơn" dưới ô junction trong Cấu hình máy: ghi thêm "đang dùng 0,03". **S**
+3. Dòng gợi ý "0,02–0,1; lớn hơn = qua góc nhanh hơn" dưới ô junction trong Cấu hình máy: ghi thêm "đang dùng 0,02". **S**
 4. Vùng chủ thể chưa đi theo **ảnh khách gửi** (khách chưa khoanh được): thêm vào `customerSnapshot` nếu cần. **S**
 
 Cần bạn cung cấp: ảnh và số sau mỗi buổi thử; router mini (hoặc 4G) cho demo không mạng; máy hiện sóng / logic analyzer nếu có.

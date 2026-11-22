@@ -22,7 +22,7 @@ export const DEFAULT_OPTIONS = {
     defaultFeed: 1000,   // dùng khi G1 thiếu F
     arcTolerance: 0.05,  // sai số khi chia cung tròn (mm)
     accel: 0,            // mm/s²; 0 = thời gian = quãng đường ÷ tốc độ (không tính gia tốc). Màn hình truyền MACHINE.accel
-    junction: 0.03,      // junction_deviation_mm (chỉ dùng khi accel > 0)
+    junction: 0.02,      // junction_deviation_mm (chỉ dùng khi accel > 0; = MACHINE.junction, chốt 22/11/2026)
     liftOverheadS: 0,    // giây cộng thêm mỗi lần nâng bút (chỉ dùng khi accel > 0)
     dwellFlushS: 0,      // giây cộng thêm mỗi G4 (máy xả hết hàng đợi; chỉ dùng khi accel > 0)
     linesPerS: 0         // dòng/giây tối đa máy nhận được; 0 = không giới hạn (chỉ dùng khi accel > 0)

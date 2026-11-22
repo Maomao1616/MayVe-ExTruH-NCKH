@@ -25,7 +25,7 @@ Hằng số thuật toán (`FLOW_*`, `HATCH_*`, `AM_*`, `REFINE_*`) **không** �
 
 ## Danh sách cần thử (làm từ trên xuống)
 
-**Chuẩn bị (một lần):** (1) tắt phần mềm, mở lại, trình duyệt **Ctrl+F5**; (2) tab Tạo bản vẽ, khối G-code: vẽ / di chuyển **8000**, Z nâng 3 / hạ 0, hạ bút 2000, chờ **0**; (3) Terminal gõ `$10` phải ra `$10=3` (không thì gõ `$10=3`); (4) Cài đặt → Cấu hình máy: `junction_deviation` **0,03** → Áp dụng → **Lưu vào mạch** (bạn bấm; phần mềm đã ước tính theo 0,03); (5) bật nguồn, nối, **mở khóa chuyển động**; (6) chọn lại preset sau khi mở. Giấy Ivory mặt bóng, bút **Sakura 0,5** trừ khi ghi khác.
+**Chuẩn bị (một lần):** (1) tắt phần mềm, mở lại, trình duyệt **Ctrl+F5**; (2) tab Tạo bản vẽ, khối G-code: vẽ / di chuyển **8000**, Z nâng 3 / hạ 0, hạ bút 2000, chờ **0**; (3) Terminal gõ `$10` phải ra `$10=3` (không thì gõ `$10=3`); (4) Cài đặt → Cấu hình máy: gia tốc X / Y **2700**, `junction_deviation` **0,02** (chốt 22/11/2026) → Áp dụng → **Lưu vào mạch** (bạn bấm; phần mềm đã ước tính theo 2700 / 0,02); (5) bật nguồn, nối, **mở khóa chuyển động**; (6) chọn lại preset sau khi mở. Giấy Ivory mặt bóng, bút **Sakura 0,5** trừ khi ghi khác.
 
 ### A. In giấy
 Thuật toán đã tạm ổn. **Chân dung bỏ khỏi danh sách**: bạn tự chỉnh thông số khi xem bản nháp trên khung vẽ; chỉ gửi ảnh khi cần AI chỉnh hằng số bên trong.

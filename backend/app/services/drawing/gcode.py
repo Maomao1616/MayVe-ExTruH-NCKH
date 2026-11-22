@@ -17,8 +17,10 @@ from .spec import Params
 from .shapes import Stroke
 
 
-EST_ACCEL_MM_S2 = 3000.0     # gia tốc X / Y / Z dùng để ƯỚC TÍNH thời gian (máy chạy ổn ở 3000, đo 12/11/2026)
-EST_JUNCTION_MM = 0.03       # junction_deviation chốt 17/11/2026 (trước đó 0,05): qua góc càng gắt càng phải giảm tốc
+EST_ACCEL_MM_S2 = 2700.0     # gia tốc X / Y dùng để ƯỚC TÍNH thời gian. Chốt 22/11/2026 (chủ dự án): 2700, đỡ rung lắc
+                             # (trước: 3000 từ 12/11, máy chạy thử 2800 từ 18/11)
+EST_JUNCTION_MM = 0.02       # junction_deviation chốt 22/11/2026: 0,02 (trước: 0,05 -> 0,03 ngày 17/11; máy chạy thử 0,01
+                             # từ 18/11). Qua góc càng gắt càng phải giảm tốc
 EST_LIFT_OVERHEAD_S = 0.025  # mỗi lần nhấc bút mất thêm ngoài chuyển động. 13/11/2026 tờ nhấc bút (Z3, hạ 2000, 20 gạch / hàng):
                              # hàng chờ 0 thật ~6,3 s, hàng chờ 0,02 ~8 s, cả tờ 17 s (bản cũ 0,15 ước 22,5 s). Số cũ 0,15 (12/11)
                              # gánh luôn phần chậm do gửi từng dòng (EST_LINES_PER_S), nay tính riêng

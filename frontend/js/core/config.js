@@ -16,8 +16,8 @@ export const MACHINE = {
     // Chỉ để ƯỚC TÍNH thời gian (lib/gcode.js; = backend drawing/gcode.py EST_*). Đo 12/11/2026: gia tốc 3000 chạy ổn,
     // junction 0,05. Đo 13/11/2026 (tờ nhấc bút + tờ 7.6): mỗi lần nâng bút thêm ~0,025 s, mỗi G4 thêm ~0,025 s (xả hàng
     // đợi), máy nhận tối đa ~125 dòng/giây (gửi một dòng chờ `ok`). Số cũ liftOverheadS 0,15 gộp cả phần chậm do dòng/giây.
-    accel: 3000,         // mm/s²
-    junction: 0.03,      // mm (chốt 17/11/2026, trước đó 0,05)
+    accel: 2700,         // mm/s² (chốt 22/11/2026, trước đó 3000)
+    junction: 0.02,      // mm (chốt 22/11/2026; 17/11: 0,03; trước đó 0,05)
     liftOverheadS: 0.025, // s
     dwellFlushS: 0.025,  // s
     linesPerS: 125       // dòng/giây
