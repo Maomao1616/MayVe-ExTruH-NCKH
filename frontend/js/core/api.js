@@ -40,6 +40,7 @@ async function request(method, path, body, { text = false } = {}) {
 
 export const api = {
     health: () => request("GET", "/health"),
+    share: () => request("GET", "/share"),
     me: () => request("GET", "/auth/me"),
     login: (pin) => request("POST", "/auth/login", { pin }),
     logout: () => request("POST", "/auth/logout"),

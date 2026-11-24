@@ -34,6 +34,7 @@ GUEST_ROUTES = frozenset({
     ("GET", "/api/status"),            # xem trạng thái chung, chỉ đọc
     ("POST", "/api/customer"),          # khách gửi ảnh cho chủ máy (api/customer.py); xem / xóa danh sách là việc quản lý
     ("GET", "/api/events"),            # luồng SSE: khách nhận trạng thái, nhật ký chỉ gửi cho quản lý (api/events.py)
+    ("GET", "/api/share"),             # địa chỉ + mã QR để mở từ máy khác; khách chỉ nhận địa chỉ Internet (api/share.py)
     ("GET", "/api/connection"),
     ("GET", "/api/draw/schema"),       # khai báo tham số để vẽ ô nhập tab Tạo bản vẽ
     ("GET", "/api/auth/me"),

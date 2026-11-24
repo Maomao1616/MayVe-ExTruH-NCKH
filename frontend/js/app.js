@@ -13,6 +13,7 @@ import { initTerminal } from "./views/terminal.js";
 import { initSettings} from "./views/settings.js";
 import { initControl } from "./views/control.js";
 import { initHeader } from "./views/header.js";
+import { initShare } from "./views/share.js";
 import { initDock } from "./views/dock.js";
 import { initDrawing } from "./views/drawing.js";
 import { initDrafts } from "./views/drafts.js";
@@ -35,6 +36,7 @@ async function initApp() {
         initStorage();
         initBeta();
         initHeader();
+        initShare();
         initDock();
         keepScrollSpace()
         console.log("ExtruXY đã khởi động.");

@@ -1541,19 +1541,38 @@ button:not(.nav-tab):active:not(:disabled) {
 }
 
 
-/* Thanh tab tren dien thoai: ba tab chia deu be ngang, khong bi cat chu "Cai dat" */
+/* Thanh tab tren dien thoai: bon tab, moi tab rong vua du chu (khong chong len nhau khi may chinh co chu to);
+   thieu cho thi thanh tab tu cuon ngang */
 @media (max-width: 520px) {
     .nav-tab {
-        flex: 1 1 0;
+        flex: 1 0 auto;
         min-width: 0;
         gap: 5px;
-        padding: 8px 4px;
+        padding: 8px 10px;
         font-size: 13px;
         white-space: nowrap;
     }
 
+    .main-nav {
+        scrollbar-width: none;
+    }
+
+    .main-nav::-webkit-scrollbar {
+        display: none;
+    }
+
     .nav-icon {
         font-size: 14px;
+    }
+}
+
+@media (max-width: 420px) {
+    .nav-tab {
+        padding: 8px 6px;
+    }
+
+    .nav-icon {
+        display: none;                    /* màn rất hẹp: bỏ biểu tượng để đủ chỗ cho cả 4 tên tab */
     }
 }
 
@@ -1883,6 +1902,7 @@ body.is-reordering * {
 body.role-guest .guest-only {
     display: flex;
 }
+
 
 /* Khách: chỉ xem trạng thái, nạp + xem trước G-code, xem trước ảnh. Ẩn mọi thứ điều khiển máy / quản trị. */
 body.role-guest .jog-panel,
@@ -2498,4 +2518,155 @@ input[type="radio"]:focus-visible {
 
 .coordinates-panel .coord-machine {
     border-left-color: color-mix(in srgb, var(--axis) 45%, var(--border));
+}
+
+/* Nút QR trên header + hộp thoại địa chỉ (views/share.js, docs/13) */
+#share-btn {
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.share-dialog {
+    box-sizing: border-box;
+    width: min(92vw, 420px);
+    max-height: 90dvh;
+    margin: auto;
+    padding: 18px;
+    overflow-y: auto;
+    border: 1px solid var(--accent-text);
+    border-radius: var(--radius-button);
+    background: var(--bg-panel);
+    color: var(--text-main);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-text) 25%, transparent), 0 18px 48px rgba(0, 0, 0, 0.5);
+}
+
+.share-dialog[open] {
+    animation: share-pop 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.share-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+}
+
+.share-dialog[open]::backdrop {
+    animation: share-fade 0.25s ease-out;
+}
+
+.share-dialog h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.share-help,
+.share-none {
+    margin: 6px 0 12px;
+    font-size: 13px;
+}
+
+.share-card {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.share-card:nth-child(2) .share-frame {
+    animation-delay: 0.12s;
+}
+
+.share-kind {
+    margin: 0;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Khung QR: nền trắng cố định (điện thoại quét được), 4 góc vàng, một tia quét chạy qua khi mở */
+.share-frame {
+    position: relative;
+    display: grid;
+    padding: 10px;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+    animation: share-reveal 0.5s ease-out both;
+}
+
+.share-frame::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    border-radius: 7px;
+    background:
+        linear-gradient(var(--accent-text), var(--accent-text)) top left / 18px 3px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) top left / 3px 18px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) top right / 18px 3px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) top right / 3px 18px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) bottom left / 18px 3px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) bottom left / 3px 18px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) bottom right / 18px 3px no-repeat,
+        linear-gradient(var(--accent-text), var(--accent-text)) bottom right / 3px 18px no-repeat;
+    pointer-events: none;
+}
+
+.share-frame::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 28%;
+    background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--accent-text) 45%, transparent), transparent);
+    transform: translateY(-110%);
+    animation: share-scan 1.3s ease-in-out 0.35s 1 forwards;
+    pointer-events: none;
+}
+
+.share-qr {
+    display: block;
+    width: min(64vw, 240px);
+    height: auto;
+    image-rendering: pixelated;
+}
+
+.share-url {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+    font-size: 12px;
+}
+
+#share-close-btn {
+    width: 100%;
+}
+
+@keyframes share-pop {
+    from { opacity: 0; transform: translateY(10px) scale(0.94); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes share-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes share-reveal {
+    from { opacity: 0; transform: scale(0.9); filter: blur(3px); }
+    to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes share-scan {
+    to { transform: translateY(380%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .share-dialog[open],
+    .share-dialog[open]::backdrop,
+    .share-frame {
+        animation: none;
+    }
+
+    .share-frame::after {
+        display: none;
+    }
 }

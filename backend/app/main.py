@@ -14,7 +14,7 @@ from .auth import COOKIE, auth
 from .services.machine import ServiceError, machine
 
 # Backend điều khiển máy thật nên mặc định chỉ phục vụ máy cục bộ (uvicorn mặc định bind
-# 127.0.0.1). Chạy qua LAN: đặt EXTRUXY_ALLOWED_HOSTS="192.168.1.20,localhost" (hoặc "*").
+# 127.0.0.1). Chạy qua LAN: đặt EXTRUXY_ALLOWED_HOSTS="192.168.1.20,localhost" (hoặc "*"; mục ".trycloudflare.com" cho phép mọi tên con).
 ALLOWED_HOSTS = {h.strip().lower() for h in
                  os.environ.get("EXTRUXY_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",")
                  if h.strip()}
@@ -45,12 +45,19 @@ def _host_name(host: str) -> str:
     return host.split(":", 1)[0]
 
 
+def _host_allowed(name: str) -> bool:
+    """Khớp đúng tên, hoặc mục bắt đầu bằng dấu chấm (".trycloudflare.com") khớp mọi tên con của nó."""
+    if "*" in ALLOWED_HOSTS or name in ALLOWED_HOSTS:
+        return True
+    return any(h.startswith(".") and len(name) > len(h) and name.endswith(h) for h in ALLOWED_HOSTS)
+
+
 @app.middleware("http")
 async def local_guard(request: Request, call_next):
     """Chặn DNS rebinding (Host lạ) và trang web khác gửi lệnh tới máy (Origin lạ)."""
     idle.touch()
     host = (request.headers.get("host") or "").lower()
-    if "*" not in ALLOWED_HOSTS and _host_name(host) not in ALLOWED_HOSTS:
+    if not _host_allowed(_host_name(host)):
         return _error(403, "bad_host", f"Host không được phép: {host or '(trống)'}")
     if request.method not in _SAFE_METHODS:
         origin = request.headers.get("origin")

@@ -58,10 +58,19 @@
 
       <div class="auth-box" id="auth-box"><span class="role-badge" id="role-badge"></span><form class="auth-form" id="login-form" hidden><input autocomplete="current-password" data-i18n="[placeholder]auth.pinPlaceholder; [aria-label]auth.pinPlaceholder" id="login-pin" inputmode="numeric" maxlength="64" name="pin" placeholder="Mã PIN quản lý" type="password"/><button class="toolbar-button" data-i18n="auth.submit" type="submit">Vào</button></form><span class="auth-error" id="login-error" role="alert" hidden></span><button class="toolbar-button" data-i18n="auth.login" id="login-btn" type="button">Đăng nhập quản lý</button><button class="toolbar-button" data-i18n="auth.logout" hidden id="logout-btn" type="button">Đăng xuất</button></div>
 
+      <button aria-label="Mã QR mở từ máy khác" class="icon-button" id="share-btn" title="Mã QR mở từ máy khác" type="button" data-i18n="[aria-label]share.title; [title]share.title">QR</button>
+
       <button aria-label="Làm mới trạng thái" class="icon-button" id="refresh-status-btn" title="Làm mới trạng thái" type="button" data-i18n="[aria-label]aria.refreshStatus; [title]action.refreshStatus.title">
         ↻
       </button>
     </header>
+
+    <dialog class="share-dialog" id="share-dialog" aria-labelledby="share-heading">
+      <h2 id="share-heading" data-i18n="share.title">Mở từ máy khác</h2>
+      <p class="share-help" data-i18n="share.help">Quét mã bằng điện thoại để mở giao diện này.</p>
+      <div class="share-list" id="share-list"></div>
+      <button class="toolbar-button" id="share-close-btn" type="button" data-i18n="share.close">Đóng</button>
+    </dialog>
 
     <!-- Cảnh báo mất kết nối / dữ liệu cũ -->
     <div class="system-alert" hidden="" id="system-alert" role="status">

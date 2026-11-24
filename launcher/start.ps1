@@ -48,6 +48,25 @@ if (-not (Test-Port $port)) {
       }
     }
   }
+  # MO RA NGOAI (tuy chon): data\mang.txt (khong len Git), moi dong mot muc:
+  #   host=plotter.tenmien.com   them ten mien vao danh sach Host duoc phep (nhieu dong duoc)
+  #   giu_bat=1                  server khong tu tat khi dong het trang (de may khac van vao duoc)
+  #   tunnel=plotter             chay "cloudflared tunnel run plotter" cung server (da cai cloudflared, xem docs/13)
+  #   url=https://plotter.tenmien.com   dia chi hien o nut QR tren header
+  # Luu y: chua dat PIN quan ly (admin=) thi ai vao duoc dia chi nay cung la quan ly (chu du an da chon khong bat buoc PIN).
+  $netHosts = @(); $tunnel = $null
+  $netFile = Join-Path $root "data\mang.txt"
+  if (Test-Path $netFile) {
+    foreach ($line in Get-Content $netFile) {
+      if ($line -match '^\s*host\s*=\s*([A-Za-z0-9.-]+)\s*$') { $netHosts += $Matches[1] }
+      elseif ($line -match '^\s*giu_bat\s*=\s*1\s*$') { $env:EXTRUXY_IDLE_EXIT_MIN = "0" }
+      elseif ($line -match '^\s*tunnel\s*=\s*([A-Za-z0-9._-]+)\s*$') { $tunnel = $Matches[1] }
+      elseif ($line -match '^\s*url\s*=\s*(https?://\S+)\s*$') { $env:EXTRUXY_PUBLIC_URL = $Matches[1] }   # dia chi hien o ma QR tren header
+    }
+  }
+  if ($ip -ne "localhost") { $env:EXTRUXY_LAN_URL = "http://${ip}:${port}" }                              # ma QR thu hai: dia chi trong mang nha
+  if ($tunnel) { $env:EXTRUXY_IDLE_EXIT_MIN = "0" }     # co duong ham thi server khong tu tat (neu tat, cloudflared mo coi); tat bang icon Tat
+  if ($netHosts.Count -gt 0) { $env:EXTRUXY_ALLOWED_HOSTS = $env:EXTRUXY_ALLOWED_HOSTS + "," + ($netHosts -join ",") }
   # Chi ghi LOI khi khoi dong (khong ghi tung yeu cau), ghi de moi lan bat: xem khi server khong len.
   New-Item -ItemType Directory -Force -Path $env:EXTRUXY_DATA_DIR | Out-Null
   $proc = Start-Process $python -PassThru -WindowStyle Hidden -WorkingDirectory (Join-Path $root "backend") `
@@ -69,6 +88,10 @@ if (-not (Test-Port $port)) {
     exit 1
   }
   $started = $true
+  # Duong ham Cloudflare: chay an cung server, ghi loi vao data\tunnel-loi.txt. Khong co cloudflared thi bo qua (van chay trong LAN).
+  if ($tunnel -and (Get-Command cloudflared -ErrorAction SilentlyContinue)) {
+    Start-Process cloudflared -WindowStyle Hidden -ArgumentList "tunnel","run",$tunnel -RedirectStandardError (Join-Path $root "data\tunnel-loi.txt")
+  }
 }
 # Server da chay tu truoc ma IP may da doi (doi mang): server khong nhan IP moi -> mo localhost (luon vao duoc tren may nay).
 # Vua tu bat thi IP chac chan dung, khoi hoi lai.

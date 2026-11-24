@@ -233,3 +233,11 @@ def test_cancel_route_rejects_nan(client):
     r = client.post("/api/jobs/cancel", content='{"mode": "soft", "lift_z": NaN}',
                     headers={"content-type": "application/json"})
     assert r.status_code == 422
+
+
+def test_host_suffix_entry_allows_subdomains_only(client, monkeypatch):
+    from app import main
+    monkeypatch.setattr(main, "ALLOWED_HOSTS", {"localhost", ".trycloudflare.com"})
+    assert client.get("/api/status", headers={"host": "abc-def.trycloudflare.com"}).status_code == 200
+    for bad in ("trycloudflare.com", "evil-trycloudflare.com", "abc.trycloudflare.com.evil.example"):
+        assert client.get("/api/status", headers={"host": bad}).status_code == 403
