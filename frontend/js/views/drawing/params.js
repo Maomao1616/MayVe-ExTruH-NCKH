@@ -330,8 +330,48 @@ export function setValues(values) {
         if (el.type === "checkbox") el.checked = Boolean(v);
         else if (el.tagName !== "SELECT" || [...el.options].some((o) => o.value === String(v))) el.value = String(v);
     }
+    syncToneSliders();
     syncVisibility();
     saveForm();
+}
+
+/* ---------- thanh trượt cạnh các ô tông ảnh (24/11/2026) ---------- */
+// Ô số vẫn là chủ ghi và nguồn sự thật. Thanh trượt chỉ phản chiếu: kéo -> ghi vào ô số rồi phát "input" như khi gõ
+// (xem trước tông chạy ngay trong trình duyệt, chưa tạo lại nét). Ô cần chính xác (khổ giấy, tốc độ, Z...) giữ nguyên ô số.
+const TONE_SLIDER_IDS = ["image-black-point", "image-white-point", "image-gamma", "image-contrast", "image-sharpen"];
+
+function syncToneSliders() {
+    for (const id of TONE_SLIDER_IDS) {
+        const number = $(id);
+        const slider = number?.parentElement?.querySelector(".tone-slider");
+        if (!slider) continue;
+        for (const attr of ["min", "max", "step"]) slider[attr] = number[attr];      // min / max có thể vừa đổi theo schema
+        slider.value = number.value.trim() === "" ? number.defaultValue : number.value;   // ô trống: hiện mặc định; ngoài khoảng: trình duyệt tự kẹp
+    }
+}
+
+function initToneSliders() {
+    for (const id of TONE_SLIDER_IDS) {
+        const number = $(id);
+        const label = number?.parentElement;
+        if (!number || label.querySelector(".tone-slider")) continue;
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.className = "tone-slider";
+        const name = label.querySelector("span");
+        if (name) {
+            name.id ||= `${id}-label`;
+            slider.setAttribute("aria-labelledby", name.id);                        // theo cả khi đổi ngôn ngữ
+        }
+        slider.addEventListener("input", () => {
+            number.value = slider.value;
+            number.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        number.addEventListener("input", syncToneSliders);                          // gõ số -> thanh trượt theo
+        label.classList.add("has-slider");                                          // CSS xếp ô số (trái) và thanh trượt (phải) cùng một hàng
+        number.after(slider);                                                       // thứ tự DOM = thứ tự trên màn hình (Tab đi ô số rồi thanh trượt)
+    }
+    syncToneSliders();
 }
 
 /* ---------- schema, nhớ giá trị ---------- */
@@ -347,6 +387,7 @@ export function applySchema(data) {
     }
     // Ô tốc độ chỉ chặn theo schema (20000), không theo tốc độ tối đa của máy: vượt thì backend cảnh báo
     // (feed_above_rapid), firmware tự chặn ở max_rate. Để thử tốc độ cao không bị ô nhập báo sai.
+    syncToneSliders();
 }
 
 function saveForm() {
@@ -404,6 +445,7 @@ export function resetOptimize(onChange) {
 // `onChange(kind, id)` kind: "layout" (chỉ bố trí lại) | "import" (phải vector hóa lại) | "gcode" (chỉ tạo lại G-code)
 export function initParams(onChange) {
     restoreForm();
+    initToneSliders();
     setPenZ(MACHINE.gcodeUpZ, MACHINE.penDownZ);
     syncVisibility();
 

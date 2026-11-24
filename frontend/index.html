@@ -108,8 +108,7 @@
           <button class="toolbar-button danger-button" data-i18n="[title]action.reset.title; common.action.reset" data-realtime="reset" disabled="" id="reset-btn" title="Dừng mềm (Ctrl-X): dừng ngay, máy mất vị trí và phải Home lại" type="button">Reset</button>
         </div>
         <p class="toolbar-safety-note" data-i18n="toolbar.safetyNote">
-          Reset là dừng mềm, không phải dừng khẩn cấp.
-          Dừng khẩn cấp thật: ngắt nguồn máy.
+          Reset là dừng mềm, không phải dừng khẩn cấp. Dừng khẩn cấp thực sự: ngắt nguồn máy.
         </p>
       </div>
     </div>
@@ -128,7 +127,7 @@
             <h3 data-i18n="dock.macros">Macro</h3>
             <button class="secondary-button" data-i18n="dock.macro.add" id="macro-add-btn" type="button">+ Thêm</button>
           </div>
-          <p class="help-text" data-i18n="dock.macro.empty" id="macro-empty">Chưa có macro. Bấm “Thêm” để tạo nút hành động quen thuộc.</p>
+          <p class="help-text" data-i18n="dock.macro.empty" id="macro-empty">Chưa có macro. Chọn “Thêm” để tạo nút thao tác thường dùng.</p>
           <div class="dock-list" id="dock-macro-list"></div>
 
           <form class="dock-form" hidden="" id="macro-form">
@@ -238,8 +237,8 @@
 
         <div class="notice notice-warning" hidden="" id="motion-live-banner" role="status">
           <strong data-i18n="control.motion.live_title">CHẠY THẬT: chuyển động đang mở khóa.</strong>
-          <span><span data-i18n="control.motion.live_timer">Tự khóa lại sau</span> <b id="motion-live-timer">—</b></span>
-          <button class="secondary-button" data-i18n="control.motion.relock" id="relock-motion-btn" type="button">Khóa lại</button>
+          <span><span data-i18n="control.motion.live_timer">Tự khóa lại sau:</span> <b id="motion-live-timer">—</b></span>
+          <button class="secondary-button" data-i18n="control.motion.relock" id="relock-motion-btn" type="button">Khóa chuyển động</button>
         </div>
 
         <div class="control-layout">
@@ -353,8 +352,7 @@
                 </div>
               </div>
               <p class="help-text" data-i18n="control.jog.help">
-                Jog chỉ mở khi máy rảnh (Idle). Máy chưa Home vẫn jog được,
-                nhưng không chạy được G-code.
+                Jog chỉ khả dụng khi máy ở trạng thái rảnh (Idle). Sau lệnh $X, máy chấp nhận cả jog lẫn G-code dù chưa Home; do đó nên thực hiện Home trước khi vẽ để bảo đảm tọa độ chính xác.
               </p>
             </article>
 
@@ -362,7 +360,7 @@
               <div class="panel-heading panel-heading-compact">
                 <div>
                   <h2 data-i18n="control.gcode.title">Tệp G-code</h2>
-                  <p data-i18n="control.gcode.desc">Nạp từ máy tính hoặc chọn tệp trong máy</p>
+                  <p data-i18n="control.gcode.desc">Nạp từ máy tính và chạy từng dòng</p>
                 </div>
              
               </div>
@@ -392,7 +390,7 @@
               <div class="gcode-check" hidden="" id="gcode-check" role="status">
                 <strong id="gcode-check-title"></strong>
                 <ul id="gcode-check-list"></ul>
-                <p class="help-text" hidden="" id="gcode-check-help" data-i18n="control.gcheck.blockedHelp">Mở tệp bằng trình soạn thảo, sửa hoặc xóa các dòng trên rồi nạp lại. Máy chủ cũng chặn các lệnh này nên tệp không thể chạy nhầm.</p>
+                <p class="help-text" hidden="" id="gcode-check-help" data-i18n="control.gcheck.blockedHelp">Mở tệp bằng trình soạn thảo, sửa hoặc xóa các dòng nêu trên rồi nạp lại. Máy chủ đồng thời chặn các lệnh này nên tệp không thể bị thực thi ngoài ý muốn.</p>
               </div>
               <p class="inline-warning" hidden="" id="gcode-origin-warning" role="status">
                 <span aria-hidden="true">⚠</span>
@@ -410,7 +408,7 @@
               <div class="resume-box" hidden="" id="resume-box" role="status">
                 <strong data-i18n="control.resume.title">Tác vụ đã dừng giữa chừng</strong>
                 <p id="resume-text"></p>
-                <p class="help-text" data-i18n="control.resume.help">Sau khi Home, đừng đặt lại Zero và đừng dịch giấy. Bút sẽ nâng lên, chạy tới đầu nét rồi vẽ tiếp.</p>
+                <p class="help-text" data-i18n="control.resume.help">Sau khi Home, không đặt lại Zero và không dịch chuyển giấy. Bút sẽ nâng lên, di chuyển tới đầu nét rồi tiếp tục vẽ.</p>
                 <div class="gcode-actions">
                   <button class="primary-button" data-i18n="control.resume.run" disabled="" id="resume-run-btn" type="button">▶ Tiếp tục</button>
                   <button data-i18n="control.resume.discard" id="resume-discard-btn" type="button">Bỏ điểm dừng</button>
@@ -428,7 +426,7 @@
                   <button data-feed="feed_plus1" disabled="" type="button">+1</button>
                   <button data-feed="feed_plus10" disabled="" type="button">+10</button>
                 </div>
-                <p class="help-text" data-i18n="control.feed.help">Nhân với tốc độ F có trong tệp (80% của F3000 là 2400 mm/phút), chỉnh được cả khi đang vẽ. Firmware giới hạn 10–200%; Reset đưa về 100%.</p>
+                <p class="help-text" data-i18n="control.feed.help">Hệ số nhân áp lên tốc độ F trong tệp (80% của F3000 tương ứng 2400 mm/phút); có thể điều chỉnh cả khi đang vẽ. Firmware giới hạn trong khoảng 10–200%; lệnh Reset đưa về 100%.</p>
               </div>
             </article>
 
@@ -541,7 +539,7 @@
                   <p class="job-chart-hover" id="chart-hover" data-i18n="chart.hoverHint">Rê chuột lên biểu đồ để xem số liệu từng lúc.</p>
                 </div>
                 <table class="job-chart-summary" hidden id="chart-summary"></table>
-                <p class="help-text" data-i18n="chart.help">Mỗi lần chạy tự lưu trên máy chủ (thư mục data/job_logs, giữ 30 lần gần nhất, tự xóa lần cũ nhất khi đầy). "Tải CSV" chép một bản về máy bạn; "So với" là so sánh hai lần chạy ngay trên màn hình.</p>
+                <p class="help-text" data-i18n="chart.help">Mỗi lần chạy được lưu tự động trên máy chủ (thư mục data/job_logs; giữ 30 lần gần nhất, xóa lần cũ nhất khi đầy; bao gồm cả lần bị ngắt kết nối giữa chừng). Số liệu được ghi nhận mỗi lần máy báo trạng thái (~10 lần/giây). Số lần nhấc bút được tính từ G-code, không tính từ mẫu. Hàng đợi chỉ có khi máy gửi Bf (lệnh $10=3). "Tải CSV" xuất một bản về máy tính; "So với" đối chiếu hai lần chạy ngay trên màn hình.</p>
               </div>
 
               <div class="preview-canvas-container" id="preview-canvas-container">
@@ -586,8 +584,7 @@
                 <pre aria-label="Nhật ký lệnh máy" aria-live="off" class="terminal-output"
                       id="terminal-output" data-i18n="[aria-label]aria.terminalLog"></pre>
                 <p class="help-text" data-i18n="control.terminal.help">
-                  Chỉ gửi lệnh khi đã hiểu tác dụng và xác nhận
-                  đúng chế độ kết nối.
+                  Chỉ gửi lệnh khi đã nắm rõ tác dụng của lệnh và xác nhận đúng chế độ kết nối.
                 </p>
 
               </div>
@@ -707,6 +704,7 @@
                 <label class="upload-zone" for="drawing-file">
                   <span aria-hidden="true" class="upload-icon">↑</span>
                   <strong data-i18n="drawing.source.choose">Chọn tệp bản vẽ</strong>
+                  <strong aria-hidden="true" class="upload-drop-text" data-i18n="drawing.source.drop">Thả để nạp tệp</strong>
                   <span data-i18n="drawing.source.hint">Nhấn để chọn tệp từ máy tính</span>
                 </label>
                 <input accept=".png,.jpg,.jpeg,.jfif,.webp,.bmp,.gif,.avif,.svg,image/*" id="drawing-file" name="drawing-file" type="file"/>
@@ -715,7 +713,7 @@
                 </p>
                 <div class="customer-send guest-only" id="customer-send-box">
                   <h4 data-i18n="customer.send.title">Gửi ảnh cho chủ máy</h4>
-                  <p class="help-text" data-i18n="customer.send.help">Chọn ảnh, cắt, chọn khổ giấy, chỉnh sáng tối và kiểu nét mong muốn (chỉ xem trước ảnh xám). Bấm Gửi: chủ máy sẽ tạo nét và vẽ.</p>
+                  <p class="help-text" data-i18n="customer.send.help">Chọn ảnh, cắt, chọn khổ giấy, điều chỉnh độ sáng tối và kiểu nét mong muốn (bản xem trước chỉ hiển thị ảnh xám). Chọn Gửi: chủ máy sẽ tạo nét và thực hiện vẽ.</p>
                   <label for="customer-name"><span data-i18n="customer.send.name">Tên bạn (không bắt buộc)</span>
                     <input id="customer-name" maxlength="40" type="text"/></label>
                   <label for="customer-note"><span data-i18n="customer.send.note">Ghi chú cho chủ máy (không bắt buộc)</span>
@@ -736,7 +734,7 @@
               <div class="drawing-section-body">
                 <div class="customer-inbox-toolbar">
                   <button class="secondary-button" data-i18n="common.action.refresh" id="customer-inbox-refresh-btn" type="button">Làm mới</button>
-                  <span class="help-text" data-i18n="customer.inbox.help">Ảnh tự xóa sau số ngày đặt ở Cài đặt → Bản thảo.</span>
+                  <span class="help-text" data-i18n="customer.inbox.help">Ảnh được tự động xóa sau số ngày thiết lập tại Cài đặt → Bản thảo.</span>
                 </div>
                 <p class="help-text" data-i18n="customer.inbox.empty" id="customer-inbox-empty">Chưa có ảnh nào.</p>
                 <ul class="customer-inbox-list" id="customer-inbox-list"></ul>
@@ -896,7 +894,7 @@
                   </label>
                 </div>
                 <p class="help-text" data-i18n="drawing.preprocess.help">
-                  Độ phân giải tự tính từ cỡ khung vẽ và độ rộng bút.
+                  Độ phân giải được tính tự động từ kích thước khung vẽ và độ rộng bút (cạnh dài của khung ÷ độ rộng bút × 1,3). Nhóm này không áp dụng cho ảnh SVG.
                 </p>
               </div>
             </details>
@@ -910,7 +908,7 @@
               <div class="drawing-section-body">
                 <div class="form-grid form-grid-spaced">
                   <label for="style-kind" data-i18n="[title]drawing.hint.kind">
-                    <span data-i18n="drawing.vectorize.mode">Kiểu nét vẽ</span>
+                    <span data-i18n="drawing.vectorize.mode">Thuật toán tạo nét</span>
                     <select id="style-kind">
                       <option data-i18n="drawing.style.crosshatch" selected="" value="crosshatch">Đan chéo (cross-hatching)</option>
                       <option data-i18n="drawing.style.flow" value="flow">Đường dòng theo trường hướng (flow field)</option>
@@ -959,15 +957,15 @@
                     <input id="palette-ink-w4" type="number" min="0.05" max="3" step="0.01" placeholder="như ô Bút vẽ"/>
                   </label>
                   <label for="style-levels" data-i18n="[title]drawing.hint.levels">
-                    <span data-i18n="drawing.style.levels">Số mức đậm nhạt</span>
+                    <span data-i18n="drawing.style.levels">Số mức tông (tone levels)</span>
                     <input id="style-levels" type="number" min="3" max="8" step="1" value="5"/>
                   </label>
                   <label for="style-angle" data-i18n="[title]drawing.hint.angle">
-                    <span data-i18n="drawing.style.angle">Góc gạch (°)</span>
+                    <span data-i18n="drawing.style.angle">Góc quét (°)</span>
                     <input id="style-angle" type="number" min="0" max="179" step="1" value="45"/>
                   </label>
                   <label for="style-spacing" data-i18n="[title]drawing.hint.spacing">
-                    <span data-i18n="drawing.style.spacing">Khoảng cách gạch (mm, trống = tự tính)</span>
+                    <span data-i18n="drawing.style.spacing">Bước nét (mm, trống = tự tính)</span>
                     <input id="style-spacing" type="number" min="0.1" max="20" step="0.05" placeholder="auto"/>
                   </label>
                   <label for="style-amplitude" data-i18n="[title]drawing.hint.amplitude">
@@ -975,11 +973,11 @@
                     <input id="style-amplitude" type="number" min="0.05" max="10" step="0.05" placeholder="auto"/>
                   </label>
                   <label for="style-refine" data-i18n="[title]drawing.hint.refine">
-                    <span data-i18n="drawing.style.refine">Sửa sai tông (lượt)</span>
+                    <span data-i18n="drawing.style.refine">Hiệu chỉnh tông (số vòng phản hồi)</span>
                     <input id="style-refine" type="number" min="0" max="3" step="1" value="1"/>
                   </label>
                   <label for="style-outline-detail" data-i18n="[title]drawing.hint.outlineDetail">
-                    <span data-i18n="drawing.style.outlineDetail">Chi tiết viền</span>
+                    <span data-i18n="drawing.style.outlineDetail">Mức chi tiết đường bao</span>
                     <select id="style-outline-detail">
                       <option data-i18n="drawing.style.detailLow" value="low">Ít (khối chính, ảnh chụp)</option>
                       <option data-i18n="drawing.style.detailMedium" selected="" value="medium">Vừa</option>
@@ -994,19 +992,19 @@
                   </label>
                   <label data-i18n="[title]drawing.hint.xdog">
                     <input id="style-xdog" type="checkbox"/>
-                    <span data-i18n="drawing.style.xdog">Dùng FDoG (viền rõ hơn ở ảnh chụp, ảnh tối / ngược sáng)</span>
+                    <span data-i18n="drawing.style.xdog">Dò biên FDoG (rõ hơn ở ảnh chụp, ảnh tối / ngược sáng)</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.outlineOverlay">
                     <input id="style-outline" type="checkbox"/>
-                    <span data-i18n="drawing.style.outlineOverlay">Thêm lớp viền phác họa lên kiểu tô</span>
+                    <span data-i18n="drawing.style.outlineOverlay">Chồng lớp đường bao lên bản tô</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.soft">
                     <input id="style-soft" type="checkbox" checked/>
-                    <span data-i18n="drawing.style.soft">Chuyển mức mềm (ranh giới các mức đan so le)</span>
+                    <span data-i18n="drawing.style.soft">Chuyển mức mềm (dithering ranh giới mức)</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.amFill">
                     <input id="style-am-fill" type="checkbox"/>
-                    <span data-i18n="drawing.style.amFill">Phủ đều đường ở vùng sáng (da mặt không khe trắng)</span>
+                    <span data-i18n="drawing.style.amFill">Phủ đều vùng sáng (không khe trắng)</span>
                   </label>
                   <label data-i18n="[title]drawing.hint.invert">
                     <input id="style-invert" type="checkbox"/>
@@ -1090,7 +1088,7 @@
                     <input id="pen-delay-up" type="number" min="0" step="0.01" value="0"/>
                   </label>
                   <label for="draw-pen-width">
-                    <span data-i18n="drawing.params.penWidth">Bút vẽ (độ rộng nét)</span>
+                    <span data-i18n="drawing.params.penWidth">Bút vẽ (bề rộng nét trên giấy)</span>
                     <select id="draw-pen-width">
                       <option data-mm="0.38" data-i18n="drawing.params.penUb155" value="ub155">Uniball UB-155 đỏ / đen (nét 0,38)</option>
                       <option data-mm="0.4" data-i18n="drawing.params.penUm100" value="um100">Uniball UM-100 (nét 0,40)</option>
@@ -1105,7 +1103,7 @@
                   </label>
                 </div>
                 <p class="help-text" data-i18n="drawing.params.help">
-                  Z lấy theo hồ sơ máy (Z0 bút xuống, Z3 bút lên).
+                  Z lấy theo hồ sơ máy (Z0: bút hạ; Z3: bút nâng).
                 </p>
               </div>
             </details>
@@ -1126,7 +1124,7 @@
                   <button data-i18n="[title]drawing.canvas.zoomIn" disabled="" id="drawing-zoom-in-btn" type="button">+</button>
                   <button data-i18n="drawing.canvas.fit" disabled="" id="drawing-fit-btn" type="button">Xem toàn bộ</button>
                   <button data-i18n="drawing.canvas.rotate" disabled="" id="drawing-rotate-btn" type="button">Xoay 90°</button>
-                  <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Giữ Shift + cuộn để thu phóng</span>
+                  <span class="muted-text drawing-canvas-hint" data-i18n="drawing.canvas.zoomHint">Ctrl hoặc Shift + cuộn chuột: thu phóng; kéo chuột: di chuyển</span>
                   <button data-i18n="drawing.canvas.keep; [title]drawing.hint.keep" disabled="" id="drawing-keep-btn" type="button">Giữ bản này</button>
                   <label class="checkbox-inline" data-i18n="[title]drawing.hint.compare" for="drawing-compare">
                     <span data-i18n="drawing.canvas.compare">So sánh</span>
@@ -1157,7 +1155,7 @@
                       <option data-i18n="drawing.subject.none" selected="" value="none">Không</option>
                       <option data-i18n="drawing.subject.ellipse" value="ellipse">Elip</option>
                       <option data-i18n="drawing.subject.rect" value="rect">Chữ nhật</option>
-                      <option data-i18n="drawing.subject.auto" value="auto">Tự động</option>
+                      <option data-i18n="drawing.subject.auto" value="auto">Tự động (tách nền)</option>
                       <option data-i18n="drawing.subject.free" value="free">Vẽ tay</option>
                     </select>
                   </label>
@@ -1201,7 +1199,7 @@
                     <button data-i18n="drawing.crop.cancel" id="crop-cancel-btn" type="button">Hủy</button>
                     <button class="primary-button" data-i18n="drawing.crop.apply" id="crop-apply-btn" type="button">Áp dụng cắt</button>
                   </div>
-                  <p class="help-text" data-i18n="drawing.crop.help">Kéo trong ảnh để chọn vùng mới, kéo khung để dời, kéo góc hoặc cạnh để co giãn. Áp dụng sẽ tạo lại nét theo phần đã cắt.</p>
+                  <p class="help-text" data-i18n="drawing.crop.help">Kéo trong ảnh để chọn vùng mới; kéo khung để dời vị trí; kéo góc hoặc cạnh để thay đổi kích thước. Lệnh Áp dụng tạo lại nét theo phần ảnh đã cắt.</p>
                 </div>
                 <div class="crop-panel subject-panel" hidden="" id="subject-panel">
                   <label for="subject-outside">
@@ -1214,21 +1212,28 @@
                     <button data-i18n="drawing.subject.freeSub" id="subject-free-sub" type="button">Tô bớt</button>
                     <button data-i18n="drawing.subject.freeUndo" id="subject-free-undo" type="button">Hoàn tác nét</button>
                   </div>
-                  <p class="help-text" data-i18n="drawing.subject.freeHelp" hidden="" id="subject-free-help">Giữ chuột và kéo quanh người / vật, thả ra thì nét tự khép kín. Tô nhiều nét để phủ hết; chỗ lỡ tay thì chuyển sang Tô bớt rồi tô lên. Xong bấm Áp dụng vùng.</p>
+                  <p class="help-text" data-i18n="drawing.subject.freeHelp" hidden="" id="subject-free-help">Giữ chuột và kéo quanh chủ thể (người hoặc vật); khi thả chuột, nét tự khép kín. Có thể tô nhiều nét để phủ kín vùng; nếu tô lệch, chuyển sang Tô bớt rồi tô lại phần thừa. Hoàn tất bằng Áp dụng vùng.</p>
                   <div class="crop-actions">
                     <button data-i18n="drawing.subject.reset" id="subject-reset-btn" type="button">Xóa vùng</button>
                     <button data-i18n="drawing.crop.cancel" id="subject-cancel-btn" type="button">Hủy</button>
                     <button class="primary-button" data-i18n="drawing.subject.apply" id="subject-apply-btn" type="button">Áp dụng vùng</button>
                   </div>
-                  <p class="help-text" data-i18n="drawing.subject.panelHelp">Kéo trong ảnh để khoanh chủ thể, kéo khung để dời, kéo góc hoặc cạnh để co giãn. Ngoài vùng, bản vẽ nhạt đi theo thanh trên (0 % = trắng hẳn); nền vẫn được vẽ.</p>
+                  <p class="help-text" data-i18n="drawing.subject.panelHelp">Kéo trong ảnh để khoanh chủ thể; kéo khung để dời vị trí; kéo góc hoặc cạnh để thay đổi kích thước. Ngoài vùng chủ thể, bản vẽ được làm nhạt theo thanh điều chỉnh phía trên (0 % = trắng hoàn toàn); nền vẫn được vẽ. Chế độ Tự động tách chủ thể (người hoặc vật) trong khoảng 1 giây, không cần kéo; kết quả tốt nhất khi chủ thể nằm ở giữa ảnh.</p>
                 </div>
                 <div aria-live="polite" class="drawing-progress" id="drawing-progress">
                   <progress id="drawing-progress-bar" max="1" value="0"></progress>
+                  <ol aria-hidden="true" class="draw-steps" hidden="" id="drawing-steps">
+                    <li data-i18n="drawing.steps.prepare" data-step="prepare">Chuẩn bị ảnh</li>
+                    <li data-i18n="drawing.steps.read" data-step="read">Đọc tệp</li>
+                    <li data-i18n="drawing.steps.tone" data-step="tone">Chỉnh sắc độ</li>
+                    <li data-i18n="drawing.steps.style" data-step="style">Tạo nét</li>
+                    <li data-i18n="drawing.steps.optimize" data-step="optimize">Tối ưu nét</li>
+                  </ol>
                   <span class="muted-text" data-i18n="drawing.progress.idle" id="drawing-progress-text">Chưa có tác vụ</span>
                   <button class="danger-button" data-i18n="drawing.progress.cancel" disabled="" id="drawing-cancel-btn" type="button">Hủy</button>
                 </div>
                 <div class="drawing-preview-actions">
-                  <button disabled="" id="final-run-btn" type="button">Tạo nét</button>
+                  <button class="primary-button" disabled="" id="final-run-btn" type="button">Tạo nét</button>
                 </div>
                 <div aria-live="polite" class="drawing-warnings" id="drawing-warnings">
                   <strong data-i18n="drawing.preview.warnings">Cảnh báo</strong>
@@ -1250,7 +1255,7 @@
                   </div>
                 </div>
                 <p class="help-text" data-i18n="drawing.preview.sendHelp">
-                  Chuyển sang Điều khiển sẽ lưu bản thảo và đưa vào Hàng đợi công việc.
+                  Lệnh Chuyển sang Điều khiển lưu bản thảo và đưa vào Hàng đợi công việc.
                 </p>
               </div>
             </details>
@@ -1436,7 +1441,7 @@
                   <strong id="beta-zoom-value">100 %</strong>
                   <button class="secondary-button" data-i18n="[title]beta.zoom.in" id="beta-zoom-in" type="button">+</button>
                   <button class="secondary-button" data-i18n="beta.zoom.fit" id="beta-zoom-fit" type="button">Vừa khung</button>
-                  <span class="muted-text" data-i18n="beta.zoom.hint">Ctrl + cuộn chuột để phóng to / thu nhỏ; kéo để di chuyển; hai khung cuộn cùng nhau.</span>
+                  <span class="muted-text" data-i18n="beta.zoom.hint">Ctrl + cuộn chuột: phóng to / thu nhỏ; kéo chuột: di chuyển; hai khung cuộn đồng bộ.</span>
                 </div>
                 <div class="beta-compare">
                   <figure>
@@ -1499,13 +1504,20 @@
               </div>
               <div class="setting-row">
                 <div>
-                  <strong data-i18n="settings.general.theme">Giao diện</strong>
+                  <strong data-i18n="settings.general.theme" id="theme-label">Giao diện</strong>
                   <p data-i18n="settings.general.themeDesc">Chế độ sáng hoặc tối.</p>
                 </div>
-                <select id="theme-select">
-                  <option data-i18n="theme.dark" value="dark">Tối</option>
-                  <option data-i18n="theme.light" value="light">Sáng</option>
-                </select>
+                <!-- Công tắc ngày / đêm: ý tưởng và hình vẽ theo Lucian UX/UI Prompt #447 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#447 -->
+                <span class="daynight"><span class="daynight-scale">
+                  <button aria-checked="true" aria-labelledby="theme-label" class="daynight-b" id="theme-toggle" role="switch" type="button">
+                    <span class="dn-sky"></span>
+                    <span class="dn-night"></span>
+                    <svg aria-hidden="true" class="dn-stars" viewBox="0 0 90 58"><path d="M14 9Q14 14 19 14Q14 14 14 19Q14 14 9 14Q14 14 14 9Z"/><path d="M42 6Q42 10 46 10Q42 10 42 14Q42 10 38 10Q42 10 42 6Z"/><path d="M28 31Q28 35 32 35Q28 35 28 39Q28 35 24 35Q28 35 28 31Z"/><path d="M60 23Q60 26 63 26Q60 26 60 29Q60 26 57 26Q60 26 60 23Z"/><circle cx="7" cy="31" r="1.3"/><circle cx="50" cy="42" r="1.1"/><circle cx="68" cy="10" r="1.3"/><circle cx="36" cy="51" r="1"/><circle cx="76" cy="38" r="1"/></svg>
+                    <span class="dn-halo"><i></i><i></i><i></i></span>
+                    <svg aria-hidden="true" class="dn-clouds" viewBox="0 0 136 68"><g fill="#CFE7FF"><circle cx="34" cy="46" r="18"/><circle cx="58" cy="36" r="20"/><circle cx="86" cy="40" r="18"/><circle cx="110" cy="28" r="21"/><circle cx="132" cy="40" r="18"/></g><g fill="#FFFFFF"><circle cx="22" cy="60" r="16"/><circle cx="46" cy="52" r="18"/><circle cx="74" cy="56" r="18"/><circle cx="98" cy="46" r="19"/><circle cx="124" cy="54" r="19"/></g></svg>
+                    <span class="dn-thumb"><svg aria-hidden="true" viewBox="0 0 62 62"><circle cx="22" cy="24" r="6.5"/><circle cx="40" cy="38" r="8"/><circle cx="39" cy="18" r="3.6"/></svg></span>
+                  </button>
+                </span></span>
               </div>
             </article>
 
@@ -1546,8 +1558,7 @@
                   <button class="secondary-button" data-i18n="common.action.disconnect" disabled="" id="disconnect-btn" type="button">Ngắt kết nối</button>
                 </div>
                 <p class="help-text" data-i18n="settings.connection.help" id="connection-help">
-                  Hãy kiểm tra chế độ và cổng kết nối trước khi
-                  điều khiển máy thật.
+                  Cần kiểm tra chế độ và cổng kết nối trước khi điều khiển máy thật.
                 </p>
               </form>
             </article>
@@ -1579,7 +1590,7 @@
                 <span class="mc-status" id="draft-settings-status" role="status"></span>
               </div>
               <p class="help-text" data-i18n="settings.drafts.help">
-                Bản đã ghim không tính vào hạn mức. Vượt hạn mức thì xóa bản cũ nhất chưa ghim.
+                Thư mục bản thảo cố định (xem bảng Lưu trữ dữ liệu bên dưới). Bản đã ghim không tính vào hạn mức. Khi vượt hạn mức, hệ thống xóa bản cũ nhất chưa ghim.
               </p>
             </article>
           </div>
@@ -1665,7 +1676,7 @@
                 <span class="mc-status" id="pin-status" role="status"></span>
               </div>
               <p class="help-text" data-i18n="settings.pin.help">
-                4–64 ký tự: chữ, số, ký hiệu; không khoảng trắng, không dấu tiếng Việt. Nên từ 6 ký tự, khó đoán. PIN lưu ở data/pin.txt trên máy chủ (không lên Git).
+                Độ dài 4–64 ký tự gồm chữ, số, ký hiệu; không chứa khoảng trắng và dấu tiếng Việt. Khuyến nghị từ 6 ký tự trở lên và khó đoán. PIN được lưu tại data/pin.txt trên máy chủ (không đưa lên Git).
               </p>
             </article>
 
@@ -1684,7 +1695,7 @@
                 <div class="storage-areas" id="storage-areas"></div>
                 <details class="storage-folder storage-area" hidden="" id="storage-loose">
                   <summary class="storage-summary">
-                    <span class="storage-name" data-i18n="settings.storage.loose">Tệp hệ thống</span>
+                    <span class="storage-name" data-i18n="settings.storage.loose">Tệp hệ thống (hồ sơ máy, hạn mức bản thảo, điểm dừng)</span>
                     <small class="storage-note"></small>
                     <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
                   </summary>
@@ -1712,7 +1723,7 @@
             <dl class="detail-list detail-list-compact mc-summary">
               <div>
                 <dt data-i18n="settings.machine.firmware">Firmware</dt>
-                <dd data-i18n="common.status.unknown" id="settings-firmware-version">Chưa xác định</dd>
+                <dd data-i18n="common.status.unknown" id="settings-firmware-version">Chưa biết</dd>
               </div>
               <div>
                 <dt data-i18n="settings.machine.kinematics">Kiểu cơ cấu</dt>
@@ -1745,8 +1756,7 @@
               <button class="danger-button" data-i18n="mc.save" disabled="" id="mc-save-btn" type="button">Lưu vào mạch</button>
             </div>
             <p class="help-text" data-i18n="mc.help">
-              Áp dụng: gửi ngay vào máy, mất khi tắt nguồn (mục App thì lưu luôn). Lưu vào mạch: ghi đè
-              tệp YAML để lần bật sau vẫn còn; bản gốc được sao lưu về máy tính trước.
+              Áp dụng: gửi ngay vào máy; giá trị mất khi tắt nguồn (riêng mục App được lưu luôn). Lưu vào mạch: ghi đè tệp YAML để giá trị được giữ ở lần bật sau; bản gốc được sao lưu về máy tính trước khi ghi.
             </p>
           </article>
 
@@ -1754,13 +1764,13 @@
             <div class="panel-heading">
               <div>
                 <h2 data-i18n="sheet.title">Tờ thử / hiệu chỉnh</h2>
-                <p data-i18n="sheet.desc">Mỗi nút tạo một bản thảo trong Hàng đợi (tab Điều khiển): nạp, xem trước, chạy như mọi bản vẽ. Dùng khi thử máy thật, mỗi tờ một tờ giấy.</p>
+                <p data-i18n="sheet.desc">Mỗi nút tạo một bản thảo trong Hàng đợi (tab Điều khiển): nạp, nhìn khung vẽ, chạy như mọi bản vẽ. Dùng khi thử máy thật, mỗi tờ một tờ giấy.</p>
               </div>
             </div>
 
             <section class="sheet-block">
               <h3 data-i18n="sheet.lift.title">Tờ nhấc bút</h3>
-              <p class="help-text" data-i18n="sheet.lift.help">Mỗi hàng là một tổ hợp Z nhấc + thời gian chờ + tốc độ hạ, 20 gạch 2 mm; hàng k có k chấm ở đầu hàng. Nhìn giấy: hàng nào gạch đều, không kéo vệt, không hụt đầu nét thì bấm "Dùng" ở bảng bên dưới. Xem thời gian thật từng hàng ở Biểu đồ.</p>
+              <p class="help-text" data-i18n="sheet.lift.help">Mỗi hàng là một tổ hợp gồm Z nhấc, thời gian chờ và tốc độ hạ, 20 gạch 2 mm; hàng k có k chấm ở đầu hàng. Quan sát trên giấy: hàng nào có gạch đều, không kéo vệt và không hụt đầu nét thì chọn "Dùng" ở bảng bên dưới. Thời gian thực của từng hàng xem tại Biểu đồ.</p>
               <div class="sheet-options">
                 <fieldset>
                   <legend data-i18n="sheet.lift.ups">Z nhấc (mm)</legend>
@@ -1796,7 +1806,7 @@
 
             <section class="sheet-block">
               <h3 data-i18n="sheet.pen.title">Tờ hiệu chỉnh bút</h3>
-              <p class="help-text" data-i18n="sheet.pen.help">Chữ F (kiểm hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng bằng 0,8; 1; 1,125; 1,25; 1,5; 2; 2,5; 3 lần cỡ bút (bút 0,4 mm: 0,32; 0,40; 0,45; 0,50; 0,60; 0,80; 1,0; 1,2 mm). Dải sát nhất mà còn đặc, chưa ướt giấy, cho biết bề rộng nét thật; ghi số đó vào ô Bút vẽ ở tab vẽ (Tùy chọn) (bài 1 trong 07_THU_NGHIEM).</p>
+              <p class="help-text" data-i18n="sheet.pen.help">Gồm chữ F (kiểm tra hướng), thước (100 mm trên A5, 80 mm trên A6) và 8 dải gạch có khoảng cách dòng lần lượt bằng 0,8; 1; 1,125; 1,25; 1,5; 2; 2,5; 3 lần cỡ bút (bút 0,4 mm: 0,32; 0,40; 0,45; 0,50; 0,60; 0,80; 1,0; 1,2 mm). Dải sát nhất mà nét còn đặc, chưa thấm ướt giấy, cho biết bề rộng nét thực; ghi giá trị này vào ô Bút vẽ ở tab Tạo bản vẽ (Tùy chọn) (bài 1 trong 07_THU_NGHIEM).</p>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-pen-width"><span data-i18n="sheet.pen.width">Cỡ nét đoán trước (mm)</span>
                   <input id="sheet-pen-width" max="2" min="0.1" step="0.05" type="number" value="0.5"/></label>
@@ -1807,10 +1817,10 @@
             </section>
 
             <section class="sheet-block">
-              <h3 data-i18n="sheet.machine.title">Bộ thử máy (bài 7.2 – 7.5)</h3>
-              <p class="help-text" data-i18n="sheet.machine.help">Tốc độ, gia tốc và góc cua đổi ở "Cấu hình máy" phía trên; các tờ này chỉ vẽ mẫu để so. Làm 7.2 trước (mất bước), rồi 7.3.</p>
+              <h3 data-i18n="sheet.machine.title">Bộ thử máy (7.2 mất bước, 7.5 vệt kéo)</h3>
+              <p class="help-text" data-i18n="sheet.machine.help">Tốc độ, gia tốc và góc cua được thay đổi tại "Cấu hình máy" phía trên; các tờ này chỉ vẽ mẫu để so sánh. Gia tốc, tốc độ vẽ và cung G2 đã được chốt (13/11/2026: vẽ 8000, nét cong ghi bằng G2/G3; gia tốc hiện hành 2700 từ 22/11/2026) nên các bài 7.3 / 7.4 / 7.6 đã được lược bỏ.</p>
               <div class="mc-actions">
-                <label class="sheet-inline" for="sheet-speeds"><span data-i18n="sheet.machine.speeds">Tốc độ thử cho 7.2 / 7.3 / 7.4 (mm/phút, cách nhau dấu phẩy, tối đa 8 số)</span>
+                <label class="sheet-inline" for="sheet-speeds"><span data-i18n="sheet.machine.speeds">Tốc độ thử cho 7.2 (mm/phút, cách nhau dấu phẩy, tối đa 8 số)</span>
                   <input id="sheet-speeds" type="text" value="8000"/></label>
               </div>
               <div class="sheet-buttons">
@@ -1825,7 +1835,7 @@
 
             <section class="sheet-block">
               <h3 data-i18n="sheet.tone.title">Thang tông (thử preset, đo tông)</h3>
-              <p class="help-text" data-i18n="sheet.tone.help">Nạp ảnh 16 ô xám (0 → 90 % đen) + 3 ô mốc đen + chữ F vào tab Tạo bản vẽ. Ở đó chọn bút, kiểu tô / preset như vẽ ảnh thường, bấm Tạo nét, Lưu bản thảo rồi vẽ. Nhìn các ô có tách đều không; muốn đo tông thì chụp thẳng, đủ sáng, thấy đủ 3 ô mốc, gửi ảnh gốc (07_THU_NGHIEM mục 2b).</p>
+              <p class="help-text" data-i18n="sheet.tone.help">Nạp ảnh gồm 16 ô xám (0 → 90 % đen), 3 ô mốc đen và chữ F vào tab Tạo bản vẽ. Tại đó chọn bút, kiểu tô / preset như khi vẽ ảnh thông thường, chọn Tạo nét, Lưu bản thảo rồi vẽ. Quan sát các ô có tách đều hay không; để đo tông, chụp thẳng, đủ sáng, thấy đủ 3 ô mốc và gửi ảnh gốc (07_THU_NGHIEM mục 2b).</p>
               <div class="mc-actions">
                 <label class="sheet-inline" for="sheet-tone-paper"><span data-i18n="sheet.paper">Khổ giấy</span>
                   <select id="sheet-tone-paper">
@@ -1918,7 +1928,7 @@
     </ol>
     <p class="inline-warning" hidden="" id="resume-modal-wco" role="alert">
       <span aria-hidden="true">⚠</span>
-      <span data-i18n="control.resume.wcoChanged">Gốc làm việc (Zero) khác với lúc dừng, bản vẽ có thể bị lệch.</span>
+      <span data-i18n="control.resume.wcoChanged">Gốc làm việc (Zero) khác với lúc dừng, bản vẽ có thể bị lệch. Tick ô bên dưới nghĩa là vẫn chấp nhận.</span>
     </p>
     <label class="checkbox-inline resume-ack" for="resume-modal-ack">
       <input id="resume-modal-ack" type="checkbox"/>

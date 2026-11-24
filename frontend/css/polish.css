@@ -128,14 +128,71 @@ input:out-of-range {
     background: color-mix(in srgb, var(--highlight) 4%, var(--bg-main));
 }
 
-.upload-zone:hover,
-.upload-zone.is-drag {
+.upload-zone:hover {
     border-color: var(--highlight);
     background: color-mix(in srgb, var(--highlight) 10%, var(--bg-main));
 }
 
 .upload-icon {
     color: var(--highlight);
+    transition: transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+/* Keo tep vao khung (y tuong mau Lucian #432, MIT, https://lucianlabs.dev/uxui-prompt/#432):
+   khung phong nhe co do nay, vien dut thanh vien lien, nen va vong sang cam, mui ten nhac len, chu doi.
+   Chi dung transform + mau (nhe may yeu); mau lay tu --highlight cua du an, khong dung bang mau Lucian. */
+.upload-zone {
+    transition: border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.3s ease,
+        transform 0.5s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.upload-zone > * {
+    pointer-events: none;            /* re qua chu ben trong khong lam dragleave nhay (nhap nhay vien) */
+}
+
+.upload-zone.is-drag {
+    transform: scale(1.02);
+    border-style: solid;
+    border-color: var(--highlight);
+    background: color-mix(in srgb, var(--highlight) 14%, var(--bg-main));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--highlight) 22%, transparent),
+        0 10px 28px -14px color-mix(in srgb, var(--highlight) 60%, transparent);
+}
+
+.upload-zone.is-drag .upload-icon {
+    transform: translateY(-6px) scale(1.15);
+}
+
+@keyframes upload-bob {
+    50% { transform: translateY(-4px); }
+}
+
+.upload-zone:hover:not(.is-drag) .upload-icon {
+    animation: upload-bob 1.6s ease-in-out infinite;
+}
+
+.upload-drop-text {
+    display: none;
+    color: var(--highlight);
+}
+
+.upload-zone.is-drag .upload-drop-text {
+    display: block;
+}
+
+.upload-zone.is-drag strong:not(.upload-drop-text) {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .upload-zone,
+    .upload-zone.is-drag {
+        transform: none;
+    }
+
+    .upload-zone:hover .upload-icon {
+        animation: none;
+    }
 }
 
 #drawing-file-name {
@@ -2018,6 +2075,393 @@ body.role-guest .coordinate-header span:nth-child(5) {
 /* Dien thoai hep: header chi giu Backend + May (trang thai Cong viec co o tab Dieu khien) */
 @media (max-width: 520px) {
     .header-status #job-status {
+        display: none;
+    }
+}
+
+/* ==================== 24/11/2026: lung linh nhe (chi CSS, go bo = xoa tu day den het tep) ==================== */
+
+/* ---- The thong tin ban ve: nen chuyen mau mo + vien sang khi re chuot ---- */
+.drawing-info .detail-list > div {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--highlight) 7%, var(--bg-elevated)), var(--bg-elevated) 70%);
+    transition: border-color 0.25s ease, box-shadow 0.3s ease;
+}
+
+.drawing-info .detail-list > div:hover {
+    border-color: color-mix(in srgb, var(--highlight) 55%, var(--border));
+    box-shadow: 0 0 16px -6px color-mix(in srgb, var(--highlight) 55%, transparent);
+}
+
+/* ---- Khoi: vien am sang len mau cam khi re chuot ---- */
+.panel:hover {
+    border-color: color-mix(in srgb, var(--highlight) 38%, var(--border));
+}
+
+/* ---- Nut chinh: vet sang quet ngang khi re chuot (transform, khong ve lai bo cuc) ---- */
+.primary-button,
+#connect-btn,
+#terminal-send-btn {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.primary-button::after,
+#connect-btn::after,
+#terminal-send-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 38%) 50%, transparent 65%);
+    transform: translateX(-120%);
+    pointer-events: none;
+}
+
+.primary-button:hover:not(:disabled)::after,
+#connect-btn:hover:not(:disabled)::after,
+#terminal-send-btn:hover:not(:disabled)::after {
+    transform: translateX(120%);
+    transition: transform 0.7s ease;
+}
+
+/* ---- O tich / nut chon: khi focus ban phim phai thay ro (WCAG 2.4.7). Luat "input:focus-visible" o tren dat outline: none
+        va chi con vong bong mo 22 %, qua yeu voi o tich 13 px ---- */
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* ---- Thanh truot canh cac o tong anh (o so van la nguon su that, xem params.js) ---- */
+.tone-slider {
+    display: block;
+    width: 100%;
+    height: 28px;                    /* vung cham cho ngon tay (22 -> 28 px) */
+    min-height: 0;
+    margin: 4px 0 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    accent-color: var(--highlight);
+    cursor: pointer;
+    touch-action: pan-y;             /* vuot doc van cuon trang, chi vuot ngang moi doi gia tri */
+}
+
+/* O so (trai, nho) va thanh truot (phai, chiem phan lon) cung mot hang: do chem them mot dong. Hep <= 520 px thi xep doc nhu cu. */
+.form-grid > label.has-slider {
+    grid-template-columns: 84px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 12px;
+}
+
+.has-slider > span {
+    grid-column: 1 / -1;
+}
+
+.has-slider > input[type="number"] {
+    grid-column: 1;
+    min-width: 0;
+}
+
+.has-slider > .tone-slider {
+    grid-column: 2;
+    margin: 0;
+}
+
+@media (max-width: 520px) {
+    .form-grid > label.has-slider {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .has-slider > .tone-slider,
+    .has-slider > input[type="number"] {
+        grid-column: 1;
+    }
+
+    .has-slider > .tone-slider {
+        margin-top: 4px;
+    }
+}
+
+/* O "Do phan giai xu ly" khong co thanh truot, nhan dai bi xuong 2 dong trong cot hep: cho nhan chay het hang, o nhap giu cho rong vua phai */
+.form-grid > label:has(> #image-max-side) {
+    grid-column: 1 / -1;
+}
+
+.form-grid > label:has(> #image-max-side) > input {
+    width: 200px;
+    max-width: 100%;
+}
+
+/* O co thanh truot cao hon o ben canh: khong keo gian o chon / o so cua o hang xom (truoc day o "Bo thong so dung san" bi keo cao) */
+.form-grid > label {
+    align-content: start;
+}
+
+/* Cac the "Thong tin ban ve" truoc day dinh sat vach tieu de vi margin: 0 trong drawing.css de len margin-top: 14px */
+.drawing-info .detail-list {
+    margin-top: 14px;
+}
+
+/* Hang kho luu tru khong co ghi chu (.storage-note:empty bi an) thi mat margin-left: auto, mui ten dinh sat chu */
+.storage-summary .storage-name {
+    flex: 1 1 auto;
+}
+
+.tone-slider:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+    box-shadow: none;
+}
+
+/* ---- Thanh buoc tien trinh o tab ve: cham tron + dau tich, mau lay tu token du an ---- */
+.draw-steps {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 1 / -1;
+    gap: 6px 14px;
+    margin: 2px 0 4px;
+    padding: 0;
+    list-style: none;
+    color: var(--text-muted);
+    font-size: max(12px, 0.85em);
+}
+
+.draw-steps[hidden] {
+    display: none;
+}
+
+.draw-steps li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.25s ease;
+}
+
+.draw-steps li::before {
+    content: "";
+    box-sizing: border-box;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border-control);
+    border-radius: 50%;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.draw-steps li[hidden] {
+    display: none;
+}
+
+.draw-steps li.is-done {
+    color: var(--text-main);
+}
+
+.draw-steps li.is-done::before {
+    border-color: var(--success);
+    background: var(--success);
+}
+
+.draw-steps li.is-active {
+    color: var(--highlight);
+    font-weight: 600;
+}
+
+.draw-steps li.is-active::before {
+    border-color: var(--highlight);
+    animation: dot-pulse 1.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .draw-steps li.is-active::before {
+        animation: none;
+    }
+}
+
+/* ---- Cong tac ngay / dem (Cai dat > Giao dien). Hinh va y tuong: Lucian UX/UI Prompt #447, MIT License (c) 2026 Seokwoooo,
+        https://lucianlabs.dev/uxui-prompt/#447. Mau nam trong cong tac, khong phu thuoc theme trang. Thu nho 50 % (88 x 37 px). ---- */
+.daynight {
+    display: block;
+    width: 88px;
+    height: 37px;
+    flex-shrink: 0;
+}
+
+.daynight-scale {
+    display: block;
+    width: 176px;
+    height: 74px;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+}
+
+.daynight .daynight-b {
+    position: relative;
+    width: 176px;
+    height: 74px;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 37px;
+    overflow: hidden;
+    isolation: isolate;
+    background: #4fa8f7;
+    box-shadow: inset 0 3px 7px rgb(0 0 0 / 28%), inset 0 -1px 2px rgb(255 255 255 / 25%), 0 0 0 1px rgb(0 0 0 / 6%), 0 10px 24px -14px rgb(20 40 90 / 55%);
+    transition: transform 0.45s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+.daynight .daynight-b > * {
+    position: absolute;
+    pointer-events: none;
+}
+
+.daynight .daynight-b:focus-visible {
+    outline: 3px solid var(--accent-text);
+    outline-offset: 4px;
+}
+
+.dn-sky,
+.dn-night {
+    inset: 0;
+    transition: opacity 0.6s;
+}
+
+.dn-sky {
+    background: linear-gradient(180deg, #3e97ec, #86c8ff);
+}
+
+.dn-night {
+    opacity: 0;
+    background: linear-gradient(180deg, #151840, #2c3170);
+}
+
+.dn-halo,
+.dn-thumb {
+    left: 6px;
+    top: 6px;
+    width: 62px;
+    height: 62px;
+    transition: transform 0.75s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+.dn-halo i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 12%);
+    transform: translate(-50%, -50%);
+}
+
+.dn-halo i:nth-child(1) { width: 96px; height: 96px; }
+.dn-halo i:nth-child(2) { width: 132px; height: 132px; background: rgb(255 255 255 / 9%); }
+.dn-halo i:nth-child(3) { width: 170px; height: 170px; background: rgb(255 255 255 / 6%); }
+
+.dn-clouds {
+    right: -14px;
+    bottom: -16px;
+    width: 136px;
+    height: 68px;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.05s;
+}
+
+.dn-stars {
+    left: 16px;
+    top: 8px;
+    width: 90px;
+    height: 58px;
+    opacity: 0;
+    transform: translateY(-36px);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s;
+}
+
+.dn-stars path,
+.dn-stars circle {
+    fill: #fff;
+    transform-box: fill-box;
+    transform-origin: center;
+}
+
+.dn-thumb {
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe27a, #ffc21f 60%, #f2a900);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 28%), inset -3px -4px 6px rgb(190 110 0 / 35%), inset 3px 3px 5px rgb(255 255 255 / 45%);
+}
+
+.dn-thumb::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #f4f3fa, #d6d3e6 65%, #b9b5cf);
+    box-shadow: inset -3px -4px 6px rgb(70 64 110 / 35%), inset 3px 3px 5px rgb(255 255 255 / 60%);
+    opacity: 0;
+    transition: opacity 0.45s 0.1s;
+}
+
+.dn-thumb svg {
+    position: absolute;
+    inset: 0;
+    width: 62px;
+    height: 62px;
+}
+
+.dn-thumb circle {
+    fill: #a9a4c4;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0);
+    transition: opacity 0.3s, transform 0.5s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+.dn-thumb circle:nth-child(2) { transition-delay: 0.06s; }
+.dn-thumb circle:nth-child(3) { transition-delay: 0.12s; }
+
+/* aria-checked="true" = ban dem (theme toi) */
+.daynight-b[aria-checked="true"] .dn-night { opacity: 1; }
+.daynight-b[aria-checked="true"] .dn-halo { transform: translateX(102px); }
+.daynight-b[aria-checked="true"] .dn-thumb { transform: translateX(102px) rotate(200deg); }
+.daynight-b[aria-checked="true"] .dn-thumb::before { opacity: 1; }
+.daynight-b[aria-checked="true"] .dn-thumb circle { opacity: 1; transform: none; transition-delay: 0.25s; }
+.daynight-b[aria-checked="true"] .dn-clouds { transform: translateY(56px); transition-delay: 0s; }
+.daynight-b[aria-checked="true"] .dn-stars { opacity: 1; transform: none; transition-delay: 0.15s; }
+
+@keyframes dn-twinkle {
+    50% { opacity: 0.45; transform: scale(0.7); }
+}
+
+.daynight-b[aria-checked="true"] .dn-stars path,
+.daynight-b[aria-checked="true"] .dn-stars circle {
+    animation: dn-twinkle 2.4s ease-in-out infinite;
+}
+
+.daynight-b[aria-checked="true"] .dn-stars :nth-child(2n) { animation-delay: -0.8s; }
+.daynight-b[aria-checked="true"] .dn-stars :nth-child(3n) { animation-delay: -1.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+    .daynight .daynight-b,
+    .dn-sky,
+    .dn-night,
+    .dn-halo,
+    .dn-thumb,
+    .dn-thumb::before,
+    .dn-thumb circle,
+    .dn-clouds,
+    .dn-stars {
+        transition-duration: 0.01s;
+        transition-delay: 0s;
+    }
+
+    .daynight-b[aria-checked="true"] .dn-stars path,
+    .daynight-b[aria-checked="true"] .dn-stars circle {
+        animation: none;
+    }
+
+    .primary-button::after,
+    #connect-btn::after,
+    #terminal-send-btn::after {
         display: none;
     }
 }

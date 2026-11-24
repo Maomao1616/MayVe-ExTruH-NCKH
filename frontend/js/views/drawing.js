@@ -47,6 +47,7 @@ const S = {
     plan: null, result: null, resultError: null, generating: false, genSeq: 0, genTimer: 0,
     savedDraft: null, savedKey: null, importDirty: false,
     importKeep: false, lastQuality: "final", applyingPreset: false, retraceTimer: 0,
+    stepsRun: false, lastStep: null,            // thanh bước tiến trình: chỉ hiện khi chính tab này vừa chạy tạo nét
     status: { key: "drawing.progress.idle", extra: "", error: false }
 };
 
@@ -222,6 +223,8 @@ async function startImport(quality, { fresh = false, box = null } = {}) {
     const seq = ++S.importSeq;
     S.importDirty = false;
     S.busy = true;
+    S.stepsRun = true;
+    S.lastStep = null;
     setProgress(0);
     setStatus("drawing.progress.queued");
     setButtons();
@@ -258,6 +261,7 @@ window.addEventListener("extruxy:beta-task", (event) => {
     S.file = null;
     S.fileName = view.source?.name ?? "PDF";
     S.importKeep = false;
+    S.stepsRun = false;                          // bản vẽ đến từ tab Beta: không chạy các bước ở đây, không hiện dấu tích
     const seq = ++S.importSeq;
     S.busy = true;
     finishImport(view, seq);
@@ -707,6 +711,32 @@ function renderStatus() {
     const text = t(S.status.key);
     el.textContent = `${text === S.status.key ? S.status.key : text}${S.status.extra}`;
     el.classList.toggle("is-error", S.status.error);
+    renderSteps();
+}
+
+// Thanh bước (trình duyệt chuẩn bị ảnh -> backend: đọc, chỉnh sắc độ, tạo nét, tối ưu). Suy ra từ trạng thái đang hiện,
+// theo đúng khóa bước backend báo (`view.step`); hiện khi đang chạy hoặc vừa xong, ẩn khi chờ / lỗi / hủy / thông số đã đổi.
+const STEP_ORDER = ["prepare", "read", "tone", "style", "optimize"];
+const STEP_PREFIX = "drawing.progress.step.";
+const STEP_ACTIVE_KEYS = ["drawing.progress.queued", "drawing.progress.prepare", "drawing.progress.running"];
+
+function renderSteps() {
+    const box = $("drawing-steps");
+    if (!box) return;
+    const key = S.status.key;
+    const done = key === "drawing.progress.done";
+    const named = key === "drawing.progress.prepare" ? "prepare" : key.startsWith(STEP_PREFIX) ? key.slice(STEP_PREFIX.length) : null;
+    if (named && STEP_ORDER.includes(named)) S.lastStep = named;
+    const show = S.stepsRun && (done || named || STEP_ACTIVE_KEYS.includes(key));
+    box.hidden = !show;
+    if (!show) return;
+    const at = done ? STEP_ORDER.length : STEP_ORDER.indexOf(S.lastStep);
+    const isSvg = Boolean(S.file?.name.toLowerCase().endsWith(".svg"));
+    box.querySelectorAll("li").forEach((li, i) => {
+        li.hidden = li.dataset.step === "prepare" && isSvg;                    // SVG không qua bước chuẩn bị ảnh
+        li.classList.toggle("is-done", i < at);
+        li.classList.toggle("is-active", i === at);
+    });
 }
 
 function errorKey(error) {
@@ -803,6 +833,11 @@ function setButtons() {
     has("drawing-confirm", !S.result);
     has("save-draft-btn", !S.result);
     has("send-to-control-btn", !S.result || !$("drawing-confirm")?.checked || S.busy);
+    // Nút bị khóa: ghi lý do vào chú thích (di chuột để đọc); hết khóa thì bỏ chú thích. Chỉ hai nút chính của tab.
+    const why = (id, key) => { const el = $(id); if (!el) return; if (key) el.title = t(key); else el.removeAttribute("title"); };
+    why("final-run-btn", !isAdmin() ? "auth.guestPreview" : S.busy ? "drawing.why.busy" : !S.file ? "drawing.why.noFile" : "");
+    why("send-to-control-btn", S.busy ? "drawing.why.busy" : !S.result ? "drawing.why.noResult"
+        : !$("drawing-confirm")?.checked ? "drawing.why.noConfirm" : "");
 }
 
 function renderAll() {

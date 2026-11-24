@@ -239,9 +239,7 @@ p {
     padding: 6px 12px 6px 6px;
     border: 1px solid var(--border);
     border-radius: var(--radius-panel);
-    background: color-mix(in srgb, var(--bg-main) 92%, transparent);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: color-mix(in srgb, var(--bg-main) 96%, transparent);   /* 24/11/2026: bo backdrop-filter blur(10px) cho may yeu */
 }
 
 .main-nav {
@@ -1575,7 +1573,6 @@ fieldset.mc-group > * + * {
 }
 
 .dock-handle:hover {
-    width: calc(var(--dock-handle-width) + 6px);
     background: var(--bg-elevated);
     filter: brightness(1.2);
 }
@@ -1588,9 +1585,7 @@ fieldset.mc-group > * + * {
     border: 1px solid var(--border);
     border-left: 0;
     border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
-    background-color: color-mix(in srgb, var(--bg-panel) 95%, black);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background-color: color-mix(in srgb, var(--bg-panel) 95%, black);   /* 24/11/2026: bo backdrop-filter blur(12px) cho may yeu (nen da 95 % dac) */
     box-shadow: 10px 15px 40px rgb(0 0 0 / 60%), inset 1px 1px 0 rgb(255 255 255 / 5%);
     animation: dock-slide-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }

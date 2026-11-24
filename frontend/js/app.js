@@ -120,18 +120,20 @@ async function initLanguageSelector() {
 
 /* ==================== THEME ==================== */
 function initThemeSelector() {
-    const selector = document.getElementById("theme-select");
-    if (!selector) return;
+    const toggle = document.getElementById("theme-toggle");   // công tắc ngày / đêm: aria-checked = đang ở chế độ tối
+    if (!toggle) return;
 
-    const savedTheme = localStorage.getItem("extruxy-theme") || "dark";
-
-    document.documentElement.dataset.theme = savedTheme;
-    selector.value = savedTheme;
-
-    selector.addEventListener("change", () => {
-        const theme = selector.value === "light" ? "light" : "dark";
-
+    const applyTheme = (theme) => {
         document.documentElement.dataset.theme = theme;
+        toggle.setAttribute("aria-checked", String(theme === "dark"));
+    };
+
+    applyTheme(localStorage.getItem("extruxy-theme") === "light" ? "light" : "dark");
+
+    toggle.addEventListener("click", () => {
+        const theme = toggle.getAttribute("aria-checked") === "true" ? "light" : "dark";
+
+        applyTheme(theme);
         localStorage.setItem("extruxy-theme", theme);
     });
 }
