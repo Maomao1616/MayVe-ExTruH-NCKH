@@ -36,12 +36,12 @@ Test tự động: máy chủ **635** (8 bài tab Beta cần PyMuPDF, thiếu th
 | **Bút, giấy** | ô "Bút vẽ" = **nét đo trên giấy**: UB-155 **0,38** · UM-100 **0,40** · Sakura **0,50** · bút bi 0,5; giấy Ivory 250 g/m² mặt bóng |
 | **An toàn, phân quyền** | máy mặc định chỉ đọc; khóa chuyển động tự khóa sau 15 phút; Home tự nâng bút; hủy 3 chế độ; tiếp tục từ điểm dừng; PIN quản lý đổi được; khách xem + **Gửi ảnh** (tự xóa 5 ngày, ≤ 6 ảnh / giờ); SSE cho trạng thái |
 | **Tạo bản vẽ** | nạp ảnh → cắt / chỉnh tông → **Tạo nét**; **vùng chủ thể** elip / chữ nhật / **Tự động** / **Vẽ tay**; SVG; bản thảo + hàng đợi; 2–4 màu và **tách mực theo bộ bút** (đen–đỏ–navy hoặc CMYK, ô Độ nổi màu); zoom khung vẽ; Tờ thử; Biểu đồ số liệu chạy máy |
-| **Kiểu nét** | 5 kiểu: Gạch chéo (mặc định) · Theo dáng · Sóng biến thiên · Xoắn ốc (viết lại 22/11) · Nét viền; ô **Chất lượng tối đa** (`style.unlimited`) cho 3 kiểu tô; vòng **sửa sai tông** 1 lượt; hằng số: [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 19 |
-| **5 preset** | Chân dung · Hình vẽ 2D · Phong cảnh · Bản vẽ kỹ thuật (Schematic) · Chất lượng tối đa ([09](09_QUYET_DINH_THIET_KE.md) P14) |
+| **Kiểu nét** | 5 kiểu: Đan chéo (mặc định) · Đường dòng · Sóng điều biên · Xoắn ốc (viết lại 22/11) · Đường bao (tên cũ: [05](05_TAB_TAO_BAN_VE.md) mục 3); ô **Chất lượng tối đa** (`style.unlimited`) cho 3 kiểu tô; vòng **sửa sai tông** 1 lượt; hằng số: [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 19 |
+| **5 preset** | Chân dung · Hình vẽ 2D · Phong cảnh · Bản vẽ kỹ thuật · Chất lượng tối đa ([09](09_QUYET_DINH_THIET_KE.md) P14) |
 | **Tab Beta PDF** | đọc chữ thật trong PDF, viết lại bằng chữ viết tay nối nét (chữ HOA và số kiểu in), dấu tiếng Việt tự ghép, khung bảng từ vector, hình vẽ nét lấy đường giữa, ảnh chụp đi đường tô ảnh; PDF thật 32 trang chạy hết ([12](12_TAB_BETA_PDF.md)) |
 | **Giao diện** | màu nhấn vàng an toàn `#ffd400`; số đo WCAG: viền rõ, viền ô nhập ≥ 3:1, chữ ≥ 12 px (P45); hai khung vẽ giấy ngà + nét đen; âm báo xong / lỗi; **lung linh nhẹ** (24/11, [09](09_QUYET_DINH_THIET_KE.md) P48): khung thả tệp, công tắc ngày / đêm ở Cài đặt, thẻ thông tin, nút chính, thanh trượt 5 ô tông ảnh, thanh bước tiến trình, chữ hướng dẫn viết lại học thuật |
 | **Triển khai** | bản mang đi Windows + `Cap nhat.bat`; launcher ưu tiên `backend\.venv` rồi mới `Python\`; demo không cần Internet |
-| **Đo đạc** | `tools/do_thoi_gian.py` (giây từng bước, RAM đỉnh, thông tin máy); `ink_real.py` đo được cả Theo dáng, Xoắn ốc; số laptop 22/11 ở [07](07_THU_NGHIEM.md) mục 9 |
+| **Đo đạc** | `tools/do_thoi_gian.py` (giây từng bước, RAM đỉnh, thông tin máy); `ink_real.py` đo được cả Đường dòng, Xoắn ốc; số laptop 22/11 ở [07](07_THU_NGHIEM.md) mục 9 |
 
 ## 4. Việc tiếp
 
