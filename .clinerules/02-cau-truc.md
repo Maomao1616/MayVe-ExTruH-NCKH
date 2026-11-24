@@ -1,7 +1,7 @@
 # 02 — Cấu trúc (không đổi cây thư mục, không tạo tầng mới)
 
 ```
-docs/        tài liệu 01–12 (cho người, đánh số) + AI_* (chỉ cho AI, dòng đầu ghi "FOR AI")
+docs/        tài liệu 01–13 (cho người, đánh số) + AI_* (chỉ cho AI, dòng đầu ghi "FOR AI")
 frontend/    index.html · css/ · locales/{vi,en}.json · js/{core,lib,stores,views}/ · tests/
 backend/     app/{api,links,services,auth.py,main.py} · tests/ · tests/draw_test/
 tools/       export_context.py · ink_sim.py · ink_real.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1

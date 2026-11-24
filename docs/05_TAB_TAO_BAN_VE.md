@@ -38,7 +38,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Tạo lại nét** | chạy lại sau khi đổi thông số tạo nét (tiền xử lý, kiểu nét, bút, màu) |
 | Ô **Sửa sai tông (lượt)** | 0 = tắt, **1 mặc định**, tối đa 3 (tham số `style.refine_passes`): tô xong dựng lại ảnh mực, thiếu thì thêm nét, thừa thì bớt, tô lại; đúng tông hơn, nhiều mực và thời gian hơn 4–8 %. Không áp cho Theo dáng ảnh và Nét viền ([06](06_THUAT_TOAN_XU_LY_ANH.md) 8.13) |
 | Ảnh gốc → **✂ Cắt ảnh** | kéo vùng, co giãn góc / cạnh, khóa tỷ lệ (tự do / theo khung giấy / 1:1 / 4:3 / 3:4 / 16:9). Áp dụng: chưa tạo nét thì chỉ nhớ vùng cắt (gửi lúc bấm Tạo nét); đã tạo nét thì tạo lại như tệp mới. Đổi bộ thông số dựng sẵn cũng vậy |
-| **Chủ thể** (cạnh Cắt ảnh) | chọn người / vật bằng 4 cách: **elip**, **chữ nhật** (kéo thả như khung cắt), **Tự động** (máy tự tách, ~1 s) hoặc **Vẽ tay** (giữ chuột kéo quanh chủ thể, nhiều nét; "Tô bớt" để loại chỗ thừa; "Hoàn tác nét"). Thanh "Nền ngoài vùng còn" 0–100 % (mặc định 50, kéo về 0 là bỏ hẳn nền): ngoài vùng bản vẽ nhạt đi. Áp dụng thì tạo lại nét. Chưa đi theo ảnh khách gửi ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
+| **Chủ thể** (cạnh Cắt ảnh) | chọn người / vật bằng 4 cách: **elip**, **chữ nhật** (kéo thả như khung cắt), **Tự động** (máy tự tách, ~1 s) hoặc **Vẽ tay** (giữ chuột kéo quanh chủ thể, nhiều nét; "Tô bớt" để loại chỗ thừa; "Hoàn tác nét"). Thanh "Nền ngoài vùng còn" 0–100 % (mặc định 50, kéo về 0 là bỏ hẳn nền): ngoài vùng bản vẽ nhạt đi. Áp dụng thì tạo lại nét. Ảnh khách gửi mang theo vùng **elip / chữ nhật / Tự động** (vẽ tay không gửi: quá nặng, giới hạn 8 KB) ([06](06_THUAT_TOAN_XU_LY_ANH.md) mục 8.11) |
 | Hộp **Xem ảnh sau chỉnh sáng** | xem ngay ảnh sau mức đen / trắng / gamma / tương phản / đảo (chạy trong trình duyệt, không có CLAHE / khử nhiễu / làm nét) |
 | Khung vẽ trên giấy | kéo = dời; 8 tay nắm = co giãn; hít vào lề và tâm; phím mũi tên dời (Shift = 10 mm); nút − / + hoặc Ctrl / Shift + cuộn = thu phóng; nhấp đúp = đặt lại |
 | Xoay 90° / Xem toàn bộ | xoay khung; về toàn cảnh |
@@ -147,7 +147,7 @@ Mọi tham số vẽ khai báo **một lần** ở `backend/app/services/drawing
 | Nhóm | Ví dụ tham số |
 |---|---|
 | `layout` | khổ giấy, lề (5 mm), rộng / cao khung, căn giữa, lật, đảo thứ tự, xoay 0/90/180/270 |
-| `gcode` | tốc độ vẽ 5000, di chuyển 6000, nâng bút 3000, hạ bút (trống = như nâng), chờ 0,05 / 0,05 s, độ chính xác 3 chữ số |
+| `gcode` | tốc độ vẽ 8000, di chuyển 8000, nâng bút 3000, hạ bút (trống = như nâng), chờ 0 / 0 s, độ chính xác 3 chữ số (mặc định thật: `spec.py`) |
 | `machine` | vùng máy 285 × 318, hành trình Z, tốc độ G0, `invert_y` (tắt) |
 | `optimize` | nối nét 0,1 mm, bớt điểm 0,05 mm, bỏ nét < 0,5 mm, sắp xếp, 2-opt 50 lượt, **`group_levels`** (vẽ lần lượt từng mức đậm nhạt; mặc định **tắt** từ 12/11/2026), **`bridge`** (mặc định bật: ảnh tô đơn sắc, nối nét gần ≤ 4 × bề rộng nét trong vùng đậm thay vì nhấc bút) |
 | `svg` | sai số chia đường cong 0,1 mm, khung theo nội dung hay theo trang |

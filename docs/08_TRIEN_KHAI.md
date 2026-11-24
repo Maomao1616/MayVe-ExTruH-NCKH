@@ -5,7 +5,7 @@
 
 **Mục lục**
 - A. Bản mang đi Windows (máy không cài Python) ✅
-- B. Phân quyền khách / quản lý ✅ (khách gửi ảnh ⏳)
+- B. Phân quyền khách / quản lý ✅ (khách gửi ảnh ✅)
 - C. Mạng LAN, phát 4G, demo không Internet
 - D. Chạy tay không dùng launcher, GitHub Codespaces
 - E. MiniPC Ubuntu (Docker, cổng USB, IP cố định) ⏳
@@ -26,7 +26,7 @@ ExtruXY/
 ├─ Cap nhat.bat     cập nhật mã, giữ nguyên Python/ và data/
 └─ tools/dong_goi.ps1   (máy phát triển) tạo zip bản cập nhật / bản đầy đủ vào export/
 ```
-Máy dùng **không cần cài Python, venv hay Git**. Chỉ chạy trên Windows 64-bit. Launcher tìm Python theo thứ tự `Python\python.exe` → `backend\.venv\Scripts\python.exe`.
+Máy dùng **không cần cài Python, venv hay Git**. Chỉ chạy trên Windows 64-bit. Launcher tìm Python theo thứ tự `backend\.venv\Scripts\python.exe` → `Python\python.exe` (kế hoạch thêm `libs\` + Python hệ thống: [13](13_MANG_VA_TEN_MIEN.md) mục 9).
 
 ## A2. Chuẩn bị `Python/` (một lần, trên máy phát triển)
 1. Tải *Windows embeddable package (64-bit)* Python **3.12.x** ở python.org, giải nén vào `Python/`.
@@ -150,6 +150,8 @@ API: `POST /api/customer` (khách); `GET /api/customer`, `GET /api/customer/{id}
 
 **Cho người ở xa xem** (cần 4G): `cloudflared tunnel --url http://localhost:8000` tạo địa chỉ tạm `*.trycloudflare.com`, không cần tài khoản (chỉ để thử, tối đa 200 yêu cầu đồng thời). **Chỉ dùng sau khi đặt PIN quản lý.**
 
+**Mở ra ngoài ngay trên laptop (chưa cần MiniPC)** 🧪: xem [13_MANG_VA_TEN_MIEN.md](13_MANG_VA_TEN_MIEN.md) (tên miền, Cloudflare Tunnel, `data\mang.txt`, nút QR trên header).
+
 💡 Ý tưởng chưa thử: cổng đón (captive portal) bằng dnsmasq để điện thoại vào Wi-Fi là tự mở giao diện.
 
 ---
@@ -272,4 +274,4 @@ Khớp với máy chủ:
 | Thời gian xử lý ảnh, RAM, máy có giật trên MiniPC | `tools/do_thoi_gian.py` ([07](07_THU_NGHIEM.md) mục 9), `htop` |
 | Giới hạn RAM của tiến trình xử lý ảnh, cài OpenCV / scikit-image trên Ubuntu | trên MiniPC |
 | Origin / Host / cookie qua Cloudflare, Codespaces | cấu hình thật |
-| Chưa đặt PIN thì mở ra ngoài sao | đã chốt: **phải đặt PIN trước khi mở ra ngoài** ([11](11_VIEC_CAN_LAM.md) mục 4.1) |
+| Chưa đặt PIN thì mở ra ngoài sao | **không bắt buộc** (chủ dự án chọn 24/11/2026, launcher không chặn): chưa đặt thì **ai có địa chỉ cũng là quản lý** và mở khóa được máy. Nên đặt trước khi đưa địa chỉ cho người khác ([13](13_MANG_VA_TEN_MIEN.md) mục 6) |

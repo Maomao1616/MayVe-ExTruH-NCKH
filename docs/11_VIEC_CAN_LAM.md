@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động: máy chủ **635** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua), giao diện **68** (qua 22/11/2026). Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
+Test tự động: máy chủ **644** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua), giao diện **68** (qua 24/11/2026). Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 
@@ -54,23 +54,31 @@ Test tự động: máy chủ **635** (8 bài tab Beta cần PyMuPDF, thiếu th
 | Máy | gia tốc **2700**, junction **0,02** (tiếng "khực" hết), servo **5,3 V** ([02](02_PHAN_CUNG_MAY.md)) |
 | Bút | UM-100 chính; Sakura ghi 0,5; UB-155 dừng |
 | Nút bút | `G90 G0 Z…`, Giữa = Z3 (servo giật do xung firmware, bỏ, [02](02_PHAN_CUNG_MAY.md) F16) |
-| PIN | chưa đặt thì để nguyên; **phải đặt trước khi mở ra ngoài** |
+| PIN | **không bắt buộc** khi mở ra ngoài (chủ dự án chọn 24/11/2026; launcher không chặn). Chưa đặt = ai có địa chỉ cũng là quản lý. **Nên đặt trước khi đưa địa chỉ cho người khác** ([13](13_MANG_VA_TEN_MIEN.md) mục 6) |
 | Thứ tự | thuật toán ✅ → tách lớp màu ✅ → Tab Beta ✅ lõi → nối mạng (Cloudflare) → nút cứng + cảm biến bút → ESP32 |
 
 ### 4.2 Làm tiếp, theo thứ tự
 1. **In giấy** (bạn): các bài ở [07](07_THU_NGHIEM.md) mục A (gồm tách mực 3 bút A9). Gửi ảnh, AI chỉnh hằng số. Rồi đo trên **MiniPC** bằng `tools/do_thoi_gian.py` ([07](07_THU_NGHIEM.md) mục 9): số này quyết định có cần viết lại phần chậm (vd bằng Rust) hay không.
 2. **Tab Beta**: **in thử** một trang báo cáo (bảng, khung, tiêu đề 18–20, chữ 14–16) bằng bút bi 0,5 (thử cả 0,38–0,40), rồi "tạo tất cả trang" nếu cần. Máy mới phải cài `pymupdf` vào Python launcher dùng (`backend\.venv` trước, rồi `Python\`): `backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt`. **Sau đó: trang Soạn font** (kế hoạch đã chốt, chưa làm: [12](12_TAB_BETA_PDF.md) mục 11b).
-3. **Nối mạng** (**M**, [08](08_TRIEN_KHAI.md) mục E, F): MiniPC → Docker + USB cố định + IP cố định → Cloudflare Tunnel; chỉ mở ra ngoài khi đã đặt PIN; thử Origin / cookie qua Cloudflare.
-4. **Nút cứng + cảm biến bút** (**S** + dây, [10](10_HUONG_PHAT_TRIEN.md) 3.1): `feed_hold_pin`, `cycle_start_pin`, cảm biến bút vào `probe`.
-5. **ESP32-S3** (cuối): bảng điều khiển không dây, đo điện năng / nhiệt, camera (**L**).
+3. **Nối mạng** (**M**, [08](08_TRIEN_KHAI.md) mục E, F): **bước 1 (24/11, chưa có MiniPC): chạy trên laptop**: tên miền + Cloudflare Tunnel + `data\mang.txt`, launcher đã hỗ trợ ([13](13_MANG_VA_TEN_MIEN.md): đã chạy thật 24/11: `plotter.tenmien.com` mở được từ 4G, nút QR trên header; còn đặt PIN, Cloudflare Access, thử thao tác ghi qua tên miền), cần bạn đặt PIN và tạo đường hầm; thử Origin / cookie qua Cloudflare. **Bước 2:** MiniPC → Docker hoặc systemd + USB cố định + IP cố định.
+4. **Webcam theo dõi** (**M**, dự định 24/11/2026, làm sau khi hoàn thiện tab Beta; chi tiết ở [09](09_QUYET_DINH_THIET_KE.md) P49): webcam USB cắm vào máy chạy server, xem trực tiếp + timelapse bản vẽ.
+5. **Nút cứng + cảm biến bút** (**S** + dây, [10](10_HUONG_PHAT_TRIEN.md) 3.1): `feed_hold_pin`, `cycle_start_pin`, cảm biến bút vào `probe`.
+6. **ESP32-S3** (cuối): bảng điều khiển không dây, đo **dòng điện / điện năng** (Wh mỗi bản vẽ) và rung (gia tốc kế); **không đo nhiệt** (chủ dự án 24/11: động cơ chạy tải nhẹ, số đo không có ý nghĩa) (**L**).
 
-### 4.3 Code nhỏ (không cần hỏi)
-1. **Biểu đồ**: tốc độ trong `FS:` cao hơn thật tới 1,41 lần trên CoreXY (02 F15); hiện tốc độ thật = quãng ÷ thời gian. **S**
-2. Dòng gợi ý dưới ô junction trong Cấu hình máy: ghi thêm "đang dùng 0,02". **S**
-3. Vùng chủ thể chưa đi theo **ảnh khách gửi**: thêm vào `customerSnapshot` nếu cần. **S**
-4. Cỡ chữ ô tên kiểu trên điện thoại (tên mới dài hơn). **S**
+### 4.4 Dự định làm tiếp (ghi 24/11/2026, làm từ 25/11)
+Bối cảnh: chủ dự án **không có laptop**, mượn máy; có một ổ SSD ngoài sau này gắn MiniPC. Chi tiết quyết định: [13](13_MANG_VA_TEN_MIEN.md) mục 9.
+1. **Commit** (khi chủ dự án bảo; chủ dự án tự push): 3 commit: (a) 4 việc code nhỏ (biểu đồ tốc độ thật, nhãn junction, vùng chủ thể ảnh khách, CSS màn hẹp); (b) launcher + tên miền con + máy chủ nhận `.tên-miền`; (c) nút QR + docs 13 + kế hoạch webcam / IoT + sinh lại `AI_CODEMAP`.
+2. **Launcher cho máy mượn** (**S–M**): tìm `launcher\cloudflared.exe` và chìa khóa `data\cloudflared\<mã>.json` (chạy bằng `--cred-file`, không cần `config.yml`; máy này giữ cách cũ làm dự phòng); thứ tự tìm Python: `backend\.venv` (chỉ khi chạy được) → `Python\` → `libs\` + Python hệ thống 3.12 qua `PYTHONPATH`; script `cai_thu_vien.ps1` (`pip install --target libs`); thêm `libs/`, `launcher/cloudflared.exe`, `data/cloudflared/` vào `.gitignore`.
+3. **Thử** (chủ dự án + AI): chạy đường ống chỉ với chìa khóa `.json` (tạm đổi tên thư mục `.cloudflared` của người dùng để chắc không dựa vào nó); `PYTHONPATH` có đi vào tiến trình con xử lý ảnh không; Git báo "dubious ownership" trên ổ ngoài; máy mượn đủ Python 3.12 x64 và thư viện.
+4. **Chuẩn bị SSD** (chủ dự án): exFAT; clone **kho gốc** của mình vào SSD; chép `data\` (**bản duy nhất**: sao lưu định kỳ); đặt `cloudflared.exe`; sau commit + push mới clone.
+5. **Hướng dẫn** "Mang theo bằng SSD / máy mượn" từng bước ở docs/13.
+6. **Sau đó:** chủ dự án gửi phiếu P15 (kiểm toàn bộ tệp, tệp `export/deepseek/phieu-24-11-p15-kiem-tat-ca.md`, Git bỏ qua) cho DeepSeek → AI kiểm lại báo cáo → **sắp xếp lại docs** và sửa lỗi code theo báo cáo.
+Việc xếp sau (đã ghi): đặt PIN + thử đăng nhập qua tên miền, Cloudflare Access, webcam ([09](09_QUYET_DINH_THIET_KE.md) P49), ESP32 đo dòng ([09](09_QUYET_DINH_THIET_KE.md) P50).
 
-Cần bạn cung cấp: ảnh và số sau mỗi buổi thử; router mini (hoặc 4G) cho demo không mạng; máy hiện sóng / logic analyzer nếu có.
+### 4.3 Code nhỏ (24/11/2026: làm xong cả 4, chờ bạn xem trên điện thoại)
+Biểu đồ tốc độ dùng quãng XY ÷ thời gian (`joblog.py`, cửa sổ 0,4 s; `FS:` trên CoreXY cao giả tới 1,41 lần, 02 F15; đầu lần chạy chưa đủ mẫu thì bỏ) · nhãn ô junction ghi "nên dùng 0,02" · ảnh khách gửi mang theo vùng chủ thể elip / chữ nhật / tự tách (vẽ tay không gửi: quá nặng, giới hạn 8 KB) · ô chọn kiểu nét / màu / preset không tràn màn hình hẹp (chưa xem trên điện thoại thật).
+
+Cần bạn cung cấp: ảnh và số sau mỗi buổi thử; router mini (hoặc 4G) cho demo không mạng; máy hiện sóng / logic analyzer nếu có; **ảnh dây điện thật từ nguồn Mean Well tới MKS và nhánh XL4005** (chọn chỗ đặt cảm biến dòng); **linh kiện IoT** (xem [09](09_QUYET_DINH_THIET_KE.md) P50): webcam USB + cần cổ ngỗng, ESP32 + INA260 + hạ áp 5 V + cầu chì.
 
 ## 5. Không làm
-Hồ sơ tốc độ (Chữ / Tranh / Đẹp nhất) · gửi dồn lệnh, tăng baud · dithering từng điểm ảnh · tối ưu thứ tự theo hàm chi phí · AI tìm nét / tạo ảnh (thử 18/11 và bỏ, P35) · stipple / TSP · WebSocket · viết lại tô nét bằng JavaScript · mã QR địa chỉ · tiếp tục khi mất điện.
+Hồ sơ tốc độ (Chữ / Tranh / Đẹp nhất) · gửi dồn lệnh, tăng baud · dithering từng điểm ảnh · tối ưu thứ tự theo hàm chi phí · AI tìm nét / tạo ảnh (thử 18/11 và bỏ, P35) · stipple / TSP · WebSocket · viết lại tô nét bằng JavaScript · tiếp tục khi mất điện.

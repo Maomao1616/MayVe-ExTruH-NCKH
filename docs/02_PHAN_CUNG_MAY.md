@@ -28,7 +28,7 @@ Nguồn Mean Well 12 V 6 A ──┬──► MKS DLC32 V2.1 (ESP32, FluidNC v4.
 | Driver | 2 × **TMC2209**, điện trở đo **R100** (0,1 Ω), Vref **1,4 V** | Irms ≈ 0,766 × Vref ≈ **1,07 A** (đỉnh ≈ 1,5 A). Dải Vref cho phép 0,2–2,2 V |
 | Truyền động | đai **GT2**, puly **20 răng**, vi bước **1/16** | 200 bước × 16 ÷ (20 răng × 2 mm) = **80 bước/mm** |
 | Nguồn tổng | **Mean Well 12 V 6 A** (72 W) | MKS nhận 12–24 V |
-| Bút vẽ tranh | **Sakura 0,4**, thử thêm **Uniball 150**; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory, 8000 mm/min (tờ hiệu chỉnh 12/11/2026): Sakura **0,45–0,5** mặt láng, **0,5–0,55** mặt nhám (phần mềm dùng 0,50); UB-155 **0,35–0,4** (dùng 0,38); UM-100 **~0,4** |
+| Bút vẽ tranh | **UM-100** (bút chính), Sakura; giấy **Ivory 250 g/m²** (từ 11/11/2026) | giấy thường: nét ~0,55 mm (mực loang, đo 03/11/2026). Giấy Ivory, 8000 mm/min (tờ hiệu chỉnh 12/11/2026): Sakura **0,45–0,5** mặt láng, **0,5–0,55** mặt nhám (phần mềm dùng 0,50); UB-155 **0,35–0,4** (dùng 0,38, đã dừng làm bút thường); UM-100 **~0,4** (dùng 0,40) |
 | Bút viết chữ | **bút bi 0,5** | nét bi thường mảnh hơn cỡ bi ⚠ cần đo |
 | Thêm được | ESP32-S3 (kit) | chưa có webcam |
 

@@ -45,7 +45,7 @@ Chữ hiển thị (tiếng Việt / tiếng Anh) **không** viết thẳng tron
 ```
 ExtruXY/
 ├─ README.md                 cài đặt, chạy, kiểm tra
-├─ docs/                     tài liệu (01 … 12 cho người đọc; AI_* cho AI)
+├─ docs/                     tài liệu (01 … 13 cho người đọc; AI_* cho AI)
 ├─ frontend/                 GIAO DIỆN (không cần bước build, mở là chạy)
 │  ├─ index.html             toàn bộ nút, ô, khối của 3 tab
 │  ├─ css/                   style.css (nền) → drawing.css (tab vẽ) → polish.css (lớp chỉnh, thắng các lớp trước) → icons.css (icon nút, nạp sau cùng)
@@ -160,7 +160,7 @@ Gốc dữ liệu = `data/` ở thư mục gốc dự án (tự tạo, không l�
 | Ảnh khách gửi | `customer/` | mỗi mục một thư mục (`image.jpg` + `meta.json`); tự xóa sau `customer_days` ngày (mặc định 5) |
 | Hạn mức bản thảo | `draw_settings.json` | số bản, MB, số ngày giữ ảnh khách |
 | Điểm dừng tác vụ | `resume.json` | xóa khi tác vụ chạy trọn |
-| PIN | `pin.txt` | `admin=…` (PIN đăng nhập; **đổi được ở Cài đặt → PIN quản lý**, máy chủ tự đọc và áp dụng ngay). `unlock=…` không dùng (09/11/2026) |
+| PIN | `pin.txt` | `admin=…` (PIN đăng nhập; **đổi được ở Cài đặt → PIN quản lý**, máy chủ tự đọc và áp dụng ngay). `unlock=…` là PIN mở khóa chuyển động tùy chọn; launcher nạp khóa này nếu được cấu hình |
 | Lỗi khởi động | `server-loi.txt` | chỉ bản mang đi |
 
 Nhật ký hệ thống **không ghi ra tệp** (chỉ nằm trong bộ nhớ, hiện ở terminal).
@@ -168,7 +168,7 @@ Nhật ký hệ thống **không ghi ra tệp** (chỉ nằm trong bộ nhớ, h
 | Biến môi trường (đều tùy chọn) | Tác dụng |
 |---|---|
 | `EXTRUXY_ADMIN_PIN` | PIN quản lý khi không có dòng `admin=` trong `data/pin.txt` (tệp thắng biến này). Không đặt cả hai = ai vào cũng là quản lý |
-| `EXTRUXY_UNLOCK_PIN` | PIN mở khóa chuyển động |
+| `EXTRUXY_UNLOCK_PIN` | PIN mở khóa chuyển động (tùy chọn; không đặt thì không có lớp PIN thứ hai) |
 | `EXTRUXY_ALLOW_MOTION=1` | mở khóa chuyển động cố định (máy thật mặc định chỉ đọc) |
 | `EXTRUXY_UNLOCK_MINUTES` | tự khóa lại sau chừng này phút (15; 0 = tắt) |
 | `EXTRUXY_NO_UNLOCK=1` | cấm mở khóa từ giao diện |
@@ -277,8 +277,8 @@ Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về 
 
 | Kiểm | Cách | Báo gì |
 |---|---|---|
-| Test máy chủ (564 bài) | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng |
-| Test giao diện (58 bài) | ở thư mục gốc: `node --test` kèm đủ 8 tệp: `frontend/tests/{chart,gcode,imageprep,locales,notify,paper,preview,subject}.test.mjs` (Windows: truyền đường dẫn tệp) | như trên |
+| Test máy chủ | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng. Số lượng hiện hành xem ở [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md), không lặp số ở đây |
+| Test giao diện | ở thư mục gốc: `node --test` kèm các tệp `frontend/tests/*.mjs` (Windows: truyền đường dẫn tệp) | như trên |
 | Xem giao diện | sửa Python thì tắt và chạy lại server; trình duyệt **Ctrl+F5**; **F12 → Console** xem dòng đỏ | lỗi chữ, nút không chạy |
 | Thử bằng máy giả | Cài đặt → Kết nối → `sim` | mọi nút chạy được khi chưa có máy |
 | Lưới an toàn | Git: `git diff` xem đã đổi gì; `git checkout -- <tệp>` quay về bản đã commit | |

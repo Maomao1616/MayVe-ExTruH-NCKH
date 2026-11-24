@@ -149,6 +149,7 @@ Tài liệu đánh số từ nhỏ đến lớn. Người đọc lần đầu đ
 | 10 | [10_HUONG_PHAT_TRIEN.md](10_HUONG_PHAT_TRIEN.md) | ý tưởng để dành: nguồn nét mới, nhiều người dùng, IoT, ESP32 | Hướng phát triển |
 | 11 | [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md) | đã xong (từ khóa + hằng chốt), cần bạn chọn, cần thử, làm tiếp | (sổ làm việc) |
 | 12 | [12_TAB_BETA_PDF.md](12_TAB_BETA_PDF.md) | tab Beta in trang PDF: thuật toán chữ, thư viện, hằng số, cách gỡ, kế hoạch Soạn font | Văn bản Word → bản vẽ |
+| 13 | [13_MANG_VA_TEN_MIEN.md](13_MANG_VA_TEN_MIEN.md) | mở giao diện cho máy khác: tên miền, Cloudflare Tunnel, mã QR trên header | Nối mạng |
 | AI | [AI_START.md](AI_START.md), [AI_CODEMAP.md](AI_CODEMAP.md) | **chỉ cho AI**: quy tắc, bẫy, bản đồ mã sinh tự động | không |
 
 Cài đặt và chạy phần mềm: [README.md](../README.md) ở thư mục gốc.

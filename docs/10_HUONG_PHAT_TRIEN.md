@@ -54,9 +54,9 @@ Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, PDF ≤ 40 MB 
 | Nút | Làm gì | Từ khóa |
 |---|---|---|
 | Bảng điều khiển không dây | OLED / TFT + 3 nút + còi + LED: trạng thái, % tiến độ, tạm dừng / chạy tiếp qua API (cần "mã thiết bị"). Nút an toàn vẫn phải nối dây | `ESP32-S3 OLED HTTP client` |
-| Đo điện năng | INA226 trên dây 12 V → Wh mỗi bản vẽ | `INA226 ESP32` |
-| Nhiệt độ | DS18B20 trên driver / động cơ → cảnh báo | `DS18B20 ESP32` |
-| Camera xem trực tiếp | ESP32-S3 + OV2640, MJPEG 640×480 ⚠ đo khung/s | `ESP32-S3 CameraWebServer` |
+| **Đo dòng điện / điện năng** (chọn 24/11/2026) | INA260 (hoặc INA226 + điện trở đo) **mắc nối tiếp** vào dây + 12 V giữa nguồn Mean Well và MKS (mắc song song chỉ đo được điện áp); ESP32 đọc qua I2C rồi gửi lên server → Wh mỗi bản vẽ, công suất cùng biểu đồ tốc độ. Dự phòng dễ hơn: ổ cắm đo điện thông minh. Chi tiết ở [09](09_QUYET_DINH_THIET_KE.md) P50 | `INA260 ESP32` |
+| ~~Nhiệt độ~~ | **Bỏ** (24/11/2026): động cơ chạy tải nhẹ, số đo không có ý nghĩa | |
+| Camera xem trực tiếp | **Đổi sang webcam USB cắm server** ([09](09_QUYET_DINH_THIET_KE.md) P49) thay vì ESP32-CAM (ảnh mờ, cần nguồn riêng) | |
 | Giao tiếp | MQTT (Mosquitto chạy trên MiniPC, không cần Internet) hoặc HTTP | `paho-mqtt`, `PubSubClient` |
 
 ESP32 dùng hạ áp 5 V riêng (servo giật dòng làm ESP32 khởi động lại).

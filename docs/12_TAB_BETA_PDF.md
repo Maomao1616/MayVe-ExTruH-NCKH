@@ -226,6 +226,23 @@ Mã lỗi mới: `pdf_engine_missing`, `bad_pdf`, `pdf_encrypted`, `too_many_pag
 - Chữ viết tay nhìn **đặc ở khung xem trước nhỏ** vì nét 0,5 mm chỉ còn 1–2 điểm ảnh (dùng zoom); chữ thường chỉ cao ~1,7 mm nên với bút 0,5 vòng của e, l có thể kín: thử bút 0,38–0,40.
 - Chưa in giấy: độ đọc được của chữ 14 pt với bút 0,5 phải xem trên giấy.
 
+### 11a. Việc cần cải thiện (ghi nhớ từ rà soát 23/11/2026; **chưa làm**, chỉ làm khi bạn bảo)
+Từ một bản góp ý của AI khác, chỉ là **giả thuyết cần đo**; hằng số hiện tại chưa chứng minh sai (hình nét làm mịn `LINEART_BLUR_MM` = 0,25 mm, **không phải** 0,8 mm như bản góp ý đoán).
+
+| Thứ tự | Việc | Cách kiểm |
+|---|---|---|
+| 1 | Đo dpi hiệu dụng của ảnh nhúng (điểm ảnh ngang ÷ bề rộng khung inch): dưới ~150 dpi thì nhãn chữ trong hình nát vì dữ liệu, không vì thuật toán | in số ra ở bước ảnh |
+| 2 | In thử trang có sơ đồ với bút 0,5 và 0,38 (và chữ ×1,15) | ảnh giấy thật |
+| 3 | Lưu **nguyên văn** thông báo Hershey vào repo (bước 0 của Soạn font) | tệp `LICENSE-HERSHEY.txt` + dòng ghi nguồn ở giao diện |
+| 4 | Nhãn chữ trong hình: tách thành phần liên thông cỡ chữ, cho OCR hoặc **gõ lại tay** rồi viết bằng font nét đơn | số nhãn đúng / tổng |
+| 5 | Hình nét: giữ góc (cắt nét tại góc rồi mới làm mịn), bắt đoạn thẳng và kéo về đúng ngang / dọc | xung vuông còn vuông |
+| 6 | Chữ thân bài: hệ số co theo **dòng** (trung vị, kẹp 0,9–1,1) thay vì từng từ; làm mượt glyph một lần lúc nạp font; dấu ×1,3 và vẽ dấu **sau** thân chữ | in thử so ảnh 400 % |
+| 7 | Ký tự toán / Hy Lạp: xem vpype có font `greek`, `mathlow`, `mathupp` không để thay skeleton | liệt kê font |
+| 8 | Mạch do chính bạn vẽ: xuất PDF / SVG vector từ phần mềm vẽ mạch thay vì chụp ảnh (bỏ hẳn bước raster) | thử một mạch |
+| 9 | Tối ưu đường bút của hình (`linemerge`, `linesort`, `reloop`); chữ giữ thứ tự đọc | tổng quãng nhấc bút |
+
+**Chưa kiểm:** Relief SingleLine (OFL) có đủ chữ Việt không · điều khoản VNOnDB nếu dùng cho sản phẩm. Nhận dạng ký hiệu mạch bằng học sâu: bỏ (máy không GPU).
+
 ## 11b. Soạn font riêng trong ứng dụng (kế hoạch ĐÃ CHỐT 22/11/2026, **chưa làm**)
 
 ### Quyết định của chủ dự án
