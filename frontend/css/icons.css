@@ -1,0 +1,338 @@
+/* ==================== ICON NUT (24/11/2026) ====================
+   Nap SAU polish.css va beta.css. Muon bo: xoa dong <link ... icons.css> trong index.html.
+   Cach lam: moi nut co mot icon SVG ve tay (luoi 24 x 24, net 2) gan bang ::before + mask, to theo mau chu (currentColor)
+   nen an theo theme sang / toi va trang thai khoa. Khong thu vien, khong HTML moi, khong dong vao chu dich (nut tu doi chu van giu icon).
+   Chi them cho nut chua co ky hieu (nut da co san ↻ ▶ ⌂ ✂ ← → thi giu nguyen) va khong gan cho hop thoai xac nhan.
+   Them icon: them mot khoi "--ico" ben duoi va them id nut vao hai danh sach dau tep. Icon chi de trang tri: khong doi hanh vi nut.
+   Tep nay sinh tu script ve icon; sua tay duoc. */
+
+#resume-btn,
+#pause-btn,
+#jog-cancel-btn,
+#cancel-job-btn,
+#drawing-cancel-btn,
+#resume-discard-btn,
+#beta-cancel-btn,
+#reset-btn,
+#optimize-reset-btn,
+#drawing-rotate-btn,
+#chart-refresh-btn,
+#draft-queue-refresh-btn,
+#customer-inbox-refresh-btn,
+#refresh-ports-btn,
+#storage-refresh-btn,
+#regenerate-gcode-btn,
+#login-btn,
+#pin-save-btn,
+#logout-btn,
+#unlock-btn,
+#unlock-motion-btn,
+#relock-motion-btn,
+#preview-gcode-btn,
+#save-gcode-draft-btn,
+#save-draft-btn,
+#draft-settings-save-btn,
+#mc-save-btn,
+#clear-trail-btn,
+#chart-delete-btn,
+#macro-delete-btn,
+#subject-reset-btn,
+#fit-preview-btn,
+#drawing-fit-btn,
+#terminal-send-btn,
+#customer-send-btn,
+#send-to-control-btn,
+#crop-apply-btn,
+#subject-apply-btn,
+#mc-apply-btn,
+#subject-free-undo,
+#mc-revert-btn,
+#drawing-keep-btn,
+#final-run-btn,
+#beta-run-btn,
+#connect-btn,
+#disconnect-btn,
+#mc-backup-load-btn,
+#sheet-lift-btn,
+#sheet-pen-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45em;
+}
+
+#resume-btn::before,
+#pause-btn::before,
+#jog-cancel-btn::before,
+#cancel-job-btn::before,
+#drawing-cancel-btn::before,
+#resume-discard-btn::before,
+#beta-cancel-btn::before,
+#reset-btn::before,
+#optimize-reset-btn::before,
+#drawing-rotate-btn::before,
+#chart-refresh-btn::before,
+#draft-queue-refresh-btn::before,
+#customer-inbox-refresh-btn::before,
+#refresh-ports-btn::before,
+#storage-refresh-btn::before,
+#regenerate-gcode-btn::before,
+#login-btn::before,
+#pin-save-btn::before,
+#logout-btn::before,
+#unlock-btn::before,
+#unlock-motion-btn::before,
+#relock-motion-btn::before,
+#preview-gcode-btn::before,
+#save-gcode-draft-btn::before,
+#save-draft-btn::before,
+#draft-settings-save-btn::before,
+#mc-save-btn::before,
+#clear-trail-btn::before,
+#chart-delete-btn::before,
+#macro-delete-btn::before,
+#subject-reset-btn::before,
+#fit-preview-btn::before,
+#drawing-fit-btn::before,
+#terminal-send-btn::before,
+#customer-send-btn::before,
+#send-to-control-btn::before,
+#crop-apply-btn::before,
+#subject-apply-btn::before,
+#mc-apply-btn::before,
+#subject-free-undo::before,
+#mc-revert-btn::before,
+#drawing-keep-btn::before,
+#final-run-btn::before,
+#beta-run-btn::before,
+#connect-btn::before,
+#disconnect-btn::before,
+#mc-backup-load-btn::before,
+#sheet-lift-btn::before,
+#sheet-pen-btn::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 1.1em;
+    height: 1.1em;
+    background-color: currentColor;
+    -webkit-mask: var(--ico) center / contain no-repeat;
+    mask: var(--ico) center / contain no-repeat;
+    transition: transform 0.3s cubic-bezier(0.34, 1.45, 0.64, 1);
+}
+
+/* play */
+#resume-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='7 4 20 12 7 20 7 4'/></svg>");
+}
+
+/* pause */
+#pause-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='6' y='4' width='4' height='16' rx='1'/><rect x='14' y='4' width='4' height='16' rx='1'/></svg>");
+}
+
+/* x-circle */
+#jog-cancel-btn,
+#cancel-job-btn,
+#drawing-cancel-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='9'/><path d='M15 9l-6 6M9 9l6 6'/></svg>");
+}
+
+/* x */
+#resume-discard-btn,
+#beta-cancel-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 6l12 12M18 6L6 18'/></svg>");
+}
+
+/* rotate-ccw */
+#reset-btn,
+#optimize-reset-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M3 12a9 9 0 1 0 3-6.7L3 8'/><path d='M3 3v5h5'/></svg>");
+}
+
+/* rotate-cw */
+#drawing-rotate-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12a9 9 0 1 1-3-6.7L21 8'/><path d='M21 3v5h-5'/></svg>");
+}
+
+/* refresh */
+#chart-refresh-btn,
+#draft-queue-refresh-btn,
+#customer-inbox-refresh-btn,
+#refresh-ports-btn,
+#storage-refresh-btn,
+#regenerate-gcode-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 12a9 9 0 1 1-3-6.7L21 8'/><path d='M21 3v5h-5'/></svg>");
+}
+
+/* key */
+#login-btn,
+#pin-save-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='8' cy='15' r='4'/><path d='M10.8 12.2L21 2M17 6l3 3'/></svg>");
+}
+
+/* log-out */
+#logout-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'/><path d='M16 17l5-5-5-5M21 12H9'/></svg>");
+}
+
+/* unlock */
+#unlock-btn,
+#unlock-motion-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 7.5-2'/></svg>");
+}
+
+/* lock */
+#relock-motion-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='11' width='16' height='10' rx='2'/><path d='M8 11V7a4 4 0 0 1 8 0v4'/></svg>");
+}
+
+/* eye */
+#preview-gcode-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z'/><circle cx='12' cy='12' r='3'/></svg>");
+}
+
+/* save */
+#save-gcode-draft-btn,
+#save-draft-btn,
+#draft-settings-save-btn,
+#mc-save-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 3h11l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z'/><path d='M8 3v5h7V3M8 21v-7h8v7'/></svg>");
+}
+
+/* trash */
+#clear-trail-btn,
+#chart-delete-btn,
+#macro-delete-btn,
+#subject-reset-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3'/></svg>");
+}
+
+/* maximize */
+#fit-preview-btn,
+#drawing-fit-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'/></svg>");
+}
+
+/* send */
+#terminal-send-btn,
+#customer-send-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z'/></svg>");
+}
+
+/* arrow-right */
+#send-to-control-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12h14M13 6l6 6-6 6'/></svg>");
+}
+
+/* check */
+#crop-apply-btn,
+#subject-apply-btn,
+#mc-apply-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M5 12l5 5L20 7'/></svg>");
+}
+
+/* undo */
+#subject-free-undo,
+#mc-revert-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 14L4 9l5-5'/><path d='M4 9h10a6 6 0 0 1 0 12h-3'/></svg>");
+}
+
+/* bookmark */
+#drawing-keep-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 3h12v18l-6-4-6 4z'/></svg>");
+}
+
+/* pen */
+#final-run-btn,
+#beta-run-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 20l1-4L17 4l3 3L8 19z'/><path d='M14 7l3 3'/></svg>");
+}
+
+/* plug */
+#connect-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 2v6M15 2v6M7 8h10v4a5 5 0 0 1-10 0z'/><path d='M12 17v5'/></svg>");
+}
+
+/* unplug */
+#disconnect-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 2v6M15 2v6M7 8h10v4a5 5 0 0 1-10 0z'/><path d='M12 17v5M3 3l18 18'/></svg>");
+}
+
+/* download */
+#mc-backup-load-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 3v12M7 10l5 5 5-5M4 21h16'/></svg>");
+}
+
+/* file */
+#sheet-lift-btn,
+#sheet-pen-btn {
+    --ico: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M6 3h8l5 5v13H6z'/><path d='M14 3v5h5M9 13h6M9 17h6'/></svg>");
+}
+
+/* Re chuot: icon nay len nhe; nut lam moi xoay nua vong; dau tich phong to */
+:is(#resume-btn, #pause-btn, #jog-cancel-btn, #cancel-job-btn, #drawing-cancel-btn, #resume-discard-btn, #beta-cancel-btn, #reset-btn, #optimize-reset-btn, #drawing-rotate-btn, #login-btn, #pin-save-btn, #logout-btn, #unlock-btn, #unlock-motion-btn, #relock-motion-btn, #preview-gcode-btn, #save-gcode-draft-btn, #save-draft-btn, #draft-settings-save-btn, #mc-save-btn, #clear-trail-btn, #chart-delete-btn, #macro-delete-btn, #subject-reset-btn, #fit-preview-btn, #drawing-fit-btn, #terminal-send-btn, #customer-send-btn, #send-to-control-btn, #subject-free-undo, #mc-revert-btn, #drawing-keep-btn, #final-run-btn, #beta-run-btn, #connect-btn, #disconnect-btn, #mc-backup-load-btn, #sheet-lift-btn, #sheet-pen-btn):hover:not(:disabled)::before {
+    transform: scale(1.15) rotate(-6deg);
+}
+
+:is(#chart-refresh-btn, #draft-queue-refresh-btn, #customer-inbox-refresh-btn, #refresh-ports-btn, #storage-refresh-btn, #regenerate-gcode-btn):hover:not(:disabled)::before {
+    transform: rotate(180deg);
+}
+
+:is(#crop-apply-btn, #subject-apply-btn, #mc-apply-btn):hover:not(:disabled)::before {
+    transform: scale(1.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #resume-btn::before,
+    #pause-btn::before,
+    #jog-cancel-btn::before,
+    #cancel-job-btn::before,
+    #drawing-cancel-btn::before,
+    #resume-discard-btn::before,
+    #beta-cancel-btn::before,
+    #reset-btn::before,
+    #optimize-reset-btn::before,
+    #drawing-rotate-btn::before,
+    #chart-refresh-btn::before,
+    #draft-queue-refresh-btn::before,
+    #customer-inbox-refresh-btn::before,
+    #refresh-ports-btn::before,
+    #storage-refresh-btn::before,
+    #regenerate-gcode-btn::before,
+    #login-btn::before,
+    #pin-save-btn::before,
+    #logout-btn::before,
+    #unlock-btn::before,
+    #unlock-motion-btn::before,
+    #relock-motion-btn::before,
+    #preview-gcode-btn::before,
+    #save-gcode-draft-btn::before,
+    #save-draft-btn::before,
+    #draft-settings-save-btn::before,
+    #mc-save-btn::before,
+    #clear-trail-btn::before,
+    #chart-delete-btn::before,
+    #macro-delete-btn::before,
+    #subject-reset-btn::before,
+    #fit-preview-btn::before,
+    #drawing-fit-btn::before,
+    #terminal-send-btn::before,
+    #customer-send-btn::before,
+    #send-to-control-btn::before,
+    #crop-apply-btn::before,
+    #subject-apply-btn::before,
+    #mc-apply-btn::before,
+    #subject-free-undo::before,
+    #mc-revert-btn::before,
+    #drawing-keep-btn::before,
+    #final-run-btn::before,
+    #beta-run-btn::before,
+    #connect-btn::before,
+    #disconnect-btn::before,
+    #mc-backup-load-btn::before,
+    #sheet-lift-btn::before,
+    #sheet-pen-btn::before {
+        transition: none;
+        transform: none !important;
+    }
+}

@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~625,091 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~633,325 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -264,24 +264,24 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `01_TONG_QUAN.md` | ~3,233 |  |
 | `02_PHAN_CUNG_MAY.md` | ~4,012 |  |
-| `03_CAU_TRUC_PHAN_MEM.md` | ~5,767 |  |
+| `03_CAU_TRUC_PHAN_MEM.md` | ~5,776 |  |
 | `04_TAB_DIEU_KHIEN.md` | ~5,569 |  |
 | `05_TAB_TAO_BAN_VE.md` | ~5,496 |  |
 | `06_THUAT_TOAN_XU_LY_ANH.md` | ~19,696 |  |
 | `07_THU_NGHIEM.md` | ~6,688 |  |
 | `08_TRIEN_KHAI.md` | ~5,758 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~6,587 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~7,465 |  |
 | `10_HUONG_PHAT_TRIEN.md` | ~3,351 |  |
-| `11_VIEC_CAN_LAM.md` | ~2,169 |  |
+| `11_VIEC_CAN_LAM.md` | ~2,238 |  |
 | `12_TAB_BETA_PDF.md` | ~9,604 |  |
-| `AI_CODEMAP.md` | ~7,834 |  |
+| `AI_CODEMAP.md` | ~7,845 |  |
 | `AI_START.md` | ~3,651 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~40,992 |  |
+| `index.html` | ~42,135 |  |
 
 ### `frontend/assets/css/`
 
@@ -297,15 +297,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `customer.css` | ~690 | Ảnh khách gửi (views/customer.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
 | `drawing.css` | ~2,566 | 9. TAB TAO BAN VE |
 | `jobchart.css` | ~1,592 | Biểu đồ số liệu chạy máy (views/jobchart.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
-| `polish.css` | ~14,862 | POLISH: lop tinh chinh giao dien |
-| `style.css` | ~13,283 |  |
+| `polish.css` | ~19,035 | POLISH: lop tinh chinh giao dien |
+| `style.css` | ~13,266 |  |
 | `testsheet.css` | ~649 | Tờ thử / hiệu chỉnh (Cài đặt, views/settings.js initTestSheets). Chỉ dùng biến màu có sẵn ở tokens.css. |
 
 ### `frontend/js/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `app.js` | ~2,099 |  |
+| `app.js` | ~2,142 |  |
 
 ### `frontend/js/core/`
 
@@ -347,7 +347,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `customer.js` | ~2,416 | ảnh khách gửi (backend: api/customer.py, services/customer.py). |
 | `dock.js` | ~2,833 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
-| `drawing.js` | ~11,284 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
+| `drawing.js` | ~11,984 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
 | `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
 | `jobchart.js` | ~6,272 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
 | `preview.js` | ~6,733 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
@@ -368,7 +368,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `canvas.js` | ~6,862 | canvas khung vẽ: tờ giấy (A6/A5/A4 như khung dán thật trên bàn), lề, nét xem nháp |
 | `crop.js` | ~3,108 | cắt ảnh ngay trên khung "ảnh gốc" của tab Tạo bản vẽ. |
-| `params.js` | ~6,480 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
+| `params.js` | ~7,162 | các ô thông số của tab Tạo bản vẽ <-> dữ liệu gửi backend. |
 | `presets.js` | ~1,403 | bộ thông số dựng sẵn cho tiền xử lý ảnh + kiểu nét (chỉ là dữ liệu). |
 | `subject.js` | ~3,951 | khoanh vùng chủ thể trên ảnh gốc (elip / chữ nhật). Ngoài vùng bản vẽ nhạt đi (backend |
 | `tonepreview.js` | ~1,090 | khung "ảnh gốc" của tab Tạo bản vẽ: xem ảnh gốc hoặc ảnh SAU chỉnh sáng |
@@ -377,8 +377,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~21,828 |  |
-| `vi.json` | ~20,674 |  |
+| `en.json` | ~22,006 |  |
+| `vi.json` | ~21,039 |  |
 
 ### `frontend/tests/`
 

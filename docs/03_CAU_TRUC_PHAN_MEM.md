@@ -48,7 +48,7 @@ ExtruXY/
 ├─ docs/                     tài liệu (01 … 12 cho người đọc; AI_* cho AI)
 ├─ frontend/                 GIAO DIỆN (không cần bước build, mở là chạy)
 │  ├─ index.html             toàn bộ nút, ô, khối của 3 tab
-│  ├─ css/                   style.css (nền) → drawing.css (tab vẽ) → polish.css (lớp chỉnh sau cùng, thắng các lớp trước)
+│  ├─ css/                   style.css (nền) → drawing.css (tab vẽ) → polish.css (lớp chỉnh, thắng các lớp trước) → icons.css (icon nút, nạp sau cùng)
 │  ├─ assets/css/tokens.css  bảng màu, cỡ chữ, bo góc dùng chung; hai bản sáng / tối
 │  ├─ locales/               vi.json, en.json: mọi chữ hiển thị (hai tệp phải cùng khóa)
 │  ├─ js/                    xem mục 3
