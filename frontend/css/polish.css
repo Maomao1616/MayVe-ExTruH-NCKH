@@ -2465,3 +2465,37 @@ input[type="radio"]:focus-visible {
         display: none;
     }
 }
+
+/* ---- DRO: o toa do X / Y / Z kieu bang so (24/11/2026). Chi doi cach hien thi; so van do control.js ghi (toFixed(3)),
+        khong dung logic may. Khong dat font-size de giu cac luat thu nho cho man hep o tren. ---- */
+.coordinate-row {
+    --axis: var(--text-muted);
+}
+
+.coordinate-row:has(> .axis-x) { --axis: #ff7777; }
+.coordinate-row:has(> .axis-y) { --axis: #43d9a3; }
+.coordinate-row:has(> .axis-z) { --axis: var(--accent-text); }
+
+/* Theme sang: do / xanh pastel khong du tuong phan tren nen trang, dung tong dam */
+[data-theme="light"] .coordinate-row:has(> .axis-x) { --axis: var(--danger); }
+[data-theme="light"] .coordinate-row:has(> .axis-y) { --axis: var(--success); }
+
+.coordinates-panel .axis-label {
+    color: var(--axis);
+}
+
+.coordinates-panel .coord-workspace,
+.coordinates-panel .coord-machine {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+    letter-spacing: -0.03em;               /* chu mono rong hon chu thuong ~9 %: bu lai de so khong tran o */
+    border-left: 3px solid var(--axis);
+}
+
+.coordinates-panel .coord-workspace {
+    color: var(--text-main);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--axis) 11%, var(--bg-main)), var(--bg-main) 60%);
+}
+
+.coordinates-panel .coord-machine {
+    border-left-color: color-mix(in srgb, var(--axis) 45%, var(--border));
+}
