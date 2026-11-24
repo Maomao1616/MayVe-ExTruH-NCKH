@@ -143,3 +143,30 @@ def test_only_admin_can_list_view_mark_and_delete(guest, admin):
 def test_item_ids_cannot_escape_the_folder(admin, bad_id):
     for method, url in (("get", f"/api/customer/{bad_id}/image"), ("delete", f"/api/customer/{bad_id}")):
         assert getattr(admin, method)(url).status_code in (404, 405)
+
+
+def test_subject_region_is_kept_only_in_safe_shapes(guest):
+    ok = send(guest, headers={"cf-connecting-ip": "s1"},
+              meta={"name": "An", "params": {"subject": {"shape": "ellipse", "outside": 0.4, "x": 0.1, "y": 0.1, "w": 0.6, "h": 0.7}}})
+    bad = send(guest, headers={"cf-connecting-ip": "s2"},
+               meta={"name": "An", "params": {"subject": {"shape": "free", "outside": 0.4, "x": 0.1, "y": 0.1, "w": 0.6, "h": 0.7}}})
+    out_of_range = send(guest, headers={"cf-connecting-ip": "s3"},
+                        meta={"name": "An", "params": {"subject": {"shape": "rect", "x": 5, "y": 0, "w": 1, "h": 1}}})
+    for r in (ok, bad, out_of_range):
+        assert r.status_code == 201
+    def saved(r):
+        return json.loads((paths.DATA_DIR / "customer" / r.json()["item"]["id"] / "meta.json").read_text(encoding="utf-8"))["params"]
+    assert saved(ok)["subject"]["shape"] == "ellipse" and saved(ok)["subject"]["w"] == 0.6
+    assert "subject" not in saved(bad) and "subject" not in saved(out_of_range)
+
+
+def test_nonfinite_and_huge_numbers_from_guest_are_rejected_not_stored(guest):
+    """NaN / vô hạn làm GET /api/customer trả JSON hỏng (500); số nguyên quá lớn làm float() ném OverflowError."""
+    nan = send(guest, headers={"cf-connecting-ip": "n1"}, meta={"name": "An", "params": {"drawing-margin": float("nan")}})
+    assert nan.status_code == 400
+    huge = send(guest, headers={"cf-connecting-ip": "n2"},
+                meta={"name": "An", "params": {"subject": {"shape": "ellipse", "x": 0.1, "y": 0.1, "w": 10 ** 400, "h": 0.5}}})
+    assert huge.status_code == 201                       # vùng không hợp lệ chỉ bị bỏ, không sập
+    item = huge.json()["item"]["id"]
+    meta = json.loads((paths.DATA_DIR / "customer" / item / "meta.json").read_text(encoding="utf-8"))
+    assert "subject" not in meta["params"]

@@ -62,6 +62,22 @@ export function payload() {
     return natural ? payloadOf(shape, shape === "free" ? polys : applied, outside) : {};
 }
 
+// Gửi / nhận qua "ảnh khách gửi": elip, chữ nhật, tự tách (vẽ tay không gửi: quá nặng). Dữ liệu khách là không tin cậy.
+export function snapshot() {
+    if (!natural || draft || !["ellipse", "rect", "auto"].includes(shape)) return undefined;
+    if (shape === "auto") return { shape, outside };
+    return applied ? { shape, outside, ...clampRegion(applied) } : undefined;
+}
+
+export function restore(saved) {
+    if (!natural || !saved || !["ellipse", "rect", "auto"].includes(saved.shape)) return;
+    shape = saved.shape;
+    outside = clamp(Number.isFinite(saved.outside) ? saved.outside : 0.5, 0, 1);
+    applied = shape === "auto" ? null : clampRegion(saved);
+    draft = null;
+    render();                                                  // render() tự đồng bộ thanh trượt "ngoài vùng"
+}
+
 /* ---------- sửa vùng ---------- */
 
 function onShapeChange() {

@@ -410,4 +410,11 @@
         flex-basis: 100%;
         order: 3;
     }
+
+    /* tên kiểu nét / preset dài: không để ô chọn tràn khỏi màn hình điện thoại */
+    #style-kind, #palette-mode, #draw-preset {
+        max-width: 100%;
+        min-width: 0;
+        text-overflow: ellipsis;
+    }
 }

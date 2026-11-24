@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import io
 import json
+import math
 import re
 import secrets
 import shutil
@@ -81,6 +82,34 @@ def purge(now: float | None = None) -> int:
     return removed
 
 
+def _finite(value) -> float | None:
+    """Số hữu hạn (không bool, không NaN / vô hạn, không số nguyên quá lớn để đổi sang float) hoặc None."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        number = float(value)
+    except OverflowError:
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _clean_subject(value: dict) -> dict:
+    """Vùng chủ thể khách khoanh: chỉ elip / chữ nhật / tự tách (vẽ tay quá nặng cho params_bytes)."""
+    shape = value.get("shape")
+    if shape not in ("ellipse", "rect", "auto"):
+        return {}
+    out: dict = {"shape": shape}
+    outside = _finite(value.get("outside"))
+    if outside is not None and 0 <= outside <= 1:
+        out["outside"] = outside
+    if shape != "auto":
+        region = {k: v for k in ("x", "y", "w", "h") if (v := _finite(value.get(k))) is not None}
+        if len(region) != 4 or not all(0 <= v <= 1 for v in region.values()):
+            return {}
+        out.update(region)
+    return out
+
+
 def _clean_params(raw) -> dict:
     if raw is None:
         return {}
@@ -90,14 +119,22 @@ def _clean_params(raw) -> dict:
     for key, value in raw.items():
         if not isinstance(key, str) or not KEY_RE.match(key):
             raise DrawError("bad_param", "params: tên khóa không hợp lệ.")
-        if isinstance(value, bool) or isinstance(value, (int, float)):
+        if isinstance(value, bool):
+            out[key] = value
+        elif isinstance(value, (int, float)):
+            if _finite(value) is None:                   # NaN / vô hạn làm GET /api/customer trả JSON hỏng (500)
+                raise DrawError("bad_param", f"params.{key}: số không hợp lệ.")
             out[key] = value
         elif isinstance(value, str) and len(value) <= 40:
             out[key] = value
         elif isinstance(value, dict) and key == "crop":
-            crop = {k: float(value[k]) for k in ("x", "y", "w", "h") if isinstance(value.get(k), (int, float))}
+            crop = {k: v for k in ("x", "y", "w", "h") if (v := _finite(value.get(k))) is not None}
             if len(crop) == 4 and all(0 <= v <= 1 for v in crop.values()):
                 out[key] = crop
+        elif isinstance(value, dict) and key == "subject":
+            subject = _clean_subject(value)
+            if subject:
+                out[key] = subject
         elif value is None:
             continue
         else:

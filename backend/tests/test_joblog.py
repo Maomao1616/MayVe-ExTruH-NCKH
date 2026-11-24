@@ -213,3 +213,32 @@ def test_delete_while_summary_is_still_running_leaves_no_orphan_files(monkeypatc
     time.sleep(1.2)                                                           # chờ luồng tóm tắt chạy xong
     assert list(joblog.logs_dir().glob("*")) == []
     assert joblog.list_logs() == []
+
+
+def test_speed_is_distance_over_time_not_fs_value():
+    """FS: trên CoreXY báo cao hơn thật (02 F15): biểu đồ phải dùng quãng XY ÷ thời gian."""
+    log = joblog.JobLog()
+    t0 = time.time() - 4.0
+    job = {"id": 77, "name": "toc", "state": "running", "total": 10, "sent": 0, "acked": 0, "started_at": t0}
+    log.observe(job, None, {"pen_down_z": 0.0})
+    log_id = log.current_id
+    for i in range(40):                                       # 10 mẫu / giây, đi 100 mm / giây = 6000 mm/phút
+        st = {"state": "Run", "wpos": [i * 10.0, 0.0, 0.0], "feed": 8500.0, "planner_free": 10, "rx_free": 128}
+        with log._lock:
+            log._t0 = time.time() - i * 0.1
+            log._sample(job, st)
+    log.observe({**job, "state": "done", "finished_at": time.time()}, None)
+    assert wait_for(lambda: any(r["id"] == log_id and r["state"] == "done" for r in joblog.list_logs()), timeout=5)
+    s = joblog.read_log(log_id, 5000)["summary"]
+    assert 5800 <= s["feed_max"] <= 6200 and s["feed_max"] != 8500
+
+
+def test_speed_counts_path_length_not_straight_line():
+    """Nét cong khép kín: đầu và cuối cửa sổ cùng chỗ nhưng bút vẫn đi; tốc độ không được tụt về 0."""
+    entry = {"offset": 0, "rows": [], "j": 0}
+    pts = [(0, 0), (10, 0), (10, 10), (0, 10), (0, 0), (10, 0), (10, 10), (0, 10), (0, 0)]   # vòng vuông 10 mm, mỗi mẫu 0,1 s
+    for i, (x, y) in enumerate(pts):
+        entry["rows"].append(joblog._row_from_line(f"{i * 0.1:.2f},Run,{x},{y},0,9999,10,128,0,0"))
+        joblog._set_speed(entry)
+    speeds = [r["speed"] for r in entry["rows"] if r["speed"] is not None]
+    assert speeds and min(speeds) > 5000                  # 10 mm / 0,1 s = 6000 mm/phút; đường thẳng đầu-cuối sẽ ra 0

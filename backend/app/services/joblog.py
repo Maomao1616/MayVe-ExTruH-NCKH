@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import re
 import threading
 import time
@@ -27,6 +28,7 @@ KEEP_FILES = 30
 MIN_SAMPLES = 3                   # lần chạy ít mẫu hơn thế (bấm Chạy rồi ngắt ngay...) không đáng giữ: xóa luôn
 KEEP_BYTES = 150 * 1024 * 1024
 FLUSH_S = 2.0
+SPEED_WINDOW_S = 0.4             # tốc độ thật = quãng XY đi được ÷ thời gian trong cửa sổ này (FS: trên CoreXY cao hơn thật tới 1,41 lần; 02 F15)
 PEN_DOWN_TOL = 0.5               # mm: Z cách Z xuống không quá chừng này = bút xuống (như lib/gcode.js)
 ID_RE = re.compile(r"\d{8}-\d{6}-\d{1,9}")
 _ACTIVE = ("running", "finishing")
@@ -246,18 +248,48 @@ def _row_from_line(line: str) -> dict | None:
     t = _f(parts[_COL["t"]])
     if t is None:
         return None
-    return {"t": t, "state": parts[_COL["state"]], "z": _f(parts[_COL["z"]]), "feed": _f(parts[_COL["feed"]]),
+    return {"t": t, "state": parts[_COL["state"]], "x": _f(parts[_COL["x"]]), "y": _f(parts[_COL["y"]]),
+            "z": _f(parts[_COL["z"]]), "feed": _f(parts[_COL["feed"]]), "speed": None, "cum": 0.0,
             "bf": _f(parts[_COL["bf_planner"]]), "sent": _f(parts[_COL["sent"]]), "acked": _f(parts[_COL["acked"]])}
+
+
+def _set_speed(entry: dict) -> None:
+    """Tính `speed` (mm/phút thật) cho dòng vừa thêm; `j` = dòng đầu cửa sổ, chỉ tiến lên."""
+    rows = entry["rows"]
+    r = rows[-1]
+    if len(rows) > 1:                                    # `cum` = quãng XY cộng dồn giữa các mẫu liên tiếp (nét cong / tô qua lại không bị coi là đứng yên)
+        p = rows[-2]
+        r["cum"] = p["cum"]
+        if None not in (r["x"], r["y"], p["x"], p["y"]):
+            r["cum"] += math.hypot(r["x"] - p["x"], r["y"] - p["y"])
+    if r["x"] is None or r["y"] is None:
+        return
+    j = entry["j"]
+    while j < len(rows) - 1 and (rows[j]["x"] is None or rows[j]["y"] is None or r["t"] - rows[j + 1]["t"] >= SPEED_WINDOW_S):
+        j += 1
+    entry["j"] = j
+    a = rows[j]
+    dt = r["t"] - a["t"]
+    if a["x"] is None or a["y"] is None or dt < SPEED_WINDOW_S * 0.5:
+        return                                           # đầu lần chạy: chưa đủ mẫu, dùng FS:
+    r["speed"] = round((r["cum"] - a["cum"]) / dt * 60.0)
+
+
+def _feed(r: dict):
+    """Tốc độ để vẽ / tóm tắt: số thật nếu tính được, không có tọa độ thì số `FS:` của máy."""
+    if r["speed"] is not None:
+        return r["speed"]
+    return r["feed"] if r["x"] is None or r["y"] is None else None   # đầu lần chạy chưa đủ mẫu: bỏ, không lấy FS: cao giả
 
 
 def _read_rows(log_id: str) -> list[dict]:
     """Mọi dòng đã ghi (danh sách chỉ tăng thêm; người gọi chỉ đọc, không sửa)."""
     path = _csv_path(log_id)
     with _CACHE_LOCK:
-        entry = _CACHE.pop(log_id, None) or {"offset": 0, "rows": []}
+        entry = _CACHE.pop(log_id, None) or {"offset": 0, "rows": [], "j": 0}
         size = path.stat().st_size                       # không có tệp -> OSError cho người gọi
         if size < entry["offset"]:                       # tệp bị thay: đọc lại từ đầu
-            entry = {"offset": 0, "rows": []}
+            entry = {"offset": 0, "rows": [], "j": 0}
         if size > entry["offset"]:
             with open(path, "rb") as fh:
                 fh.seek(entry["offset"])
@@ -269,6 +301,7 @@ def _read_rows(log_id: str) -> list[dict]:
                 row = _row_from_line(line)
                 if row is not None:
                     entry["rows"].append(row)
+                    _set_speed(entry)
             entry["offset"] += cut
         _CACHE[log_id] = entry                           # thêm lại ở cuối: cũ nhất bị bỏ trước
         while len(_CACHE) > _CACHE_MAX:
@@ -289,10 +322,10 @@ def summarize(rows: list[dict], meta: dict) -> dict:
     z_rows = [r for r in rows if r["z"] is not None]
     if z_rows:
         out["pen_down_pct"] = round(100 * sum(1 for r in z_rows if r["z"] <= down_z) / len(z_rows), 1)
-    drawing = [r["feed"] for r in rows if r["feed"] and r["z"] is not None and r["z"] <= down_z]
+    drawing = [v for r in rows if (v := _feed(r)) and r["z"] is not None and r["z"] <= down_z]
     if drawing:
         out["feed_drawing_avg"] = round(sum(drawing) / len(drawing))
-    feeds = [r["feed"] for r in rows if r["feed"] is not None]
+    feeds = [v for r in rows if (v := _feed(r)) is not None]
     if feeds:
         out["feed_max"] = round(max(feeds))
     bfs = [r["bf"] for r in rows if r["bf"] is not None]
@@ -333,7 +366,7 @@ def read_log(log_id: str, max_points: int = 3000, window_s: float | None = None,
     series = {k: [] for k in ("t", "feed", "feed_max", "bf", "z_min", "z_max", "run", "acked")}
     for i in range(0, n, step):
         chunk = view[i:i + step]
-        feeds = [r["feed"] for r in chunk if r["feed"] is not None]
+        feeds = [v for r in chunk if (v := _feed(r)) is not None]
         bfs = [r["bf"] for r in chunk if r["bf"] is not None]
         zs = [r["z"] for r in chunk if r["z"] is not None]
         series["t"].append(chunk[0]["t"])

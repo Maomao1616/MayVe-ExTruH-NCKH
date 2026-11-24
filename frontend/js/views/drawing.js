@@ -79,7 +79,7 @@ export function initDrawing() {
     initFile();
     initButtons();
     initCustomer({
-        snapshot: () => ({ file: S.file, params: { ...params.customerSnapshot(), crop: crop.current() ?? undefined } }),
+        snapshot: () => ({ file: S.file, params: { ...params.customerSnapshot(), crop: crop.current() ?? undefined, subject: subject.snapshot() } }),
         open: openCustomerItem
     });
     loadSchemaWhenOnline();
@@ -183,6 +183,7 @@ async function openCustomerItem(file, saved) {
     await acceptFile(file);
     params.customerRestore(saved);
     crop.restore(saved.crop);
+    subject.restore(saved.subject);
     refreshTone();
     onParamChange("layout", "drawing-paper");                // tính lại khung theo khổ giấy khách chọn
     setStatus("drawing.progress.waitTrace");
