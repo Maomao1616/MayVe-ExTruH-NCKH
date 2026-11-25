@@ -39,6 +39,7 @@ try {
 if (-not $ip) { $ip = "localhost" }
 
 $started = $false
+$cfProc = $null
 if (-not (Test-Port $port)) {
   $python = Find-Python
   if (-not $python) {
@@ -108,9 +109,23 @@ if (-not (Test-Port $port)) {
     $cf = Join-Path $PSScriptRoot "cloudflared.exe"
     if (-not (Test-Path $cf)) { $g = Get-Command cloudflared -ErrorAction SilentlyContinue; $cf = if ($g) { $g.Source } else { $null } }
     $key = Get-ChildItem (Join-Path $root "data\cloudflared") -Filter *.json -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    # Ban mang theo (cung thu muc launcher, thuong nam tren SSD USB): chep sang thu muc tam cua may roi chay o do, vi chay thang
+    # tu USB ma nguon USB yeu thi tep 55 MB bi doc sai -> cloudflared sap luc khoi dong. Chep hong / dang bi dung thi chay ban goc.
+    if ($cf -eq (Join-Path $PSScriptRoot "cloudflared.exe")) {
+      try {
+        $tmpDir = Join-Path $env:TEMP "vmu-plotterpen"
+        New-Item -ItemType Directory -Force -Path $tmpDir | Out-Null
+        $local = Join-Path $tmpDir "cloudflared.exe"
+        $src = Get-Item $cf
+        $same = (Test-Path $local) -and ((Get-Item $local).Length -eq $src.Length) -and ((Get-Item $local).LastWriteTimeUtc -eq $src.LastWriteTimeUtc)
+        if (-not $same) { Copy-Item $cf $local -Force }
+        $dst = Get-Item $local
+        if (($dst.Length -eq $src.Length) -and ($dst.LastWriteTimeUtc -eq $src.LastWriteTimeUtc)) { $cf = $local }
+      } catch {}
+    }
     if ($cf) {
       $cfArgs = if ($key) { @("tunnel","--no-autoupdate","run","--cred-file",$key.FullName,"--url","http://localhost:$port",$tunnel) } else { @("tunnel","run",$tunnel) }
-      Start-Process $cf -WindowStyle Hidden -ArgumentList $cfArgs -RedirectStandardError (Join-Path $root "data\tunnel-loi.txt")
+      $cfProc = Start-Process $cf -PassThru -WindowStyle Hidden -ArgumentList $cfArgs -RedirectStandardError (Join-Path $root "data\tunnel-loi.txt")
     }
   }
 }
@@ -121,3 +136,14 @@ if (-not $started) {
   try { Invoke-WebRequest -UseBasicParsing -TimeoutSec 3 "$url/api/health" | Out-Null } catch { $url = "http://localhost:${port}" }
 }
 Start-Process $url
+# Duong ham sap ngay luc khoi dong (vd tep hong, may qua cu): bao nguoi dung thay vi im lang. Doi 4 giay sau khi da mo trinh duyet.
+if ($cfProc) {
+  Start-Sleep -Seconds 4
+  if ($cfProc.HasExited) {
+    $log = Join-Path $root "data\tunnel-loi.txt"
+    $tail = ""
+    if (Test-Path $log) { $tail = (Get-Content $log -TotalCount 4) -join "`n" }
+    $sh = New-Object -ComObject WScript.Shell
+    $sh.Popup("Duong ham Cloudflare (cloudflared) bi tat ngay luc khoi dong, nen chua vao duoc tu ngoai.`nVao trong mang nha van dung binh thuong.`n`n$tail`n`nChi tiet: $log", 0, "VMU PlotterPen", 48) | Out-Null
+  }
+}

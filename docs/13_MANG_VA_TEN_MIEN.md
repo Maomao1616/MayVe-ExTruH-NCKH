@@ -80,6 +80,7 @@ tunnel=plotter
 | "Host không được phép" (403, `bad_host`) | tên trong `host=` không khớp tên đang gõ; chưa tắt / bật lại launcher |
 | Vào được nhưng không đăng nhập được | đang vào bằng `http://` mà không phải `https://`; hoặc PIN chưa đặt (xem mục 6) |
 | Không vào được từ 4G, trong nhà vẫn vào | đường ống chưa chạy (`tunnel-loi.txt`), hoặc laptop ngủ |
+| Hộp thoại "Đường hầm Cloudflare bị tắt ngay lúc khởi động" (hoặc `tunnel-loi.txt` có `panic` / `0xc0000005`) | cloudflared sập khi khởi động trên máy mượn (25/11/2026, chưa rõ nguyên nhân: USB thiếu dòng, máy quá cũ, hay diệt virus). Launcher đã tự chép `cloudflared.exe` sang thư mục tạm của máy rồi chạy ở đó (loại trừ USB đọc sai) và báo bằng hộp thoại. Kiểm: `Get-FileHash` tệp phải khớp bản chính thức cùng số bản; chạy `cloudflared.exe --version` |
 | Chạy được vài phút rồi mất | laptop vào chế độ ngủ: Cài đặt Windows → Nguồn → không ngủ khi cắm sạc |
 | QR chỉ hiện "Chưa có địa chỉ" | không bật bằng launcher (icon), hoặc `mang.txt` thiếu dòng `url=` |
 | QR mạng nhà không quét được | điện thoại không cùng Wi-Fi; hoặc Windows xếp mạng là Public (đổi sang Private, [08](08_TRIEN_KHAI.md) mục C) |
