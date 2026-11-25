@@ -2,9 +2,21 @@
 # Goi tu start.vbs (chay an). Server tu tat khi dong het trang 10 phut (backend/app/idle.py), dang ve thi khong tat.
 $root = Split-Path $PSScriptRoot -Parent
 $port = 8000
-# Python cua may (venv: backend\.venv) uu tien truoc; khong co thi dung Python mang theo (Python\, ban embeddable)
-$python = Join-Path $root "backend\.venv\Scripts\python.exe"
-if (-not (Test-Path $python)) { $python = Join-Path $root "Python\python.exe" }
+# Chon Python CHAY DUOC (thu that, khong chi kiem tep ton tai): backend\.venv truoc, roi Python\ (ban mang theo).
+# .venv ghi cung duong dan Python cua may da tao no: sang may khac se hong -> bo qua, chay "Cai may moi.bat" de tao lai.
+function Test-Python([string]$p) {
+  if (-not (Test-Path $p)) { return $false }
+  try {
+    $pr = Start-Process $p -ArgumentList "-c","`"import fastapi, uvicorn`"" -Wait -PassThru -WindowStyle Hidden
+    return ($pr.ExitCode -eq 0)
+  } catch { return $false }
+}
+function Find-Python {
+  foreach ($c in @((Join-Path $root "backend\.venv\Scripts\python.exe"), (Join-Path $root "Python\python.exe"))) {
+    if (Test-Python $c) { return $c }
+  }
+  return $null
+}
 
 # Co server dang nghe cong khong: thu ket noi TCP, cho toi da 100 ms (cong mo tra loi ~1 ms).
 # Khong dung Connect() thuong: tren Windows cong dong mat ~2 giay moi lan thu; Get-NetTCPConnection mat ~130 ms.
@@ -28,9 +40,10 @@ if (-not $ip) { $ip = "localhost" }
 
 $started = $false
 if (-not (Test-Port $port)) {
-  if (-not (Test-Path $python)) {
+  $python = Find-Python
+  if (-not $python) {
     $sh = New-Object -ComObject WScript.Shell
-    $sh.Popup("Khong tim thay Python.`n`nCach 1: giai nen thu muc Python\ canh backend\.`nCach 2 (may da cai Python 3.12): trong backend\ chay`n  py -3.12 -m venv .venv`n  .venv\Scripts\python.exe -m pip install -r requirements.txt", 0, "VMU PlotterPen", 16) | Out-Null
+    $sh.Popup("Khong co Python chay duoc tren may nay.`n`nBam dup 'Cai may moi.bat' o thu muc goc (can Python 3.12 va Internet, mat vai phut), roi bam icon lai.", 0, "VMU PlotterPen", 16) | Out-Null
     exit 1
   }
   $env:EXTRUXY_ALLOWED_HOSTS = "localhost,127.0.0.1,$ip"
@@ -89,8 +102,16 @@ if (-not (Test-Port $port)) {
   }
   $started = $true
   # Duong ham Cloudflare: chay an cung server, ghi loi vao data\tunnel-loi.txt. Khong co cloudflared thi bo qua (van chay trong LAN).
-  if ($tunnel -and (Get-Command cloudflared -ErrorAction SilentlyContinue)) {
-    Start-Process cloudflared -WindowStyle Hidden -ArgumentList "tunnel","run",$tunnel -RedirectStandardError (Join-Path $root "data\tunnel-loi.txt")
+  # May mang theo (SSD): launcher\cloudflared.exe + chia khoa data\cloudflared\*.json -> chay thang bang chia khoa, khong can config.yml.
+  # May chinh: cloudflared da cai + config.yml o thu muc nguoi dung (cach cu, giu lam du phong).
+  if ($tunnel) {
+    $cf = Join-Path $PSScriptRoot "cloudflared.exe"
+    if (-not (Test-Path $cf)) { $g = Get-Command cloudflared -ErrorAction SilentlyContinue; $cf = if ($g) { $g.Source } else { $null } }
+    $key = Get-ChildItem (Join-Path $root "data\cloudflared") -Filter *.json -File -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($cf) {
+      $cfArgs = if ($key) { @("tunnel","--no-autoupdate","run","--cred-file",$key.FullName,"--url","http://localhost:$port",$tunnel) } else { @("tunnel","run",$tunnel) }
+      Start-Process $cf -WindowStyle Hidden -ArgumentList $cfArgs -RedirectStandardError (Join-Path $root "data\tunnel-loi.txt")
+    }
   }
 }
 # Server da chay tu truoc ma IP may da doi (doi mang): server khong nhan IP moi -> mo localhost (luon vao duoc tren may nay).

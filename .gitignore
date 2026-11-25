@@ -11,3 +11,6 @@ export/
 # G-code thử / xuất ra ở gốc dự án (G-code thật nằm trong data/ hoặc export/)
 /*.gcode
 .playwright-mcp/
+
+# Chương trình Cloudflare mang theo (tải riêng từ Cloudflare); chìa khóa đường ống nằm trong data/cloudflared/ (đã bỏ qua cùng data/)
+/launcher/cloudflared.exe

@@ -9,6 +9,6 @@ if (Test-Path $netFile) {
 }
 if ($tunnel) {
   Get-CimInstance Win32_Process -Filter "Name='cloudflared.exe'" -ErrorAction SilentlyContinue |
-    Where-Object { $_.CommandLine -match ('tunnel\s+run\s+' + [regex]::Escape($tunnel) + '(\s|$)') } |
+    Where-Object { $_.CommandLine -match ('\btunnel\b.*\brun\b.*\b' + [regex]::Escape($tunnel) + '(\s|$)') } |
     ForEach-Object { taskkill /PID $_.ProcessId /T /F | Out-Null }
 }
