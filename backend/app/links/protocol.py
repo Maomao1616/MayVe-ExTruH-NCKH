@@ -14,12 +14,6 @@ FEED_HOLD = b"!"
 CYCLE_START = b"~"
 SOFT_RESET = b"\x18"
 JOG_CANCEL = b"\x85"
-# Ghi đè tốc độ (feed override): tính theo % của F trong tệp, firmware giới hạn 10–200 %.
-FEED_OV_RESET = b"\x90"
-FEED_OV_PLUS_10 = b"\x91"
-FEED_OV_MINUS_10 = b"\x92"
-FEED_OV_PLUS_1 = b"\x93"
-FEED_OV_MINUS_1 = b"\x94"
 
 # Tên mã theo `$A` và `$E` đọc từ board thật (MKS DLC32, FluidNC v4.1.1, 29/10/2026).
 ALARM_NAMES = {

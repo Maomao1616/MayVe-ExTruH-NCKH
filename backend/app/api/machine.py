@@ -49,8 +49,7 @@ class ResumeRequest(BaseModel):
 
 
 class RealtimeRequest(BaseModel):
-    action: Literal["status", "hold", "resume", "reset", "jog_cancel",
-                    "feed_reset", "feed_plus10", "feed_minus10", "feed_plus1", "feed_minus1"]
+    action: Literal["status", "hold", "resume", "reset", "jog_cancel"]
 
 
 class MotionRequest(BaseModel):

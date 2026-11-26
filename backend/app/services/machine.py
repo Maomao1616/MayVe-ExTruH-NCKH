@@ -24,8 +24,7 @@ from ..links.base import BaseLink, LinkError
 from ..links.sim_link import SimLink
 from . import joblog, profile, resume
 from .job import JobError, JobRunner, clean_gcode
-from ..links.protocol import (CYCLE_START, FEED_HOLD, FEED_OV_MINUS_1, FEED_OV_MINUS_10,
-                              FEED_OV_PLUS_1, FEED_OV_PLUS_10, FEED_OV_RESET, JOG_CANCEL,
+from ..links.protocol import (CYCLE_START, FEED_HOLD, JOG_CANCEL,
                               REALTIME_TEXT, SOFT_RESET, STATUS_QUERY, classify_line,
                               homing_axes, is_motion_free_command)
 
@@ -35,13 +34,9 @@ REALTIME = {
     "resume": CYCLE_START,
     "reset": SOFT_RESET,
     "jog_cancel": JOG_CANCEL,
-    # Ghi đè tốc độ: không làm máy bắt đầu chạy, nên luôn được phép như các lệnh dừng.
-    "feed_reset": FEED_OV_RESET,
-    "feed_plus10": FEED_OV_PLUS_10,
-    "feed_minus10": FEED_OV_MINUS_10,
-    "feed_plus1": FEED_OV_PLUS_1,
-    "feed_minus1": FEED_OV_MINUS_1,
 }
+# Không có lệnh ghi đè tốc độ (feed override): chủ dự án bỏ 26/11/2026, tốc độ chỉnh ở tab Tạo bản vẽ. Vẫn đọc `Ov` từ
+# báo cáo trạng thái để hiện chỉ báo (tốc độ có thể bị đổi từ nơi khác, vd WebUI của FluidNC).
 # Alarm làm mất vị trí gốc (ước lượng, cần xác minh bằng máy thật).
 _LOSE_HOME = {1, 3, 6, 7, 8, 9, 12, 13, 14, 16}
 

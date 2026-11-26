@@ -137,14 +137,15 @@ def test_ver_line_from_dollar_i_is_kept_as_firmware():
     assert svc.snapshot()["banner"] == "[VER:4.1 FluidNC v4.1.1 (esp32-wifi) :]"
 
 
-def test_feed_override_actions_reach_board_and_status_keeps_last_value():
+def test_status_keeps_last_override_value_and_reset_returns_to_100():
+    """Không còn lệnh đổi tốc độ (bỏ 26/11/2026), nhưng chỉ báo Ov vẫn đọc từ báo cáo của mạch."""
     svc = MachineService(allow_motion=False)
     fake = FakeSerial()
     svc._link, svc._info = fake, {"mode": "serial", "port": "COM9", "baud": 115200}
     try:
-        for action in ("feed_minus10", "feed_plus1", "feed_reset"):
-            svc.send_realtime(action)               # máy thật đang khóa vẫn gửi được
-        assert fake.sent == [b"\x92", b"\x93", b"\x90"]
+        with pytest.raises(ServiceError):
+            svc.send_realtime("feed_plus10")        # hành động đã bỏ: bị từ chối
+        assert fake.sent == []
         with svc._lock:
             svc._on_line("<Run|MPos:1,2,0|Ov:80,100,100>")
             svc._on_line("<Run|MPos:1,2,0>")         # báo cáo không có Ov: giữ 80

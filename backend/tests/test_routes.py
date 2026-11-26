@@ -128,3 +128,10 @@ def test_job_runs_via_api(client):
                     timeout=10)
     r = client.post("/api/command", json={"line": "$I"})
     assert r.status_code == 200          # xong tác vụ thì gửi lệnh lại được
+
+
+def test_feed_override_actions_were_removed(client: TestClient):
+    """Chỉnh tốc độ bằng lệnh tức thời đã bỏ (26/11/2026): API không còn nhận các hành động này."""
+    client.post("/api/connect", json={"mode": "sim"})
+    for action in ("feed_reset", "feed_plus10", "feed_minus10", "feed_plus1", "feed_minus1"):
+        assert client.post("/api/realtime", json={"action": action}).status_code == 422
