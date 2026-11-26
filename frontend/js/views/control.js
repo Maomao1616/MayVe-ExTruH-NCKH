@@ -144,7 +144,7 @@ function askFirmwareOnce(snapshot) {
     if (!isAdmin()) return;                  // khách không được gửi lệnh; gửi sẽ bị 401 rồi bị hỏi lại mãi
     const status = snapshot.status;
     const connection = status?.connection;
-    const key = connection?.connected ? `${connection.mode}:${connection.port}` : null;
+    const key = connection?.connected ? `${connection.mode}:${connection.port ?? connection.host}` : null;
     if (key === null) { askedFirmwareFor = null; return; }
     if (askedFirmwareFor === key || firmwareLabel() || isStale()) return;
     const job = status.job?.state;
@@ -230,21 +230,22 @@ function initStatusPanel() {
             ? t("settings.connection.sim")
             : connection.mode === "serial"
                 ? t("settings.connection.serial")
-                : String(connection.mode ?? "—"));
+                : connection.mode === "wifi"
+                    ? t("settings.connection.wifi")
+                    : String(connection.mode ?? "—"));
 
+        // Máy thật = USB hoặc Wi-Fi: hai dải báo "chỉ đọc" / "đang mở khóa" áp như nhau.
+        const isReal = connection.mode === "serial" || connection.mode === "wifi";
         const banner = $("readonly-banner");
         if (banner) {
-            banner.hidden = !(
-                connection.mode === "serial" &&
-                connection.motion_unlocked === false
-            );
+            banner.hidden = !(isReal && connection.motion_unlocked === false);
         }
 
 
         lastConnection = connection;
         const liveBanner = $("motion-live-banner");
         if (liveBanner) {
-            liveBanner.hidden = !(connection.mode === "serial" && connection.motion_unlocked === true);
+            liveBanner.hidden = !(isReal && connection.motion_unlocked === true);
             const left = connection.unlock_seconds_left;
             setText("motion-live-timer", Number.isFinite(left)
                 ? `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}` : "—");

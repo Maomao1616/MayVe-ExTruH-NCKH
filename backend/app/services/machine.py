@@ -77,8 +77,11 @@ def _hold_done(st: dict) -> bool:
         st.get("state") == "Hold" and str(st.get("substate") or "0") == "0")
 
 
+REAL_MODES = ("serial", "wifi")   # máy THẬT (USB hoặc Wi-Fi telnet): khóa chuyển động áp như nhau; chỉ "sim" được tự do
+
+
 class MachineService:
-    POLL_S = 0.1                # hỏi `?` 10 lần/giây: một dòng trạng thái ~7 ms ở 115200 baud
+    POLL_S = 0.1               # hỏi `?` 10 lần/giây: một dòng trạng thái ~7 ms ở 115200 baud
 
     def __init__(self, allow_motion: bool | None = None) -> None:
         if allow_motion is None:
@@ -98,7 +101,7 @@ class MachineService:
         self._poller: threading.Thread | None = None
         self._log: deque[dict] = deque(maxlen=500)
         self._seq = 0
-        self._info: dict = {"mode": None, "port": None, "baud": None}
+        self._info: dict = {"mode": None, "port": None, "baud": None, "host": None, "tcp_port": None}
         self._lost_reason: str | None = None
         # Số thứ tự báo cáo trạng thái: tăng mãi, không reset (đáng tin hơn so sánh thời gian).
         self._status_seq = 0
@@ -139,7 +142,7 @@ class MachineService:
 
     # --- kết nối --------------------------------------------------------------
     def connect(self, mode: str, port: str | None = None, baud: int = 115200,
-                sim_speed: float = 1.0) -> dict:
+                sim_speed: float = 1.0, host: str | None = None, tcp_port: int = 23) -> dict:
         with self._lock:
             if self._link is not None:
                 raise ServiceError("already_connected", "Đã kết nối. Hãy ngắt kết nối trước.", 409)
@@ -150,6 +153,11 @@ class MachineService:
                     raise ServiceError("bad_request", "Chế độ serial cần chọn cổng (port).", 400)
                 from ..links.serial_link import SerialLink
                 link = SerialLink(port, baud)
+            elif mode == "wifi":
+                if not host:
+                    raise ServiceError("bad_request", "Chế độ Wi-Fi cần địa chỉ mạch (host).", 400)
+                from ..links.telnet_link import TelnetLink
+                link = TelnetLink(host, tcp_port)
             else:
                 raise ServiceError("bad_request", f"Chế độ không hợp lệ: {mode}", 400)
             self._clear_machine()
@@ -164,7 +172,9 @@ class MachineService:
                 raise ServiceError("link_error", str(exc), 502) from exc
             self._link = link
             self._info = {"mode": mode, "port": port if mode == "serial" else None,
-                          "baud": baud if mode == "serial" else None}
+                          "baud": baud if mode == "serial" else None,
+                          "host": host if mode == "wifi" else None,
+                          "tcp_port": tcp_port if mode == "wifi" else None}
             self._add_log("sys", "system", f"Connected ({mode})")
             self._poll_stop = threading.Event()
             self._poller = threading.Thread(target=self._poll_loop, args=(self._poll_stop,),
@@ -352,7 +362,7 @@ class MachineService:
                 if self._homing_pending:
                     raise ServiceError("busy", "Máy đang Home, thử lại sau.", 409)
                 self._guard_stop(None)
-                if (self._info["mode"] == "serial" and not self.allow_motion
+                if (self._info["mode"] in REAL_MODES and not self.allow_motion
                         and not is_motion_free_command(command)):
                     raise ServiceError("motion_locked",
                                        "Máy thật đang ở chế độ chỉ đọc: mở khóa để ghi cấu hình.", 403)
@@ -469,7 +479,7 @@ class MachineService:
             status = self._status
             if (self._link is None or self._job.active or self._stop_token is not None
                     or not isinstance(status, dict) or status.get("state") != "Idle"
-                    or (self._info["mode"] == "serial" and not self.allow_motion)):
+                    or (self._info["mode"] in REAL_MODES and not self.allow_motion)):
                 return
             z_now = _work_z(status)
             marker = self._status_marker()
@@ -510,7 +520,7 @@ class MachineService:
                 return
             with self._lock:
                 if (self._link is None or self._job.active or self._stop_token is not None
-                        or (self._info["mode"] == "serial" and not self.allow_motion)):
+                        or (self._info["mode"] in REAL_MODES and not self.allow_motion)):
                     return
                 marker = self._status_seq
             prof = profile.load()
@@ -557,7 +567,7 @@ class MachineService:
             motion_free = is_motion_free_command(text)
             if not motion_free:
                 self._guard_stop(token)
-            if self._info["mode"] == "serial" and not self.allow_motion and not motion_free:
+            if self._info["mode"] in REAL_MODES and not self.allow_motion and not motion_free:
                 raise ServiceError(
                     "motion_locked",
                     "Máy thật đang ở chế độ chỉ đọc. Chỉ cho phép lệnh đọc thông tin "
@@ -623,7 +633,7 @@ class MachineService:
             self._guard_stop(None)
             if self._capture is not None:
                 raise ServiceError("busy", "Đang đọc/ghi cấu hình máy, thử lại sau giây lát.", 409)
-            if self._info["mode"] == "serial" and not self.allow_motion:
+            if self._info["mode"] in REAL_MODES and not self.allow_motion:
                 raise ServiceError("motion_locked", "Máy thật đang ở chế độ chỉ đọc.", 403)
             state = self._status["state"] if self._status else None
             if state != "Idle":
@@ -669,7 +679,7 @@ class MachineService:
             self._guard_stop(None)
             if self._capture is not None:
                 raise ServiceError("busy", "Đang đọc/ghi cấu hình máy, thử lại sau giây lát.", 409)
-            if self._info["mode"] == "serial" and not self.allow_motion:
+            if self._info["mode"] in REAL_MODES and not self.allow_motion:
                 raise ServiceError("motion_locked", "Máy thật đang ở chế độ chỉ đọc.", 403)
             state = self._status["state"] if self._status else None
             if state != "Idle":

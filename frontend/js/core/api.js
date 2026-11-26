@@ -47,8 +47,9 @@ export const api = {
     changePin: (oldPin, newPin) => request("POST", "/auth/pin", { old_pin: oldPin, new_pin: newPin }),
     ports: () => request("GET", "/ports"),
     connection: () => request("GET", "/connection"),
-    connect: (mode, port = null, baud = 115200, simSpeed = 1) =>
-        request("POST", "/connect", { mode, port, baud, sim_speed: simSpeed }),
+    connect: (mode, port = null, baud = 115200, simSpeed = 1, host = null) =>
+        request("POST", "/connect", host ? { mode, port, baud, sim_speed: simSpeed, host }
+            : { mode, port, baud, sim_speed: simSpeed }),
     disconnect: () => request("POST", "/disconnect"),
     status: () => request("GET", "/status"),
     command: (line) => request("POST", "/command", { line }),

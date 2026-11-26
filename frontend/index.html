@@ -1544,7 +1544,13 @@
                   <select id="connection-mode" name="mode">
                     <option data-i18n="settings.connection.sim" value="sim">Máy giả lập (SimLink)</option>
                     <option data-i18n="settings.connection.serial" value="serial">Máy thật (Serial)</option>
+                    <option data-i18n="settings.connection.wifi" value="wifi">Máy thật (Wi-Fi, telnet)</option>
                   </select>
+                </label>
+                <label for="wifi-host" hidden="" id="wifi-host-row">
+                  <span data-i18n="settings.connection.host">Địa chỉ mạch</span>
+                  <input autocomplete="off" id="wifi-host" maxlength="253" name="host" placeholder="fluidnc.local" spellcheck="false" type="text" value="fluidnc.local">
+                  <small class="help-text" data-i18n="settings.connection.wifiWarn">Telnet không có mật khẩu: ai cùng mạng cũng gửi lệnh vào mạch được. Chỉ dùng mạng riêng của bạn.</small>
                 </label>
                 <label for="serial-port">
                   <span data-i18n="settings.connection.port">Cổng COM</span>

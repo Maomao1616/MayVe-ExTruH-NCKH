@@ -35,10 +35,13 @@ function initConnection() {
     const connectButton = document.getElementById("connect-btn");
     const disconnectButton = document.getElementById("disconnect-btn");
     const help = document.getElementById("connection-help");
+    const hostInput = document.getElementById("wifi-host");
+    const hostRow = document.getElementById("wifi-host-row");
+    const HOST_RE = /^[A-Za-z0-9.-]{1,253}$/;       // cùng luật với backend (api/machine.py ConnectRequest.host)
 
     if (
         !form || !modeSelect || !portSelect || !baudSelect ||
-        !refreshButton || !connectButton || !disconnectButton || !help
+        !refreshButton || !connectButton || !disconnectButton || !help || !hostInput || !hostRow
     ) {
         console.error("Không tìm thấy đầy đủ phần tử kết nối trong HTML.");
         return;
@@ -55,10 +58,12 @@ function initConnection() {
     const remembered = (() => {
         try { return JSON.parse(localStorage.getItem(CONN_KEY) ?? "null"); } catch { return null; }
     })();
-    const remember = (mode, port, baud) => {
-        try { localStorage.setItem(CONN_KEY, JSON.stringify({ mode, port, baud })); } catch { /* bị chặn */ }
+    const remember = (mode, port, baud, host) => {
+        try { localStorage.setItem(CONN_KEY, JSON.stringify({ mode, port, baud, host })); } catch { /* bị chặn */ }
     };
-    if (remembered?.mode === "sim" || remembered?.mode === "serial") modeSelect.value = remembered.mode;
+    const MODES = ["sim", "serial", "wifi"];
+    if (MODES.includes(remembered?.mode)) modeSelect.value = remembered.mode;
+    if (typeof remembered?.host === "string" && HOST_RE.test(remembered.host)) hostInput.value = remembered.host;
     if ([...baudSelect.options].some((o) => o.value === String(remembered?.baud))) {
         baudSelect.value = String(remembered.baud);
     }
@@ -77,6 +82,13 @@ function initConnection() {
 
     function updateControls() {
         const isSerial = modeSelect.value === "serial";
+        const isWifi = modeSelect.value === "wifi";
+
+        // Wi-Fi: hiện ô địa chỉ, ẩn cổng COM / baud (không dùng tới).
+        hostRow.hidden = !isWifi;
+        portSelect.closest("label").hidden = isWifi;
+        baudSelect.closest("label").hidden = isWifi;
+        hostInput.disabled = busy || connected || !isWifi;
 
         modeSelect.disabled = busy || connected;
         portSelect.disabled =
@@ -148,7 +160,7 @@ function initConnection() {
 
         if (connected) {
             currentMode = mode;
-            if (mode === "sim" || mode === "serial") {
+            if (MODES.includes(mode)) {
                 modeSelect.value = mode;
             }
             setMessage(
@@ -179,9 +191,10 @@ function initConnection() {
         backendAvailable = snapshot.backendOnline;
         connected = backendAvailable && connection?.connected === true;
 
-        if (connected && (connection.mode === "sim" || connection.mode === "serial")) {
+        if (connected && MODES.includes(connection.mode)) {
             currentMode = connection.mode;
             modeSelect.value = connection.mode;
+            if (connection.mode === "wifi" && connection.host) hostInput.value = connection.host;
         }
         if (!connected) currentMode = null;
 
@@ -310,6 +323,11 @@ function initConnection() {
 
         if (modeSelect.value === "serial" && backendAvailable) {
             await loadPorts();
+        } else if (modeSelect.value === "wifi") {
+            setMessage(
+                "settings.connection.wifiHelp",
+                "Laptop và mạch phải cùng một mạng Wi-Fi. Gõ fluidnc.local hoặc IP của mạch ($System/IP)."
+            );
         } else {
             setMessage(
                 "settings.connection.help",
@@ -333,6 +351,15 @@ function initConnection() {
             const mode = modeSelect.value;
             const port = mode === "serial" ? portSelect.value : null;
             const baud = Number(baudSelect.value);
+            const host = mode === "wifi" ? hostInput.value.trim() : null;
+
+            if (mode === "wifi" && !HOST_RE.test(host)) {
+                setMessage(
+                    "settings.connection.badHost",
+                    "Địa chỉ mạch chỉ gồm chữ, số, dấu chấm, gạch ngang (vd fluidnc.local hoặc 192.168.43.20)."
+                );
+                return;
+            }
 
             if (mode === "serial" && !port) {
                 setMessage(
@@ -351,7 +378,7 @@ function initConnection() {
             }
 
             // Dùng đúng API hiện có; không tự tạo endpoint.
-            const result = await api.connect(mode, port, baud);
+            const result = await api.connect(mode, port, baud, 1, host);
 
             updateConnectionDisplay(result);
 
@@ -359,7 +386,7 @@ function initConnection() {
             // Đọc lại trạng thái thật trước khi kết luận.
             await refreshConnection();
 
-            if (connected) remember(mode, port, baud);
+            if (connected) remember(mode, port, baud, host ?? remembered?.host ?? null);
             if (!connected) {
                 setMessage(
                     "settings.connection.verifyFailed",

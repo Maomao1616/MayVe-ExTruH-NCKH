@@ -45,6 +45,12 @@ def test_connect_validation(client: TestClient):
     assert client.post("/api/connect", json={"mode": "banana"}).status_code == 422
     r = client.post("/api/connect", json={"mode": "serial"})
     assert r.status_code == 400 and err_code(r) == "bad_request"
+    r = client.post("/api/connect", json={"mode": "wifi"})                        # Wi-Fi thiếu địa chỉ
+    assert r.status_code == 400 and err_code(r) == "bad_request"
+    for bad in ("a b", "1.2.3.4;rm", "x/y", "", "a" * 254):                     # chỉ chữ, số, '.', '-'
+        assert client.post("/api/connect", json={"mode": "wifi", "host": bad}).status_code == 422
+    assert client.post("/api/connect", json={"mode": "wifi", "host": "fluidnc.local",
+                                             "tcp_port": 70000}).status_code == 422
 
 
 def test_connect_sim_status_shape_and_double_connect(client: TestClient):

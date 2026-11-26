@@ -14,10 +14,13 @@ router = APIRouter(prefix="/api")
 
 
 class ConnectRequest(BaseModel):
-    mode: Literal["sim", "serial"]
+    mode: Literal["sim", "serial", "wifi"]
     port: str | None = None
     baud: int = Field(115200, ge=9600, le=2_000_000)
     sim_speed: float = Field(1.0, gt=0, le=100)
+    # Wi-Fi (telnet): IP hoặc tên mạch (vd fluidnc.local). Chỉ chữ, số, '.', '-': không cho chèn ký tự lạ.
+    host: str | None = Field(None, min_length=1, max_length=253, pattern=r"^[A-Za-z0-9.-]+$")
+    tcp_port: int = Field(23, ge=1, le=65535)
 
 
 class CommandRequest(BaseModel):
@@ -89,7 +92,7 @@ def connection():
 
 @router.post("/connect")
 def connect(req: ConnectRequest):
-    return machine.connect(req.mode, req.port, req.baud, req.sim_speed)
+    return machine.connect(req.mode, req.port, req.baud, req.sim_speed, req.host, req.tcp_port)
 
 
 @router.post("/disconnect")
