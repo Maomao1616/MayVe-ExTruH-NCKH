@@ -11,7 +11,10 @@ SOURCES = (("public", "EXTRUXY_PUBLIC_URL"), ("lan", "EXTRUXY_LAN_URL"))
 def qr_rows(url: str) -> list[str]:
     """Ma trận QR dạng các chuỗi '0' / '1' ('1' = ô đen). Dùng bộ mã hóa QR có sẵn của OpenCV (không thêm thư viện)."""
     import cv2
-    img = cv2.QRCodeEncoder.create().encode(url)
+    try:
+        img = cv2.QRCodeEncoder.create().encode(url)
+    except Exception:
+        return []
     return ["".join("1" if v < 128 else "0" for v in row) for row in img]
 
 
@@ -20,5 +23,7 @@ def share_items() -> list[dict]:
     for kind, env in SOURCES:
         url = (os.environ.get(env) or "").strip()
         if url.startswith(("http://", "https://")) and len(url) <= MAX_URL_LEN:
-            items.append({"kind": kind, "url": url, "qr": qr_rows(url)})
+            qr = qr_rows(url)
+            if qr:  # bỏ mục có qr rỗng
+                items.append({"kind": kind, "url": url, "qr": qr})
     return items

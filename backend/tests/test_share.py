@@ -23,6 +23,23 @@ def test_qr_roundtrip_for_public_url():
     assert decode(rows) == url
 
 
+def test_qr_rows_error_returns_empty(monkeypatch):
+    """When cv2.QRCodeEncoder.create raises, qr_rows returns [] and share_items skips it."""
+    def mock_create(*args, **kwargs):
+        raise RuntimeError("QR encode failed")
+    monkeypatch.setattr("cv2.QRCodeEncoder.create", mock_create)
+    # qr_rows alone should not crash
+    rows = share.qr_rows("any-url")
+    assert rows == []
+    # share_items should not include items with empty qr
+    import os
+    monkeypatch.setenv("EXTRUXY_PUBLIC_URL", "https://plotter.example.com")
+    monkeypatch.setenv("EXTRUXY_LAN_URL", "http://192.168.1.5:8000")
+    items = share.share_items()
+    # public has qr, but since qr_rows throws, it returns []
+    assert items == []
+
+
 def test_items_only_from_valid_env(monkeypatch):
     monkeypatch.setenv("EXTRUXY_PUBLIC_URL", "https://a.example")
     monkeypatch.setenv("EXTRUXY_LAN_URL", "javascript:alert(1)")           # không phải http(s): bỏ

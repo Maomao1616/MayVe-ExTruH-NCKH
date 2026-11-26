@@ -175,7 +175,7 @@ Máy chỉ có thể đang ở trong vài chục dòng trước dòng đã nhậ
 - Trình tự chạy ở luồng nền, nên giao diện không bị đứng.
 
 ### 6.2 Home tự nâng bút (`_lift_pen_before_home`)
-Bút hạ bằng trọng lực, quên nâng mà bấm Home thì bút kéo một vệt chéo qua giấy (đã gặp 03/11/2026). Nên khi gửi `$H`, `$HX`, `$HY` mà máy đang Idle, máy chủ gửi trước `$J=G90 G21 Z3 F3000`, chờ Z tới thêm 0,3 s (servo quay chậm hơn trục Z ảo), rồi mới Home. Nâng bút lỗi thì vẫn Home (chỉ ghi nhật ký).
+Bút hạ bằng trọng lực, quên nâng mà bấm Home thì bút kéo một vệt chéo qua giấy (đã gặp 03/11/2026). Nên khi gửi `$H`, `$HX`, `$HY` mà máy đang Idle, máy chủ gửi trước `$J=G90 G21 Z5 F3000`, chờ Z tới thêm 0,3 s (servo quay chậm hơn trục Z ảo), rồi mới Home. Nâng bút lỗi thì vẫn Home (chỉ ghi nhật ký).
 
 ### 6.3 Tiếp tục từ điểm dừng (`services/resume.py`)
 Khi tác vụ kết thúc không trọn (hủy, lỗi, mất kết nối), `JobRunner` ghi vào `data/resume.json`: tệp đã làm sạch, số dòng máy đã nhận, gốc làm việc (WCO) lúc đó. Chạy trọn thì xóa.
