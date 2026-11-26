@@ -49,7 +49,10 @@ def test_body_shape_error_is_422(client):
 def test_does_not_touch_the_machine(client):
     from app.services.machine import machine
     machine.disconnect()
+    seq = machine.log_since(0)["last_seq"]                                   # máy dùng chung giữa các bài: chỉ xét nhật ký MỚI
     assert client.post("/api/draw/gcode", json=BODY).status_code == 200      # chạy được khi chưa kết nối
+    assert machine.connection_info()["connected"] is False                   # và không tự nối máy
+    assert machine.log_since(seq)["entries"] == []                           # và không gửi / ghi gì xuống máy
 
 
 SVG = b"""<svg xmlns="http://www.w3.org/2000/svg" width="100mm" height="100mm" viewBox="0 0 100 100">

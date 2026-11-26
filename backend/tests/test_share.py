@@ -57,7 +57,8 @@ def client():
 def test_api_share_returns_items(client, monkeypatch):
     monkeypatch.setenv("EXTRUXY_LAN_URL", "http://192.168.1.5:8000")
     r = client.get("/api/share")
-    assert r.status_code == 200 and r.json()["items"][0]["kind"] == "lan"
+    assert r.status_code == 200
+    assert r.json()["items"][0]["kind"] == "lan" and r.json()["items"][0]["url"] == "http://192.168.1.5:8000"
 
 
 def test_guest_sees_only_public_address_admin_sees_both(monkeypatch):

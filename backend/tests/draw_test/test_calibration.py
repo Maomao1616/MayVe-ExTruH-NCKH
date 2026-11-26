@@ -38,7 +38,7 @@ def test_calibration_draft_is_one_to_one_and_inside_a5():
 def test_calibration_rejects_bad_pen_width():
     for bad in (0.01, 5):
         r = client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "pen_width_mm": bad})
-        assert r.status_code == 400
+        assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param", bad
 
 
 def test_a6_calibration_fits_the_a6_margin_and_keeps_one_to_one():
@@ -69,7 +69,7 @@ def test_a6_bands_keep_the_same_pitch_rule_and_ruler_is_80mm():
 
 def test_calibration_rejects_unknown_paper():
     r = client.post("/api/draw/calibration", json={"machine": MACHINE, "gcode": GCODE, "pen_width_mm": 0.4, "paper": "a3"})
-    assert r.status_code == 400
+    assert r.status_code == 400 and r.json()["error"]["code"] == "bad_param"
 
 
 # --- tờ hiệu chỉnh tông ------------------------------------------------------------------------------------------

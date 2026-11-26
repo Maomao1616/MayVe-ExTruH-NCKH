@@ -76,8 +76,9 @@ def test_log_has_tx_and_rx(svc):
 def test_bad_lines_rejected(svc):
     svc.connect("sim")
     for bad in ("", "  ", "G0 X1\nG0 X2"):
-        with pytest.raises(ServiceError):
+        with pytest.raises(ServiceError) as e:
             svc.send_line(bad)
+        assert e.value.code == "bad_request", repr(bad)
 
 
 class FakeSerial(BaseLink):

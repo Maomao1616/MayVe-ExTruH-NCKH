@@ -96,8 +96,9 @@ def test_single_point_is_empty_drawing():
 
 
 def test_empty_layers_are_rejected():
-    with pytest.raises(DrawError):
+    with pytest.raises(DrawError) as e:
         lo.content_bounds([Layer("1", [])])
+    assert e.value.code == "empty_drawing"
 
 
 def test_all_layers_share_one_placement():

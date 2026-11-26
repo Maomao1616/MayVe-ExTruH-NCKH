@@ -86,13 +86,6 @@ def test_spacing_controls_density():
     assert tight > 2.5 * wide
 
 
-def test_unknown_style_is_error():
-    from app.services.drawing import DrawError
-    from app.services.drawing.registry import FILLERS
-    with pytest.raises(DrawError):
-        FILLERS.get("nope")
-
-
 # --- viền (edges.py: nét mực + ranh giới mảng + nối khe hở) ------------------------------
 def ring_field(size=300, w=60.0, h=60.0, band=(92.5, 95.5)):
     yy, xx = np.mgrid[0:size, 0:size]

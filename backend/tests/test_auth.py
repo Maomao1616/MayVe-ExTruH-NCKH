@@ -81,7 +81,9 @@ def test_guest_can_use_whitelisted_routes(guest, pin_set):
 
 
 def test_static_frontend_stays_public(guest, pin_set):
-    assert guest.get("/").status_code == 200
+    r = guest.get("/")
+    assert r.status_code == 200
+    assert "text/html" in r.headers["content-type"] and "<!DOCTYPE html>" in r.text      # đúng trang, không phải lỗi JSON
 
 
 def test_guest_cannot_touch_the_machine(guest, pin_set):

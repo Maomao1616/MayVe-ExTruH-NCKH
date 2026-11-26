@@ -2,7 +2,7 @@
 import numpy as np
 import pytest
 
-from app.services.drawing import spec, tone
+from app.services.drawing import DrawError, spec, tone
 
 
 def raster(**kw):
@@ -54,10 +54,10 @@ def test_region_is_mapped_through_the_crop():
 
 
 def test_parameters_are_validated():
-    with pytest.raises(Exception):
-        raster(subject_shape="triangle")
-    with pytest.raises(Exception):
-        raster(subject_outside=1.5)
+    for bad in ({"subject_shape": "triangle"}, {"subject_outside": 1.5}):
+        with pytest.raises(DrawError) as e:
+            raster(**bad)
+        assert e.value.code == "bad_param", bad
 
 
 def _scene(h=160, w=240):
@@ -131,7 +131,7 @@ def test_free_subject_bad_input_keeps_everything_and_warns():
 
 def test_subject_poly_is_a_validated_text_parameter():
     assert raster(subject_poly="x").subject_poly == "x"
-    with pytest.raises(Exception):
-        raster(subject_poly=5)
-    with pytest.raises(Exception):
-        raster(subject_poly="x" * 60001)
+    for bad in (5, "x" * 60001):
+        with pytest.raises(DrawError) as e:
+            raster(subject_poly=bad)
+        assert e.value.code == "bad_param", type(bad)

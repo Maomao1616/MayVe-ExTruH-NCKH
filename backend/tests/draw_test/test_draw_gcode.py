@@ -84,15 +84,18 @@ def test_without_pen_down_feed_output_is_unchanged():
 
 
 def test_pen_down_feed_is_range_checked():
-    with pytest.raises(DrawError):
+    with pytest.raises(DrawError) as e:
         G(pen_down_feed=5)
+    assert e.value.code == "bad_param"
 
 
 def test_duplicate_points_and_tiny_strokes_are_dropped_with_warning():
     lines, stats, warns = build([[(0, 0), (0, 0), (5, 0)], [(9, 9), (9.0001, 9)], [(1, 1)]], precision=3)
     assert stats["strokes"] == 1
     assert warns == [{"code": "dropped_strokes", "count": 2}]
-    assert not any("X0 Y0" in l and l.startswith("G1 X") for l in lines[3:])   # không có G1 dài 0
+    # không có nét dài 0: mỗi cặp G1 liền nhau phải đổi vị trí (nét 5 mm duy nhất đi từ X0 tới X5)
+    draws = [l for l in lines if l.startswith("G1 X")]
+    assert len(draws) == len(set(draws)) and all(l != "G1 X0 Y0" for l in draws), draws
 
 
 def test_everything_dropped_is_empty_drawing():

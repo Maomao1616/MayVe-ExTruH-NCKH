@@ -198,8 +198,9 @@ def test_bad_cancel_mode_rejected():
         svc.start_job("t", long_job_lines())
         time.sleep(0.2)
         from app.services.machine import ServiceError
-        with pytest.raises(ServiceError):
+        with pytest.raises(ServiceError) as e:
             svc.cancel_job("nonsense")
+        assert e.value.code == "bad_request"
         svc.cancel_job()
     finally:
         svc.disconnect()

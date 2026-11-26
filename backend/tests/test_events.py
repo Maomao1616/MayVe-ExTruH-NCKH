@@ -145,7 +145,7 @@ def test_too_many_streams_is_refused(monkeypatch):
     assert r.status_code == 503 and r.json()["error"]["code"] == "too_many_streams"
 
 
-def test_events_route_is_allowed_for_guests_and_has_stream_headers(monkeypatch):
+def test_events_route_exists_and_is_allowed_for_guests(monkeypatch):      # (không kiểm header luồng: bài đó cần mở luồng thật)
     monkeypatch.setenv("EXTRUXY_ADMIN_PIN", PIN)
     paths = {(m.upper(), p) for p, ms in app.openapi()["paths"].items() for m in ms}
     assert ("GET", "/api/events") in paths

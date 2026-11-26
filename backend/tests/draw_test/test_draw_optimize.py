@@ -40,8 +40,9 @@ def test_empty_pipeline_does_not_need_vpype():
 
 def test_bad_values_are_rejected():
     for bad in ({"merge_tolerance_mm": -1}, {"min_length_mm": 1000}, {"sort": "yes"}, {"typo": 1}):
-        with pytest.raises(DrawError):
+        with pytest.raises(DrawError) as e:
             P(**bad)
+        assert e.value.code == "bad_param", bad
 
 
 # --- nối nét gần (optimize.bridge) ------------------------------------------------------------------------------

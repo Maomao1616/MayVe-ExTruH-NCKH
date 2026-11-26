@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động (chạy lại 26/11/2026): máy chủ **657** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua; `test_joblog` và vài bài chờ thời gian có thể hỏng chập chờn khi máy bận, chạy riêng thì qua), giao diện **72**. Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
+Test tự động (chạy lại 26/11/2026): máy chủ **695** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua; `test_joblog` và vài bài chờ thời gian có thể hỏng chập chờn khi máy bận, chạy riêng thì qua), giao diện **72**. `pytest` mặc định chạy song song 6 tiến trình (`backend/pytest.ini`, ~30 giây thay vì ~112 giây; gỡ lỗi từng bài thì `pytest -n 0`); độ phủ đo bằng `pytest --cov=app`: **93 %** (26/11/2026), `machine.py` 94 % sau khi thêm `tests/test_stop_paths.py` (đường dừng an toàn và đường lỗi bằng mạch giả viết tay). Đã rà test bằng Cline (`dataa-soat-test.md`, 26/11): siết 16 bài chỉ kiểm mã 200 / 400 thành kiểm mã lỗi và nội dung, xóa 1 bài trùng; giữ `test_arcs::test_default_delays_are_zero_so_no_g4` vì nó bảo vệ giá trị MẶC ĐỊNH của thời gian chờ bút. Chỗ chưa phủ: `serial_link.py` (cổng USB thật, chỉ thử trên máy thật). Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 

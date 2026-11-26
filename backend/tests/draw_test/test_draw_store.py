@@ -39,5 +39,6 @@ def test_drop_is_idempotent():
     t = s.put(item(1))
     s.drop(t)
     s.drop(t)
-    with pytest.raises(DrawError):
+    with pytest.raises(DrawError) as e:
         s.get(t)
+    assert e.value.code == "unknown_task"

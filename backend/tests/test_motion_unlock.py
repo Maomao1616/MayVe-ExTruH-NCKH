@@ -83,5 +83,6 @@ def test_route_motion():
     from app.main import app
     c = TestClient(app)
     r = c.post("/api/motion", json={"on": True})
-    assert r.status_code == 200 and "motion_unlocked" in r.json()
-    c.post("/api/motion", json={"on": False})
+    assert r.status_code == 200 and r.json()["motion_unlocked"] is True
+    r = c.post("/api/motion", json={"on": False})
+    assert r.status_code == 200 and r.json()["motion_unlocked"] is False        # khóa lại thật, không chỉ "trả 200"
