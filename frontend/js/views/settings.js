@@ -670,7 +670,9 @@ function initMachineConfig() {
         if (job === "running" || job === "finishing") return t("mc.block.job");
         if (s.stopping) return t("mc.block.stopping");
         if (!["Idle", "Alarm"].includes(s.machine?.state)) return t("mc.block.notIdle");
-        if (s.connection?.mode === "serial" && !s.connection?.motion_unlocked) return t("mc.block.locked");
+        // Máy thật = USB hoặc Wi-Fi (giống REAL_MODES ở services/machine.py)
+        const real = s.connection?.mode === "serial" || s.connection?.mode === "wifi";
+        if (real && !s.connection?.motion_unlocked) return t("mc.block.locked");
         return null;
     }
 

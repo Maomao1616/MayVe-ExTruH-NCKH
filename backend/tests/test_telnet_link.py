@@ -173,3 +173,37 @@ def test_wifi_needs_host(svc):
     with pytest.raises(ServiceError) as e:
         svc.connect("wifi")
     assert e.value.code == "bad_request"
+
+
+# --- lớp TelnetLink đứng riêng (DeepSeek quét 26/11 thấy thiếu) -------------------------
+def raw_link(board):
+    link = telnet_link.TelnetLink("127.0.0.1", board.port)
+    lines = []
+    link.add_listener(lines.append)
+    link.open()
+    assert wait_for(lambda: board.client is not None)
+    return link, lines
+
+
+def test_write_after_close_raises_and_close_twice_is_safe(board):
+    link, _ = raw_link(board)
+    link.close()
+    link.close()                                                  # gọi lần hai không lỗi
+    assert not link.is_open
+    with pytest.raises(telnet_link.LinkError):
+        link.write_line("$I")
+
+
+def test_telnet_control_bytes_are_dropped(board):
+    link, lines = raw_link(board)
+    board.client.sendall(b"\xffok-co-iac\r\n")
+    assert wait_for(lambda: "ok-co-iac" in lines)
+    link.close()
+
+
+def test_long_line_split_across_reads(board):
+    link, lines = raw_link(board)
+    long = "[MSG:" + "x" * 10000 + "]"                            # dài hơn một lần đọc 4096 byte
+    board.client.sendall(long.encode() + b"\r\n")
+    assert wait_for(lambda: long in lines)
+    link.close()

@@ -1,13 +1,14 @@
 """TelnetLink: kết nối FluidNC qua Wi-Fi bằng telnet (TCP thô, cổng 23), cùng giao diện với SerialLink.
 
-Telnet của FluidNC (src/WebUI/TelnetClient.cpp) nhận G-code và ký tự tức thời (? ! ~ Ctrl-X) y như USB, chỉ lọc
-byte 0xFF (mã điều khiển telnet; không lệnh nào của ta dùng). KHÔNG có mật khẩu: chỉ dùng trong mạng riêng.
-Mất kết nối thì mạch không tự dừng, không nâng bút: chạy hết lệnh đã nhận rồi đứng (docs/09 O10).
+Telnet của FluidNC (src/WebUI/TelnetClient.cpp) nhận G-code và ký tự tức thời (? ! ~ Ctrl-X) y như USB, chỉ bỏ
+các chuỗi điều khiển telnet bắt đầu bằng byte 0xFF (không lệnh nào của ta dùng). KHÔNG có mật khẩu: chỉ dùng trong
+mạng riêng. Mất kết nối thì mạch không tự dừng, không nâng bút: chạy hết lệnh đã nhận rồi đứng.
 
-CHƯA thử trên mạch thật (kế hoạch export/ke-hoach-26-11-wifi.md, Bước 4).
+CHƯA thử trên mạch thật. Kế hoạch và quyết định: phiếu data/phieu-26-11-wifi.md (chưa chép sang docs).
 """
 from __future__ import annotations
 
+import select
 import socket
 import threading
 import time
@@ -19,7 +20,8 @@ CONNECT_TIMEOUT_S = 5.0      # chờ mở kết nối tối đa
 LINK_SILENT_S = 3.0          # không nhận byte nào trong 3 s thì coi là mất sóng. Máy chủ hỏi `?` 10 lần/giây
                              # (machine.POLL_S) nên mạch luôn trả lời; 3 s ~ 30 lần liền im lặng. Ngắn hơn: mạng
                              # điện thoại khựng là dừng oan; dài hơn: máy vẽ tiếp lúc ta không điều khiển được.
-READ_WAIT_S = 0.5            # mỗi lần đọc / ghi chờ tối đa (để kiểm im lặng và lệnh đóng)
+READ_WAIT_S = 0.5            # luồng đọc thức dậy ít nhất mỗi 0,5 s (để kiểm im lặng và lệnh đóng)
+WRITE_TIMEOUT_S = LINK_SILENT_S   # ghi kẹt lâu hơn ngưỡng mất sóng mới báo lỗi (mạng khựng ngắn không làm dừng oan)
 
 
 class TelnetLink(BaseLink):
@@ -47,7 +49,7 @@ class TelnetLink(BaseLink):
             raise LinkError(f"Cannot connect to {self.host}:{self.port}: {exc}")
         sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)   # gửi ngay từng dòng ngắn, không gom
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
-        sock.settimeout(READ_WAIT_S)
+        sock.settimeout(WRITE_TIMEOUT_S)   # áp cho sendall; luồng đọc chờ bằng select nên không bị ảnh hưởng
         self._sock = sock
         self._stop.clear()
         self._thread = threading.Thread(target=self._read_loop, name="telnet-reader", daemon=True)
@@ -81,13 +83,14 @@ class TelnetLink(BaseLink):
         last_rx = time.monotonic()
         while not self._stop.is_set():
             try:
+                ready, _, _ = select.select([sock], [], [], READ_WAIT_S)
+                if not ready:
+                    if time.monotonic() - last_rx > LINK_SILENT_S:
+                        self._lost(f"Wi-Fi: no data from controller for {LINK_SILENT_S:g} s (signal lost?)")
+                        return
+                    continue
                 chunk = sock.recv(4096)
-            except socket.timeout:
-                if time.monotonic() - last_rx > LINK_SILENT_S:
-                    self._lost(f"Wi-Fi: no data from controller for {LINK_SILENT_S:g} s (signal lost?)")
-                    return
-                continue
-            except OSError as exc:
+            except (OSError, ValueError) as exc:          # ValueError: socket đã bị close() ở luồng khác
                 self._lost(f"Wi-Fi connection lost: {exc}")
                 return
             if not chunk:
