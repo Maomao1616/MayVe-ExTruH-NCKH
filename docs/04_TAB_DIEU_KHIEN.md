@@ -20,7 +20,7 @@
 | Làm | Không làm |
 |---|---|
 | Kết nối máy, xem trạng thái và vị trí, jog, Home, đặt gốc (Zero), nâng hạ bút | Không tạo nét từ ảnh (việc của tab Tạo bản vẽ) |
-| Nạp tệp G-code (khung 2D hiện ngay đường chạy + vùng vẽ), chạy, chỉnh tốc độ khi đang chạy, hủy an toàn, tiếp tục từ điểm dừng | Không chạy khi máy chưa nối / chưa mở khóa chuyển động / chưa Idle / tệp có dòng bị cấm. **Không còn bước Xem trước + tích xác nhận** (bỏ từ 12/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C9) |
+| Nạp tệp G-code (khung 2D hiện ngay đường chạy + vùng vẽ), chạy, hủy an toàn, tiếp tục từ điểm dừng | Không chạy khi máy chưa nối / chưa mở khóa chuyển động / chưa Idle / tệp có dòng bị cấm. **Không còn bước Xem trước + tích xác nhận** (bỏ từ 12/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C9) |
 | Terminal gửi lệnh tay, macro, hàng đợi bản thảo | Nút Reset trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V |
 
 ---
@@ -35,20 +35,20 @@
 | | Mở khóa ($X) | gỡ Alarm | `$X` |
 | Trạng thái | ô trạng thái một dòng | Idle / Run / Hold / Alarm / Home, tốc độ thật, bộ đệm | (đọc từ báo cáo `?`) |
 | | Mở khóa chuyển động | máy thật mặc định **chỉ đọc**; bấm (kèm PIN nếu đặt) mới cho chạy, tự khóa sau 15 phút không dùng | (không gửi gì, chỉ mở cổng ở máy chủ) |
-| Vị trí | Tọa độ X, Y, Z; đèn công tắc X / Y | đèn sáng khi báo cáo có `Pn:X` / `Pn:Y` (đang đè công tắc hành trình) | |
+| Vị trí | Tọa độ X, Y, Z; đèn công tắc X / Y | đèn sáng khi báo cáo có `Pn:X` / `Pn:Y` (đang đè công tắc hành trình). Cột Workspace là **số lăn** (26/11/2026): chỉ chữ số phần nguyên đổi thì trượt nhẹ, phần thập phân đứng yên; cột Machine ghi chữ thường (`lib/odometer.js`). Hàng Z không còn ô chữ Lên / Xuống ở cột Home (đã có 3 nút bút) | |
 | | Zero X / Y / XY | đặt gốc làm việc tại chỗ bút đang đứng | `G10 L20 P1 X0 Y0` |
 | | Home X / Y / tất cả | chạy về công tắc hành trình (hỏi xác nhận). **Tự nâng bút trước** | `$J=G90 G21 Z5 F3000` rồi `$H` / `$HX` / `$HY` |
 | Di chuyển | Mũi tên, ô bước | jog theo bước đã chọn (tối đa 50 mm) | `$J=G91 G21 X10 F…` |
 | | Nút giữa | về gốc làm việc | `$J=G90 G21 X0 Y0 F…` |
 | Bút | Lên / Giữa / Xuống | Z5 / Z3 / Z0 (sửa ở Cài đặt → Cấu hình máy, mục App; Giữa = Z3 từ 17/11/2026). Z nhấc của G-code (mặc định 3) là giá trị khác, chỉnh ở cùng mục; nhấc của G-code vẫn hiện là "Lên" | `G90 G0 Z5` (từ 17/11/2026; trước là `$J=G90 G21 Z5 F3000`) |
 | Tệp G-code | Chọn tệp → nhìn khung 2D → **▶ Chạy** | nút Xem trước và ô tích xác nhận đang **ẩn** (công tắc `REQUIRE_PREVIEW_CONFIRM` ở đầu `views/control.js`; đặt `true` để hiện lại: lúc đó phải xem trước + tích, đổi tệp là làm lại). Dòng bị cấm hiện đỏ kèm số dòng và lý do, khóa nút Chạy | gửi từng dòng |
-| | Hủy tác vụ | hộp thoại: Tiếp tục chạy / **Dừng êm** / **Dừng gấp** | xem mục 6 |
-| | −10 −1 100% +1 +10 | ghi đè tốc độ (10–200 %) | byte `0x90`…`0x94` |
+| | Hủy tác vụ | nằm cạnh nút Đường vẽ / Biểu đồ ở khung 2D, **luôn hiện** (xám khi không có tác vụ). Hộp thoại: Tiếp tục chạy / **Dừng êm** / **Dừng gấp** | xem mục 6 |
+| | Ô tốc độ (chỉ đọc) | hiện % ghi đè tốc độ mà mạch đang dùng (đọc `Ov:` từ báo cáo), chuyển cam khi khác 100 %. **Không còn nút đổi tốc độ khi đang chạy** (bỏ 26/11/2026; chỉnh tốc độ ở tab Tạo bản vẽ, WebUI của mạch vẫn đổi được nên ô này cần để thấy) | (đọc từ `?`) |
 | | Lưu vào bản thảo | lưu tệp đang nạp thành một bản thảo để ghim, chạy lại nhanh | |
 | | Tiếp tục / Bỏ điểm dừng | chỉ hiện khi có tác vụ dừng giữa chừng | xem mục 6.3 |
-| Khung 2D | Phóng / thu, toàn cảnh, xóa vết, phát lại | xem trước **một** tệp đang chọn; khi chạy, vệt bút bám theo đường của tệp | |
+| Khung 2D | Phóng / thu, toàn cảnh, xóa vết, phát lại | xem trước **một** tệp đang chọn; khi chạy, vệt bút bám theo đường của tệp. Ô **Lưới tắt mặc định**. Thanh tiến trình có vệt sáng laser quét liên tục khi máy đang chạy (CSS, tắt khi hệ điều hành bật giảm chuyển động) | |
 | Hàng đợi công việc | Làm mới, Nạp, Ghim, Đẩy ưu tiên, Mở xem | đọc thẳng các bản thảo đã lưu | |
-| Terminal | Gửi, Xóa log hiển thị | gửi lệnh tay; giữ tiếng Anh để dễ tra mã lỗi | nguyên văn |
+| Terminal | Gửi, Xóa log hiển thị | gửi lệnh tay; giữ tiếng Anh để dễ tra mã lỗi. **Màn rộng (≥ 761 px): luôn mở, không thu gọn được**; điện thoại thu gọn được | nguyên văn |
 | Dock trái (⚡) | Macro | lệnh lưu sẵn (thêm / sửa / xóa), lưu ở máy chủ | **điện thoại: nút ⚡ bị ẩn** (18/11/2026) |
 | | Tệp nhanh | các bản thảo đã ghim, bấm để nạp (khung vẽ hiện ngay, rồi bấm Chạy) | |
 
@@ -210,7 +210,7 @@ Vẽ chồng một đoạn ngắn thì vô hại; bỏ sót thì mất nét. Nê
 
 | Tệp | Vai trò |
 |---|---|
-| `frontend/js/views/control.js` | tab Điều khiển: trạng thái, mở khóa, jog, thanh bút 3 nấc, Zero, Home, tệp G-code, ghi đè tốc độ, tiến trình, hủy |
+| `frontend/js/views/control.js` | tab Điều khiển: trạng thái, mở khóa, jog, thanh bút 3 nấc, Zero, Home, tệp G-code, chỉ báo tốc độ, tiến trình, hủy, số lăn tọa độ |
 | `frontend/js/views/preview.js` | khung 2D, vệt bút, đèn X / Y |
 | `frontend/js/views/jobchart.js` · `lib/chart.js` · `css/jobchart.css` | biểu đồ số liệu chạy máy (vẽ canvas · tính vạch trục, bảng so sánh) |
 | `frontend/js/views/terminal.js` | terminal và các nút an toàn ở đầu trang |

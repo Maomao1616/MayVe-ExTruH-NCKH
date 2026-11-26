@@ -54,6 +54,8 @@ Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút
 
 ---
 
+**Điện thoại (≤ 760 px, 26/11/2026):** khối nạp ảnh lên đầu; "Tiền xử lý ảnh" và "Thông số vẽ" đóng sẵn (mở bằng mũi tên). "Thông tin bản vẽ" chỉ hiện 4 dòng: **nguồn, G-code, thời gian ước tính, số lần nhấc bút**; các dòng còn lại ẩn sau nút Mở rộng / Thu gọn (mọi cỡ màn; dòng "Trong vùng làm việc? = Không" luôn tự hiện). Canvas trống không còn dòng chữ "Chưa có bản vẽ…".
+
 ## 3. Bộ thông số dựng sẵn (preset) và chọn kiểu nét
 
 **Tên hiển thị** (đổi 22/11/2026; mã và khóa API giữ nguyên; các tài liệu khác còn dùng tên cũ):

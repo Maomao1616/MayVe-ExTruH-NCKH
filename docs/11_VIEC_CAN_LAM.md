@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động (chạy lại 26/11/2026): máy chủ **652** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua), giao diện **68**. Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
+Test tự động (chạy lại 26/11/2026): máy chủ **657** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua; `test_joblog` và vài bài chờ thời gian có thể hỏng chập chờn khi máy bận, chạy riêng thì qua), giao diện **72**. Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 
@@ -42,6 +42,7 @@ Test tự động (chạy lại 26/11/2026): máy chủ **652** (8 bài tab Beta
 | **Giao diện** | màu nhấn vàng an toàn `#ffd400`; số đo WCAG: viền rõ, viền ô nhập ≥ 3:1, chữ ≥ 12 px (P45); hai khung vẽ giấy ngà + nét đen; âm báo xong / lỗi; **lung linh nhẹ** (24/11, [09](09_QUYET_DINH_THIET_KE.md) P48): khung thả tệp, công tắc ngày / đêm ở Cài đặt, thẻ thông tin, nút chính, thanh trượt 5 ô tông ảnh, thanh bước tiến trình, chữ hướng dẫn viết lại học thuật |
 | **Triển khai** | bản mang đi Windows + `Cap nhat.bat`; launcher ưu tiên `backend\.venv` rồi mới `Python\`; demo không cần Internet |
 | **Đo đạc** | `tools/do_thoi_gian.py` (giây từng bước, RAM đỉnh, thông tin máy); `ink_real.py` đo được cả Đường dòng, Xoắn ốc; số laptop 22/11 ở [07](07_THU_NGHIEM.md) mục 9 |
+| **Giao diện điện thoại + dọn tab Điều khiển (P51, 26/11)** | thanh tab đáy, khối thu gọn bằng mũi tên, nút Mở rộng / Thu gọn, Terminal luôn mở trên máy tính, Hủy tác vụ luôn hiện, số lăn tọa độ, vệt sáng laser; **bỏ nút đổi tốc độ** (backend không còn nhận `feed_*`); máy chủ gửi `Cache-Control: no-cache` cho tệp giao diện ([03](03_CAU_TRUC_PHAN_MEM.md) mục 6.2, [09](09_QUYET_DINH_THIET_KE.md) P51). **Chưa thử trên điện thoại thật** (thanh tab đáy với vùng an toàn iPhone, bàn phím ảo, ô xám sau khi chạm) |
 | **Dọn tài liệu (P16, 26/11)** | thêm mục lục đầu [12](12_TAB_BETA_PDF.md); dấu ✅ "Hàng chờ tạo nét" ở [10](10_HUONG_PHAT_TRIEN.md) ghi rõ phần đã làm / chưa làm; [13](13_MANG_VA_TEN_MIEN.md) mục 9 ghi đúng "đã làm 25/11", bỏ câu trùng `Python\`; số test cập nhật 652 / 68. Không sửa mã |
 
 ## 4. Việc tiếp

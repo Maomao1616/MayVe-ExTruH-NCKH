@@ -210,7 +210,8 @@ Tên nhất quán: id HTML gạch ngang (`style-outline-detail`), tham số Pyth
 |---|---|
 | Chữ hiển thị | `vi.json` **và** `en.json` (cùng khóa) |
 | Màu | `frontend/assets/css/tokens.css` (vd `--highlight` là màu cam nhấn) |
-| Cỡ, khoảng cách, bố cục, điện thoại | `frontend/css/polish.css` (khối `@media (max-width: 760px)` cho điện thoại) |
+| Cỡ, khoảng cách, bố cục | `frontend/css/polish.css` |
+| Điện thoại (≤ 760 px), khối thu gọn, nút Mở rộng / Thu gọn, laser, số lăn | `frontend/css/mobile.css` (nạp sau `icons.css`; xóa tệp và dòng `<link>` là về như cũ), `js/app.js` (`initDetailsMemory`, `initMoreToggles`, `initChevronOnlyToggle`, `initTerminalAlwaysOpen`), `js/lib/odometer.js` |
 | Một con số của thuật toán | **hằng số viết HOA ở đầu tệp Python**, có chú thích tiếng Việt (vd `LINE_WIDTH_RATIO` trong `styles.py`, `GAP_MM` trong `edges.py`) |
 | Giới hạn / mặc định ô thông số vẽ | `backend/app/services/drawing/spec.py` |
 | Bộ thông số dựng sẵn | `frontend/js/views/drawing/presets.js` |
@@ -270,6 +271,10 @@ Ví dụ thật: bỏ nút "Tạo tờ mẫu hiệu chỉnh bút" = bỏ nút tr
 | Ẩn phần quản lý với khách | lớp `body.role-guest` + CSS (chỉ ẩn, bảo mật nằm ở máy chủ) | |
 
 Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về giao diện gốc.
+
+**Giao diện điện thoại (≤ 760 px, 26/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P51):** thanh tab xuống đáy; khối Cài đặt là `<details>` thu gọn được (khối gắn `data-mobile-closed` đóng sẵn trên điện thoại, lần đóng sẵn không được nhớ như lựa chọn của người dùng); thẻ trạng thái bộ điều khiển và "Thông tin bản vẽ" ẩn dòng kỹ thuật sau nút **Mở rộng / Thu gọn**; ô nhập cao 44 px, chữ 16 px (iPhone không tự phóng to); khối không giữ hiệu ứng rê chuột sau khi chạm. Khối chỉ đóng / mở khi bấm **mũi tên** (không phải cả hàng tiêu đề). Tab Beta có một khung xem và nút chuyển "Trang trong PDF / Nét sẽ vẽ". Điện thoại thật **chưa thử**.
+
+**Tệp giao diện luôn hỏi lại bản mới:** máy chủ gửi `Cache-Control: no-cache` cho mọi đường không phải `/api` (`app/main.py`). Trước đó không có header nên trình duyệt và Cloudflare tự đoán thời hạn lưu, sửa xong điện thoại vẫn hiện bản cũ hàng giờ.
 
 ---
 

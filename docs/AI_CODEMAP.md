@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~646,718 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~664,371 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -102,7 +102,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `auth.py` | ~2,385 | Phân quyền khách / quản lý bằng mã PIN (docs/08_TRIEN_KHAI.md phần B). |
 | `idle.py` | ~524 | Tự tắt server khi không còn trang web nào mở (bản đóng gói chạy ẩn, không có cửa sổ để đóng). |
-| `main.py` | ~1,254 |  |
+| `main.py` | ~1,368 |  |
 | `paths.py` | ~428 | Thư mục dữ liệu của phần mềm: MỘT gốc, ba thư mục con cố định. |
 
 ### `backend/app/api/`
@@ -116,7 +116,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `customer.py` | ~818 | API ảnh khách gửi (services/customer.py). Chỉ POST /api/customer mở cho khách; mọi thứ khác cần quản lý. |
 | `draw.py` | ~4,290 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
 | `events.py` | ~1,308 | Luồng sự kiện máy chủ → trình duyệt (SSE, `text/event-stream`): trạng thái máy + nhật ký terminal, thay cho hỏ |
-| `machine.py` | ~1,588 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
+| `machine.py` | ~1,646 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
 | `share.py` | ~182 | Địa chỉ + mã QR để mở giao diện từ máy khác (docs/13). Khách thấy địa chỉ Internet; địa chỉ mạng nhà chỉ cho q |
 | `storage.py` | ~481 | API lưu trữ: macro (CRUD) và xem/tải nội dung thư mục dữ liệu (chỉ đọc). Mỏng: logic ở services. |
 
@@ -125,9 +125,10 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `base.py` | ~756 | Giao diện chung cho mọi kiểu kết nối tới bộ điều khiển (máy thật hoặc mô phỏng). |
-| `protocol.py` | ~2,810 | Phân tích các dòng phản hồi của FluidNC v4.1.1. |
+| `protocol.py` | ~2,742 | Phân tích các dòng phản hồi của FluidNC v4.1.1. |
 | `serial_link.py` | ~1,058 | SerialLink: kết nối FluidNC thật qua USB/serial (CH340). |
 | `sim_link.py` | ~8,168 | SimLink: máy FluidNC giả để phát triển khi chưa có board. |
+| `telnet_link.py` | ~1,574 | TelnetLink: kết nối FluidNC qua Wi-Fi bằng telnet (TCP thô, cổng 23), cùng giao diện với SerialLink. |
 
 ### `backend/app/services/`
 
@@ -136,12 +137,12 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `customer.py` | ~3,356 | Ảnh khách gửi: khách (không đăng nhập) chọn ảnh + cắt + khổ giấy + kiểu nét "mong muốn" rồi bấm "Gửi ảnh"; quả |
 | `job.py` | ~4,727 | JobRunner: chạy một tệp G-code bằng cách gửi TỪNG DÒNG và chờ `ok`/`error` của firmware. |
 | `joblog.py` | ~5,866 | Số liệu thật của từng lần chạy máy: mỗi báo cáo trạng thái ghi một dòng vào data/job_logs/<id>.csv. |
-| `machine.py` | ~16,157 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
+| `machine.py` | ~16,301 | MachineService: quản lý kết nối, trạng thái máy và nhật ký. |
 | `machine_config.py` | ~3,292 | Đọc / sửa / lưu cấu hình FluidNC qua cổng serial. |
 | `macros.py` | ~1,709 | Macro (nút chạy nhanh) lưu trên máy chủ: mỗi macro một tệp `<thư mục dữ liệu>/macros/<id>.json`. |
 | `profile.py` | ~824 | Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch). |
 | `resume.py` | ~2,419 | Điểm dừng của tác vụ G-code, để "Tiếp tục từ dòng N" sau khi hủy / lỗi / mất kết nối. |
-| `share.py` | ~322 | Địa chỉ để mở giao diện từ máy khác, kèm mã QR (docs/13). Địa chỉ do launcher đặt qua biến môi trường: |
+| `share.py` | ~358 | Địa chỉ để mở giao diện từ máy khác, kèm mã QR (docs/13). Địa chỉ do launcher đặt qua biến môi trường: |
 | `storage.py` | ~1,093 | Xem nội dung thư mục dữ liệu qua giao diện (MiniPC không có màn hình để mở thư mục). |
 
 ### `backend/app/services/beta_pdf/`
@@ -201,7 +202,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `conftest.py` | ~194 |  |
 | `test_auth.py` | ~2,964 | Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/08_TRIEN_KHAI.md phần B). |
-| `test_board_paths.py` | ~2,249 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
+| `test_board_paths.py` | ~2,262 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
 | `test_customer.py` | ~3,048 | Ảnh khách gửi (services/customer.py, api/customer.py): lưu ảnh đã giải mã lại, thông số sạch, giới hạn, tự xóa |
 | `test_docs_tools.py` | ~863 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
 | `test_events.py` | ~1,699 | Luồng SSE /api/events: trạng thái cho mọi người, nhật ký chỉ cho quản lý, nhịp tim, đóng khi ngắt / hết phiên, |
@@ -215,11 +216,12 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_protocol.py` | ~562 |  |
 | `test_regressions.py` | ~2,260 | Hồi quy cho các lỗi đã gặp ở Giai đoạn "xác thực" (28/10/2026). |
 | `test_resume.py` | ~2,118 | Tiếp tục từ dòng N: chọn dòng bắt đầu lại an toàn (hàm thuần) + ghi điểm dừng khi hủy/lỗi (máy giả). |
-| `test_routes.py` | ~1,723 | Kiểm tra lớp HTTP: đường dẫn, mã trạng thái, hình dạng JSON mà frontend dựa vào. |
+| `test_routes.py` | ~2,172 | Kiểm tra lớp HTTP: đường dẫn, mã trạng thái, hình dạng JSON mà frontend dựa vào. |
 | `test_safe_stop.py` | ~3,044 | Hồi quy cho đợt tối ưu backend 29/10/2026 (cac_van_de_can_toi_uu_backend.txt). |
-| `test_share.py` | ~703 | Địa chỉ + QR để mở giao diện từ máy khác (docs/13). |
+| `test_share.py` | ~929 | Địa chỉ + QR để mở giao diện từ máy khác (docs/13). |
 | `test_sim_link.py` | ~3,724 | SimLink phải khớp hành vi đã thấy trên board thật (docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026). |
 | `test_storage_macros.py` | ~1,818 | Macro lưu ở máy chủ + xem/tải nội dung thư mục dữ liệu qua API. |
+| `test_telnet_link.py` | ~2,320 | Đường Wi-Fi (telnet): mạch giả là máy chủ TCP trên máy này, bọc SimLink. Không chạm máy thật. |
 
 ### `backend/tests/beta_pdf/`
 
@@ -268,24 +270,25 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `01_TONG_QUAN.md` | ~3,278 |  |
 | `02_PHAN_CUNG_MAY.md` | ~4,020 |  |
-| `03_CAU_TRUC_PHAN_MEM.md` | ~5,809 |  |
-| `04_TAB_DIEU_KHIEN.md` | ~5,569 |  |
-| `05_TAB_TAO_BAN_VE.md` | ~5,527 |  |
+| `03_CAU_TRUC_PHAN_MEM.md` | ~6,158 |  |
+| `04_TAB_DIEU_KHIEN.md` | ~5,793 |  |
+| `05_TAB_TAO_BAN_VE.md` | ~5,644 |  |
 | `06_THUAT_TOAN_XU_LY_ANH.md` | ~19,696 |  |
 | `07_THU_NGHIEM.md` | ~6,688 |  |
 | `08_TRIEN_KHAI.md` | ~5,880 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~8,071 |  |
-| `10_HUONG_PHAT_TRIEN.md` | ~3,464 |  |
-| `11_VIEC_CAN_LAM.md` | ~3,158 |  |
-| `12_TAB_BETA_PDF.md` | ~10,128 |  |
-| `AI_CODEMAP.md` | ~7,845 |  |
+| `09_QUYET_DINH_THIET_KE.md` | ~8,293 |  |
+| `10_HUONG_PHAT_TRIEN.md` | ~3,528 |  |
+| `11_VIEC_CAN_LAM.md` | ~3,338 |  |
+| `12_TAB_BETA_PDF.md` | ~10,251 |  |
+| `13_MANG_VA_TEN_MIEN.md` | ~3,517 |  |
+| `AI_CODEMAP.md` | ~8,017 |  |
 | `AI_START.md` | ~3,695 |  |
 
 ### `frontend/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.html` | ~42,332 |  |
+| `index.html` | ~43,159 |  |
 
 ### `frontend/assets/css/`
 
@@ -297,26 +300,27 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `beta.css` | ~673 | TAB BETA: in trang PDF (docs/12_TAB_BETA_PDF.md) |
+| `beta.css` | ~996 | TAB BETA: in trang PDF (docs/12_TAB_BETA_PDF.md) |
 | `customer.css` | ~690 | Ảnh khách gửi (views/customer.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
-| `drawing.css` | ~2,634 | 9. TAB TAO BAN VE |
+| `drawing.css` | ~2,943 | 9. TAB TAO BAN VE |
 | `icons.css` | ~4,336 | ICON NUT (24/11/2026) |
-| `jobchart.css` | ~1,592 | Biểu đồ số liệu chạy máy (views/jobchart.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
+| `jobchart.css` | ~1,753 | Biểu đồ số liệu chạy máy (views/jobchart.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
+| `mobile.css` | ~2,800 | ĐIỆN THOẠI, KHỐI THU GỌN, NÚT "CHI TIẾT", HIỆU ỨNG (26/11/2026) |
 | `polish.css` | ~20,311 | POLISH: lop tinh chinh giao dien |
-| `style.css` | ~13,266 |  |
+| `style.css` | ~13,185 |  |
 | `testsheet.css` | ~649 | Tờ thử / hiệu chỉnh (Cài đặt, views/settings.js initTestSheets). Chỉ dùng biến màu có sẵn ở tokens.css. |
 
 ### `frontend/js/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `app.js` | ~2,163 |  |
+| `app.js` | ~3,365 |  |
 
 ### `frontend/js/core/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `api.js` | ~2,448 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
+| `api.js` | ~2,474 | DUY NHẤT nơi gọi fetch. Chỉ dùng các endpoint có trong backend v0.2.0. |
 | `auth.js` | ~519 | vai trò của trình duyệt này: khách hay quản lý (backend: app/auth.py). |
 | `config.js` | ~814 | Hằng số máy và giao diện. Mọi giả định chưa kiểm chứng ghi ở đây để sửa một chỗ. |
 | `i18n.js` | ~439 |  |
@@ -331,6 +335,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `gcode.js` | ~5,879 | đọc G-code thành các đoạn đường để xem trước. THUẦN (không DOM, không mạng). |
 | `imageprep.js` | ~2,949 | chuẩn bị ảnh ngay trong trình duyệt TRƯỚC khi gửi, và xem trước độ sáng. |
 | `notify.js` | ~905 | báo "vẽ xong / lỗi" cho người đứng xa máy: âm báo + tiêu đề tab nhấp nháy. |
+| `odometer.js` | ~903 | Số lăn kiểu công-tơ-mét cho bảng tọa độ (26/11/2026): chữ số nào đổi thì trượt nhẹ lên / xuống, các chữ số khá |
 | `paper.js` | ~1,502 | bố trí bản vẽ trên tờ giấy. THUẦN (không DOM, không mạng). |
 | `subject.js` | ~1,113 | vùng chủ thể (hàm thuần, có test): hình elip / chữ nhật theo tỷ lệ 0..1 của ảnh gốc. |
 
@@ -348,15 +353,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `auth.js` | ~695 | khung "Khách / Quản lý" ở đầu trang: chủ ghi #auth-box và các phần tử con. |
 | `confirm.js` | ~810 | hộp xác nhận chung của app (cùng kiểu "Bỏ điểm dừng"), thay cho window.confirm của trình duyệt. |
-| `control.js` | ~11,081 | Tab Điều khiển. |
+| `control.js` | ~11,028 | Tab Điều khiển. |
 | `customer.js` | ~2,416 | ảnh khách gửi (backend: api/customer.py, services/customer.py). |
 | `dock.js` | ~2,833 | khối tiện ích bên trái, luôn có mặt ở mọi tab. |
 | `drafts.js` | ~4,755 | danh sách bản thảo ở HAI nơi (cùng dữ liệu từ stores/draftstore.js): |
-| `drawing.js` | ~12,004 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
-| `header.js` | ~1,706 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
-| `jobchart.js` | ~6,272 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
+| `drawing.js` | ~11,976 | Tab Tạo bản vẽ: điều phối. Luồng (docs/05_TAB_TAO_BAN_VE.md mục 4): |
+| `header.js` | ~1,562 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
+| `jobchart.js` | ~6,400 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
 | `preview.js` | ~6,733 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
-| `settings.js` | ~14,125 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
+| `settings.js` | ~14,622 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
 | `share.js` | ~843 | nút QR trên header: hiện địa chỉ để mở giao diện từ máy khác (mạng nhà và/hoặc Internet) kèm mã QR. |
 | `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
 | `terminal.js` | ~3,878 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |
@@ -365,7 +370,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.js` | ~4,438 | Tab Beta "In trang PDF" (docs/12_TAB_BETA_PDF.md). Luồng: |
+| `index.js` | ~4,893 | Tab Beta "In trang PDF" (docs/12_TAB_BETA_PDF.md). Luồng: |
 | `model.js` | ~1,282 | hàm thuần của tab Beta (có test: frontend/tests/beta.test.mjs). Không đụng DOM, không gọi mạng. |
 
 ### `frontend/js/views/drawing/`
@@ -383,8 +388,8 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `en.json` | ~22,197 |  |
-| `vi.json` | ~21,219 |  |
+| `en.json` | ~22,261 |  |
+| `vi.json` | ~21,259 |  |
 
 ### `frontend/tests/`
 
@@ -396,6 +401,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `imageprep.test.mjs` | ~1,285 | Đối chiếu lib/imageprep.js với backend: node --test frontend/tests/imageprep.test.mjs |
 | `locales.test.mjs` | ~616 | Kiểm tệp dịch: không trùng khóa (JSON.parse nuốt âm thầm, khóa sau đè khóa trước: từng làm tờ hiệu chỉnh tông  |
 | `notify.test.mjs` | ~327 | Kiểm lib/notify.js (phần thuần): node --test frontend/tests/notify.test.mjs |
+| `odometer.test.mjs` | ~390 | Số lăn: chỉ chữ số phần nguyên đổi mới lăn, hướng theo tăng / giảm. node --test frontend/tests/odometer.test.m |
 | `paper.test.mjs` | ~1,895 | Đối chiếu lib/paper.js với backend (layout.py). Sinh bởi script từ chính backend — chạy: node --test frontend/ |
 | `preview.test.mjs` | ~561 | Kiểm views/preview.js phần thuần: makeTransform (mapX / mapY phải khớp toScreen, vì vòng lặp vẽ tệp dùng mapX  |
 | `subject.test.mjs` | ~987 | Kiểm lib/subject.js: node --test frontend/tests/subject.test.mjs |
