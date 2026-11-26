@@ -1,6 +1,6 @@
 # 13 — Mạng và tên miền: mở giao diện cho máy khác (Cloudflare Tunnel + mã QR)
 
-> Viết cho người không học mạng. Trạng thái 24/11/2026: **đã chạy thật**: tên miền Active, đường ống `plotter` chạy bằng launcher, chủ dự án mở được giao diện từ điện thoại bằng 4G. Chưa đặt PIN, chưa bật Cloudflare Access.
+> Viết cho người không học mạng. Trạng thái 26/11/2026: **đã chạy thật**: tên miền Active, đường ống `plotter` chạy bằng launcher, chủ dự án mở được giao diện từ điện thoại bằng 4G. Chưa đặt PIN, chưa bật Cloudflare Access.
 > Phần chạy trên MiniPC (Docker, USB cố định): [08](08_TRIEN_KHAI.md) mục E, F. Tài liệu này là đường **chạy ngay trên laptop**.
 
 ## 1. Bức tranh một dòng
@@ -102,7 +102,7 @@ Bấm icon **Tắt**: dừng server và dừng đường ống (chỉ tiến tr�
 - Mỗi trang hỏi `/api/status` 10 lần/giây: nhiều người cùng xem thì nên giãn nhịp ([08](08_TRIEN_KHAI.md) mục F).
 - Đã thử (24/11/2026): mở giao diện từ điện thoại qua 4G thành công. Chưa thử: đăng nhập PIN và thao tác ghi qua tên miền (Origin / cookie), nhiều người cùng lúc, laptop ngủ rồi bật lại.
 
-## 9. Mang theo bằng SSD, dùng máy mượn (kế hoạch ghi 24/11/2026, **chưa làm**)
+## 9. Mang theo bằng SSD, dùng máy mượn (ghi 24/11/2026; **làm 25/11/2026: launcher đã chạy được ở máy chính; chưa thử máy thứ hai**)
 
 Bối cảnh: chủ dự án không có laptop, mượn máy; ổ SSD ngoài sau này gắn MiniPC. Làm từ 25/11 (việc: [11](11_VIEC_CAN_LAM.md) mục 4.4).
 
@@ -118,6 +118,6 @@ Bối cảnh: chủ dự án không có laptop, mượn máy; ổ SSD ngoài sau
 | Sửa mã ở máy mượn: **fork** kho gốc, clone fork, push lên fork, **Pull Request** về kho gốc; kho gốc duyệt rồi gộp; trên SSD `git pull` | đăng nhập GitHub trên máy mượn phải là tài khoản sở hữu fork; **đăng xuất sau khi dùng** (Credential Manager nhớ) |
 | MiniPC sau này: Docker (`git pull` + `docker compose up -d --build`); `data\` chép sang; chìa khóa dùng được trên Linux | [08](08_TRIEN_KHAI.md) mục E |
 
-**Cái cần mang theo SSD (đều bị Git bỏ qua):** `Python\`, `data\` (~5 MB: bản thảo, hồ sơ, `pin.txt`, `mang.txt`, `cloudflared\` chứa chìa khóa `.json`) và `launcher\cloudflared.exe` (tải từ Cloudflare). **Cũng mang:** `Python\` (~590 MB). **Không cần:** `backend\.venv` (~580 MB, tạo lại nếu cần), `export\` (~570 MB: kết quả đo, ảnh thử, phiếu giao việc; chép riêng thư mục nào cần), `.playwright-mcp\`, `__pycache__\`. Ngoài kho: ghi nhớ của Claude nằm ở `~\.claude\projects\…\memory` của từng máy.
+**Cái cần mang theo SSD (đều bị Git bỏ qua):** `Python\`, `data\` (~5 MB: bản thảo, hồ sơ, `pin.txt`, `mang.txt`, `cloudflared\` chứa chìa khóa `.json`) và `launcher\cloudflared.exe` (tải từ Cloudflare). **Không cần:** `backend\.venv` (~580 MB, tạo lại nếu cần), `export\` (~570 MB: kết quả đo, ảnh thử, phiếu giao việc; chép riêng thư mục nào cần), `.playwright-mcp\`, `__pycache__\`. Ngoài kho: ghi nhớ của Claude nằm ở `~\.claude\projects\…\memory` của từng máy.
 
 **Đã thử (25/11/2026, máy chính):** tạm đổi tên thư mục `.cloudflared` của người dùng (không còn `config.yml`, `cert.pem`), bật bằng icon với `launcher\cloudflared.exe` + chìa khóa trong `data\cloudflared\` → mở được giao diện từ 4G. Chưa thử trên máy thứ hai. Chưa kiểm: "dubious ownership" của Git trên ổ ngoài; Docker đọc ghi thư mục `data` trên exFAT; Zero Trust gói Free có đòi thẻ khi đăng ký không (nếu đòi thì **không dùng**, cách USB vẫn đủ).

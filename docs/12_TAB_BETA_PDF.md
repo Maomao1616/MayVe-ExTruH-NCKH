@@ -2,7 +2,23 @@
 
 > Tính năng **tách riêng hoàn toàn** khỏi phần còn lại (xem mục 10 "Cách gỡ"). Tài liệu này giải thích hướng phát triển, thuật toán, thư viện và hằng số, theo cách viết của [06](06_THUAT_TOAN_XU_LY_ANH.md). Quyết định và lý do: [09](09_QUYET_DINH_THIET_KE.md) P47.
 
+**Mục lục**
+0. Tóm tắt một đoạn
+1. Phương hướng phát triển
+2. Cách dùng
+3. Dây chuyền
+4. Thuật toán từng bước (4.1 đọc trang → 4.9 đóng gói)
+5. Thư viện và giấy phép
+6. Quyết định và lý do
+7. Số đo (7b: PDF thật 32 trang)
+8. Hằng số và tham số người dùng
+9. API (chỉ quản lý)
+10. Cách gỡ (hoặc thay phần đọc PDF)
+11. Giới hạn đã biết (11a việc cần cải thiện · 11b Soạn font riêng)
+12. Test
+
 **Trạng thái (22/11/2026):** đã làm xong phần mềm và test; **chưa in giấy, chưa đo trên MiniPC**. Số đo ở mục 7 là trên máy phát triển.
+
 
 ## 0. Tóm tắt một đoạn
 Bạn xuất tài liệu Word thành PDF, mở tab **Beta PDF**, chọn một trang. Phần mềm **không chụp trang thành ảnh rồi làm mỏng** (đã thử: chữ Times 14 bị đứt nét, mất dấu). Thay vào đó nó **đọc từng ký tự thật trong PDF** (chữ gì, ở đâu, cỡ nào, đậm hay nghiêng) và **viết lại như viết tay**: từng từ một nét liền, nét đều nhau, chỉ khác cỡ chữ, dấu tiếng Việt tự ghép; **đường kẻ bảng và khung** vẽ thẳng từ vector; **ảnh trong trang** đi qua đường tô ảnh của tab Tạo bản vẽ. Kết quả là một bản vẽ như mọi bản vẽ khác: mở ở tab Tạo bản vẽ để đặt giấy, tạo G-code, lưu bản thảo.

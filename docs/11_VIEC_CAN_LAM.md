@@ -1,6 +1,6 @@
 # 11 — Tình trạng và việc cần làm
 
-> Sổ làm việc, cập nhật 22/11/2026. **Một nơi duy nhất** cho: đã xong · cần thử · làm tiếp (theo thứ tự bạn chốt).
+> Sổ làm việc, cập nhật 26/11/2026. **Một nơi duy nhất** cho: đã xong · cần thử · làm tiếp (theo thứ tự bạn chốt).
 > Cách thử từng bài: [07](07_THU_NGHIEM.md). Lý do từng quyết định: [09](09_QUYET_DINH_THIET_KE.md). Ý tưởng để dành: [10](10_HUONG_PHAT_TRIEN.md).
 > Cỡ việc: **S** vài giờ · **M** nửa đến một ngày · **L** nhiều ngày.
 
@@ -13,7 +13,7 @@
 | Cài đặt, cấu hình máy | ~90 % | ~70 % |
 | Phân quyền, bản mang đi | ~85 % | ~60 % |
 
-Test tự động: máy chủ **644** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua), giao diện **68** (qua 24/11/2026). Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
+Test tự động (chạy lại 26/11/2026): máy chủ **652** (8 bài tab Beta cần PyMuPDF, thiếu thì tự bỏ qua), giao diện **68**. Còn thiếu chủ yếu: **in thật** các bản mới (Chất lượng tối đa, Xoắn ốc mới, tách mực, tab Beta) và **thử trên MiniPC**.
 
 ## 2. Bản đồ việc
 
@@ -42,6 +42,7 @@ Test tự động: máy chủ **644** (8 bài tab Beta cần PyMuPDF, thiếu th
 | **Giao diện** | màu nhấn vàng an toàn `#ffd400`; số đo WCAG: viền rõ, viền ô nhập ≥ 3:1, chữ ≥ 12 px (P45); hai khung vẽ giấy ngà + nét đen; âm báo xong / lỗi; **lung linh nhẹ** (24/11, [09](09_QUYET_DINH_THIET_KE.md) P48): khung thả tệp, công tắc ngày / đêm ở Cài đặt, thẻ thông tin, nút chính, thanh trượt 5 ô tông ảnh, thanh bước tiến trình, chữ hướng dẫn viết lại học thuật |
 | **Triển khai** | bản mang đi Windows + `Cap nhat.bat`; launcher ưu tiên `backend\.venv` rồi mới `Python\`; demo không cần Internet |
 | **Đo đạc** | `tools/do_thoi_gian.py` (giây từng bước, RAM đỉnh, thông tin máy); `ink_real.py` đo được cả Đường dòng, Xoắn ốc; số laptop 22/11 ở [07](07_THU_NGHIEM.md) mục 9 |
+| **Dọn tài liệu (P16, 26/11)** | thêm mục lục đầu [12](12_TAB_BETA_PDF.md); dấu ✅ "Hàng chờ tạo nét" ở [10](10_HUONG_PHAT_TRIEN.md) ghi rõ phần đã làm / chưa làm; [13](13_MANG_VA_TEN_MIEN.md) mục 9 ghi đúng "đã làm 25/11", bỏ câu trùng `Python\`; số test cập nhật 652 / 68. Không sửa mã |
 
 ## 4. Việc tiếp
 
