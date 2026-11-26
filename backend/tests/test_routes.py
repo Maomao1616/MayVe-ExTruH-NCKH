@@ -24,6 +24,15 @@ def test_health(client: TestClient):
     assert body["ok"] is True and body["service"] == "extruxy-backend"
 
 
+def test_frontend_files_must_revalidate_and_api_untouched(client: TestClient):
+    """Tệp giao diện luôn hỏi lại (sửa xong điện thoại không kẹt bản cũ); /api không bị thêm Cache-Control."""
+    page = client.get("/")
+    assert page.status_code == 200 and page.headers["cache-control"] == "no-cache"
+    css = client.get("/css/mobile.css")
+    assert css.status_code == 200 and css.headers["cache-control"] == "no-cache"
+    assert "cache-control" not in client.get("/api/health").headers
+
+
 def test_status_when_disconnected(client: TestClient):
     body = client.get("/api/status").json()
     assert body["connection"]["connected"] is False

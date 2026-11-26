@@ -73,7 +73,12 @@ async def local_guard(request: Request, call_next):
     path = request.url.path
     if path.startswith("/api") and not auth.allowed(request.method, path, request.cookies.get(COOKIE)):
         return _error(401, "auth_required", "Cần đăng nhập quản lý.")
-    return await call_next(request)
+    response = await call_next(request)
+    if not path.startswith("/api"):
+        # Tệp giao diện (html / css / js) không có Cache-Control thì trình duyệt và Cloudflare tự đoán thời hạn lưu,
+        # nên sửa xong điện thoại vẫn hiện bản cũ hàng giờ. no-cache = luôn hỏi lại (ETag giống thì chỉ nhận 304, rất nhẹ).
+        response.headers.setdefault("Cache-Control", "no-cache")
+    return response
 
 
 @app.exception_handler(ServiceError)
