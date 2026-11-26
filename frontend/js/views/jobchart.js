@@ -235,12 +235,17 @@ function renderSummary() {
         const label = document.createElement("td");
         label.textContent = t(`chart.row.${row.key}`);
         label.title = t(`chart.hint.${row.key}`) === `chart.hint.${row.key}` ? "" : t(`chart.hint.${row.key}`);
+        tr.dataset.key = row.key;                                   // CSS in đậm tốc độ vẽ trung bình
+        // "% đói lệnh" hiện 0,0 = đường truyền hoàn hảo: tô xanh (chủ dự án chọn 26/11/2026)
+        const perfect = (value) => row.key === "starved_pct" && value !== null && value < 0.05;
         const a = document.createElement("td");
         a.textContent = fmtValue(row, row.a);
+        if (perfect(row.a)) a.className = "is-perfect";
         tr.append(label, a);
         if (S.b) {
             const b = document.createElement("td");
             b.textContent = fmtValue(row, row.b);
+            if (perfect(row.b)) b.className = "is-perfect";
             const d = document.createElement("td");
             d.textContent = row.delta === null ? "—" : `${row.delta > 0 ? "+" : ""}${row.delta.toFixed(1)} %`;
             if (row.verdict) d.className = `is-${row.verdict}`;

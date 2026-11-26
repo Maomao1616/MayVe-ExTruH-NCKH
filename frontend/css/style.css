@@ -993,23 +993,6 @@ label select {
     color: var(--warning);
 }
 
-.feed-override-buttons {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 4px;
-}
-
-.feed-override-buttons button {
-    min-height: 30px !important;
-    padding: 2px 0 !important;
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
-}
-
-.feed-override .help-text {
-    margin-top: 8px;
-}
-
 /* --- Trang thai bo dieu khien (4 cot, nam tren khung 2D) --- */
 .controller-panel .detail-list-compact {
     display: grid;
@@ -1282,7 +1265,7 @@ label select {
     display: inline-block;
     flex: 0 0 auto;
     color: var(--accent-text);
-    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    transition: transform 0.25s ease-out;      /* 26/11/2026: bỏ kiểu nảy quá đà (cubic-bezier 0.68, -0.55, 0.27, 1.55), trông buồn cười */
 }
 
 .terminal-toggle {

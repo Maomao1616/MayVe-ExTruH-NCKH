@@ -1,0 +1,300 @@
+/* ==================== ĐIỆN THOẠI, KHỐI THU GỌN, NÚT "CHI TIẾT", HIỆU ỨNG (26/11/2026) ====================
+   Nạp SAU icons.css để thắng các luật cùng độ ưu tiên. Muốn bỏ: xóa tệp này và dòng <link ... mobile.css> trong index.html
+   (các khối Cài đặt vẫn là <details>, chỉ mất kiểu riêng bên dưới).
+   Nguồn: đề xuất giao diện điện thoại, chủ dự án chọn 26/11/2026. Chỉ màn hẹp (<= 760 px) được đổi; máy tính / tablet giữ nguyên.
+   Không đổi bảng màu chung (tokens.css): chỉ dùng biến có sẵn. */
+
+/* ---------- Khối thu gọn của tab Cài đặt (mọi cỡ màn): tiêu đề = h2 + mô tả, giống khối của tab Tạo bản vẽ ---------- */
+#panel-settings .drawing-section-summary > div:first-child {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+#panel-settings .drawing-section-summary h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+#panel-settings .drawing-section-summary h2::before {      /* gạch cam như các khối khác (luật cũ chỉ áp cho .panel-heading h2) */
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 0.95em;
+    margin-right: 8px;
+    border-radius: 2px;
+    background: var(--highlight);
+    vertical-align: -0.1em;
+}
+
+#panel-settings .drawing-section-summary p {
+    margin: 2px 0 0;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 400;
+}
+
+#panel-settings .drawing-section-summary .panel-tag {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---------- Nút "Chi tiết": hiện / ẩn các dòng phụ có hiệu ứng (js/app.js initMoreToggles bật lớp show-more) ----------
+   .has-more        : Thông tin bản vẽ, mọi cỡ màn
+   .has-more-mobile : thẻ trạng thái bộ điều khiển, chỉ điện thoại (máy tính luôn hiện đủ, nút ẩn) */
+.more-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 40px;
+    margin-top: 6px;
+}
+
+.more-chevron {                                    /* mũi tên vẽ bằng viền (không dùng ký tự ⌄: lệch xuống thấp so với chữ) */
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.25s ease-out;           /* êm, không nảy (kiểu nảy quá đà cũ trông buồn cười, đã bỏ 26/11/2026) */
+}
+
+.more-btn[aria-expanded="true"] .more-chevron {
+    transform: translateY(2px) rotate(225deg);
+}
+
+/* Chữ nút đổi theo trạng thái: đang đóng "Mở rộng", đang mở "Thu gọn" */
+.more-btn[aria-expanded="false"] .more-label-open,
+.more-btn[aria-expanded="true"] .more-label-closed {
+    display: none;
+}
+
+/* Dòng phụ: đóng = display: none (hàng ẩn trong lưới vẫn chiếm khe, chừa khoảng trắng); mở = hiện dần. Dòng phụ xếp sau 4 dòng chính.
+   Riêng dòng đang báo lỗi ("Trong vùng làm việc?" = Không) luôn hiện. */
+.has-more .detail-list > .is-extra {
+    order: 1;
+}
+
+.has-more:not(.show-more) .detail-list > .is-extra:not(:has(dd[data-state="bad"])) {
+    display: none;
+}
+
+.has-more.show-more .detail-list > .is-extra,
+.has-more .detail-list > .is-extra:has(dd[data-state="bad"]) {
+    animation: extra-in 0.3s ease both;
+}
+
+@keyframes extra-in {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+}
+
+.has-more-mobile .more-btn {
+    display: none;
+}
+
+/* ---------- Thanh tiến trình G-code: vệt sáng laser quét liên tục khi máy đang chạy (class is-active do views/control.js bật) ---------- */
+.progress-fill.is-active {
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill.is-active::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 38%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 90%), transparent);
+    box-shadow: 0 0 8px 2px rgb(255 255 255 / 45%);
+    transform: translateX(-120%);
+    animation: laser-sweep 1.4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes laser-sweep {
+    to {
+        transform: translateX(380%);
+    }
+}
+
+/* ---------- Bảng tọa độ: số lăn (lib/odometer.js) ---------- */
+.odo-d {
+    display: inline-block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .more-chevron {
+        transition: none !important;
+    }
+
+    .has-more .detail-list > .is-extra,
+    .has-more-mobile .detail-list > .is-extra {
+        animation: none !important;
+    }
+
+    .progress-fill.is-active::after {
+        display: none;
+    }
+}
+
+/* Màn cảm ứng: khối KHÔNG nhấc lên / không viền cam / không phát sáng sau khi chạm.
+   Trên điện thoại :hover kẹt lại tới lần chạm kế, nên khối vừa chạm cứ giữ nguyên hiệu ứng "đang rê chuột" (viền nâu, khung sáng).
+   Trả về đúng giá trị lúc nghỉ của .panel (style.css / polish.css). */
+@media (hover: none) {
+    .panel:hover {
+        transform: none;
+        border-color: var(--border);
+        box-shadow: 0 1px 0 rgb(255 255 255 / 3%) inset, 0 8px 24px rgb(0 0 0 / 22%);
+    }
+
+    [data-theme="light"] .panel:hover {
+        box-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 6px 18px rgb(15 23 42 / 6%);
+    }
+}
+
+/* Máy tính: Terminal luôn mở (js/app.js initTerminalAlwaysOpen) nên bỏ mũi tên thu gọn */
+@media (min-width: 761px) {
+    #terminal-panel > summary {
+        cursor: default;
+    }
+
+    #terminal-panel .terminal-toggle {
+        display: none;
+    }
+}
+
+@media (max-width: 760px) {
+
+    /* ---------- Thanh tab xuống đáy màn hình (ngón cái với tới) ---------- */
+    .top-bar .main-nav {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 30;
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);        /* 4 tab (hoặc 3 khi tab Beta ẩn) chia đều */
+        gap: 2px;
+        padding: 4px 6px calc(4px + env(safe-area-inset-bottom, 0px));
+        overflow: visible;
+        border-top: 1px solid var(--border);
+        background: var(--bg-panel);
+    }
+
+    .top-bar .nav-tab {
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+        min-height: 52px;
+        padding: 6px 2px;
+        font-size: 12px;
+        line-height: 1.2;
+    }
+
+    .top-bar .nav-icon {
+        display: block;                            /* các luật cũ ẩn biểu tượng ở màn rất hẹp; thanh đáy cần biểu tượng */
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    .top-bar .nav-tab.is-active {
+        border-bottom-color: transparent;
+        border-top: 2px solid var(--accent-text);
+    }
+
+    /* Chừa chỗ cho thanh tab cố định để không che cuối trang */
+    .app-shell {
+        padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Cài đặt: tiêu đề + mũi tên cùng hàng trên cùng; ô đường dẫn / nhãn (panel-tag) xuống hàng dưới, đủ rộng.
+       Trước đây mũi tên bị đẩy xuống góc dưới phải khi ô đường dẫn dài chiếm hết hàng. */
+    #panel-settings .drawing-section-summary:has(> div:first-child) {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: start;
+    }
+
+    #panel-settings .drawing-section-summary > .drawing-section-chevron {
+        grid-column: 2;
+        grid-row: 1;
+        margin-left: 0;
+    }
+
+    #panel-settings .drawing-section-summary > .panel-tag {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    /* Một cột: mọi khối rộng bằng nhau (khung lưới để align-items: start nên khối ít chữ bị hẹp hơn các khối khác) */
+    .drawing-layout {
+        align-items: stretch;
+    }
+
+    /* ---------- Tab Tạo bản vẽ: nạp ảnh lên đầu, rồi khung xem, rồi các thông số ---------- */
+    .drawing-layout:not(.beta-layout) .drawing-sidebar > details:first-child {
+        order: -2;
+    }
+
+    /* ---------- Tab Beta: chọn tệp -> khung xem trước + nút Tạo nét -> các tùy chọn ---------- */
+    .beta-layout .drawing-sidebar > details:first-child {
+        order: -2;
+    }
+
+    .beta-layout .drawing-workspace > details {
+        order: -1;
+    }
+
+    /* ---------- Thẻ trạng thái bộ điều khiển: ẩn dòng kỹ thuật, bấm nút mới hiện (cùng hiệu ứng .has-more) ---------- */
+    .has-more-mobile .detail-list > .is-extra {
+        order: 1;
+    }
+
+    .has-more-mobile:not(.show-more) .detail-list > .is-extra {
+        display: none;
+    }
+
+    .has-more-mobile.show-more .detail-list > .is-extra {
+        animation: extra-in 0.3s ease both;
+    }
+
+    .has-more-mobile .more-btn {
+        display: flex;
+        min-height: 44px;
+    }
+
+    /* ---------- Vùng bấm đủ lớn ---------- */
+    input:not([type="checkbox"]):not([type="range"]):not([type="file"]),
+    select,
+    textarea {
+        min-height: 44px;
+        font-size: 16px;                           /* dưới 16 px thì iPhone tự phóng to trang khi chạm vào ô nhập */
+    }
+
+    .primary-button,
+    .secondary-button,
+    .danger-button,
+    .toolbar-button {
+        min-height: 44px;
+    }
+
+    input[type="checkbox"] {
+        flex: 0 0 auto;
+        width: 22px;
+        height: 22px;
+    }
+
+    label:has(> input[type="checkbox"]),
+    .checkbox-inline {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 44px;
+    }
+}

@@ -124,10 +124,9 @@
     gap: 8px 14px;
     min-height: 50px;
     padding: 12px var(--panel-padding);
-    cursor: pointer;
+    cursor: default;                 /* 26/11/2026: chỉ bấm mũi tên mới thu gọn / mở (app.js initChevronOnlyToggle), không tô xám cả hàng */
     list-style: none;
     user-select: none;
-    transition: background-color 0.2s ease;
 }
 
 .drawing-section-summary::-webkit-details-marker {
@@ -138,12 +137,39 @@
     content: "";
 }
 
-.drawing-section-summary:hover {
-    background: var(--bg-elevated);
-}
-
 .drawing-section-summary:focus-visible {
     outline-offset: -3px;
+}
+
+/* Mũi tên là chỗ bấm duy nhất: vùng bấm rộng hơn chữ (ngón tay) và chỉ nó đổi nền khi rê chuột / chạm */
+.drawing-section-summary .drawing-section-chevron,
+.drawing-section-summary .terminal-toggle {
+    cursor: pointer;
+    padding: 4px 10px;
+    margin-right: -10px;
+    border-radius: var(--radius-button);
+    transition: transform 0.25s ease-out, background-color 0.2s ease;
+}
+
+/* Rê chuột mới đổi nền (chuột thật: hover + pointer fine). Điện thoại: không đổi nền, không ô xám "dính" sau khi chạm
+   (hover của màn cảm ứng kẹt lại tới lần chạm kế; khung sáng mặc định của trình duyệt khi chạm cũng tắt). */
+@media (hover: hover) and (pointer: fine) {
+    .drawing-section-summary .drawing-section-chevron:hover,
+    .drawing-section-summary .terminal-toggle:hover {
+        background: var(--bg-elevated);
+    }
+}
+
+.drawing-section-summary,
+.drawing-section-summary .drawing-section-chevron,
+.terminal-summary,
+.terminal-toggle {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.drawing-section-summary:focus:not(:focus-visible),
+.terminal-summary:focus:not(:focus-visible) {
+    outline: none;                                     /* chạm bằng ngón tay không để lại viền / ô chọn */
 }
 
 .drawing-section-title {
@@ -209,17 +235,6 @@
     height: 100%;
     touch-action: none;               /* keo/co gian bang con tro, khong cuon trang */
     cursor: grab;
-}
-
-.drawing-canvas-empty {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: 16px;
-    color: var(--text-muted);
-    text-align: center;
-    pointer-events: none;
 }
 
 .drawing-original {

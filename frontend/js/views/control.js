@@ -2,7 +2,7 @@
 //  - initStatusPanel : bảng vị trí / trạng thái (chỉ đọc)
 //  - initMotionControls: jog, thanh bút 3 nấc, Zero, Home, XY 0 (gửi lệnh)
 //  - initGcodePanel  : tệp G-code, cảnh báo gốc vị trí, chạy, tiến trình, hủy tác vụ
-//  - initFeedOverride: ghi đè tốc độ (% của F trong tệp) khi đang vẽ
+//  - initFeedOverride: chỉ báo tốc độ đang áp (% của F trong tệp), chỉ đọc
 // Terminal và các nút Tạm dừng/Tiếp tục/Reset/Mở khóa thuộc về views/terminal.js.
 // Mọi lệnh đi qua api.js; giao diện không tự suy đoán trạng thái máy.
 
@@ -13,6 +13,7 @@ import { MACHINE, PREFS } from "../core/config.js";
 import { subscribe, isConnected, isStale, firmwareLabel } from "../core/state.js";
 import { parseGcode, outOfRange, formatDuration, jobClientInfo } from "../lib/gcode.js";
 import { notifyJob } from "../lib/notify.js";
+import { setOdometer } from "../lib/odometer.js";
 import { store, setFile, requestPreview, subscribeStore } from "../stores/jobstore.js";
 import { refreshDrafts } from "../stores/draftstore.js";
 import { initPreview } from "./preview.js";
@@ -78,24 +79,13 @@ export function initControl() {
     initMotionLock();
 }
 
-/* ==================== GHI ĐÈ TỐC ĐỘ (feed override) ==================== */
-// Lệnh tức thời của FluidNC: tính theo % của F trong tệp (F3000 ở 80% = 2400 mm/phút).
-// Không làm máy bắt đầu chạy nên backend luôn cho gửi, kể cả khi máy thật đang khóa.
+/* ==================== CHỈ BÁO TỐC ĐỘ (feed override, chỉ đọc) ==================== */
+// Các nút chỉnh tốc độ đã bỏ (26/11/2026, chủ dự án: chỉnh tốc độ ở tab Tạo bản vẽ). Vẫn hiện hệ số đang áp (% của F
+// trong tệp) và tô màu khi khác 100%, vì tốc độ còn có thể bị đổi từ nơi khác (vd WebUI của FluidNC).
 function initFeedOverride() {
-    const buttons = document.querySelectorAll("[data-feed]");
     const value = $("feed-override-value");
-    buttons.forEach((button) => {
-        button.addEventListener("click", async () => {
-            try {
-                await api.realtime(button.dataset.feed);
-            } catch (error) {
-                reportError(error);
-            }
-        });
-    });
     subscribe((snapshot) => {
         const canSend = isConnected() && !isStale();
-        buttons.forEach((button) => { button.disabled = !canSend; });
         const feed = snapshot.status?.machine?.overrides?.[0];
         if (value) {
             value.textContent = canSend && Number.isFinite(feed) ? `${feed}%` : "—";
@@ -111,7 +101,7 @@ const STATUS_FIELDS = [
     "machine-x", "machine-y", "machine-z",
     "machine-feed", "planner-free", "rx-free",
     "last-update-time", "homed-indicator",
-    "last-alarm", "last-error", "pen-state", "firmware-version"
+    "last-alarm", "last-error", "firmware-version"
 ];
 
 const PEN_TOL_MM = 0.05;    // cùng sai số backend dùng để xác nhận nâng bút
@@ -128,13 +118,6 @@ function penLevel(wpos) {
     return Object.keys(PEN_LEVELS)
         .find((level) => Math.abs(z - MACHINE[PEN_LEVELS[level]]) <= PEN_TOL_MM)
         ?? (Math.abs(z - MACHINE.gcodeUpZ) <= PEN_TOL_MM ? "up" : null);   // nhấc của G-code cũng là "Lên"
-}
-
-function penText(wpos) {
-    const z = workZ(wpos);
-    if (!Number.isFinite(z)) return "—";
-    const level = penLevel(wpos);
-    return level ? t(`control.pen.${level}`) : `Z ${trim(z)}`;
 }
 
 // Gửi $I một lần mỗi phiên kết nối khi chưa biết firmware: board thật không reset khi
@@ -188,10 +171,10 @@ function initStatusPanel() {
         const wpos = Array.isArray(machine.wpos) ? machine.wpos : null;
 
         ["x", "y", "z"].forEach((axis, index) => {
+            // Số lăn (lib/odometer.js) chỉ ở cột Workspace, chỉ phần trước dấu chấm; cột Machine ghi chữ thường
             setText(`machine-${axis}`, mpos ? formatNumber(mpos[index]) : "—");
-            setText(`workspace-${axis}`, wpos ? formatNumber(wpos[index]) : "—");
+            setOdometer($(`workspace-${axis}`), wpos ? formatNumber(wpos[index]) : "—");
         });
-        setText("pen-state", penText(wpos));
         // Pn:XY = công tắc đang bị đè (FluidNC không gửi Pn khi không chân nào tác động)
         const pins = String(machine.pins ?? "");
         for (const axis of ["X", "Y"]) $(`pin-${axis.toLowerCase()}`)?.classList.toggle("is-on", pins.includes(axis));
@@ -710,8 +693,7 @@ function initGcodePanel() {
         }
 
         if (cancelButton) {
-            cancelButton.hidden = !active;
-            cancelButton.disabled = !active;
+            cancelButton.disabled = !active;       // luôn hiện cạnh nút Đường vẽ / Biểu đồ; chỉ bấm được khi có tác vụ đang chạy
         }
 
         renderProgress(job);

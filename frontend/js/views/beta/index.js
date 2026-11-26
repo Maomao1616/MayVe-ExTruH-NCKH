@@ -33,6 +33,7 @@ export function initBeta() {
     $("beta-image-kind").addEventListener("change", syncVisibility);
     for (const [id] of FIELDS) $(id)?.addEventListener("change", markStale);
     initZoom();
+    initViewToggle();
     syncVisibility();
     render();
 }
@@ -42,8 +43,39 @@ function sheets() {
     return [...document.querySelectorAll(".beta-sheet")];
 }
 
+// Khung đang nhìn thấy (trên điện thoại chỉ một khung hiện; khung ẩn có kích thước 0 nên không dùng để tính zoom).
+function visibleSheet() {
+    return sheets().find((s) => s.offsetParent !== null) ?? sheets()[0];
+}
+
+// Điện thoại: hai khung chuyển qua lại bằng nút (CSS chỉ ẩn một khung dưới 760 px); máy tính vẫn hiện cả hai.
+function showView(which) {
+    const box = document.querySelector(".beta-compare");
+    if (!box || box.dataset.show === which) return;
+    const from = visibleSheet();
+    const fx = from && from.scrollWidth ? from.scrollLeft / from.scrollWidth : 0;
+    const fy = from && from.scrollHeight ? from.scrollTop / from.scrollHeight : 0;
+    box.dataset.show = which;
+    for (const b of document.querySelectorAll("[data-beta-view]")) {
+        const on = b.dataset.betaView === which;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
+    }
+    const to = visibleSheet();
+    if (to) {                                              // giữ nguyên chỗ đang xem khi đổi khung
+        to.scrollLeft = fx * to.scrollWidth;
+        to.scrollTop = fy * to.scrollHeight;
+    }
+}
+
+function initViewToggle() {
+    for (const b of document.querySelectorAll("[data-beta-view]")) {
+        b.addEventListener("click", () => showView(b.dataset.betaView));
+    }
+}
+
 function setZoom(next, anchor) {
-    const [a] = sheets();
+    const a = visibleSheet();
     if (!a || next === B.zoom) return;
     // giữ nguyên điểm đang nhìn (tâm khung, hoặc vị trí con trỏ) khi đổi mức zoom
     const rect = a.getBoundingClientRect();
@@ -252,6 +284,7 @@ async function done(view, seq) {
     showWarnings(view.warnings ?? []);
     const total = view.source?.timings?.total;
     setProgress(1, "beta.progress.done", total ? ` · ${total.toFixed(1)} s` : "");
+    showView("result");                                    // điện thoại: tạo xong thì chuyển sang xem nét
     render();
 }
 

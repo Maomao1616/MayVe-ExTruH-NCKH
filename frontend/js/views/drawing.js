@@ -512,8 +512,6 @@ function refreshScene() {
         layers: S.layers, penMm: params.penWidthMm(),
         lock: Boolean($("drawing-lock-ratio")?.checked)
     });
-    const empty = $("drawing-canvas-empty");
-    if (empty) empty.hidden = Boolean(S.src);
     renderWarnings();
     setButtons();
     renderCompareInfo();

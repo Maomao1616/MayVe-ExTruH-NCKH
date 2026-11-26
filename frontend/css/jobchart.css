@@ -18,6 +18,7 @@
     position: relative;
 }
 .view-switch[hidden] { display: none; }
+.cancel-job-inline { flex: 0 0 auto; }                     /* Hủy tác vụ: luôn hiện ngay cạnh Đường vẽ / Biểu đồ (26/11/2026) */
 .preview-actions.path-only {
     transition: opacity 0.2s ease;     /* cùng nhịp với các nút khác (style.css) */
 }
@@ -165,9 +166,13 @@
 .job-chart-summary td.is-better { color: var(--success); }
 .job-chart-summary td.is-worse { color: var(--danger); }
 .job-chart-summary td.is-same { color: var(--text-muted); }
+.job-chart-summary td.is-perfect { color: #22c55e; font-weight: 700; }                      /* % đói lệnh = 0,0 */
+[data-theme="light"] .job-chart-summary td.is-perfect { color: #15803d; }                  /* nền sáng: xanh đậm hơn cho đủ tương phản */
+.job-chart-summary tr[data-key="feed_drawing_avg"] td:not(:first-child) { font-weight: 700; }
 
 @media (max-width: 700px) {
     .job-chart-plots canvas { height: 120px; }
     .view-switch { width: 100%; margin-left: 0; }
     .view-switch button { flex: 1; }
+    .cancel-job-inline { width: 100%; }
 }

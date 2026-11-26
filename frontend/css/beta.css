@@ -90,9 +90,50 @@
     pointer-events: none;
 }
 
+/* Nút chuyển "Trang trong PDF" / "Nét sẽ vẽ": chỉ hiện trên điện thoại (26/11/2026) */
+.beta-view-toggle {
+    display: none;
+}
+
+.beta-view-toggle button.is-active {
+    border-color: color-mix(in srgb, var(--accent-text) 55%, transparent);
+    background: var(--accent);
+    color: var(--text-main);
+    font-weight: 700;
+}
+
 @media (max-width: 760px) {
     .beta-compare {
         grid-template-columns: 1fr;
+    }
+
+    .beta-view-toggle {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .beta-view-toggle button {
+        min-height: 44px;
+    }
+
+    /* Chỉ một khung một lúc; tên khung đã có trên nút nên bỏ chú thích */
+    .beta-compare[data-show="original"] figure:nth-of-type(2),
+    .beta-compare[data-show="result"] figure:nth-of-type(1),
+    .beta-compare figcaption {
+        display: none;
+    }
+
+    .beta-sheet {
+        max-height: 62vh;
+    }
+}
+
+/* Màn cảm ứng (không có chuột) hoặc màn hẹp: bỏ câu hướng dẫn Ctrl + cuộn chuột */
+@media (hover: none), (max-width: 760px) {
+    .beta-zoom-bar .muted-text {
+        display: none;
     }
 }
 

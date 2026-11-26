@@ -1,11 +1,11 @@
 // views/header.js — chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên
-// thanh tab, thanh cảnh báo và nút ↻.
+// thanh tab và thanh cảnh báo. (Nút ↻ làm mới đã bỏ 26/11/2026: máy tự thăm dò liên tục.)
 // Chủ ghi DUY NHẤT của: backend-status-*, machine-state, machine-status-dot, job-status-dot,
-// toolbar-machine-state, toolbar-machine-hint, toolbar-status-dot, system-alert*,
-// refresh-status-btn. (Chữ của job-state vẫn do control.js ghi.)
+// toolbar-machine-state, toolbar-machine-hint, toolbar-status-dot, system-alert*.
+// (Chữ của job-state vẫn do control.js ghi.)
 
 import { t } from "../core/i18n.js";
-import { subscribe, isConnected, isStale, refreshNow } from "../core/state.js";
+import { subscribe, isConnected, isStale } from "../core/state.js";
 
 const $ = (id) => document.getElementById(id);
 const DOT_CLASSES = ["is-online", "is-offline", "is-pending"];
@@ -128,21 +128,6 @@ export function initHeader() {
         dismissedAlert = $("system-alert-text")?.textContent || null;
         const box = $("system-alert");
         if (box) box.hidden = true;
-    });
-
-    const refresh = $("refresh-status-btn");
-    refresh?.addEventListener("click", async () => {
-        refresh.classList.add("is-spinning");
-        refresh.disabled = true;
-        try {
-            await refreshNow();
-        } finally {
-            // giữ vòng quay một nhịp ngắn để người dùng thấy đã bấm
-            setTimeout(() => {
-                refresh.classList.remove("is-spinning");
-                refresh.disabled = false;
-            }, 400);
-        }
     });
 
     subscribe(render);

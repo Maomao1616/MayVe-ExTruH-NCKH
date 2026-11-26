@@ -15,6 +15,7 @@
   <link href="./css/customer.css" rel="stylesheet"/>
   <link href="./css/beta.css" rel="stylesheet"/>        <!-- BETA -->
   <link href="./css/icons.css" rel="stylesheet"/>       <!-- icon nút (24/11/2026); xóa dòng này là bỏ hết icon -->
+  <link href="./css/mobile.css" rel="stylesheet"/>      <!-- điện thoại: thanh tab đáy, vùng bấm lớn, khối Cài đặt thu gọn (26/11/2026) -->
   <script src="./js/app.js" type="module"></script>
 </head>
 <body>
@@ -59,10 +60,6 @@
       <div class="auth-box" id="auth-box"><span class="role-badge" id="role-badge"></span><form class="auth-form" id="login-form" hidden><input autocomplete="current-password" data-i18n="[placeholder]auth.pinPlaceholder; [aria-label]auth.pinPlaceholder" id="login-pin" inputmode="numeric" maxlength="64" name="pin" placeholder="Mã PIN quản lý" type="password"/><button class="toolbar-button" data-i18n="auth.submit" type="submit">Vào</button></form><span class="auth-error" id="login-error" role="alert" hidden></span><button class="toolbar-button" data-i18n="auth.login" id="login-btn" type="button">Đăng nhập quản lý</button><button class="toolbar-button" data-i18n="auth.logout" hidden id="logout-btn" type="button">Đăng xuất</button></div>
 
       <button aria-label="Mã QR mở từ máy khác" class="icon-button" id="share-btn" title="Mã QR mở từ máy khác" type="button" data-i18n="[aria-label]share.title; [title]share.title">QR</button>
-
-      <button aria-label="Làm mới trạng thái" class="icon-button" id="refresh-status-btn" title="Làm mới trạng thái" type="button" data-i18n="[aria-label]aria.refreshStatus; [title]action.refreshStatus.title">
-        ↻
-      </button>
     </header>
 
     <dialog class="share-dialog" id="share-dialog" aria-labelledby="share-heading">
@@ -195,7 +192,7 @@
             </p>
           </div>
 
-          <article class="panel controller-panel">
+          <article class="panel controller-panel has-more-mobile">
               <div class="panel-heading panel-heading-compact">
                 <h2 data-i18n="control.controller.title">Trạng thái bộ điều khiển</h2>
                 <button class="secondary-button" data-command="$X" data-i18n="[title]action.unlock.title; control.controller.unlock" disabled="" id="unlock-btn" title="Mở khóa sau Alarm (không làm máy chuyển động)" type="button">Mở khóa ($X)</button>
@@ -217,23 +214,24 @@
                   <dt data-i18n="control.controller.lastError">Lỗi gần nhất</dt>
                   <dd data-i18n="common.status.none" id="last-error">Không có</dd>
                 </div>
-                <div>
+                <div class="is-extra">
                   <dt data-i18n="control.controller.firmware">Firmware</dt>
                   <dd id="firmware-version">—</dd>
                 </div>
-                <div>
+                <div class="is-extra">
                   <dt data-i18n="control.controller.planner">Planner còn trống</dt>
                   <dd id="planner-free">—</dd>
                 </div>
-                <div>
+                <div class="is-extra">
                   <dt data-i18n="control.controller.rx">Bộ đệm RX</dt>
                   <dd id="rx-free">—</dd>
                 </div>
-                <div>
+                <div class="is-extra">
                   <dt data-i18n="control.controller.lastUpdate">Cập nhật cuối</dt>
                   <dd id="last-update-time">—</dd>
                 </div>
               </dl>
+              <button aria-expanded="false" class="text-button more-btn" data-more-toggle="" type="button"><span class="more-label more-label-closed" data-i18n="common.action.expand">Mở rộng</span><span class="more-label more-label-open" data-i18n="common.action.collapse">Thu gọn</span><span aria-hidden="true" class="more-chevron"></span></button>
             </article>
 
         </div>
@@ -295,7 +293,6 @@
                   <span class="axis-note" data-i18n="control.position.pen">Bút</span>
                   <output class="coord-workspace" id="workspace-z">—</output>
                   <output class="coord-machine" id="machine-z">—</output>
-                  <span class="axis-note" id="pen-state">—</span>
                 </div>
               </div>
               <div class="coordinate-actions">
@@ -429,14 +426,6 @@
                   <span data-i18n="control.feed.label" id="feed-override-label">Tốc độ vẽ</span>
                   <strong id="feed-override-value">100%</strong>
                 </div>
-                <div class="feed-override-buttons">
-                  <button data-feed="feed_minus10" disabled="" type="button">−10</button>
-                  <button data-feed="feed_minus1" disabled="" type="button">−1</button>
-                  <button data-feed="feed_reset" data-i18n="[title]control.feed.resetTitle" disabled="" title="Về 100%" type="button">100%</button>
-                  <button data-feed="feed_plus1" disabled="" type="button">+1</button>
-                  <button data-feed="feed_plus10" disabled="" type="button">+10</button>
-                </div>
-                <p class="help-text" data-i18n="control.feed.help">Hệ số nhân áp lên tốc độ F trong tệp (80% của F3000 tương ứng 2400 mm/phút); có thể điều chỉnh cả khi đang vẽ. Firmware giới hạn trong khoảng 10–200%; lệnh Reset đưa về 100%.</p>
               </div>
             </article>
 
@@ -456,6 +445,7 @@
                   <button aria-selected="true" class="secondary-button is-active" data-i18n="chart.view.path" data-view="path" role="tab" type="button">Đường vẽ</button>
                   <button aria-selected="false" class="secondary-button" data-i18n="chart.view.chart" data-view="chart" role="tab" type="button">Biểu đồ</button>
                 </div>
+                <button class="danger-button cancel-job-inline" data-i18n="control.gcode.cancelJob" disabled id="cancel-job-btn" type="button">Hủy tác vụ</button>
                 <div class="preview-actions path-only">
                   <button aria-label="Thu nhỏ" class="secondary-button" id="zoom-out-btn" type="button" data-i18n="[aria-label]aria.zoomOut">−</button>
                   <button aria-label="Phóng to" class="secondary-button" id="zoom-in-btn" type="button" data-i18n="[aria-label]aria.zoomIn">+</button>
@@ -490,7 +480,7 @@
                   <span data-i18n="control.preview.position">Vị trí máy</span>
                 </span>
                 <label class="checkbox-inline preview-toggle" for="show-grid">
-                  <input checked="" id="show-grid" type="checkbox"/>
+                  <input id="show-grid" type="checkbox"/>
                   <span data-i18n="control.preview.grid">Lưới</span>
                 </label>
                 <label class="checkbox-inline preview-toggle" for="show-travel">
@@ -511,8 +501,6 @@
                   <option value="100">100×</option><option value="500">500×</option><option value="2000">2000×</option>
                 </select>
                 <span id="preview-time">0:00 / 0:00</span>
-                <button class="danger-button" data-i18n="control.gcode.cancelJob" hidden id="cancel-job-btn" type="button">Hủy tác vụ</button>
-
               </div>
 
               <div class="job-chart" id="job-chart-view" hidden>
@@ -570,7 +558,7 @@
               </div>
             </article>
 
-            <details class="panel terminal-panel" id="terminal-panel" open="">
+            <details class="panel terminal-panel" data-mobile-closed="" id="terminal-panel" open="">
               <summary class="terminal-summary">
                 <span>
                   <strong data-i18n="control.terminal.title">Terminal / Console</strong>
@@ -659,17 +647,17 @@
                 <span class="drawing-section-title" data-i18n="drawing.info.title">Thông tin bản vẽ</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
               </summary>
-              <div class="drawing-section-body">
+              <div class="drawing-section-body has-more">
                 <dl class="detail-list">
                   <div>
                     <dt data-i18n="drawing.info.source">Tệp nguồn</dt>
                     <dd id="drawing-source-info">—</dd>
                   </div>
-                  <div>
+                  <div class="is-extra">
                     <dt data-i18n="drawing.info.dimensions">Kích thước đường vẽ</dt>
                     <dd id="drawing-size-info">—</dd>
                   </div>
-                  <div>
+                  <div class="is-extra">
                     <dt data-i18n="drawing.info.pathCount">Số đường nét</dt>
                     <dd id="drawing-path-count">—</dd>
                   </div>
@@ -677,11 +665,11 @@
                     <dt data-i18n="drawing.info.gcode">G-code</dt>
                     <dd data-i18n="drawing.info.notGenerated" id="drawing-gcode-status">Chưa tạo</dd>
                   </div>
-                  <div>
+                  <div class="is-extra">
                     <dt data-i18n="drawing.info.bounds">Vùng bao (X × Y)</dt>
                     <dd id="drawing-bounds-info">—</dd>
                   </div>
-                  <div>
+                  <div class="is-extra">
                     <dt data-i18n="drawing.info.length">Độ dài nét vẽ · di chuyển</dt>
                     <dd id="drawing-length-info">—</dd>
                   </div>
@@ -693,11 +681,12 @@
                     <dt data-i18n="drawing.info.eta">Thời gian ước tính</dt>
                     <dd id="drawing-eta-info">—</dd>
                   </div>
-                  <div>
+                  <div class="is-extra">
                     <dt data-i18n="drawing.info.inBounds">Trong vùng làm việc?</dt>
                     <dd id="drawing-in-bounds">—</dd>
                   </div>
                 </dl>
+                <button aria-expanded="false" class="text-button more-btn" data-more-toggle="" type="button"><span class="more-label more-label-closed" data-i18n="common.action.expand">Mở rộng</span><span class="more-label more-label-open" data-i18n="common.action.collapse">Thu gọn</span><span aria-hidden="true" class="more-chevron"></span></button>
               </div>
             </details>
 
@@ -846,7 +835,7 @@
               </div>
             </details>
 
-                        <details class="panel drawing-section" open="">
+                        <details class="panel drawing-section" data-mobile-closed="" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.preprocess.title">Tiền xử lý ảnh</span>
                 <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
@@ -1061,7 +1050,7 @@
               </div>
             </details>
 
-                        <details class="panel drawing-section" id="drawing-gcode-params-panel" open="">
+                        <details class="panel drawing-section" id="drawing-gcode-params-panel" data-mobile-closed="" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="drawing.params.title">Thông số vẽ</span>
                 <span class="drawing-section-description" data-i18n="drawing.params.desc">Dùng khi tạo G-code.</span>
@@ -1148,9 +1137,7 @@
                   <span class="muted-text" id="drawing-canvas-zoom">—</span>
                 </div>
                 <div class="drawing-canvas-stage" id="drawing-canvas-stage">
-                  <canvas aria-label="Khung vẽ" id="drawing-canvas" height="600" width="520"></canvas>
-                  <span class="drawing-canvas-empty" data-i18n="drawing.canvas.empty" id="drawing-canvas-empty">Chưa có bản vẽ. Nạp ảnh, cắt / chỉnh sáng tối rồi bấm "Tạo nét".</span>
-                </div>
+                  <canvas aria-label="Khung vẽ" id="drawing-canvas" height="600" width="520"></canvas>                </div>
                 <label class="checkbox-inline drawing-tone-toggle" data-i18n="[title]drawing.hint.toneToggle" for="preview-tone-toggle">
                   <input checked="" id="preview-tone-toggle" type="checkbox"/>
                   <span data-i18n="drawing.preview.toneToggle">Xem ảnh sau chỉnh sáng (xem trước)</span>
@@ -1453,7 +1440,11 @@
                   <button class="secondary-button" data-i18n="beta.zoom.fit" id="beta-zoom-fit" type="button">Vừa khung</button>
                   <span class="muted-text" data-i18n="beta.zoom.hint">Ctrl + cuộn chuột: phóng to / thu nhỏ; kéo chuột: di chuyển; hai khung cuộn đồng bộ.</span>
                 </div>
-                <div class="beta-compare">
+                <div aria-label="Khung xem trước" class="beta-view-toggle" data-i18n="[aria-label]beta.preview.title" role="group">
+                  <button aria-pressed="true" class="secondary-button is-active" data-beta-view="original" data-i18n="beta.preview.original" type="button">Trang trong PDF</button>
+                  <button aria-pressed="false" class="secondary-button" data-beta-view="result" data-i18n="beta.preview.result" type="button">Nét sẽ vẽ</button>
+                </div>
+                <div class="beta-compare" data-show="original">
                   <figure>
                     <figcaption data-i18n="beta.preview.original">Trang trong PDF</figcaption>
                     <div class="beta-sheet"><img alt="" id="beta-original" hidden=""/></div>
@@ -1495,13 +1486,15 @@
 
         <div class="settings-layout">
           <div class="settings-col">
-            <article class="panel">
-              <div class="panel-heading">
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
                 <div>
                   <h2 data-i18n="settings.general.title">Giao diện chung</h2>
                   <p data-i18n="settings.general.desc">Tùy chỉnh hiển thị ứng dụng.</p>
                 </div>
-              </div>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
               <div class="setting-row">
                 <div>
                   <strong data-i18n="settings.general.language">Ngôn ngữ</strong>
@@ -1529,15 +1522,18 @@
                   </button>
                 </span></span>
               </div>
-            </article>
+              </div>
+            </details>
 
-            <article class="panel">
-              <div class="panel-heading">
+            <details class="panel drawing-section" open="">
+              <summary class="drawing-section-summary">
                 <div>
                   <h2 data-i18n="settings.connection.title">Kết nối máy</h2>
                   <p data-i18n="settings.connection.desc">Thiết lập chế độ kết nối backend.</p>
                 </div>
-              </div>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
               <form id="connection-form">
                 <label for="connection-mode">
                   <span data-i18n="settings.connection.mode">Chế độ kết nối</span>
@@ -1577,16 +1573,19 @@
                   Cần kiểm tra chế độ và cổng kết nối trước khi điều khiển máy thật.
                 </p>
               </form>
-            </article>
+              </div>
+            </details>
 
-            <article class="panel" id="draft-settings-panel">
-              <div class="panel-heading">
+            <details class="panel drawing-section" id="draft-settings-panel" data-mobile-closed="" open="">
+              <summary class="drawing-section-summary">
                 <div>
                   <h2 data-i18n="settings.drafts.title">Bản thảo</h2>
                   <p data-i18n="settings.drafts.desc">Nơi lưu G-code, ảnh minh họa và thông số của các bản vẽ đã tạo.</p>
                 </div>
                 <span class="panel-tag" id="draft-settings-folder" title="Thư mục đang dùng">—</span>
-              </div>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
               <div class="form-grid form-grid-spaced">
                 <label for="draft-max-count">
                       <span data-i18n="settings.drafts.maxCount">Số bản tối đa</span>
@@ -1608,17 +1607,20 @@
               <p class="help-text" data-i18n="settings.drafts.help">
                 Thư mục bản thảo cố định (xem bảng Lưu trữ dữ liệu bên dưới). Bản đã ghim không tính vào hạn mức. Khi vượt hạn mức, hệ thống xóa bản cũ nhất chưa ghim.
               </p>
-            </article>
+              </div>
+            </details>
           </div>
 
           <div class="settings-col">
-            <article class="panel">
-              <div class="panel-heading">
+            <details class="panel drawing-section" data-mobile-closed="" open="">
+              <summary class="drawing-section-summary">
                 <div>
                   <h2 data-i18n="settings.behavior.title">Hoạt động</h2>
                   <p data-i18n="settings.behavior.desc">Cách giao diện cập nhật và xác nhận thao tác.</p>
                 </div>
-              </div>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
               <div class="setting-row">
                 <div>
                   <strong data-i18n="settings.behavior.pollFreq">Tần suất cập nhật terminal</strong>
@@ -1660,16 +1662,19 @@
                   <option data-i18n="common.status.off" value="off">Tắt</option>
                 </select>
               </div>
-            </article>
+              </div>
+            </details>
 
-            <article class="panel" id="pin-panel">
-              <div class="panel-heading">
+            <details class="panel drawing-section" id="pin-panel" data-mobile-closed="" open="">
+              <summary class="drawing-section-summary">
                 <div>
                   <h2 data-i18n="settings.pin.title">PIN quản lý</h2>
                   <p data-i18n="settings.pin.desc">PIN để đăng nhập quản lý (khách không có PIN chỉ xem). Đổi xong áp dụng ngay, các trình duyệt khác bị đăng xuất.</p>
                 </div>
                 <span class="panel-tag" id="pin-state">—</span>
-              </div>
+                <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+              </summary>
+              <div class="drawing-section-body">
               <div class="form-grid form-grid-spaced">
                 <label for="pin-old" id="pin-old-label">
                   <span data-i18n="settings.pin.old">PIN hiện tại</span>
@@ -1694,9 +1699,10 @@
               <p class="help-text" data-i18n="settings.pin.help">
                 Độ dài 4–64 ký tự gồm chữ, số, ký hiệu; không chứa khoảng trắng và dấu tiếng Việt. Khuyến nghị từ 6 ký tự trở lên và khó đoán. PIN được lưu tại data/pin.txt trên máy chủ (không đưa lên Git).
               </p>
-            </article>
+              </div>
+            </details>
 
-            <details class="panel drawing-section storage-panel" id="storage-panel" open="">
+            <details class="panel drawing-section storage-panel" data-mobile-closed="" id="storage-panel" open="">
               <summary class="drawing-section-summary">
                 <span class="drawing-section-title" data-i18n="settings.storage.title">Lưu trữ dữ liệu</span>
                 <span class="drawing-section-description" data-i18n="settings.storage.desc">Xem máy chủ đang lưu những gì: bản thảo, sao lưu cấu hình, macro. Chỉ xem và tải về.</span>
@@ -1724,8 +1730,8 @@
             </details>
           </div>
 
-          <article class="panel machine-config-panel" id="machine-config-panel">
-            <div class="panel-heading">
+          <details class="panel drawing-section machine-config-panel" id="machine-config-panel" data-mobile-closed="" open="">
+            <summary class="drawing-section-summary">
               <div>
                 <h2 data-i18n="settings.machine.title">Cấu hình máy</h2>
                 <p data-i18n="mc.desc">Thông số trên mạch (tệp YAML) và thông số phần mềm, chỉnh tại một chỗ.</p>
@@ -1734,7 +1740,9 @@
                 <span class="panel-tag" id="mc-file" title="Tệp cấu hình đang dùng trên mạch">—</span>
                 <button class="secondary-button" data-i18n="mc.read" id="mc-read-btn" type="button">↻ Đọc từ máy</button>
               </div>
-            </div>
+              <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+            </summary>
+            <div class="drawing-section-body">
 
             <dl class="detail-list detail-list-compact mc-summary">
               <div>
@@ -1774,15 +1782,18 @@
             <p class="help-text" data-i18n="mc.help">
               Áp dụng: gửi ngay vào máy; giá trị mất khi tắt nguồn (riêng mục App được lưu luôn). Lưu vào mạch: ghi đè tệp YAML để giá trị được giữ ở lần bật sau; bản gốc được sao lưu về máy tính trước khi ghi.
             </p>
-          </article>
+            </div>
+          </details>
 
-          <article class="panel testsheet-panel" id="testsheet-panel">
-            <div class="panel-heading">
+          <details class="panel drawing-section testsheet-panel" id="testsheet-panel" data-mobile-closed="" open="">
+            <summary class="drawing-section-summary">
               <div>
                 <h2 data-i18n="sheet.title">Tờ thử / hiệu chỉnh</h2>
                 <p data-i18n="sheet.desc">Mỗi nút tạo một bản thảo trong Hàng đợi (tab Điều khiển): nạp, nhìn khung vẽ, chạy như mọi bản vẽ. Dùng khi thử máy thật, mỗi tờ một tờ giấy.</p>
               </div>
-            </div>
+              <span aria-hidden="true" class="drawing-section-chevron" data-i18n="common.icon.chevron">⌄</span>
+            </summary>
+            <div class="drawing-section-body">
 
             <section class="sheet-block">
               <h3 data-i18n="sheet.lift.title">Tờ nhấc bút</h3>
@@ -1863,7 +1874,8 @@
             </section>
 
             <p class="mc-status" id="sheet-status" role="status"></p>
-          </article>
+            </div>
+          </details>
 
         </div>
       </section>
