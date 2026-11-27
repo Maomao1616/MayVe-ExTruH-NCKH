@@ -26,7 +26,8 @@ from ..services.machine import ServiceError, machine
 router = APIRouter(prefix="/api")
 
 MAX_STREAMS = 40
-POLL_S = 0.1                   # nhìn trạng thái 10 lần/giây (máy báo ~10 lần/giây)
+POLL_S = 0.1                   # nhìn trạng thái ít nhất 10 lần/giây (dự phòng; bình thường máy đánh thức ngay khi có dòng mới)
+MIN_GAP_S = 0.02               # gom dòng đến dồn (vd $CD ~200 dòng): mỗi luồng gửi tối đa ~50 lần/giây
 HEARTBEAT_S = 2.0              # không có gì mới thì vẫn gửi lại trạng thái: giao diện biết luồng còn sống (Cloudflare cắt khi im ~100 s)
 AUTH_RECHECK_S = 2.0           # phiên quản lý hết hạn giữa chừng thì ngừng gửi nhật ký
 IDLE_TOUCH_S = 5.0             # báo "trang còn mở" cho idle.py (bản đóng gói tự tắt khi không còn trang)
@@ -48,9 +49,16 @@ async def event_stream(token: str | None, since: int, disconnected: Callable[[],
                        poll_s: float = POLL_S, heartbeat_s: float = HEARTBEAT_S) -> AsyncIterator[str]:
     global _streams
     _streams += 1
+    loop = asyncio.get_running_loop()
+    wake = asyncio.Event()
+    svc = machine                                   # giữ đúng đối tượng đã đăng ký (test thay `machine` bằng monkeypatch)
+
+    def on_change() -> None:                        # chạy ở luồng đọc máy: chỉ nhờ vòng lặp sự kiện bật cờ
+        loop.call_soon_threadsafe(wake.set)
+
+    svc.add_change_listener(on_change)
     try:
         yield f"retry: {RETRY_MS}\n\n"
-        loop = asyncio.get_running_loop()
         admin = auth.is_admin(token)
         seq = max(0, since)
         last_payload: str | None = None
@@ -75,8 +83,17 @@ async def event_stream(token: str | None, since: int, disconnected: Callable[[],
             if result is not None and (result["entries"] or result["last_seq"] != seq):
                 seq = result["last_seq"]
                 yield _frame("log", result)
-            await asyncio.sleep(poll_s)
+            # Chờ máy báo có dòng mới (đẩy ngay), hoặc hết poll_s (dự phòng, nhịp tim, kiểm ngắt / hết phiên).
+            try:
+                await asyncio.wait_for(wake.wait(), poll_s)
+            except asyncio.TimeoutError:
+                pass
+            wake.clear()                            # xóa TRƯỚC khi đọc lại: dòng đến sau lúc này sẽ đánh thức lần sau
+            rest = MIN_GAP_S - (time.monotonic() - now)
+            if rest > 0:
+                await asyncio.sleep(rest)
     finally:
+        svc.remove_change_listener(on_change)
         _streams -= 1
 
 

@@ -109,6 +109,10 @@ class MachineService:
         self._job = JobRunner(self)
         self._joblog = joblog.JobLog()           # số liệu từng lần chạy -> data/job_logs (services/joblog.py)
         self._joblog_extra: dict = {}
+        # Hàm báo "có trạng thái / nhật ký mới" cho luồng SSE (api/events.py) đẩy ngay, không chờ nhịp nhìn 0,1 s.
+        # Gọi khi đang giữ self._lock nên hàm phải rất nhẹ, không chặn (vd loop.call_soon_threadsafe(event.set)).
+        self._change_listeners: set = set()
+        self._change_lock = threading.Lock()
         self._clear_machine()
 
     def _clear_machine(self) -> None:
@@ -430,11 +434,30 @@ class MachineService:
         self._joblog.observe(self._job.snapshot(), st, self._joblog_extra)
         self._updated_at = time.time()
         self._status_mono = time.monotonic()
+        self._notify_change()
 
     def _add_log(self, direction: str, source: str, text: str) -> None:
         self._seq += 1
         self._log.append({"seq": self._seq, "t": time.time(), "dir": direction,
                           "source": source, "text": text})
+        self._notify_change()
+
+    def add_change_listener(self, fn) -> None:
+        with self._change_lock:
+            self._change_listeners.add(fn)
+
+    def remove_change_listener(self, fn) -> None:
+        with self._change_lock:
+            self._change_listeners.discard(fn)
+
+    def _notify_change(self) -> None:
+        with self._change_lock:
+            listeners = tuple(self._change_listeners)
+        for fn in listeners:
+            try:
+                fn()
+            except Exception:                    # luồng SSE đã đóng / vòng lặp đã tắt: bỏ qua, không làm hỏng luồng đọc máy
+                pass
 
     # --- gửi lệnh -------------------------------------------------------------
     def _require_link(self) -> BaseLink:

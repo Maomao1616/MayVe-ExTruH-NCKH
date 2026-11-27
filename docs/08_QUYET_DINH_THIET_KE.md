@@ -12,7 +12,7 @@
 | A3 | Không framework, không bước build | đơn giản, chạy được trên máy yếu, ít phụ thuộc | ✅ |
 | A4 | Hai đường nối máy: máy thật (SerialLink) và máy giả (SimLink, bắt chước theo log board thật) | phát triển và test khi chưa có máy | ✅ |
 | A5 | Chỉ `api.js` gọi mạng, chỉ `state.js` thăm dò; một phần tử HTML chỉ một tệp ghi | một nơi để sửa, không giật | ✅ |
-| A6 | **Lệnh** qua HTTP POST; **trạng thái + terminal** qua **SSE** (đẩy một chiều); **không dùng WebSocket** | qua Internet mỗi lần hỏi lặp tốn một vòng đi–về, SSE nhanh gần gấp đôi; SSE chạy trên HTTP, tự nối lại, dùng được cookie PIN. WebSocket phải tự lo nối lại, kiểm Origin mà lệnh chỉ nhanh thêm 1–2 ms | ✅ SSE (máy giả, 09/11/2026) · ⏳ qua Cloudflare thật |
+| A6 | **Lệnh** qua HTTP POST; **trạng thái + terminal** qua **SSE** (đẩy một chiều); **không dùng WebSocket** | qua Internet mỗi lần hỏi lặp tốn một vòng đi–về, SSE nhanh gần gấp đôi; SSE chạy trên HTTP, tự nối lại, dùng được cookie PIN. WebSocket phải tự lo nối lại, kiểm Origin mà lệnh chỉ nhanh thêm 1–2 ms | ✅ SSE (máy giả, 09/11/2026) · ⏳ qua Cloudflare thật · 27/11/2026: máy **đánh thức** luồng SSE ngay khi có trạng thái / nhật ký mới (trước chờ nhịp nhìn 0,1 s), nhịp 0,1 s giữ làm dự phòng; máy giả: chờ trung bình 32 ms → 1,3 ms |
 | A7 | Mỗi tab một tệp view. Bỏ tab Công việc (gộp vào Điều khiển). **Bỏ thẻ SD / Flash** | thực tế chỉ stream từ máy tính; MKS đọc thẻ dễ lỗi | ✅ |
 | P1 | Mọi tham số vẽ khai báo **một chỗ** (`spec.py`), giao diện lấy qua `/api/draw/schema` | không rải số cứng; đổi một dòng | ✅ |
 | P2 | Tab vẽ **không bao giờ gọi máy**; hai tab chỉ nối qua bản thảo | an toàn | ✅ |

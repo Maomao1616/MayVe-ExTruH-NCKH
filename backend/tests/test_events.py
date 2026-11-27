@@ -119,6 +119,36 @@ def test_stream_ends_when_client_disconnects_and_releases_the_slot(machine_sim):
         return [f async for f in events.event_stream(None, 0, disconnected, poll_s=0.01)]
     frames = asyncio.run(run())
     assert frames and events._streams == before
+    assert not machine_sim._change_listeners                          # gỡ hàm đánh thức khi luồng đóng
+
+
+def test_new_log_line_is_pushed_at_once_not_on_the_next_poll(machine_sim):
+    # nhịp dự phòng 5 s, nhịp tim 10 s: dòng mới tới được trong < 0,5 s nghĩa là máy đã đánh thức luồng ngay
+    async def run():
+        stream = events.event_stream(None, machine_sim.log_since(0)["last_seq"], never_disconnected(),
+                                     poll_s=5.0, heartbeat_s=10.0)
+        await take(stream, 2)                                          # retry + trạng thái đầu
+        machine_sim.log_system("day-ngay")
+        t0 = asyncio.get_running_loop().time()
+        async with asyncio.timeout(0.5):
+            async for f in stream:
+                if f.startswith("event: log") and "day-ngay" in f:
+                    break
+        waited = asyncio.get_running_loop().time() - t0
+        await stream.aclose()
+        return waited
+    assert asyncio.run(run()) < 0.5
+
+
+def test_change_listener_errors_do_not_break_the_machine(machine_sim):
+    def bad():
+        raise RuntimeError("Event loop is closed")
+    machine_sim.add_change_listener(bad)
+    try:
+        machine_sim.log_system("van-ghi-duoc")
+        assert any(e["text"] == "van-ghi-duoc" for e in machine_sim.log_since(0)["entries"])
+    finally:
+        machine_sim.remove_change_listener(bad)
 
 
 def test_stream_closes_when_the_admin_session_expires(machine_sim, monkeypatch):

@@ -84,12 +84,12 @@ Cổng phụ vào cùng danh sách kênh với USB (`UartChannel.cpp` dòng 36):
 Backend thêm một kiểu kết nối mới (vd `links/esp_link.py`, `kind="esp"`) cùng giao diện `BaseLink`, và một đường nhận WebSocket cho thiết bị (xác thực bằng chìa khóa thiết bị, **không** mở cho khách). `REAL_MODES` phải gồm `"esp"` (khóa chuyển động áp như USB).
 
 ### 3.2 Trạng thái lên điện thoại: trễ bao nhiêu, ai hỏi `?` (27/11, ước tính, chưa đo)
-Hiện nay máy chủ hỏi `?` 10 lần/giây (`POLL_S = 0.1`, `backend/app/services/machine.py:79`) và đẩy lên trình duyệt 10 lần/giây (`backend/app/api/events.py:29`).
+Hiện nay máy chủ hỏi `?` 10 lần/giây (`POLL_S = 0.1`, `backend/app/services/machine.py:79`). Từ 27/11 luồng SSE (`backend/app/api/events.py`) **đẩy ngay** khi có trạng thái / nhật ký mới (máy đánh thức luồng; trước đó chờ nhịp nhìn 0,1 s). Đo trên máy giả, PC i5-9400F: chờ trong máy chủ trước **32 ms** trung bình (lớn nhất 94), sau **1,3 ms** (lớn nhất 16 = bước đồng hồ Windows).
 
-| Đường | Trạng thái tới điện thoại chậm | Ghi chú |
+| Đường | Trạng thái tới điện thoại chậm (sau khi đẩy ngay) | Ghi chú |
 |---|---|---|
-| USB, máy chủ cạnh máy vẽ (hiện nay) | ~0,1–0,25 s | hai nhịp 0,1 s là chính |
-| Qua ESP, máy chủ ở nhà | ~0,2–0,35 s; lúc mạng vọt ~1 s | thêm 2 lượt Cloudflare (ESP → nhà, nhà → điện thoại) |
+| USB, máy chủ cạnh máy vẽ (hiện nay) | ~0,05–0,15 s | nhịp hỏi `?` 0,1 s là chính |
+| Qua ESP, máy chủ ở nhà | ~0,15–0,3 s; lúc mạng vọt ~1 s | thêm 2 lượt Cloudflare (ESP → nhà, nhà → điện thoại) |
 | Lệnh bấm trên web (jog, Tạm dừng) qua ESP | thêm ~0,15–0,2 s | vì thế **nút cứng nối thẳng MKS là bắt buộc** |
 
 Ai hỏi trạng thái (chọn khi làm gói 5–6):
