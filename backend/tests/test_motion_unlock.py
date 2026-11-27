@@ -81,8 +81,13 @@ def test_pin_and_forbidden(monkeypatch):
 def test_route_motion():
     from fastapi.testclient import TestClient
     from app.main import app
+    from app.services.machine import machine
+    # `machine` dùng chung cả tiến trình test: bài trước có thể đã nối máy giả `sim`, và chế độ `sim` vẫn được nhớ
+    # sau khi ngắt, nên trường gộp `motion_unlocked` (= sim hoặc allow_motion) luôn True -> trước đây hỏng chập chờn
+    # khi chạy song song. Kiểm thẳng cờ mà route này đổi.
     c = TestClient(app)
     r = c.post("/api/motion", json={"on": True})
-    assert r.status_code == 200 and r.json()["motion_unlocked"] is True
+    assert r.status_code == 200 and machine.allow_motion is True
     r = c.post("/api/motion", json={"on": False})
-    assert r.status_code == 200 and r.json()["motion_unlocked"] is False        # khóa lại thật, không chỉ "trả 200"
+    assert r.status_code == 200 and machine.allow_motion is False               # khóa lại thật, không chỉ "trả 200"
+    assert r.json()["motion_unlocked"] is (machine.connection_info()["mode"] == "sim")

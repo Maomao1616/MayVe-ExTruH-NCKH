@@ -1,0 +1,16 @@
+const classes = name => Array.from(document.getElementsByClassName(name));
+const setValue = (name, val) => id(name).value = val;
+const intValue = name => parseInt(getValue(name));
+const getTextContent = name => id(name).textContent;
+const displayFlex = name => setDisplay(name, 'flex');
+const displayTable = name => setDisplay(name, 'table-row');
+const displayInline = name => setDisplay(name, 'inline');
+const displayInitial = name => setDisplay(name, 'initial');
+const displayUndoNone = name => setDisplay(name, '');
+const setVisible = name => id('SPIFFS_loader').style.visibility = 'visible';
+const setHidden = name => id('SPIFFS_loader').style.visibility = 'hidden';
+const setDisabled = (name, value) => id(name).disabled = value;
+const click = name => id(name).click();
+const files = name => id(name).files;
+const setChecked = (name, val) => id(name).checked = val;
+const getChecked = name => id(name).checked;

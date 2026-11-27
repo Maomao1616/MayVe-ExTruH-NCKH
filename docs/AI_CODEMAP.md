@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~679,603 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~682,361 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -83,7 +83,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `CLAUDE.md` | ~1,891 |  |
+| `CLAUDE.md` | ~1,958 |  |
 | `README.md` | ~3,748 |  |
 
 ### `.clinerules/`
@@ -92,7 +92,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `00-bat-dau.md` | ~413 |  |
 | `01-an-toan.md` | ~502 |  |
-| `02-cau-truc.md` | ~751 |  |
+| `02-cau-truc.md` | ~818 |  |
 | `03-quy-trinh.md` | ~918 |  |
 | `04-giao-tiep.md` | ~574 |  |
 
@@ -128,7 +128,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `protocol.py` | ~2,742 | Phân tích các dòng phản hồi của FluidNC v4.1.1. |
 | `serial_link.py` | ~1,058 | SerialLink: kết nối FluidNC thật qua USB/serial (CH340). |
 | `sim_link.py` | ~8,168 | SimLink: máy FluidNC giả để phát triển khi chưa có board. |
-| `telnet_link.py` | ~1,574 | TelnetLink: kết nối FluidNC qua Wi-Fi bằng telnet (TCP thô, cổng 23), cùng giao diện với SerialLink. |
+| `telnet_link.py` | ~2,238 | TelnetLink: kết nối FluidNC qua Wi-Fi bằng telnet (TCP thô, cổng 23), cùng giao diện với SerialLink. |
 
 ### `backend/app/services/`
 
@@ -212,7 +212,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_machine_config.py` | ~2,514 | Đọc / sửa / lưu cấu hình FluidNC (machine_config.py) và hồ sơ phần mềm (profile.py). |
 | `test_machine_service.py` | ~2,231 |  |
 | `test_make_test_gcode.py` | ~695 | tools/make_test_gcode.py: các tệp bài thử tốc độ phải qua bộ làm sạch G-code của backend và nằm trong vùng máy |
-| `test_motion_unlock.py` | ~894 |  |
+| `test_motion_unlock.py` | ~1,024 |  |
 | `test_protocol.py` | ~562 |  |
 | `test_regressions.py` | ~2,275 | Hồi quy cho các lỗi đã gặp ở Giai đoạn "xác thực" (28/10/2026). |
 | `test_resume.py` | ~2,118 | Tiếp tục từ dòng N: chọn dòng bắt đầu lại an toàn (hàm thuần) + ghi điểm dừng khi hủy/lỗi (máy giả). |
@@ -222,7 +222,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `test_sim_link.py` | ~3,724 | SimLink phải khớp hành vi đã thấy trên board thật (docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026). |
 | `test_stop_paths.py` | ~5,713 | Đường dừng an toàn và đường LỖI của MachineService (hủy tác vụ: Feed Hold -> Reset -> mở khóa Alarm -> nâng bú |
 | `test_storage_macros.py` | ~1,818 | Macro lưu ở máy chủ + xem/tải nội dung thư mục dữ liệu qua API. |
-| `test_telnet_link.py` | ~2,320 | Đường Wi-Fi (telnet): mạch giả là máy chủ TCP trên máy này, bọc SimLink. Không chạm máy thật. |
+| `test_telnet_link.py` | ~3,008 | Đường Wi-Fi (telnet): mạch giả là máy chủ TCP trên máy này, bọc SimLink. Không chạm máy thật. |
 
 ### `backend/tests/beta_pdf/`
 
@@ -271,18 +271,18 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 |---|---|---|
 | `01_TONG_QUAN.md` | ~3,309 |  |
 | `02_PHAN_CUNG_MAY.md` | ~4,090 |  |
-| `03_CAU_TRUC_PHAN_MEM.md` | ~6,239 |  |
+| `03_CAU_TRUC_PHAN_MEM.md` | ~6,245 |  |
 | `04_TAB_DIEU_KHIEN.md` | ~5,824 |  |
 | `05_TAB_TAO_BAN_VE.md` | ~5,685 |  |
 | `06_THUAT_TOAN_XU_LY_ANH.md` | ~19,723 |  |
-| `07_MANG_KET_NOI_TRIEN_KHAI.md` | ~15,238 |  |
+| `07_MANG_KET_NOI_TRIEN_KHAI.md` | ~15,901 |  |
 | `08_QUYET_DINH_THIET_KE.md` | ~8,625 |  |
 | `09_HUONG_PHAT_TRIEN.md` | ~4,059 |  |
 | `10_TAB_BETA_PDF.md` | ~10,262 |  |
-| `11_THU_NGHIEM.md` | ~7,429 |  |
-| `12_VIEC_CAN_LAM.md` | ~4,014 |  |
-| `AI_CODEMAP.md` | ~8,274 |  |
-| `AI_START.md` | ~4,059 |  |
+| `11_THU_NGHIEM.md` | ~7,553 |  |
+| `12_VIEC_CAN_LAM.md` | ~4,070 |  |
+| `AI_CODEMAP.md` | ~8,275 |  |
+| `AI_START.md` | ~4,282 |  |
 
 ### `frontend/`
 
@@ -361,7 +361,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `header.js` | ~1,562 | chỉ báo ở đầu trang: backend / máy / công việc, ô trạng thái trên |
 | `jobchart.js` | ~6,400 | Biểu đồ số liệu chạy máy, nằm trong "Khung nhìn 2D" của tab Điều khiển (nút chuyển [Đường vẽ | Biểu đồ]). |
 | `preview.js` | ~6,733 | Khung nhìn 2D. Chủ sở hữu của #preview-canvas và thanh phát lại. |
-| `settings.js` | ~14,622 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
+| `settings.js` | ~14,691 | Tab Cài đặt. Một hàm vào cửa, mỗi khối trên giao diện một hàm: |
 | `share.js` | ~843 | nút QR trên header: hiện địa chỉ để mở giao diện từ máy khác (mạng nhà và/hoặc Internet) kèm mã QR. |
 | `storage.js` | ~1,895 | Cài đặt → Lưu trữ dữ liệu: XEM (không sửa) nội dung thư mục dữ liệu của máy chủ. |
 | `terminal.js` | ~3,878 | CHỦ SỞ HỮU DUY NHẤT của #terminal-output và các nút an toàn. |

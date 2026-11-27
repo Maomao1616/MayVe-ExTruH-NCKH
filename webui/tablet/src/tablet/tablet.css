@@ -1,0 +1,244 @@
+#tablettab {
+  height: 100%;
+  padding: 5px;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #ffffff;
+  font-family: sans-serif;
+  user-select: none;
+}
+
+.cols-tablet {
+  width: 100%;
+  display:flex;
+  flex-wrap: nowrap;
+}
+.col-tablet {
+  margin-right: 0.15em;
+  margin-bottom: 0.05em;
+}
+.disabled {
+  cursor: not-allowed;
+}
+.hidden, [hidden] {
+  display: none !important;
+}
+.btn-tablet:hover, .tablet-menu-item:hover {
+  background: #e0e0e0
+}
+.btn-tablet:active, .tablet-menu-item:active {
+  background: #d0f0d0
+}
+.btn-tablet:disabled {
+  background: #f0f0f0;
+  color: black;
+}
+.btn-tablet {
+  text-align: center;
+}
+.btn-tablet, .mdi-entry {
+  width: 100%;
+  background: white;
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.85em;
+  height: 1.7em;
+  outline: none;
+}
+.msg {
+  width: 100%;
+  max-height: 100%;
+  overflow-x: auto;
+  overflow-y: scroll;
+  margin: 0.1em;
+  padding: 2px;
+  text-align:left;
+  font-size: 0.65em;
+}
+#messagepane {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  user-select: text;
+}
+#gcode-states {
+  background-color: azure;
+  overflow-x: auto;
+  overflow-y: hidden;
+  text-align:left;
+  flex-basis: fit-content;
+}
+#messages {
+  background-color: lightyellow;
+  text-align: left;
+  text-wrap: nowrap;
+  flex: 1 1;
+}
+.gcode-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1;
+  min-height: 0;
+}
+#gcode-scroller {
+  /* .msg (above) supplies width/margin/font-size/overflow-y defaults; padding
+     is overridden to 0 here because absolutely-positioned children (the
+     recycled .gcode-line rows) are positioned relative to this element's
+     padding box, so any padding here would need to be added into every
+     row's "top" offset in JS. Horizontal padding is on the row cells
+     instead (below), where it doesn't affect vertical alignment. */
+  position: relative;
+  overflow-x: hidden;
+  flex: 1 1;
+  min-height: 0;
+  padding: 0;
+  background-color: lavenderblush;
+}
+#gcode-spacer {
+  /* Occupies no visible width, but its height (set in JS to lineCount *
+     lineHeight) is what gives the scrollbar the correct range/proportions
+     for the whole file, even though only a handful of real rows exist. */
+  width: 1px;
+}
+#gcode-empty-msg {
+  padding: 2px;
+  color: #888;
+}
+.gcode-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  white-space: pre;
+  overflow: hidden;
+}
+.gcode-line-num {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 2.5em;
+  padding: 0 0.3em 0 2px;
+  text-align: right;
+  color: #888;
+  background-color: #f0f0f0;
+  user-select: none;
+}
+.gcode-line-text {
+  flex: 1 1 auto;
+  padding: 0 2px 0 0.2em;
+}
+/* Line waiting for a single-block step to release it */
+.gcode-line.line-waiting .gcode-line-num,
+.gcode-line.line-waiting .gcode-line-text {
+  background-color: #ffffa8;
+}
+/* Line currently executing */
+.gcode-line.line-executing .gcode-line-num,
+.gcode-line.line-executing .gcode-line-text {
+  background-color: lightgreen;
+}
+#btn-singleblock {
+  position: absolute;
+  top: 0.25em;
+  /* #gcode-scroller has overflow-y: scroll (always-on, via .msg), so clear
+     its scrollbar width (fixed px, not em, since that's a roughly
+     fixed-size native browser/OS control, not something that should scale
+     with the page's font size) -- otherwise the scrollbar sits on top of
+     the button and swallows clicks. */
+  right: 18px;
+  z-index: 1;
+  width: 2em;
+}
+#tablet-dropdown-menu {
+  max-height: 100vh;
+  padding: 0.5em;
+  width: max-content;
+}
+.axis-label {
+}
+#axis-position {
+  background-color: azure;
+  overflow: hidden;
+  text-align: center;
+}
+.area {
+  padding-top: 12px;
+  padding-bottom: 8px;
+  padding-right: 8px;
+}
+.area2 {
+  padding-bottom: 8px;
+  padding-right: 8px;
+}
+#mdifiles {
+  background-color: lavenderblush;
+}
+#setAxis {
+  background-color: azure;
+}
+#control-pad {
+  background-color: lightyellow;
+}
+
+.mdi-entry {
+  text-align: left;
+  user-select: auto;
+}
+.mposition {
+  padding-top: 0.1em;
+  font-size: 0.9em;
+  color: #606060;
+}
+.info-button {
+}
+.pos-name {
+}
+/* display:flex centers jog-distance */
+#jog-distance-container {
+  display: flex;
+  justify-content: center; /* center vertically */
+  align-items: center;     /* center horizontally */
+
+}
+/* shrink this so it is hard to touch accidentally */
+#jog-distance {
+  height: 80%;
+  width: 80%;
+}
+.btn-go {
+  width:100%;
+}
+#nav-panel {
+}
+#expand-button {
+  position:absolute;
+  top:0.25em;
+  right:0.1em;
+  z-index:1;
+  width:2em;
+}
+#previewpane {
+  position: relative;
+  margin-left: 0.1em;
+}
+#toolpath {
+  height:100%;
+  width:100%;
+  z-index:0;
+  margin: 0.05em;
+  user-select: none;
+}
+#filename {
+  position: absolute;
+  top: 0.01em;
+  left: 0.2em;
+  z-index: 1;
+  user-select: none;
+}
+/* Show the menu whenever it lacks the hidden class, instead of relying on
+   the button's focus or the menu's hover state, which a touch screen does
+   not reliably clear.  tablet.js adds and removes the hidden class. */
+.dropdown #tablet-dropdown-menu {
+  display: block;
+}

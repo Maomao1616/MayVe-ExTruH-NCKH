@@ -57,7 +57,7 @@ ExtruXY/
 │  ├─ app/                   xem mục 4
 │  ├─ tests/                 test tự động (pytest); draw_test/ cho tab vẽ
 │  └─ requirements.txt       danh sách thư viện
-├─ tools/                    công cụ đo (ink_sim, ink_real, do_thoi_gian, tone_read, log_read, style_preview, make_test_gcode; 11 mục 9) · export_context.py (bản đồ mã cho AI) · dong_goi.ps1 (đóng gói zip)
+├─ tools/                    công cụ đo (ink_sim, ink_real, do_thoi_gian, tone_read, log_read, style_preview, make_test_gcode, mo_phong_gui_lenh; 11 mục 9) · export_context.py (bản đồ mã cho AI) · dong_goi.ps1 (đóng gói zip)
 │                            make_test_gcode.py (G-code bài thử tốc độ) · ink_sim.py (mô phỏng mực) · ink_real.py (đo tông trên ảnh thật)
 │                            tone_read.py (đọc ảnh tờ tông) · log_read.py (đọc nhật ký chạy) · style_preview.py (xem nhanh kiểu nét)
 │                            ink_real.py (đo sai tông của kiểu tô trên ảnh thật, trước / sau sửa sai)

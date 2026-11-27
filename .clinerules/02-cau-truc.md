@@ -4,9 +4,11 @@
 docs/        tài liệu 01–12 (cho người, đánh số) + AI_* (chỉ cho AI, dòng đầu ghi "FOR AI")
 frontend/    index.html · css/ · locales/{vi,en}.json · js/{core,lib,stores,views}/ · tests/
 backend/     app/{api,links,services,auth.py,main.py} · tests/ · tests/draw_test/
-tools/       export_context.py · ink_sim.py · ink_real.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1
+tools/       export_context.py · ink_sim.py · ink_real.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · mo_phong_gui_lenh.py · dong_goi.ps1
 launcher/    bật / tắt bằng icon (Windows)
 data/        không lên Git: bản thảo, macro, hồ sơ, sao lưu, PIN
+scripts/     phiếu giao việc cho AI + tài liệu chuẩn bị (lên Git; xem scripts/README.md)
+webui/       mã nguồn WebUI nạp vào mạch (fork MitchBradley, GPL-3.0); giữ mọi id, xem webui/README.md
 ```
 
 ## Frontend: phụ thuộc một chiều

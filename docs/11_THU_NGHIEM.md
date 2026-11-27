@@ -199,6 +199,7 @@ Chạy bằng Python của phần mềm: `cd backend` rồi `.\.venv\Scripts\pyt
 | `log_read.py` | đọc `data/job_logs/<id>.csv`: hàng đợi cạn, tốc độ thật | CSV (có sau khi vẽ thật, cần `$10=3`) | ⏳ chưa có CSV |
 | `style_preview.py` | vẽ thử một ảnh nhiều kiểu ra PNG + số nét | một ảnh | ✅ |
 | `make_test_gcode.py` | sinh G-code các bài thử máy (mục 6) | không | ✅ |
+| `mo_phong_gui_lenh.py` | **mô hình** gửi G-code qua mạng có trễ: so gửi từng dòng / đếm ký tự / kho trên ESP32-S3 ([07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 13) | không | ✅ 27/11 |
 | `export_context.py`, `probe_vpype.py` | xuất mã cho AI / dò phiên bản gói khi lỗi cài đặt | không | ✅ |
 
 ### 9.2 Đo thời gian + RAM đỉnh: `tools/do_thoi_gian.py` (mới 22/11/2026)
@@ -214,7 +215,7 @@ cd backend
 - Lúc dùng thật, bước ảnh → nét chạy ở **tiến trình con** (`isolated.py`) nên cộng thêm thời gian khởi động (đo riêng, ~0,35 s trên laptop).
 - Công cụ **nạp sẵn thư viện `vpype`** trước khi đo (lần đầu nạp ~0,7 s), nên kiểu đầu bảng không bị đội thời gian; hai máy đo cùng cách thì so được.
 
-**Số đo 22/11/2026** (Intel i5-9400F, 6 luồng, 15,9 GB, ảnh thử 1000 × 1400, A5, bút 0,5, sửa sai 1 lượt). ⚠ Chủ dự án nói laptop chính (26/11) là i5 đời 11–12, 16 GB, **chưa khớp** máy i5-9400F này (chưa rõ cùng máy hay khác máy): **chưa đo lại trên laptop chính**; chạy lại lệnh 9.2, tên CPU nằm trong tệp kết quả:
+**Số đo 22/11/2026** trên PC đang code ở nhà (Intel i5-9400F, 6 luồng, 15,9 GB, tên máy DESKTOP-JMHBARS; cũng là máy sẽ treo làm máy chủ); ảnh thử 1000 × 1400, A5, bút 0,5, sửa sai 1 lượt. **Đo lại 27/11/2026 cùng máy** (`--label laptop-chinh`, tệp `export/do-thoi-gian-DESKTOP-JMHBARS-20261127-2117.*`): lệch ≤ 6 % so với bảng dưới (Đan chéo 0,85 s · Đường dòng 2,44 s · Sóng 0,54 s · Xoắn ốc 0,14 s · Nét viền 0,35 s; khởi động tiến trình con 0,39 s; RAM đỉnh thêm tối đa 54 MB). Số 22/11 vì vậy **đúng là của máy chủ hiện tại**:
 
 | Kiểu | Tạo nét | Đọc | Tông | Tô | Tối ưu | G-code | Số nét | Dài | Dòng G-code | RAM đỉnh thêm |
 |---|---|---|---|---|---|---|---|---|---|---|

@@ -428,7 +428,7 @@ Mục đích: thêm **một lựa chọn** nối máy chủ với mạch không 
 ## 11.4 Đã kiểm lại 27/11/2026 (bạn cùng dự án rà mã trên commit `062ff85`; Claude đối chiếu từng điểm với mã)
 - `pytest` 694 qua, 1 hỏng chập chờn (`test_old_logs_are_pruned` khi chạy song song 6 tiến trình; chạy riêng thì qua). `node --test` **chưa chạy** trên máy đó (chưa cài Node).
 - Các lỗi cũ đã sửa: nút áp dụng cấu hình mạch giờ cũng khóa cho Wi-Fi; thời hạn ghi tách riêng khỏi thời hạn đọc; chú thích đầu tệp; thêm 3 bài test (ghi sau khi đóng, byte `0xFF`, dòng dài trên 4096 byte).
-- Còn lại, mức thấp, **chưa sửa** (đều đúng với mã):
+- Còn lại, mức thấp (đều đúng với mã) — **đã sửa 27/11/2026** (`TelnetFilter` lọc đủ chuỗi điều khiển telnet và giữ trạng thái qua các lần đọc; ghi lỗi / quá hạn thì báo mất kết nối ngay, chỉ một lần; ô baud chỉ kiểm khi dùng USB; `tests/test_telnet_link.py` 23 bài, đã kiểm đột biến):
   - `telnet_link.py`: mới bỏ byte `0xFF` lẻ, chưa bỏ đủ chuỗi điều khiển telnet 3 byte. FluidNC không chủ động gửi chuỗi đó nên chưa ảnh hưởng.
   - `telnet_link.py`: ghi bị quá thời hạn thì báo lỗi nhưng không đóng kết nối ngay; việc đóng chờ luồng đọc phát hiện (≤ 3 s).
   - `settings.js`: chế độ Wi-Fi vẫn kiểm ô baud dù đã ẩn (thừa một bước, không gây lỗi).
@@ -471,7 +471,7 @@ Nguồn gốc (suy luận, chưa có nguồn nói thẳng ở phần lịch sử
 
 ## 12.2 Tệp WebUI của chủ dự án (đã xem 27/11, chỉ đọc)
 - `D:\index.html.gz` (111 625 byte) do chủ dự án **tải từ bộ nhớ flash của mạch về**. Giải nén ra một bản sao để xem: là ESP3D-WEBUI bản `github.com/MitchBradley/ESP3D-WEBUI@a690c889`, dùng **Bootstrap 3.3.7**, **một tệp duy nhất** 505 KB (JS, CSS, HTML chung), JS gọi mạch qua WebSocket.
-- Mã nguồn để build lại **không có** trong thư mục ổ D; phải tải từ GitHub nếu cần. Mã người khác chỉ đọc, đặt ở thư mục riêng ngoài dự án, đọc trước khi chạy.
+- Mã nguồn (27/11): **đúng là `a690c889`**: đóng gói lại bản này ra cùng 330 hàm, 370 `id` với tệp trên mạch. FluidNC chép sẵn một bản WebUI vào mỗi lần phát hành; ESP3D-WEBUI 3.x của Luc **không** hỗ trợ FluidNC nên không dùng. Mã đã chép vào **`webui/`** (gốc: nhánh `revamp` @`028ae9cf`, mới hơn 12 commit, không cần lệnh firmware mới; tính năng `/ui/<tên>/` chỉ bật khi đặt ở đó). Giấy phép GPL-3.0, cách đóng gói và luật sửa: `webui/README.md`. Bản `revamp` nén **121 KB** (bản trên mạch 111,6 KB).
 - Mạch chỉ phát tệp tên đúng `index.html.gz` (`WebUIServer.cpp` dòng 667); tệp tên khác bị **tải về** thay vì hiện (dòng 708–709). Muốn thay trang thì **thay đúng tên đó**; giữ `D:\index.html.gz` để trả lại.
 
 ## 12.3 Vì sao không đưa tab Điều khiển của mình vào mạch
@@ -485,7 +485,7 @@ Tab Điều khiển chỉ là vỏ; **khóa chuyển động, PIN, gửi từng 
 | Làm được | Màu, chữ, nút to cho ngón tay, khoảng cách; **sắp lại khối thì hạn chế** | Sắp lại thành khối như tab Điều khiển của mình |
 | Dung lượng | Tăng vài KB (CSS của mình nén khoảng 9 KB) | Tùy mức sửa; ước tính còn nằm trong 192 KB nhưng chưa build thử |
 
-Thứ tự: làm A trước, thấy chưa đủ thì sang B. Chủ dự án tự tải tệp mới lên bộ nhớ tệp của mạch; Claude không ghi xuống mạch. **Cần chốt:** kiểu giao diện (giống ExtruXY hay tối giản nút to) và chỗ để trong repo (đề xuất `firmware_ui/`; cây thư mục không được thêm tầng mới nên phải hỏi). **Chưa kiểm chứng:** bản trên mạch có đúng bản `a690c889` này không; chức năng thật chỉ thử được sau khi nạp lên mạch.
+Thứ tự: làm A trước, thấy chưa đủ thì sang B. Chủ dự án tự tải tệp mới lên bộ nhớ tệp của mạch; Claude không ghi xuống mạch. **Chủ dự án chốt 27/11:** khối khung phải **dễ nhìn như web của mình**; máy chỉ dùng bút nên **ẩn spindle / laser**; macro hiện không có nút để bấm; **giữ nguyên mọi chức năng JS**, chỉ đổi giao diện (làm sau). Chốt 27/11: đi **cách B**, mã ở `webui/` (gốc nhánh `revamp`), đã đóng gói thử được. Tệp thành phẩm để **ở gốc repo, cùng cấp README** (tên tệp: chưa chốt), ghi chú ở `webui/README.md`. **Chưa kiểm chứng:** chức năng thật chỉ thử được sau khi nạp lên mạch; dung lượng còn trống trên mạch.
 
 Phương án khác (ý 26/11, chưa quyết): một **trang cứu hộ riêng** ≤ 30 KB nén chỉ có trạng thái và tọa độ, Mở khóa, Home, jog, bút lên xuống, Tạm dừng / Chạy tiếp / Dừng; không xử lý ảnh, không gửi từng dòng.
 
@@ -507,17 +507,21 @@ Phương án khác (ý 26/11, chưa quyết): một **trang cứu hộ riêng** 
 - ESP32 vẫn phải vào một mạng có Internet; cài Wi-Fi cho ESP32 **một lần** (trang cài riêng trên ESP). Wi-Fi công cộng hay bắt đăng nhập qua trang web thì ESP không qua được: mang điện thoại phát 4G, để sẵn hai mạng.
 - Số đo mục 4 (0,13 s thường, có lần 1,16 s) cho thấy **không thể gửi một dòng rồi chờ `ok` qua Internet**. Phân việc: **máy chủ quyết định** (chạy, dừng, chạy tiếp, biết dòng nào), **ESP thực hiện** (giữ sẵn nhiều dòng, tự gửi từng dòng xuống mạch tại chỗ, chờ `ok` tại chỗ). 10 000 dòng ≈ 200 KB; ESP32-S3 N16R8 có 512 KB RAM + 8 MB PSRAM (thông số hãng), dư sức. Lưu lượng thật chỉ khoảng 2,5 KB/giây.
 - Phải tính kỹ phần dừng an toàn và chạy tiếp (đang ở [08](08_QUYET_DINH_THIET_KE.md) và `services/machine.py`): chia việc giữa máy chủ và ESP là phần việc lớn nhất. Sửa `JobRunner` là chỗ quan trọng nhất của backend nên phải hỏi chủ dự án trước khi làm.
-- Dự định: **thử trên máy giả có thêm độ trễ** trước khi mua mạch.
+- **Mô hình trễ** (`tools/mo_phong_gui_lenh.py`, 27/11; mô hình, chưa đo): 3000 dòng nét 0,5 mm (lý tưởng 11,2 s). Gửi từng dòng chờ `ok` qua mạng: 570 s; đếm ký tự qua mạng: 48 s, khựng ~2 300 lần; **kho ESP 5000 dòng, gói 1000, nạp trước 2000: ~11,9 s, 0 khựng**, kể cả 4G giật (0,3 s, vọt 3 s, 8 %). Gói nhỏ 200 dòng vẫn khựng khi mạng giật.
+- **Chốt hướng (chủ dự án 27/11: ESP giữ dữ liệu, tải dần):** kho ≥ 5000 dòng trong PSRAM, gói ~1000 dòng, nạp trước ~2000 dòng (hoặc cả bài nếu ngắn hơn) rồi mới chạy; ESP gửi xuống MKS bằng đếm ký tự tại chỗ; ký tự tức thời chuyển ngay, Ctrl-X xóa kho. Chi tiết, giao thức nháp, gói việc: [phiếu P01](../scripts/P01-esp32-s3-cau-noi.md).
 
 ## 13.2 Phía mạch MKS (không sửa firmware)
 FluidNC 4.1.1 nhận thêm một cổng UART qua `config.yaml` (`uart:` và `uart_channel:`, `MachineConfig.cpp` dòng 60–61); cổng phụ vào cùng danh sách kênh với USB (`UartChannel.cpp` dòng 36) nên nhận G-code và trả trạng thái giống USB. Mới đọc mã, **chưa thử trên mạch**. Không dùng chung cổng UART của USB (CH340).
 
-**Phải kiểm trước khi nối dây (chưa làm):**
-| Việc | Cách |
+**Đã đọc sơ đồ 27/11 (chưa đo bằng đồng hồ; bảng đầy đủ ở [phiếu P01](../scripts/P01-esp32-s3-cau-noi.md) mục 2):**
+| Việc | Kết quả |
 |---|---|
-| Chân trống trên MKS còn ra đầu cắm, cho 2 chân UART và chân nút cứng. Cấu hình đang dùng `gpio.16, 17, 21, 32, 35, 36` | Đọc sơ đồ `D:\FluidNC-4.1.1\MKS DLC32 V2.1_003 SCH.pdf` |
-| Nguồn cho ESP32-S3 lấy từ đâu (MKS có ra 5 V không). Hai mạch đều 3,3 V; bắt buộc chung GND | Sơ đồ mạch |
-| Tốc độ baud và bộ đệm nhận của cổng UART phụ (kênh mặc định 256 byte, `Channel.h`) | Đọc mã `Uart.h`, thử trên mạch |
+| Đang dùng (chủ dự án) | 2 driver X, Y (I2S `gpio.16, 17, 21`); chân **S của cổng TTL** = `gpio.32` (servo bút); endstop X, Y = `gpio.36`, `gpio.35`. Còn lại trống |
+| UART phụ | **EXP2 chân 6 = IO23 (TX của MKS), chân 1 = IO19 (RX của MKS), chân 9 = GND**; nối thẳng ESP32, không dính IC đệm. EXP2 chân 8 là RESET: không đụng. EXP1 chân 3, 4, 5, 7 đi qua IC đệm một chiều nên không dùng làm RX |
+| Nút Tạm dừng cứng | **J11 (cổng Z-endstop) = IO34**, chỉ vào, đã có kéo lên + lọc RC: `feed_hold_pin: gpio.34:low` |
+| Probe J12 (IO22) | để cho cảm biến bút (docs/09 mục 3.1) hoặc nút Chạy tiếp |
+| Nguồn ESP32-S3 | Mini560 5 V riêng (chủ dự án đã đặt); chung GND với MKS, không nối 5 V / 3V3 sang nhau |
+| Baud, bộ đệm UART phụ | baud mặc định 115200, mode 8N1 (`Uart.cpp`); bộ đệm nhận cổng UART phụ **chưa kiểm** (kênh mặc định 256 byte) |
 
 ## 13.3 Nút dừng cứng (nối thẳng vào chân của MKS, không qua mạng)
 Khai trong `config.yaml` mục `control:` (`Control.cpp`):
@@ -534,13 +538,13 @@ Lớp an toàn: (1) nút cứng thẳng MKS, mất Internet hay ESP treo vẫn c
 - Lệnh chuyển động từ Internet vào máy thật: ESP32 và máy chủ có **chìa khóa bí mật riêng** (để trong `data\`, không lên Git); PIN và khóa chuyển động vẫn ở backend; Cloudflare Access cân nhắc.
 - Máy chủ chuyển lên cloud: đo RAM đỉnh bằng `tools/do_thoi_gian.py` trước khi chọn gói; backend **chưa từng chạy trên Linux**.
 - Camera khi máy chủ ở xa: **chưa chốt** (ESP32-CAM chỉ để xem, hoặc webcam + máy nhỏ cạnh máy vẽ).
-- Thứ tự: (1) tài liệu (đợt này); (2) xem sơ đồ MKS tìm chân; (3) thử "gửi dồn + kho lệnh" trên máy giả có trễ; (4) mua ESP32-S3 N16R8, viết mã ESP và kiểu kết nối mới. Chưa có dòng mã nào.
+- Thứ tự: (1) tài liệu ✅; (2) đọc sơ đồ MKS ✅ (chưa đo); (3) mô hình trễ ✅; (4) đo chân bằng đồng hồ, mua ESP32-S3 N16R8; (5) mạch giả ESP + kiểu kết nối `esp` ở backend (hỏi trước); (6) mã ESP. Chưa có dòng mã ESP nào. Gói việc: [phiếu P01](../scripts/P01-esp32-s3-cau-noi.md) mục 4.
 
 ---
 
 # 14. MiniPC và máy nhỏ (Pi): tạm bỏ ⏸
 
-**Chủ dự án chốt 26–27/11/2026: bỏ MiniPC cho đến khi có quyết định mới.** Laptop là máy chính; hướng IoT chọn ESP32-S3 (mục 13). Nội dung cũ (so sánh Docker và systemd, `Dockerfile`, `docker-compose.yml`, tên cổng USB cố định bằng `udev`, IP cố định, Cloudflare Tunnel trên Linux) **không còn trong tệp này**; xem trong lịch sử Git: `git show 062ff85:docs/08_TRIEN_KHAI.md` (mục E, F).
+**Chủ dự án chốt 26–27/11/2026: bỏ MiniPC cho đến khi có quyết định mới.** Máy chính là PC đang code ở nhà (Intel i5-9400F, 6 luồng, 15,9 GB, tên máy DESKTOP-JMHBARS; cũng là máy sẽ treo làm máy chủ); hướng IoT chọn ESP32-S3 (mục 13). Nội dung cũ (so sánh Docker và systemd, `Dockerfile`, `docker-compose.yml`, tên cổng USB cố định bằng `udev`, IP cố định, Cloudflare Tunnel trên Linux) **không còn trong tệp này**; xem trong lịch sử Git: `git show 062ff85:docs/08_TRIEN_KHAI.md` (mục E, F).
 
 Điều đã cân nhắc khi quyết (27/11), để khỏi bàn lại:
 | | Máy nhỏ cạnh máy vẽ (Pi / MiniPC) | ESP32-S3 cầu nối (đã chọn) |

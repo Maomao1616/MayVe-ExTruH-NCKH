@@ -1,0 +1,49 @@
+{
+  "name": "esp3d-webui",
+  "description": "Web UI for ESP3D",
+  "devDependencies": {
+    "del": "6.0.0",
+    "deprecated": "latest",
+    "fs": "latest",
+    "gulp-bytediff": "latest",
+    "gulp-cdnizer": "latest",
+    "gulp-clean-css": "latest",
+    "gulp-concat": "latest",
+    "gulp-gzip": "latest",
+    "gulp-htmlmin": "latest",
+    "gulp-jshint": "latest",
+    "gulp-ng-annotate": "^0.2.0",
+    "gulp-remove-code": "latest",
+    "gulp-replace": "latest",
+    "gulp-size": "^5.0.0",
+    "gulp-smoosher": "^0.0.7",
+    "gulp-uglify": "^3.0.2",
+    "jshint": "latest",
+    "merge-stream": "latest",
+    "uglify-js": "^3.14.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luc-github/ESP3D-WEBUI.git"
+  },
+  "author": "Luc LEBOSSE",
+  "license": "(ISC OR GPL-3.0)",
+  "type": "module",
+  "dependencies": {
+    "global": "latest",
+    "gulp": "^4.0.2",
+    "gulp-cli": "^3.0.0"
+  },
+  "version": "1.0.0",
+  "main": "gulpfile-.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bugs": {
+    "url": "https://github.com/luc-github/ESP3D-WEBUI/issues"
+  },
+  "homepage": "https://github.com/luc-github/ESP3D-WEBUI#readme"
+}

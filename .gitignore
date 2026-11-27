@@ -14,3 +14,8 @@ export/
 
 # Chương trình Cloudflare mang theo (tải riêng từ Cloudflare); chìa khóa đường ống nằm trong data/cloudflared/ (đã bỏ qua cùng data/)
 /launcher/cloudflared.exe
+
+# WebUI: thu vien Node va thu muc tam do "npx gulp package" sinh ra; tep thanh pham webui/index.html.gz chep ra goc khi chot
+/webui/node_modules/
+/webui/dist/
+/webui/index.html.gz

@@ -369,16 +369,18 @@ function initConnection() {
                 return;
             }
 
-            if (!Number.isFinite(baud) || baud <= 0) {
+            // Baud chỉ có nghĩa với cổng COM; Wi-Fi và máy giả bỏ qua (ô baud đã ẩn), gửi giá trị mặc định.
+            if (mode === "serial" && (!Number.isFinite(baud) || baud <= 0)) {
                 setMessage(
                     "settings.connection.invalidBaud",
                     "Baud rate không hợp lệ."
                 );
                 return;
             }
+            const sendBaud = Number.isFinite(baud) && baud > 0 ? baud : 115200;
 
             // Dùng đúng API hiện có; không tự tạo endpoint.
-            const result = await api.connect(mode, port, baud, 1, host);
+            const result = await api.connect(mode, port, sendBaud, 1, host);
 
             updateConnectionDisplay(result);
 
@@ -386,7 +388,7 @@ function initConnection() {
             // Đọc lại trạng thái thật trước khi kết luận.
             await refreshConnection();
 
-            if (connected) remember(mode, port, baud, host ?? remembered?.host ?? null);
+            if (connected) remember(mode, port, sendBaud, host ?? remembered?.host ?? null);
             if (!connected) {
                 setMessage(
                     "settings.connection.verifyFailed",

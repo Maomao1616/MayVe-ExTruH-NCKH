@@ -4,7 +4,7 @@ Telnet của FluidNC (src/WebUI/TelnetClient.cpp) nhận G-code và ký tự t�
 các chuỗi điều khiển telnet bắt đầu bằng byte 0xFF (không lệnh nào của ta dùng). KHÔNG có mật khẩu: chỉ dùng trong
 mạng riêng. Mất kết nối thì mạch không tự dừng, không nâng bút: chạy hết lệnh đã nhận rồi đứng.
 
-CHƯA thử trên mạch thật. Kế hoạch và quyết định: phiếu data/phieu-26-11-wifi.md (chưa chép sang docs).
+CHƯA thử trên mạch thật. Quy chuẩn, rủi ro, việc còn phải làm: docs/07_MANG_KET_NOI_TRIEN_KHAI.md mục 3, 11.
 """
 from __future__ import annotations
 
@@ -23,6 +23,45 @@ LINK_SILENT_S = 3.0          # không nhận byte nào trong 3 s thì coi là m�
 READ_WAIT_S = 0.5            # luồng đọc thức dậy ít nhất mỗi 0,5 s (để kiểm im lặng và lệnh đóng)
 WRITE_TIMEOUT_S = LINK_SILENT_S   # ghi kẹt lâu hơn ngưỡng mất sóng mới báo lỗi (mạng khựng ngắn không làm dừng oan)
 
+# Chuỗi điều khiển telnet (RFC 854): IAC = 0xFF, rồi một byte lệnh. WILL/WONT/DO/DONT (0xFB-0xFE) kèm thêm một byte
+# tùy chọn; SB (0xFA) mở đoạn thương lượng kéo tới IAC SE (0xFF 0xF0); IAC IAC = một byte 0xFF thật (bỏ luôn, FluidNC
+# chỉ gửi chữ ASCII). FluidNC không chủ động gửi các chuỗi này; lọc để một thiết bị / proxy chen giữa không làm rác dòng.
+IAC, SB, SE = 0xFF, 0xFA, 0xF0
+_OPTION_CMDS = range(0xFB, 0xFF)   # WILL, WONT, DO, DONT: thêm 1 byte tùy chọn
+
+
+class TelnetFilter:
+    """Bỏ chuỗi điều khiển telnet khỏi luồng byte. Giữ trạng thái giữa các lần recv (chuỗi có thể bị cắt đôi)."""
+
+    def __init__(self) -> None:
+        self._state = "data"      # data | iac | option | sub | sub_iac
+
+    def feed(self, chunk: bytes) -> bytes:
+        out = bytearray()
+        state = self._state
+        for b in chunk:
+            if state == "data":
+                if b == IAC:
+                    state = "iac"
+                else:
+                    out.append(b)
+            elif state == "iac":
+                if b == SB:
+                    state = "sub"
+                elif b in _OPTION_CMDS:
+                    state = "option"
+                else:                       # IAC IAC hoặc lệnh 2 byte (NOP, GA, ...): bỏ
+                    state = "data"
+            elif state == "option":         # byte tùy chọn của WILL/WONT/DO/DONT
+                state = "data"
+            elif state == "sub":
+                if b == IAC:
+                    state = "sub_iac"
+            elif state == "sub_iac":
+                state = "data" if b == SE else "sub"
+        self._state = state
+        return bytes(out)
+
 
 class TelnetLink(BaseLink):
     kind = "wifi"
@@ -35,6 +74,7 @@ class TelnetLink(BaseLink):
         self._thread: threading.Thread | None = None
         self._stop = threading.Event()
         self._write_lock = threading.Lock()
+        self._lost_lock = threading.Lock()     # luồng đọc và luồng ghi có thể cùng phát hiện mất kết nối
 
     @property
     def is_open(self) -> bool:
@@ -73,12 +113,16 @@ class TelnetLink(BaseLink):
         self._thread = None
 
     def _lost(self, reason: str) -> None:
-        if not self._stop.is_set():
-            self._emit_closed(reason)
-            self.close()
+        with self._lost_lock:                 # chỉ báo một lần dù hai luồng cùng phát hiện
+            if self._stop.is_set():
+                return
+            self._stop.set()
+        self._emit_closed(reason)
+        self.close()
 
     def _read_loop(self) -> None:
         sock = self._sock
+        telnet = TelnetFilter()
         buffer = bytearray()
         last_rx = time.monotonic()
         while not self._stop.is_set():
@@ -97,11 +141,11 @@ class TelnetLink(BaseLink):
                 self._lost("Wi-Fi: controller closed the connection")
                 return
             last_rx = time.monotonic()
-            buffer.extend(chunk)
+            buffer.extend(telnet.feed(chunk))
             while b"\n" in buffer:
                 raw, _, rest = bytes(buffer).partition(b"\n")
                 buffer = bytearray(rest)
-                line = raw.replace(b"\xff", b"").decode("utf-8", errors="replace").strip("\r")
+                line = raw.decode("utf-8", errors="replace").strip("\r")
                 if line.strip():
                     self._emit(line)
 
@@ -119,4 +163,7 @@ class TelnetLink(BaseLink):
             with self._write_lock:
                 sock.sendall(data)      # dòng ngắn vào thẳng bộ đệm gửi của hệ điều hành, chỉ kẹt khi mạng treo lâu
         except OSError as exc:
+            # Ghi quá WRITE_TIMEOUT_S hoặc lỗi socket: coi là mất kết nối NGAY (dừng tác vụ, khóa lại),
+            # không chờ luồng đọc phát hiện ở chu kỳ sau.
+            self._lost(f"Wi-Fi write failed: {exc}")
             raise LinkError(f"Wi-Fi write failed: {exc}")

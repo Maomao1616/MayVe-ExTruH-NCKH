@@ -194,11 +194,61 @@ def test_write_after_close_raises_and_close_twice_is_safe(board):
         link.write_line("$I")
 
 
-def test_telnet_control_bytes_are_dropped(board):
+def test_telnet_control_sequences_are_dropped(board):
     link, lines = raw_link(board)
-    board.client.sendall(b"\xffok-co-iac\r\n")
+    # IAC WILL ECHO + IAC DO SGA + IAC NOP + IAC IAC + đoạn thương lượng IAC SB ... IAC SE, chen giữa chữ
+    board.client.sendall(b"\xff\xfb\x01ok\xff\xfd\x03-co\xff\xf1-iac\xff\xff\xff\xfa\x18\x00abc\xff\xf0\r\n")
     assert wait_for(lambda: "ok-co-iac" in lines)
+    junk = ("abc", "\x01", "\x03", "\x18", "�")              # byte tùy chọn / thương lượng không được lọt vào dòng
+    assert not any(j in line for line in lines for j in junk)
     link.close()
+
+
+@pytest.mark.parametrize("cut", range(1, 12))
+def test_telnet_filter_keeps_state_across_reads(cut):
+    data = b"A\xff\xfb\x01B\xff\xfa\x18xy\xff\xf0C\xff\xff"
+    f = telnet_link.TelnetFilter()
+    assert f.feed(data[:cut]) + f.feed(data[cut:]) == b"ABC"     # chuỗi bị cắt đôi ở mọi chỗ vẫn lọc đúng
+
+
+class _FailingSendSocket:
+    """Bọc socket thật; sendall báo hết giờ như mạng treo (luồng đọc vẫn dùng socket thật)."""
+
+    def __init__(self, real):
+        self._real = real
+
+    def sendall(self, data):
+        raise TimeoutError("timed out")
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+
+def test_write_timeout_reports_lost_at_once_and_only_once(board):
+    link, _ = raw_link(board)
+    reasons = []
+    link.add_close_listener(reasons.append)
+    link._sock = _FailingSendSocket(link._sock)
+    with pytest.raises(telnet_link.LinkError):
+        link.write_line("G1 X1")
+    assert len(reasons) == 1 and "write failed" in reasons[0]      # báo ngay, không chờ 3 s im lặng
+    assert not link.is_open
+    with pytest.raises(telnet_link.LinkError):                     # ghi tiếp: lỗi gọn, không báo mất lần hai
+        link.write_line("G1 X2")
+    assert len(reasons) == 1
+
+
+def test_write_failure_mid_job_disconnects_at_once(live, board):
+    homed_over_wifi(live, board)
+    board.sim._speed = 0.5
+    live.start_job("ghi-loi", SQUARE * 5)
+    assert wait_for(lambda: live.snapshot()["job"]["state"] == "running")
+    live._link._sock = _FailingSendSocket(live._link._sock)       # mạng treo: lần ghi tiếp theo hết giờ
+    assert wait_for(lambda: not live.snapshot()["connection"]["connected"], timeout=2)   # < 3 s im lặng
+    snap = live.snapshot()
+    assert snap["job"]["state"] != "done"
+    assert "write failed" in (snap["connection"]["lost_reason"] or "")
+    assert live.resume_info()["available"]
 
 
 def test_long_line_split_across_reads(board):

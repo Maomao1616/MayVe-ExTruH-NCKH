@@ -1,0 +1,378 @@
+let WCO = undefined;
+let OVR = { feed: undefined, rapid: undefined, spindle: undefined };
+let OVRchanged = false;
+let MPOS = [0, 0, 0, 0];
+let WPOS = [0, 0, 0, 0];
+
+const axisNames = ['x', 'y', 'z', 'a', 'b', 'c'];
+
+const modal = { modes: "", plane: 'G17', units: 'G21', wcs: 'G54', distance: 'G90' };
+
+// If a browser reload occurs during FluidNC motion, the web page refresh can
+// cause crashes because of ESP32 FLASH vs ISR conflicts.  We cannot block that
+// entirely, but we can make the user confirm via a dialog box.  Unfortunately,
+// due to security considerations, it is not possible to control the text in
+// that dialog box.
+let running = false;
+const blockReload = (event) => {
+   if (running) {
+       event.preventDefault();
+   }
+}
+window.onbeforeunload = blockReload;
+
+// Job-restart bookkeeping: remember which SD file is running and how far
+// along it is (percent complete, from the status report's SD field), so a
+// FluidNC crash or power loss does not lose track of the job. Position is
+// deliberately not stored here; a later enhancement may add a line number
+// once the status report exposes one for SD jobs.
+const JOB_PROGRESS_COOKIE = 'fluidnc_job_progress';
+const JOB_PROGRESS_MAX_AGE = 30 * 24 * 60 * 60; // 30 days, in seconds
+
+const saveJobProgress = (file, percent) => {
+    const value = encodeURIComponent(JSON.stringify({ file, percent }));
+    document.cookie = `${JOB_PROGRESS_COOKIE}=${value}; path=/; max-age=${JOB_PROGRESS_MAX_AGE}`;
+}
+
+const clearJobProgress = () => {
+    document.cookie = `${JOB_PROGRESS_COOKIE}=; path=/; max-age=0`;
+}
+
+const parseGrblStatus = (response) => {
+    const grbl = {
+        stateName: '',
+        message: '',
+        wco: undefined,
+        mpos: undefined,
+        wpos: undefined,
+        feedrate: 0,
+        spindle: undefined,
+        spindleSpeed: undefined,
+        ovr: undefined,
+        lineNumber: undefined,
+        flood: undefined,
+        mist: undefined,
+        pins: undefined
+    };
+    response = response.replace('<','').replace('>','');
+    const fields = response.split('|');
+    fields.forEach((field) => {
+        const tv = field.split(':');
+        const tag = tv[0];
+        const value = tv[1];
+        switch(tag) {
+            case "Door":
+                running = false;
+                grbl.stateName = "Door"+value;
+                grbl.message = field;
+                break;
+            case "Hold":
+                running = true;
+                grbl.stateName = tag;
+                grbl.message = field;
+                break;
+            case "Run":
+            case "Jog":
+            case "Home":
+                running = true;
+                grbl.stateName = tag;
+                break;
+            case "Idle":
+            case "Alarm":
+            case "Check":
+            case "Sleep":
+                running = false;
+                grbl.stateName = tag;
+                break;
+
+            case "Ln":
+                grbl.lineNumber = parseInt(value);
+                break;
+            case "MPos":
+                grbl.mpos = value.split(',').map( (v) => parseFloat(v) );
+                break;
+            case "WPos":
+                grbl.wpos = value.split(',').map( (v) => parseFloat(v) );
+                break;
+            case "WCO":
+                grbl.wco = value.split(',').map( (v) => parseFloat(v) );
+                break;
+            case "FS":
+                const fsrates = value.split(',');
+                grbl.feedrate = parseFloat(fsrates[0]);
+                grbl.spindleSpeed = parseInt(fsrates[1]);
+                break;
+            case "Ov":
+                const ovrates = value.split(',');
+                grbl.ovr = {
+                    feed: parseInt(ovrates[0]),
+                    rapid: parseInt(ovrates[1]),
+                    spindle: parseInt(ovrates[2])
+                }
+                if ((!OVR) || grbl.ovr.feed != OVR.feed || grbl.ovr.rapid != OVR.rapid || grbl.ovr.spindle != OVR.spindle) {
+                    OVR = grbl.ovr;
+                    OVRchanged = true;
+                }
+                break;
+            case "A":
+                grbl.spindleDirection = 'M5';
+                Array.from(value).forEach(
+                    (v) => {
+                        switch (v) {
+                            case 'S':
+                                grbl.spindleDirection = 'M3';
+                                break;
+                            case 'C':
+                                grbl.spindleDirection = 'M4';
+                                break;
+                            case 'F':
+                                grbl.flood = true;
+                                break;
+                            case 'M':
+                                grbl.mist = true;
+                                break;
+                        }
+                    }
+                );
+                break;
+            case "SD":
+                const sdinfo = value.split(',');
+                grbl.sdPercent = parseFloat(sdinfo[0]);
+                grbl.sdName = sdinfo[1];
+                if (grbl.stateName == "Idle") {
+                    grbl.stateName = "Run";
+                }
+                break;
+            case "Pn":
+                // pin status
+                grbl.pins = value;
+                break;
+            default:
+                // ignore other fields that might happen to be present
+                break;
+        }
+    });
+    return grbl;
+}
+
+const pauseGCode = () => {
+    sendRealtimeCmd('\x21'); // '!'
+}
+
+const resumeGCode = () => {
+    sendRealtimeCmd('\x7e'); // '~'
+    // Recolor the already-marked row from waiting to executing -- a plain
+    // class change on its pooled <div> (tablet.js), with no focus/selection
+    // dependency to work around, unlike the old textarea-based highlight.
+    markGCodeLine(gcodeMarkedLine, 'executing');
+}
+
+// probe_failed_notification() is not defined in every host, so check
+// before calling it
+const notifyProbeFailed = (msg) => {
+    if (probewiz.pending > 0) {
+        probewiz.probeFailed(msg);
+    }
+    if (is_probing && typeof probe_failed_notification === 'function') {
+        probe_failed_notification(msg);
+    }
+}
+
+const grblReset = () => {
+    sendRealtimeCmd('\x18');
+    notifyProbeFailed('Probe Canceled');
+}
+
+const stopGCode = () => {
+    grblReset();
+}
+
+let grblstate;
+
+const showGrblState = () => {
+    if (!grblstate) {
+        return;
+    }
+    mainGrblState(grblstate);
+    tabletGrblState(grblstate);
+};
+
+const grblProcessStatus = (response) => {
+    grblstate = parseGrblStatus(response);
+
+    // Record persistent values of data
+    if (grblstate.wco) {
+        WCO = grblstate.wco;
+    }
+    if (grblstate.ovr) {
+        OVR = grblstate.ovr;
+    }
+    if (grblstate.mpos) {
+        MPOS = grblstate.mpos;
+        if (WCO) {
+            WPOS = grblstate.mpos.map( (v,index) => v - WCO[index] );
+        }
+    } else if (grblstate.wpos) {
+        WPOS = grblstate.wpos;
+        if (WCO) {
+            MPOS = grblstate.wpos.map( (v,index) => v + WCO[index] );
+        }
+    }
+    if (grblstate.sdName) {
+        saveJobProgress(grblstate.sdName, grblstate.sdPercent);
+    }
+
+    showGrblState();
+}
+
+// [PRB:x,y,z:status]
+const grblGetProbeResult = (response) => {
+    const tab1 = response.split(":");
+    if (tab1.length > 2) {
+        const status = parseInt(tab1[2].replace("]", "").trim());
+        // The Probe Wizard's probes are handled separately from the
+        // dashboard's, whose finalize_probing() jogs Z by its own settings
+        if (probewiz.pending > 0) {
+            probewiz.probeResult(tab1[1].split(',').map(parseFloat), status === 1);
+        } else if (is_probing) {
+            finalize_probing(status);
+        }
+    }
+}
+
+const modalModes = [
+    { name: 'motion', values: [ "G80",  "G0",  "G1",  "G2",  "G3",  "G38.1",  "G38.2",  "G38.3",  "G38.4"] },
+    { name: 'wcs', values: [ "G54", "G55", "G56", "G57", "G58", "G59"] },
+    { name: 'plane', values: [ "G17", "G18", "G19"] },
+    { name: 'units', values: [ "G20", "G21"] },
+    { name: 'distance', values: [ "G90", "G91"] },
+    { name: 'arc_distance', values: [ "G90.1", "G91.1"] },
+    { name: 'feed', values: [ "G93", "G94"] },
+    { name: 'program', values: [ "M0", "M1", "M2", "M30"] },
+    { name: 'spindle', values: [ "M3", "M4", "M5"] },
+    { name: 'mist', values: [ "M7"] },  // Also M9, handled separately
+    { name: 'flood', values: [ "M8"] }, // Also M9, handled separately
+    { name: 'parking', values: [ "M56"] }
+];
+
+const grblGetModal = (msg) => {
+    modal.modes = msg.replace("[GC:", '').replace(']', '');
+    const modes = modal.modes.split(' ');
+    modal.parking = undefined;  // Otherwise there is no way to turn it off
+    modal.program = '';  // Otherwise there is no way to turn it off
+    modes.forEach((mode) => {
+        if (mode == 'M9') {
+            modal.flood = mode;
+            modal.mist = mode;
+        } else {
+            if (mode.charAt(0) === 'T') {
+                modal.tool = mode.substring(1);
+            } else if (mode.charAt(0) === 'F') {
+                modal.feedrate = mode.substring(1);
+            } else if (mode.charAt(0) === 'S') {
+                modal.spindle = mode.substring(1);
+            } else {
+                modalModes.forEach((modeType) => {
+                    modeType.values.forEach((s) => {
+                        if (mode == s) {
+                            modal[modeType.name] = mode;
+                        }
+                    });
+                });
+            }
+        }
+    });
+    showGrblState();
+}
+
+const grblHandleReset = (msg) => {
+    console.log('Reset detected');
+    setupFluidNC();
+}
+
+// Recognizes a single-block (step) mode pause report --
+// "[MSG:INFO: Step <path>:<line> <preview>]" -- and, if msg is one,
+// dispatches its path and line number to showStepLine(). Returns true if
+// msg was a step report, so the caller knows it has been handled. The path
+// matters because a running job can be paused inside a nested
+// $sd/run=/$localfs/run= file, not just the top-level one.
+const detectStep = (msg) => {
+    const stepMatch = msg.match(/^\[MSG:INFO: Step (\S+):(\d+) /);
+    if (!stepMatch) {
+        return false;
+    }
+    showStepLine(stepMatch[1], parseInt(stepMatch[2]));
+    return true;
+}
+
+// Sets single-block (step) mode on the controller. FluidNC represents this as a
+// virtual "pin" at index 63 (Channel::MaxPinIndex), toggled via the same
+// UTF8-encoded PinLow/PinHigh pin-event codepoints used for io-expander pins (see
+// Channel.h/Channel.cpp), rather than a dedicated realtime command -- this works
+// even while a job is actively running, unlike a $ command.
+//
+// sendRealtimeCmd ultimately goes through SendPrinterCommand() -> encodeURI(cmd)
+// (see www/js/printercmd.js), which UTF8-encodes each character of the string by
+// its *codepoint*, the same as a browser's native WebSocket text-frame encoding
+// would. So, like the existing single-byte realtime/override codes elsewhere in
+// this file (e.g. '\x92'), the right thing to send is the target codepoint
+// itself, as one JS character, and let that encoding produce the wire bytes --
+// not the wire bytes typed out directly as if they were separate characters,
+// which would each get UTF8-encoded again on top and never reconstruct the
+// intended codepoint.
+//
+// Pin index 63: low (off) codepoint = 0x100+63 = 0x13f, high (on) = 0x140+63 = 0x17f.
+// (\x can only encode 00-ff; codepoints above that need \u.)
+const singleBlockOffCode = '\u013f';
+const singleBlockOnCode  = '\u017f';
+
+const setSingleBlock = (enabled) => {
+    sendRealtimeCmd(enabled ? singleBlockOnCode : singleBlockOffCode);
+}
+
+const grblHandleMessage = (msg) => {
+    tabletShowMessage(msg);
+
+    if (msg.startsWith('<')) {
+        grblProcessStatus(msg);
+        return;
+    }
+    if (msg.startsWith('[GC:')) {
+        grblGetModal(msg);
+        return;
+    }
+
+    if (msg.startsWith('[MSG: Files changed]')) {
+        files_refreshFiles(files_currentPath);
+        return;
+    }
+
+    if (detectStep(msg)) {
+        return;
+    }
+
+    // Handlers for standard Grbl protocol messages
+
+    if (msg.startsWith('ok')) {
+        grblHandleOk();
+        return;
+    }
+    if (msg.startsWith('[PRB:')) {
+        grblGetProbeResult(msg);
+        return;
+    }
+    if (msg.startsWith('[MSG:')) {
+        return;
+    }
+    if (msg.startsWith('error:')) {
+        grblHandleError(msg);
+    }
+    if (msg.startsWith('ALARM:') || msg.startsWith('Hold:') || msg.startsWith('Door:')) {
+        notifyProbeFailed(msg);
+        return;
+    }
+    if (msg.startsWith('Grbl ')) {
+        grblHandleReset();
+        return;
+    }
+}
