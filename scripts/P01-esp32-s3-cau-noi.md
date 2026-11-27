@@ -83,6 +83,25 @@ Cổng phụ vào cùng danh sách kênh với USB (`UartChannel.cpp` dòng 36):
 
 Backend thêm một kiểu kết nối mới (vd `links/esp_link.py`, `kind="esp"`) cùng giao diện `BaseLink`, và một đường nhận WebSocket cho thiết bị (xác thực bằng chìa khóa thiết bị, **không** mở cho khách). `REAL_MODES` phải gồm `"esp"` (khóa chuyển động áp như USB).
 
+### 3.2 Trạng thái lên điện thoại: trễ bao nhiêu, ai hỏi `?` (27/11, ước tính, chưa đo)
+Hiện nay máy chủ hỏi `?` 10 lần/giây (`POLL_S = 0.1`, `backend/app/services/machine.py:79`) và đẩy lên trình duyệt 10 lần/giây (`backend/app/api/events.py:29`).
+
+| Đường | Trạng thái tới điện thoại chậm | Ghi chú |
+|---|---|---|
+| USB, máy chủ cạnh máy vẽ (hiện nay) | ~0,1–0,25 s | hai nhịp 0,1 s là chính |
+| Qua ESP, máy chủ ở nhà | ~0,2–0,35 s; lúc mạng vọt ~1 s | thêm 2 lượt Cloudflare (ESP → nhà, nhà → điện thoại) |
+| Lệnh bấm trên web (jog, Tạm dừng) qua ESP | thêm ~0,15–0,2 s | vì thế **nút cứng nối thẳng MKS là bắt buộc** |
+
+Ai hỏi trạng thái (chọn khi làm gói 5–6):
+
+| Cách | Làm sao | Được | Mất |
+|---|---|---|---|
+| a. Máy chủ hỏi `?` qua mạng (như USB) | `rt "?"` mỗi 0,1 s | không đổi backend | mỗi `?` đi một lượt Internet; mạng giật thì trạng thái giật theo |
+| b. **ESP tự hỏi `?` tại chỗ** (đề xuất) | ESP gửi `?` xuống UART mỗi 0,1 s, chuyển `<...>` lên máy chủ qua `rx` | trạng thái đều dù chiều xuống nghẽn; backend chỉ cần bỏ vòng hỏi khi `kind="esp"` | ESP phải lọc trùng nếu máy chủ cũng gửi `?` |
+| c. MKS tự báo | `uart_channel1: report_interval_ms: 100` | ESP không cần hỏi | xem dưới |
+
+Cách c, đọc mã FluidNC 4.1.1 (`UartChannel.h:68-79`, `Channel.cpp:242-300`): mặc định 0 (tắt); nhỏ nhất **50 ms**; ngoài nhịp đều còn báo **ngay** khi đổi trạng thái, đổi chân, bắt đầu / hết tác vụ; lúc đứng yên chỉ báo khi có thay đổi; **tự gửi thêm dòng `[GC:...]`** (chế độ G-code) khi đổi, nên ESP / `links/protocol.py` phải chịu được dòng không ai hỏi; bật mục này thì mạch **lặp lời chào đến khi thiết bị trả lời**, ESP phải đáp. Cách c ghi vào cấu hình mạch (chủ dự án ghi), nên thử b trước; c để dành nếu muốn ESP nhẹ hơn.
+
 ## 4. Các gói việc (theo thứ tự; mỗi gói hỏi chủ dự án trước khi làm)
 | # | Gói | Ai | Kiểm chứng | Trạng thái |
 |---|---|---|---|---|
@@ -103,4 +122,5 @@ Backend thêm một kiểu kết nối mới (vd `links/esp_link.py`, `kind="esp
 ## 6. Câu hỏi còn mở
 - Thư viện ESP: Arduino (dễ đọc) hay ESP-IDF (chặt hơn)? Đề xuất Arduino + thư viện WebSocket có TLS.
 - N (giây mất máy chủ thì tự `!`) và cỡ bộ đệm UART phụ của MKS: chốt sau khi đo.
+- Ai hỏi trạng thái `?`: ESP tự hỏi tại chỗ (đề xuất) hay MKS tự báo `report_interval_ms` (mục 3.2). Chốt khi làm gói 5–6.
 - Cloudflare Access chặn thiết bị không đăng nhập: dùng "service token" cho ESP hay đường riêng không qua Access.
