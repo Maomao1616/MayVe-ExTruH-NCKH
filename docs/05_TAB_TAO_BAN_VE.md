@@ -31,7 +31,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | Nút / ô | Làm gì |
 |---|---|
 | **Chọn tệp** | **ảnh**: chỉ hiện ảnh (cắt và chỉnh sáng / tối chạy ngay trong trình duyệt, máy chủ chưa làm gì); canvas trống cho tới khi bấm **Tạo nét**. **SVG**: nhẹ nên tạo nét ngay. Chọn tệp khác thì xóa nét của tệp trước |
-| **Gửi ảnh** (khách) | thay cho Tạo nét khi chưa đăng nhập: gửi ảnh + thông số cho chủ máy (xem 08 B4). Quản lý mở ảnh khách ở hộp thư "Ảnh khách gửi" |
+| **Gửi ảnh** (khách) | thay cho Tạo nét khi chưa đăng nhập: gửi ảnh + thông số cho chủ máy (xem [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 6.4). Quản lý mở ảnh khách ở hộp thư "Ảnh khách gửi" |
 | **Tạo nét** | (chỉ ảnh) chạy xử lý ở máy chủ, nền, có thanh tiến trình. Sau lần đầu nút đổi tên thành **Tạo lại nét**. Khách (không đăng nhập) không bấm được |
 | **Hủy** (cạnh thanh tiến trình) | dừng việc tạo nét đang chạy |
 | **Bộ thông số dựng sẵn** | Chân dung / Phong cảnh / Hình vẽ 2D / Bản vẽ kỹ thuật / Chất lượng tối đa: điền sẵn tiền xử lý + kiểu nét rồi tạo lại nét. Sửa tay ô nào thì về "Tùy chỉnh" |
@@ -48,7 +48,7 @@ Hai tab chỉ nối với nhau qua **bản thảo trên đĩa** (G-code + ảnh 
 | **Lưu bản thảo** | ghi G-code + ảnh minh họa + thông tin vào thư mục bản thảo |
 | **Chuyển sang Điều khiển** | cần tích "Tôi đã kiểm tra…". Tự lưu bản thảo (không tạo trùng) rồi nạp vào tab Điều khiển. **Không tự chạy** |
 | Danh sách bản thảo | ☰ kéo đổi thứ tự (trong cùng nhóm ghim / không ghim), ✎ đổi tên tại chỗ, Mở xem, Nạp (theo lớp màu), Ghim, Xóa (bấm hai lần) |
-| **Thang tông** (ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang tông ở tab Tạo bản vẽ") | nạp ảnh 16 ô xám 0 → 90 % + 3 ô mốc đen + chữ F; chọn bút / kiểu tô / preset ở tab này rồi vẽ, để thử preset và đo tông ([07_THU_NGHIEM.md](07_THU_NGHIEM.md) mục 2, 2b) |
+| **Thang tông** (ở **Cài đặt → Tờ thử / hiệu chỉnh**, nút "Mở ảnh thang tông ở tab Tạo bản vẽ") | nạp ảnh 16 ô xám 0 → 90 % + 3 ô mốc đen + chữ F; chọn bút / kiểu tô / preset ở tab này rồi vẽ, để thử preset và đo tông ([11_THU_NGHIEM.md](11_THU_NGHIEM.md) mục 2, 2b) |
 
 Bảng số liệu đầu tab: kích thước, số nét, số lần nhấc bút, độ dài vẽ / di chuyển, thời gian ước tính (có gia tốc, thời gian nhấc bút và giới hạn ~125 dòng/giây; [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 12), có nằm trong vùng máy không. Rê chuột vào dòng trạng thái để xem thời gian xử lý từng bước.
 
@@ -136,9 +136,9 @@ Preset chỉ là dữ liệu (`frontend/js/views/drawing/presets.js`): mỗi pre
 | **Nhẹ** | bố trí + G-code + số liệu | máy chủ (vài trăm ms) | đổi giấy, lề, vị trí, xoay, lật, tốc độ, Z |
 | **Rất nhẹ** | kéo / co giãn khung, xem trước độ sáng, thu nhỏ ảnh trước khi gửi | trình duyệt | mỗi lần kéo |
 
-Vì sao tách: MiniPC yếu phải vừa điều khiển máy vừa xử lý ảnh. Một lần tạo nét dùng lại được cho nhiều lần đổi vị trí. Tiến trình con ưu tiên thấp nên ảnh nặng không làm giật luồng gửi G-code.
+Vì sao tách: máy chủ yếu (thiết kế ban đầu cho MiniPC, đã tạm bỏ 26/11) phải vừa điều khiển máy vừa xử lý ảnh. Một lần tạo nét dùng lại được cho nhiều lần đổi vị trí. Tiến trình con ưu tiên thấp nên ảnh nặng không làm giật luồng gửi G-code.
 
-Đo trên laptop (ảnh 1200×1600, A4): zigzag 0,1–0,7 s, sóng 0,4–1,5 s, xoắn ốc 0,4–1,6 s. ⚠ Chưa đo trên MiniPC i5-6100T.
+Đo trên laptop (ảnh 1200×1600, A4): zigzag 0,1–0,7 s, sóng 0,4–1,5 s, xoắn ốc 0,4–1,6 s. ⚠ Chưa đo trên máy chủ mới (cloud / Linux).
 
 ---
 
@@ -167,7 +167,7 @@ Mọi lỗi có dạng `{"error": {"code", "message"}}`. Trình duyệt dịch t
 
 | Route | Việc | Trả về |
 |---|---|---|
-| `POST /api/customer` (khách) · `GET /api/customer` · `GET /api/customer/{id}/image` · `POST …/seen` · `DELETE …` (quản lý) | ảnh khách gửi, xem [08_TRIEN_KHAI.md](08_TRIEN_KHAI.md) B4 | `{item}` / `{items, days}` |
+| `POST /api/customer` (khách) · `GET /api/customer` · `GET /api/customer/{id}/image` · `POST …/seen` · `DELETE …` (quản lý) | ảnh khách gửi, xem [07_MANG_KET_NOI_TRIEN_KHAI.md](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 6.4 | `{item}` / `{items, days}` |
 | `POST /api/draw/testsheet` | tờ thử máy thành bản thảo (`kind` = lift / lost / accel / speed / drag, kèm `options`); tờ nhấc bút trả thêm `rows` (hàng N ↔ Z nhấc, chờ, tốc độ hạ) | `{draft, rows?, warnings}` |
 | `GET /api/draw/schema` | tham số các nhóm, khổ giấy, bút, kiểu tô, giới hạn | `{papers, pens, params, styles, limits}` |
 | `POST /api/draw/import` | multipart `file` + `options` JSON; tự nhận SVG / ảnh (`/svg` là bí danh cũ) | `202 {task, state}` |

@@ -10,7 +10,7 @@ Mục lục (14/11/2026; danh sách hiện trên giao diện = spec.UI_STYLES, c
                         spiral           Xoắn ốc (Cận cảnh)
                         outline          Nét viền (Ảnh 2D, Schematic; thuật toán ở edges.py / trace.py)
   C. Kiểu đã ẩn         zigzag (13/11: đan chéo đẹp hơn), wave (sóng thường, như trên), crosshatch3 (đan 3 hướng: tông
-                        như đan chéo, nét rối hơn). Kiểu lai crosshatch_flow đã xóa 17/11/2026 (09 P28)
+                        như đan chéo, nét rối hơn). Kiểu lai crosshatch_flow đã xóa 17/11/2026 (08 P28)
 Hiện lại một kiểu ẩn = thêm tên vào spec.UI_STYLES + một dòng <option> ở index.html (ô style-kind) + khóa dịch vi / en.
 Thêm kiểu mới = một hàm đăng ký @FILLERS.register("tên") + tên vào spec.STYLES (+ GROUPERS nếu chia nhóm theo mức).
 """
@@ -314,7 +314,7 @@ UNLIMITED_SPACING_PEN = 1.4      # gạch chéo: khoảng cách nét tham chiế
 DETAIL_MIN_RUN_MM = 0.5          # gạch chéo: giữ mẩu gạch ngắn tới 0,5 mm (kiểu thường bỏ dưới 5 mm)
 DETAIL_THIN_SPACINGS = 0.0       # 0 = không mở mặt nạ: dải đậm hẹp vẫn được gạch
 DETAIL_WHITE = 0.02              # chỉ để trắng hẳn chỗ gần trắng (kiểu thường 0,2)
-# Sóng biến thiên bỏ giới hạn (đo trên ảnh mèo A4 bút 0,5, tài liệu 11 mục 4.2: 125 -> 592 nét, 21,5 -> 21,2 m, 2,8 -> 3,1 phút).
+# Sóng biến thiên bỏ giới hạn (đo trên ảnh mèo A4 bút 0,5, tài liệu 12 mục 4.2: 125 -> 592 nét, 21,5 -> 21,2 m, 2,8 -> 3,1 phút).
 # Chỉnh 22/11 trên ảnh phong cảnh A4 bút 0,4 (nhà gỗ, cây, phản chiếu hiện ra; phủ đều tắt vì nền tối thêm): bản đo 19/11 (2,8 / 0,6 / phủ đều)
 # đậm kịt cả trời. 29 phút, 1 041 nét (kiểu thường 25 phút, 418 nét).
 WAVE_UNLIMITED = {"spacing_lines": 3.4, "amplitude": 0.50, "wave_lines": 2.5, "min_run": 1.0, "white": 1.0}
@@ -532,7 +532,7 @@ GROUPERS = {"zigzag": zigzag_groups, "wave": wave_groups, "spiral": spiral_group
 
 # === B. Nét viền ==========================================================================================================
 # 19/11/2026 (chủ dự án: "bỏ bớt giới hạn để nét liền nhau hơn"): giữ nét ngắn hơn (8 -> 2 mm) và nối khe rộng hơn
-# (edges.GAP_MM 1,5 -> 2,8 mm). Đo trước/sau trên ảnh mèo A4 và ảnh 2D (xem docs/09 P39).
+# (edges.GAP_MM 1,5 -> 2,8 mm). Đo trước/sau trên ảnh mèo A4 và ảnh 2D (xem docs/08 P39).
 OUTLINE_MIN_LEN_MM = 6.0         # lớp viền phủ lên kiểu tô (ảnh 2D): bỏ nét viền ngắn hơn chừng này (14/11: 1 -> 4; 18/11: 4 -> 8; 19/11: 8 -> 6 cùng với
                                  # GAP_MM 1,5 -> 3,0. Đo 19/11, bút 0,5: ảnh mèo A4 110 -> 192 nét, nét dài TB 14,8 -> 15,2 mm;
                                  # ảnh 2D 85 -> 105 nét, TB 19,0 -> 20,9 mm. Muốn "liền" hơn nữa: GAP 4,0 (TB 17,2 mm) nhưng dễ nối nhầm)

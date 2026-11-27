@@ -1,6 +1,6 @@
 # 03 — Quy trình làm một việc
 
-1. **Đọc** tài liệu liên quan (bảng ở `00-bat-dau.md`). Đổi hành vi đã chốt: đọc `docs/09_QUYET_DINH_THIET_KE.md` trước.
+1. **Đọc** tài liệu liên quan (bảng ở `00-bat-dau.md`). Đổi hành vi đã chốt: đọc `docs/08_QUYET_DINH_THIET_KE.md` trước.
 2. **Sửa mã và test cùng lúc.**
 3. **Chạy test:**
    - Backend: `cd backend && python -m pytest` (~564 test). `test_old_logs_are_pruned` có thể hết giờ khi chạy chung; chạy riêng thì qua.
@@ -11,13 +11,13 @@
 
 | Đã làm | Sửa |
 |---|---|
-| Xong một việc (chỉ từ khóa + hằng chốt) / việc cần chọn / làm tiếp | `docs/11_VIEC_CAN_LAM.md` |
-| Việc cần thử trên giấy / máy | `docs/07_THU_NGHIEM.md` (danh sách đầu tệp) |
-| Đổi hành vi đã chốt | `docs/09_QUYET_DINH_THIET_KE.md` |
+| Xong một việc (chỉ từ khóa + hằng chốt) / việc cần chọn / làm tiếp | `docs/12_VIEC_CAN_LAM.md` |
+| Việc cần thử trên giấy / máy | `docs/11_THU_NGHIEM.md` (danh sách đầu tệp) |
+| Đổi hành vi đã chốt | `docs/08_QUYET_DINH_THIET_KE.md` |
 | Đổi API tab vẽ | `docs/05_TAB_TAO_BAN_VE.md` mục 7 + `spec.py` |
 | Đổi con số / thuật toán | `docs/06_THUAT_TOAN_XU_LY_ANH.md` |
 | Số đo máy mới | `docs/02_PHAN_CUNG_MAY.md` |
-| Kết quả thử trên giấy đã chốt | sửa hằng trong mã + `docs/02_PHAN_CUNG_MAY.md` mục 6; đánh dấu xong ở `docs/11` |
+| Kết quả thử trên giấy đã chốt | sửa hằng trong mã + `docs/02_PHAN_CUNG_MAY.md` mục 6; đánh dấu xong ở `docs/12` |
 | Thêm / đổi / xóa tệp lớn | `python tools/export_context.py --map` (sinh lại `docs/AI_CODEMAP.md`, không sửa tay) |
 
 7. **Báo trung thực:** test fail, bước bỏ qua, điều chưa thử trên máy thật / giấy / Ubuntu. Điều chỉ thử bằng mô phỏng thì nói là "mới thử mô phỏng, chưa in".

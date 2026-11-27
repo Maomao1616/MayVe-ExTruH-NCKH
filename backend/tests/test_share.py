@@ -1,4 +1,4 @@
-"""Địa chỉ + QR để mở giao diện từ máy khác (docs/13)."""
+"""Địa chỉ + QR để mở giao diện từ máy khác (docs/07)."""
 import cv2
 import numpy as np
 import pytest

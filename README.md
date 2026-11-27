@@ -4,7 +4,7 @@ Máy vẽ bút CoreXY tự làm (vùng làm việc 285 × 318 mm, giấy A6 / A5
 
 Bút vẽ là bút thật (Sakura 0,4 / Uniball 150 trên giấy Ivory 250 g/m²) nên nét ra có chỗ đậm chỗ nhạt, mực thấm khác nhau theo từng loại giấy — phần khó nhất của dự án nằm ở đây, không phải ở cơ khí.
 
-Phần mềm giữ đơn giản có chủ ý: **Python + FastAPI** ở máy chủ, **JavaScript thuần** ở trình duyệt, không framework, không bước build. Máy đích là MiniPC cũ nên cách này nhẹ, và mở tệp ra là đọc được, không cần thêm công cụ.
+Phần mềm giữ đơn giản có chủ ý: **Python + FastAPI** ở máy chủ, **JavaScript thuần** ở trình duyệt, không framework, không bước build. Thiết kế ban đầu cho máy yếu (MiniPC cũ, tạm bỏ từ 26/11/2026) nên cách này nhẹ, và mở tệp ra là đọc được, không cần thêm công cụ.
 
 Ba tab, ba việc:
 - **Tab Điều khiển:** kết nối, trạng thái, jog, Home / Zero, nâng hạ bút, nạp tệp G-code (khung 2D hiện ngay), chạy, hủy an toàn, tiếp tục tác vụ đã dừng, âm báo khi xong / lỗi, terminal, macro, hàng đợi.
@@ -50,11 +50,12 @@ Mọi thứ nằm trong `docs/`: số đo, lý do chọn cách này mà không c
 | 04 | [Tab Điều khiển](docs/04_TAB_DIEU_KHIEN.md) | nút, luồng lệnh, gửi G-code, dừng an toàn, tiếp tục |
 | 05 | [Tab Tạo bản vẽ](docs/05_TAB_TAO_BAN_VE.md) | nút, preset, luồng dữ liệu, tham số, API, bản thảo |
 | 06 | [Thuật toán xử lý ảnh](docs/06_THUAT_TOAN_XU_LY_ANH.md) | ảnh → nét chi tiết từng bước, thư viện dùng / không dùng / có thể thêm |
-| 07 | [Thử nghiệm](docs/07_THU_NGHIEM.md) | danh sách bài thử trên giấy, cách đo bề rộng nét / tông, mẫu gửi kết quả |
-| 08 | [Triển khai](docs/08_TRIEN_KHAI.md) | bản mang đi Windows, phân quyền, mạng / demo, MiniPC, Cloudflare |
-| 09 | [Quyết định thiết kế](docs/09_QUYET_DINH_THIET_KE.md) | chọn gì, vì sao |
-| 10 | [Hướng phát triển](docs/10_HUONG_PHAT_TRIEN.md) | ý tưởng để dành |
-| 11 | [Việc cần làm](docs/11_VIEC_CAN_LAM.md) | tình trạng, việc tiếp theo |
+| 07 | [Mạng, kết nối và triển khai](docs/07_MANG_KET_NOI_TRIEN_KHAI.md) | bản mang đi Windows, phân quyền, mạng / tên miền / Cloudflare, các phương án nối máy (USB, Wi-Fi, ESP32-S3), sơ đồ truyền dữ liệu |
+| 08 | [Quyết định thiết kế](docs/08_QUYET_DINH_THIET_KE.md) | chọn gì, vì sao |
+| 09 | [Hướng phát triển](docs/09_HUONG_PHAT_TRIEN.md) | ý tưởng để dành |
+| 10 | [Tab Beta PDF](docs/10_TAB_BETA_PDF.md) | in trang PDF: thuật toán chữ, hằng số, cách gỡ |
+| 11 | [Thử nghiệm](docs/11_THU_NGHIEM.md) | danh sách bài thử trên giấy, cách đo bề rộng nét / tông, mẫu gửi kết quả |
+| 12 | [Việc cần làm](docs/12_VIEC_CAN_LAM.md) | tình trạng, việc tiếp theo |
 | AI | [AI_START](docs/AI_START.md), [AI_CODEMAP](docs/AI_CODEMAP.md) | chỉ dành cho AI |
 
 ## Cài đặt và chạy (máy phát triển)
@@ -71,7 +72,7 @@ uvicorn app.main:app --reload
 Mở `http://127.0.0.1:8000/`. Chưa có máy: Cài đặt → Kết nối → chế độ `sim` (máy giả).
 - PowerShell báo "running scripts is disabled": `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 - Linux: `python3.12 -m venv .venv && source .venv/bin/activate`, còn lại giống nhau (chưa thử trên Ubuntu thật).
-- Máy không cài Python: dùng **bản mang đi** (thư mục `Python/` + `launcher/`, bấm icon), xem [08_TRIEN_KHAI.md](docs/08_TRIEN_KHAI.md) phần A.
+- Máy không cài Python: dùng **bản mang đi** (thư mục `Python/` + `launcher/`, bấm icon), xem [07_MANG_KET_NOI_TRIEN_KHAI.md](docs/07_MANG_KET_NOI_TRIEN_KHAI.md) mục 5.
 
 ## Kiểm tra
 | Việc | Lệnh |
@@ -88,7 +89,7 @@ Máy có động cơ thật: một lệnh sai có thể đâm bút xuống bàn,
 - Cắm USB, chọn cổng ở Cài đặt → Kết nối. Chế độ chỉ đọc chỉ xem trạng thái và gửi lệnh đọc.
 - Muốn máy chạy: **Mở khóa chuyển động** (tự khóa sau 15 phút). Chỉ mở khi có người đứng cạnh, tay gần công tắc nguồn.
 - Nút Reset / Dừng trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V.
-- **Hai vai trò**: khách (không đăng nhập) chỉ xem, được **Gửi ảnh**; quản lý nhập PIN. Chưa đặt PIN thì ai vào cũng là quản lý: khi cho máy khác vào mạng, đặt PIN quản lý trong `data\pin.txt` (dòng `admin=…`; dòng `unlock=` **không dùng**) — hoặc đổi ngay trong Cài đặt → PIN quản lý. Xem [08_TRIEN_KHAI.md](docs/08_TRIEN_KHAI.md) phần A4, B.
+- **Hai vai trò**: khách (không đăng nhập) chỉ xem, được **Gửi ảnh**; quản lý nhập PIN. Chưa đặt PIN thì ai vào cũng là quản lý: khi cho máy khác vào mạng, đặt PIN quản lý trong `data\pin.txt` (dòng `admin=…`; dòng `unlock=` **không dùng**) — hoặc đổi ngay trong Cài đặt → PIN quản lý. Xem [07_MANG_KET_NOI_TRIEN_KHAI.md](docs/07_MANG_KET_NOI_TRIEN_KHAI.md) phần A4, B.
 - Tắt Wi-Fi của mạch MKS trước khi cho người khác vào mạng (WebUI FluidNC vượt qua mọi khóa của phần mềm).
 
 ## Thư mục
@@ -105,7 +106,7 @@ data/                              (không lên Git) bản thảo, macro, sao l�
 ```
 
 ## Ghi công: ý tưởng, thư viện, giấy phép
-**Giao diện:** tab Điều khiển tham khảo cách bố trí của [AxioCNC](https://github.com/rsteckler/AxioCNC) (giao diện web điều khiển CNC, dựng trên cncjs) — **chỉ lấy ý tưởng, không dùng mã**. Ý tưởng tính năng: 4 repo của [Tonino-RB](https://github.com/Tonino-RB) — [SVGroom](https://github.com/Tonino-RB/SVGroom) · [Plotterosaurus](https://github.com/Tonino-RB/Plotterosaurus) · [PlotHatcher](https://github.com/Tonino-RB/PlotHatcher) · [vpyposaurus](https://github.com/Tonino-RB/vpyposaurus); việc cụ thể và giấy phép từng repo ở [10_HUONG_PHAT_TRIEN.md](docs/10_HUONG_PHAT_TRIEN.md) mục 4.1. Kho này **không chứa dòng mã nào của họ**.
+**Giao diện:** tab Điều khiển tham khảo cách bố trí của [AxioCNC](https://github.com/rsteckler/AxioCNC) (giao diện web điều khiển CNC, dựng trên cncjs) — **chỉ lấy ý tưởng, không dùng mã**. Ý tưởng tính năng: 4 repo của [Tonino-RB](https://github.com/Tonino-RB) — [SVGroom](https://github.com/Tonino-RB/SVGroom) · [Plotterosaurus](https://github.com/Tonino-RB/Plotterosaurus) · [PlotHatcher](https://github.com/Tonino-RB/PlotHatcher) · [vpyposaurus](https://github.com/Tonino-RB/vpyposaurus); việc cụ thể và giấy phép từng repo ở [09_HUONG_PHAT_TRIEN.md](docs/09_HUONG_PHAT_TRIEN.md) mục 4.1. Kho này **không chứa dòng mã nào của họ**.
 
 **Thư viện dùng trực tiếp** (giấy phép đọc từ gói đã cài, `pip` metadata ngày 17/11/2026):
 

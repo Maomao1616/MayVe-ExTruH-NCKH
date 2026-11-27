@@ -1,4 +1,4 @@
-"""Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/08_TRIEN_KHAI.md phần B)."""
+"""Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/07_MANG_KET_NOI_TRIEN_KHAI.md mục 6)."""
 import time
 
 import pytest

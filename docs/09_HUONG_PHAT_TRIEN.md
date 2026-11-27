@@ -1,17 +1,17 @@
-# 10 — Hướng phát triển (ý tưởng chưa xếp lịch)
+# 09 — Hướng phát triển (ý tưởng chưa xếp lịch)
 
-> Dành cho người đọc và người viết báo cáo (phần "hướng phát triển"). Chưa làm. Mọi thời gian là **ước lượng**, phải đo trên MiniPC thật.
+> Dành cho người đọc và người viết báo cáo (phần "hướng phát triển"). Chưa làm. Mọi thời gian là **ước lượng**, phải đo trên máy chủ thật.
 > Ký hiệu: ✅ chủ dự án đã đồng ý ý này · 💡 gợi ý · ⚠ chưa kiểm chứng.
-> Việc đã xếp lịch và câu hỏi chờ bạn chọn: [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md). Thư viện / thuật toán ảnh có thể thêm: [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 17.
+> Việc đã xếp lịch và câu hỏi chờ bạn chọn: [12_VIEC_CAN_LAM.md](12_VIEC_CAN_LAM.md). Thư viện / thuật toán ảnh có thể thêm: [06](06_THUAT_TOAN_XU_LY_ANH.md) mục 17.
 
 Nguyên tắc chung: **không sửa firmware FluidNC.** Đóng góp của đề tài nằm ở cách ghép dây chuyền, tối ưu cho phần cứng yếu, phần cứng gắn thêm bên ngoài, và **số đo trước / sau**.
 
 ---
 
 ## 0. Thuật toán ảnh: đã xong và đóng băng
-Các ý tưởng tư vấn (nối nét gần, ước tính có gia tốc, đường cong tông, FDoG, flow field, G2/G3, tách mực) **đã làm**; lý do và số đo ở [09](09_QUYET_DINH_THIET_KE.md) (P18–P47) và [06](06_THUAT_TOAN_XU_LY_ANH.md). Triết lý giữ nguyên: **ít nhấc bút, không nét vụn, chạy được trên CPU MiniPC, không cần mạng.**
+Các ý tưởng tư vấn (nối nét gần, ước tính có gia tốc, đường cong tông, FDoG, flow field, G2/G3, tách mực) **đã làm**; lý do và số đo ở [08](08_QUYET_DINH_THIET_KE.md) (P18–P47) và [06](06_THUAT_TOAN_XU_LY_ANH.md). Triết lý giữ nguyên: **ít nhấc bút, không nét vụn, chạy được trên CPU MiniPC, không cần mạng.**
 
-**Không làm:** dithering 2D từng điểm ảnh (đốm, nhiều nhấc bút; "chuyển mức mềm" đã so le theo dòng) · tối ưu theo hàm chi phí 30–180 s (quá lâu cho MiniPC) · viết lại dây chuyền thành "PipelineContext" chung (mất phần kiểm tham số của `spec.py`) · AI / GPU / API ngoài (MiniPC không CUDA, demo offline; đã thử và bỏ, P35).
+**Không làm:** dithering 2D từng điểm ảnh (đốm, nhiều nhấc bút; "chuyển mức mềm" đã so le theo dòng) · tối ưu theo hàm chi phí 30–180 s (quá lâu cho máy chủ yếu) · viết lại dây chuyền thành "PipelineContext" chung (mất phần kiểm tham số của `spec.py`) · AI / GPU / API ngoài (MiniPC không CUDA, demo offline; đã thử và bỏ, P35).
 
 **Còn mở (chỉ làm khi in thấy cần):** tờ tông riêng cho Theo dáng ảnh và UB-155 · nối đầu các đường kề nhau ở Theo dáng.
 
@@ -22,10 +22,10 @@ Phần "nét → G-code" dùng chung; mỗi tính năng mới chỉ là một ng
 
 | Nguồn nét | Trạng thái |
 |---|---|
-| **PDF từ Word** (tab Beta) | ✅ lõi xong 22/11/2026: đọc ký tự thật rồi viết lại bằng font nét đơn, dấu tiếng Việt tự ghép ([12](12_TAB_BETA_PDF.md)). Cách "kết xuất ảnh rồi skeleton" đã thử và không chọn (chữ 14 pt đứt nét, mất dấu) |
-| **Soạn font riêng** (chữ tay của chủ dự án) | 📋 kế hoạch đã chốt, chưa làm: xuất font vpype → sửa bằng chuột trong tab Beta → nạp thẳng; sau đó bút cảm ứng và biến thể mỗi chữ ([12](12_TAB_BETA_PDF.md) mục 11b). Chỉ dùng chữ của chính mình hoặc người đã đồng ý |
-| **Nhận dạng chữ (OCR)** cho PDF quét và chữ trong hình | 💡 ([12](12_TAB_BETA_PDF.md) mục 1) |
-| **Câu lệnh → AI tạo ảnh** (làm cuối) | 💡 không chạy tại chỗ (MiniPC không GPU); gọi dịch vụ ngoài thì cần Internet, tốn phí, phải giới hạn số lần |
+| **PDF từ Word** (tab Beta) | ✅ lõi xong 22/11/2026: đọc ký tự thật rồi viết lại bằng font nét đơn, dấu tiếng Việt tự ghép ([10](10_TAB_BETA_PDF.md)). Cách "kết xuất ảnh rồi skeleton" đã thử và không chọn (chữ 14 pt đứt nét, mất dấu) |
+| **Soạn font riêng** (chữ tay của chủ dự án) | 📋 kế hoạch đã chốt, chưa làm: xuất font vpype → sửa bằng chuột trong tab Beta → nạp thẳng; sau đó bút cảm ứng và biến thể mỗi chữ ([10](10_TAB_BETA_PDF.md) mục 11b). Chỉ dùng chữ của chính mình hoặc người đã đồng ý |
+| **Nhận dạng chữ (OCR)** cho PDF quét và chữ trong hình | 💡 ([10](10_TAB_BETA_PDF.md) mục 1) |
+| **Câu lệnh → AI tạo ảnh** (làm cuối) | 💡 không chạy tại chỗ (máy chủ không GPU); gọi dịch vụ ngoài thì cần Internet, tốn phí, phải giới hạn số lần |
 
 Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, PDF ≤ 40 MB / 500 trang, ảnh gốc ≤ 60 triệu điểm, ảnh làm việc 400–4000 điểm cạnh dài, mỗi lần xử lý ≤ 600 s, RAM tiến trình ≤ 4 GB (Linux), tổng điểm nét ≤ 2 triệu, 2-opt ≤ 15 000 nét, G-code ≤ 200 000 dòng.
 
@@ -54,10 +54,10 @@ Giới hạn bảo vệ đã có: ảnh ≤ 40 MB, SVG ≤ 20 MB, PDF ≤ 40 MB 
 | Nút | Làm gì | Từ khóa |
 |---|---|---|
 | Bảng điều khiển không dây | OLED / TFT + 3 nút + còi + LED: trạng thái, % tiến độ, tạm dừng / chạy tiếp qua API (cần "mã thiết bị"). Nút an toàn vẫn phải nối dây | `ESP32-S3 OLED HTTP client` |
-| **Đo dòng điện / điện năng** (chọn 24/11/2026) | INA260 (hoặc INA226 + điện trở đo) **mắc nối tiếp** vào dây + 12 V giữa nguồn Mean Well và MKS (mắc song song chỉ đo được điện áp); ESP32 đọc qua I2C rồi gửi lên server → Wh mỗi bản vẽ, công suất cùng biểu đồ tốc độ. Dự phòng dễ hơn: ổ cắm đo điện thông minh. Chi tiết ở [09](09_QUYET_DINH_THIET_KE.md) P50 | `INA260 ESP32` |
+| **Đo dòng điện / điện năng** (chọn 24/11/2026) | INA260 (hoặc INA226 + điện trở đo) **mắc nối tiếp** vào dây + 12 V giữa nguồn Mean Well và MKS (mắc song song chỉ đo được điện áp); ESP32 đọc qua I2C rồi gửi lên server → Wh mỗi bản vẽ, công suất cùng biểu đồ tốc độ. Dự phòng dễ hơn: ổ cắm đo điện thông minh. Chi tiết ở [08](08_QUYET_DINH_THIET_KE.md) P50 | `INA260 ESP32` |
 | ~~Nhiệt độ~~ | **Bỏ** (24/11/2026): động cơ chạy tải nhẹ, số đo không có ý nghĩa | |
-| Camera xem trực tiếp | **Đổi sang webcam USB cắm server** ([09](09_QUYET_DINH_THIET_KE.md) P49) thay vì ESP32-CAM (ảnh mờ, cần nguồn riêng) | |
-| Giao tiếp | MQTT (Mosquitto chạy trên MiniPC, không cần Internet) hoặc HTTP | `paho-mqtt`, `PubSubClient` |
+| Camera xem trực tiếp | Dự định 24/11: webcam USB cắm máy chủ thay vì ESP32-CAM ([08](08_QUYET_DINH_THIET_KE.md) P49). **27/11:** nếu máy chủ ở xa máy vẽ (mục 3.4) thì webcam USB không cắm được vào máy chủ; chưa chốt giữa ESP32-CAM (rẻ, chỉ để xem, ảnh mờ, cần nguồn riêng) và webcam + máy nhỏ cạnh máy vẽ | |
+| Giao tiếp | MQTT (Mosquitto chạy trên máy chủ, không cần Internet) hoặc HTTP | `paho-mqtt`, `PubSubClient` |
 
 ESP32 dùng hạ áp 5 V riêng (servo giật dòng làm ESP32 khởi động lại).
 
@@ -68,15 +68,24 @@ ESP32 dùng hạ áp 5 V riêng (servo giật dòng làm ESP32 khởi động l�
 | Driver | TMC2209 StealthChop (êm) và SpreadCycle (khỏe ở tốc độ cao); nguồn 24 V | `TMC2209 standalone SpreadCycle` |
 | Camera tự căn giấy | mã ArUco ở góc bàn → tự tìm vị trí giấy, tự đặt Zero; chụp tờ đã vẽ → so với xem trước bằng SSIM + OCR | `OpenCV ArUco homography` |
 | Thông báo | MQTT lên bảng theo dõi, bot Telegram báo "vẽ xong / lỗi" | `Telegram bot sendMessage` |
-| So đường truyền | độ trễ USB so với Wi-Fi của FluidNC; ghi lý do chọn USB (Wi-Fi vượt qua khóa của phần mềm) | `FluidNC telnet websocket` |
+| So đường truyền | độ trễ USB so với Wi-Fi telnet (mã đã có, chưa đo; tool `do_duong_truyen.py` chưa viết: [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 11.6). Phần mềm điều khiển qua Wi-Fi vẫn chịu PIN và khóa; chỉ **WebUI của FluidNC** vượt khóa | `FluidNC telnet websocket` |
+
+### 3.4 Nối mạng và IoT từ xa (chốt hướng 27/11/2026, chưa làm; chi tiết [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 11–13)
+| Hướng | Làm gì | Từ khóa |
+|---|---|---|
+| **ESP32-S3 làm cầu nối** (✅ chủ dự án chọn, [08](08_QUYET_DINH_THIET_KE.md) P52) | Máy chủ ở PC nhà hoặc server cloud; quanh máy vẽ chỉ một ESP32-S3 N16R8 tự gọi ra tên miền (WebSocket) và nối dây UART vào cổng phụ của MKS (`uart_channel` trong `config.yaml`). ESP giữ kho lệnh, tự gửi từng dòng tại chỗ (số đo: qua Cloudflare ~0,13 s mỗi lượt, có lần 1,16 s). Giữ USB, telnet, điểm phát dự phòng | `FluidNC uart_channel`, `ESP32 WebSocket client TLS` |
+| Nút dừng cứng | `feed_hold_pin` (tạm dừng), `cycle_start_pin` (chạy tiếp), tùy chọn `estop_pin` (dừng gấp, báo động nghiêm trọng) nối thẳng MKS; ESP tự gửi `!` khi mất kết nối với máy chủ | `FluidNC control pins` |
+| Đổi giao diện WebUI của FluidNC, giữ chức năng | Cách A: chèn CSS vào `index.html.gz` (màu, nút to, hạn chế sắp lại khối); cách B: build lại từ mã nguồn ESP3D-WEBUI để sắp khối giống tab Điều khiển. Hoặc trang cứu hộ riêng ≤ 30 KB. Chủ dự án tự tải lên mạch | `ESP3D-WEBUI`, `index.html.gz` |
+| Máy chủ trên cloud | Backend chưa từng chạy Linux; đo RAM đỉnh bằng `tools/do_thoi_gian.py` trước khi chọn gói | |
+| Máy nhỏ cạnh máy vẽ (Pi, MiniPC) | ⏸ tạm bỏ 26/11: chủ dự án chỉ cần một con gửi lệnh; cân nhắc lại nếu cần webcam USB hoặc xử lý ảnh tại chỗ | |
 
 ---
 
 ## 4. Tính năng phần mềm nhỏ
-Thứ tự làm ở [11](11_VIEC_CAN_LAM.md) mục 4.2. Còn lại:
+Thứ tự làm ở [12](12_VIEC_CAN_LAM.md) mục 4.2. Còn lại:
 - 💡 Vệt bút theo dòng G-code cho cả macro / tiếp tục tác vụ (hiện chỉ cho tệp đang chạy).
 - 💡 `.devcontainer/` cho GitHub Codespaces.
-- 💡 2-opt trong Web Worker, chỉ khi đo trên MiniPC thấy sắp xếp nét lâu.
+- 💡 2-opt trong Web Worker, chỉ khi đo trên máy chủ thấy sắp xếp nét lâu.
 
 ### 4.1 Tham khảo từ 4 repo của Tonino-RB (17/11/2026, chưa làm)
 
@@ -111,4 +120,4 @@ Nguồn từng việc: **1–5** SVGroom · **6–7** Plotterosaurus · **8** vp
 - "`vpype-text` tự ép font Hershey tiếng Việt": plugin ngừng phát triển; Hershey không có dấu tiếng Việt (tab Beta tự ghép dấu).
 - "`findContours` trên nét 1 điểm ảnh": ra hai đường bao.
 - "`potrace` vector hóa nét mượt": ra nét đôi.
-- "`docx2pdf`": cần Word cài sẵn; MiniPC Ubuntu không có.
+- "`docx2pdf`": cần Word cài sẵn; máy Ubuntu không có.

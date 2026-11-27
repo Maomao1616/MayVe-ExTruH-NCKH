@@ -1,8 +1,8 @@
-# 07 — Thử nghiệm và hiệu chỉnh trên giấy
+# 11 — Thử nghiệm và hiệu chỉnh trên giấy
 
 > Dành cho người vận hành máy (không cần lập trình). Mục tiêu: chốt con số mặc định **bằng bản in thật**, vì màn hình không cho biết mực loang, giấy thấm, bút khô ra sao.
 > **Cách dùng:** làm theo danh sách ngay dưới (từ trên xuống) → chép **mẫu ở mục 8**, điền số, gửi kèm ảnh. Không cần tự sửa mã hay tài liệu; AI đọc ảnh và số rồi chỉnh.
-> Ký hiệu: ✅ đã chốt · ⏳ chưa làm. Kết quả thử máy đã có: [02](02_PHAN_CUNG_MAY.md) mục 6. Việc cần làm khác: [11](11_VIEC_CAN_LAM.md).
+> Ký hiệu: ✅ đã chốt · ⏳ chưa làm. Kết quả thử máy đã có: [02](02_PHAN_CUNG_MAY.md) mục 6. Việc cần làm khác: [12](12_VIEC_CAN_LAM.md). Rà lại 27/11/2026.
 
 ## 0. Nguyên tắc
 - **Mọi quyết định về độ đậm phải nhìn tờ giấy.** Khung xem trước chỉ để kiểm hình học (đủ nét, đúng chỗ, không vượt khổ).
@@ -28,6 +28,12 @@ Hằng số thuật toán (`FLOW_*`, `HATCH_*`, `AM_*`, `REFINE_*`) **không** �
 **Chuẩn bị (một lần):** (1) tắt phần mềm, mở lại, trình duyệt **Ctrl+F5**; (2) tab Tạo bản vẽ, khối G-code: vẽ / di chuyển **8000**, Z nâng 3 / hạ 0, hạ bút 2000, chờ **0**; (3) Terminal gõ `$10` phải ra `$10=3` (không thì gõ `$10=3`); (4) Cài đặt → Cấu hình máy: gia tốc X / Y **2700**, `junction_deviation` **0,02** (chốt 22/11/2026) → Áp dụng → **Lưu vào mạch** (bạn bấm; phần mềm đã ước tính theo 2700 / 0,02); (5) bật nguồn, nối, **mở khóa chuyển động**; (6) chọn lại preset sau khi mở. Giấy Ivory mặt bóng, bút **Sakura 0,5** trừ khi ghi khác.
 
 ### A. In giấy (chỉ còn các bài này; kết quả cũ đã chốt thì bỏ, tra Git)
+**Đề xuất gộp để tiết kiệm giấy và đổi bút (27/11/2026; chủ dự án bỏ bớt nếu muốn):** làm lẻ từng bài thì 13 tờ. Gộp được:
+- **Dùng chung một ảnh** cho A1 và A5: cùng ảnh mèo, một tờ Đường dòng + Chất lượng tối đa, một tờ Xoắn ốc → so hai kiểu trên cùng chủ thể.
+- **A8 làm chung với A4:** ảnh chân dung có nền rối, khoanh elip, nền còn 50 %, **không** tích Chất lượng tối đa. Một tờ trả lời cả hai câu hỏi.
+- A7 là 3 tờ A6; chụp **cả 3 tờ trong một ảnh** (mỗi tờ thấy đủ 3 ô mốc đen).
+- **Thứ tự theo bút:** Đợt 1 (UM-100): A3 (ưu tiên số 1), A4 + A8, A1 + A5, A2, A6. Đợt 2 (UM-100, tờ nhỏ): A7. Đợt 3 (đổi bút, một lần): A9.
+- Kết quả: **13 tờ → 12 tờ** (chỉ A8 nhập vào A4; chung ảnh A1 + A5 không bớt giấy, chỉ giúp so sánh công bằng hơn).
 Tổng quát: bút **UM-100**, giấy Ivory 250 g/m² mặt bóng, A4; ghi ở góc tờ (kiểu, preset, ngày) rồi chụp thẳng góc, đủ sáng, không flash.
 | # | Bài | Chọn gì | Nhìn và ghi |
 |---|---|---|---|
@@ -44,21 +50,25 @@ Tổng quát: bút **UM-100**, giấy Ivory 250 g/m² mặt bóng, A4; ghi ở g
 ### B. Máy (còn 1 bài; các bài khác đã xong, ghi ở [02](02_PHAN_CUNG_MAY.md) F16)
 | # | Bài | Làm | Nhìn và ghi |
 |---|---|---|---|
-| B3 | **Tạo nét chậm** (laptop yếu, MiniPC) | chạy `tools/do_thoi_gian.py` (mục 9.2) trên máy đó | gửi 2 tệp kết quả; giao diện còn khựng thì F12 → Performance → Record 5 giây, chụp màn hình |
+| B3 | **Tạo nét chậm** (laptop yếu, máy chủ mới) | chạy `tools/do_thoi_gian.py` (mục 9.2) trên máy đó | gửi 2 tệp kết quả; giao diện còn khựng thì F12 → Performance → Record 5 giây, chụp màn hình |
 
 ### C. Người dùng, mạng
-**Cách vào giao diện từ điện thoại khi laptop đã có Wi-Fi:** [08](08_TRIEN_KHAI.md) mục C, khối "Vào giao diện từ điện thoại" (5 bước: nối Wi-Fi **trước**, bấm icon, mở đúng địa chỉ, tường lửa Mạng riêng tư).
+**Cách vào giao diện từ điện thoại khi laptop đã có Wi-Fi:** [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 7, khối "Vào giao diện từ điện thoại" (5 bước: nối Wi-Fi **trước**, bấm icon, mở đúng địa chỉ, tường lửa Mạng riêng tư).
 
 | # | Bài | Làm | Nhìn và ghi |
 |---|---|---|---|
 | C1 | **PIN + khách** | `data\pin.txt` dòng `admin=…` bằng PIN khó đoán (chỉ PIN đăng nhập, không cần `unlock=`); vào bằng điện thoại | ra giao diện **khách** (chỉ xem, được Gửi ảnh); đổi PIN trên giao diện, đăng nhập lại bằng điện thoại |
 | C2 | **Luồng khách gửi ảnh** | điện thoại (chưa đăng nhập) → tab Tạo bản vẽ → chọn ảnh, cắt, khổ → **Gửi ảnh**; laptop (đăng nhập) → hộp "Ảnh khách gửi" → **Mở** → **Tạo nét** | cắt bằng ngón tay được không; cảnh báo quá 6 ảnh / giờ; ảnh tự xóa sau 5 ngày |
 | C3 | **Tờ thử trên giao diện** | Cài đặt → Tờ thử → tạo tờ nhấc bút, nạp ở Điều khiển, chạy, chọn hàng đẹp → **Dùng** | tab Tạo bản vẽ có đổi Z nhấc / chờ / tốc độ hạ |
-| C4 | **Tắt Wi-Fi của mạch MKS** | trước khi cho người khác vào mạng | — |
+| C4 | **Khóa Wi-Fi của mạch MKS** | trước khi cho người khác vào mạng: đổi `$AP/Password` (mật khẩu mặc định của firmware công khai) hoặc tắt Wi-Fi của mạch ([07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 11.5) | thử nối lại bằng mật khẩu cũ phải không vào được |
 | C5 | **Âm báo xong / lỗi** | chạy một bản vẽ ngắn (hoặc máy giả), chuyển sang tab khác | nghe 3 nốt lên khi xong; tiêu đề tab nhấp nháy; tắt được ở Cài đặt → Hoạt động; lỗi thì 2 nốt trầm |
+| C6 | **Nối mạch qua Wi-Fi (chỉ xem)** | Cài đặt → Kết nối → Wi-Fi, địa chỉ `fluidnc.local` hoặc IP điểm phát; **chưa** mở khóa chuyển động; chạy lệnh `$I`, `$G` ([07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 11.6 việc 1–3) | nối được; trạng thái và tọa độ cập nhật; nút chạy vẫn khóa; rút điểm phát thì phần mềm báo mất sóng sau ~3 s |
+| C7 | **Đo đường truyền USB so với Wi-Fi** | sau khi có `tools/do_duong_truyen.py` ([07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 11.6 việc 4): 500 lần `$G` mỗi đường; rồi tệp 7.6 (bút nâng) mỗi đường | số dòng/giây, thời gian đi–về (trung vị / 95 % / lớn nhất); mốc USB ~125 dòng/giây |
+| C8 | **Độ trễ Cloudflare lúc khác và qua 4G** | lặp cách đo ở [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 4 (25 lần `/api/health` qua tên miền): lúc khác trong ngày; laptop nối 4G điện thoại | trung vị và số lần vọt trên 1 s; mốc 27/11: ~0,13 s, 1 lần 1,16 s |
+| C9 | **Nút dừng cứng** (khi đã nối dây, sau ESP32-S3) | nút `feed_hold_pin` / `cycle_start_pin` khi máy chạy máy giả hoặc không có bút; rút mạng giữa bản vẽ | nút phải dừng / chạy tiếp được **dù mất mạng**; bút ở đâu khi dừng |
 
-### D. Bản mang đi, MiniPC
-Máy sạch không cài gì (Visual C++ của OpenCV), điện thoại thật, Docker + USB, Cloudflare: [08](08_TRIEN_KHAI.md) mục G. Thời gian xử lý ảnh / RAM trên MiniPC: mục 9.
+### D. Bản mang đi, máy chủ mới
+Máy sạch không cài gì (Visual C++ của OpenCV), điện thoại thật (giao diện P51: thanh tab đáy, ô xám sau khi chạm, nút Hủy tác vụ, Terminal), Cloudflare: [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 15. Thời gian xử lý ảnh / RAM trên máy chủ mới: mục 9.
 
 **Gửi lại (một lần cuối buổi):** ảnh từng tờ (thẳng góc, đủ sáng, không flash; tờ tông thấy đủ 3 ô mốc đen) + bảng: bài · kiểu / preset · khổ · thời gian thật / ước tính · nhận xét. Bài máy: ảnh chụp màn hình Biểu đồ + tải CSV từ Biểu đồ (hoặc nén `data\job_logs`). Có `error` ở Terminal thì chụp lại.
 
@@ -107,7 +117,7 @@ AI đọc ảnh bằng `tools/tone_read.py` ra bảng *độ phủ → độ đ�
 ## 3. Từng kiểu tô: soi chỗ nào
 | Kiểu | Soi trên giấy | Chỉnh ở đâu |
 |---|---|---|
-| Gạch chéo | râu ở mép mảng; má / nền sáng trống quá; móc chữ U ở mảng sáng hẹp (còn, đã thử bỏ không được, 09 P28) | `HATCH_WHITE` 0,2 · `HATCH_THIN_SPACINGS` 1,5 · `HATCH_MIN_RUN_MM` 5 (`styles.py`) |
+| Gạch chéo | râu ở mép mảng; má / nền sáng trống quá; móc chữ U ở mảng sáng hẹp (còn, đã thử bỏ không được, 08 P28) | `HATCH_WHITE` 0,2 · `HATCH_THIN_SPACINGS` 1,5 · `HATCH_MIN_RUN_MM` 5 (`styles.py`) |
 | Theo dáng ảnh | vùng tối vụn hay đặc; nét chạy theo lông | `FLOW_TEST_RATIO` 0,7 · `FLOW_MIN_LEN_SEPS` 3 · `FLOW_MAX_COVER` 0,85 · `FLOW_MAX_SEP_LINES` 4,5 (`flow.py`) |
 | Sóng biến thiên | vệt trắng ở da; rung ở sóng dày; ô 90 % đen chưa | ô "Phủ đều đường ở vùng sáng" · `AM_DARK_LAYER` · `AM_SPACING_LINES` |
 | Xoắn ốc | tâm xoắn bết mực; vệt nối ngang vùng sáng | `SPIRAL_BRIDGE_PITCHES` (`hatch.py`) |
@@ -151,12 +161,12 @@ Mục đích: vẽ nhanh hơn mà nét không xấu, máy không mất bước. 
 | 7.3 | Gia tốc + góc | răng cưa bước 2 mm, mỗi tốc độ một hàng; đổi gia tốc / junction rồi chạy lại | gợn sóng sau góc; giọt mực ở góc | ✅ gia tốc **2700**, junction **0,02** (22/11/2026, đỡ rung lắc, giữ linh kiện) |
 | 7.4 | Tốc độ vẽ từng bút | dải đường thẳng 7000 / 8000 / 9000 / 10000, chụp cận đo bề rộng nét | tốc độ cao nhất mà nét chưa nhạt / đứt | ✅ **8000** (10000 được ở đoạn dài) |
 | 7.5 | Vệt kéo khi đi xa | hai chấm cách 240 mm, G0 qua lại 5 lần, mỗi lần một mức chờ; đổi Z 3 / 4 / 5; giấy phẳng | vệt mảnh nối hai chấm = bút chưa rời giấy | bỏ 17/11 (không cần) |
-| 7.6 | Đoạn ngắn và cung G2 | 5 vòng tròn R10 chồng 12 lần: G1 đoạn 1 / 0,5 / 0,25 / 0,1 mm rồi G2; mở Biểu đồ xem hàng đợi từng vòng | tốc độ thật tụt không; hàng đợi cạn (chấm đỏ) | ✅ 13/11: G1 6,0 / 11,6 / 23,3 / 60,7 s, **G2 5,7 s** → dùng G2/G3 (09 D12) |
+| 7.6 | Đoạn ngắn và cung G2 | 5 vòng tròn R10 chồng 12 lần: G1 đoạn 1 / 0,5 / 0,25 / 0,1 mm rồi G2; mở Biểu đồ xem hàng đợi từng vòng | tốc độ thật tụt không; hàng đợi cạn (chấm đỏ) | ✅ 13/11: G1 6,0 / 11,6 / 23,3 / 60,7 s, **G2 5,7 s** → dùng G2/G3 (08 D12) |
 
 **Đọc bộ đệm khi chờ 0:** chờ 0,02 thì mỗi lần nhấc có `G4` nên hàng đợi tụt về 0; chờ 0 không có `G4` thì hàng đợi phải **không tụt** tại chỗ nhấc (✅ 13/11: đầy suốt; mặc định 0). Cần đã gõ `$10=3`.
 
 ## 7. Ghi kết quả
-Kết quả chốt ghi ở [02](02_PHAN_CUNG_MAY.md) mục 6 (máy) và sửa số mặc định trong mã (cột "Chỉnh ở đâu"); đánh dấu xong ở [11](11_VIEC_CAN_LAM.md). Bảng ghi từng buổi (03/11 → 13/11) nằm ở 02 mục 6, không lặp ở đây.
+Kết quả chốt ghi ở [02](02_PHAN_CUNG_MAY.md) mục 6 (máy) và sửa số mặc định trong mã (cột "Chỉnh ở đâu"); đánh dấu xong ở [12](12_VIEC_CAN_LAM.md). Bảng ghi từng buổi (03/11 → 13/11) nằm ở 02 mục 6, không lặp ở đây.
 
 ## 8. Mẫu gửi kết quả
 Chép khối dưới, điền sau dấu `:`, bỏ trống chỗ không đo được. Gửi kèm **ảnh cả tờ** (chụp thẳng, đủ sáng) và **ảnh cận** nếu bài cần. Đặt thước kẻ cạnh chỗ chụp cận để đọc bề rộng nét.
@@ -195,7 +205,7 @@ Chạy bằng Python của phần mềm: `cd backend` rồi `.\.venv\Scripts\pyt
 ```powershell
 cd backend
 .\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --label laptop        # ảnh thử tổng hợp, khổ A5, 5 kiểu
-.\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --image ..\data\anh.jpg --paper a4 --label mini-pc
+.\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --image ..\data\anh.jpg --paper a4 --label may-moi
 .\.venv\Scripts\python.exe ..\tools\do_thoi_gian.py --styles crosshatch,flow --refine 0
 ```
 - In một bảng ra màn hình và ghi **2 tệp** vào `export\` (không lên Git): `do-thoi-gian-<tên máy>-<ngày>.md` (đọc bằng mắt) và `.json` (đưa cho AI).
@@ -204,7 +214,7 @@ cd backend
 - Lúc dùng thật, bước ảnh → nét chạy ở **tiến trình con** (`isolated.py`) nên cộng thêm thời gian khởi động (đo riêng, ~0,35 s trên laptop).
 - Công cụ **nạp sẵn thư viện `vpype`** trước khi đo (lần đầu nạp ~0,7 s), nên kiểu đầu bảng không bị đội thời gian; hai máy đo cùng cách thì so được.
 
-**Số laptop 22/11/2026** (Intel i5-9400F, 6 luồng, 15,9 GB, ảnh thử 1000 × 1400, A5, bút 0,5, sửa sai 1 lượt):
+**Số đo 22/11/2026** (Intel i5-9400F, 6 luồng, 15,9 GB, ảnh thử 1000 × 1400, A5, bút 0,5, sửa sai 1 lượt). ⚠ Chủ dự án nói laptop chính (26/11) là i5 đời 11–12, 16 GB, **chưa khớp** máy i5-9400F này (chưa rõ cùng máy hay khác máy): **chưa đo lại trên laptop chính**; chạy lại lệnh 9.2, tên CPU nằm trong tệp kết quả:
 
 | Kiểu | Tạo nét | Đọc | Tông | Tô | Tối ưu | G-code | Số nét | Dài | Dòng G-code | RAM đỉnh thêm |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -231,6 +241,6 @@ cd backend
 Số trong [06](06_THUAT_TOAN_XU_LY_ANH.md) ghi 14–17/11 lệch nhiều so với bảng này (vd Sóng biến thiên 0,027 → 0,049) vì bộ dựng mực và mã đã đổi 17–22/11. Đã kiểm: mã commit và mã đang sửa ra **cùng số**, nên không phải lỗi mới; 06 đã ghi số mới. Trong `ink_sim`, dòng "+ sửa sai" nhắm độ phủ đã qua đường cong tông nên có thể **tăng** sai số so với ảnh gốc; muốn thấy vòng sửa sai có ích thì đọc `ink_real`.
 
 ### 9.4 Gửi lại số sau khi đo
-1. Chạy đúng một lệnh ở 9.2 trên **laptop** và trên **MiniPC** (cùng ảnh, cùng `--paper`).
+1. Chạy đúng một lệnh ở 9.2 trên **laptop** và trên **máy chủ mới** nếu có (cùng ảnh, cùng `--paper`).
 2. Gửi **2 tệp** của mỗi máy (`export\do-thoi-gian-*.md` và `.json`) — trong đó đã có CPU, RAM, thời gian từng bước, RAM đỉnh.
 3. Nếu định thử lại một kiểu tô: chạy thêm `ink_sim.py` trước và sau khi sửa, gửi **cả hai bảng** (nêu số trước / sau).

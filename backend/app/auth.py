@@ -1,4 +1,4 @@
-"""Phân quyền khách / quản lý bằng mã PIN (docs/08_TRIEN_KHAI.md phần B).
+"""Phân quyền khách / quản lý bằng mã PIN (docs/07_MANG_KET_NOI_TRIEN_KHAI.md mục 6).
 
 - Quản lý = ai nhập đúng PIN quản lý: được cấp phiên (cookie ngẫu nhiên, lưu trong RAM).
   PIN lấy từ dòng `admin=...` của data/pin.txt (đổi được trên giao diện, áp dụng ngay), nếu không có thì từ biến

@@ -1,4 +1,4 @@
-"""Sinh sẵn các tệp G-code cho các bài thử máy (docs/07_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn.
+"""Sinh sẵn các tệp G-code cho các bài thử máy (docs/11_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn.
 
     python tools/make_test_gcode.py                 # ghi vào export/test-gcode/ (không lên Git)
     python tools/make_test_gcode.py --up 3 --down 0 --pen-feed 3000 --out thu-muc-khac
@@ -30,7 +30,7 @@ speed_strips, drag_test, build_all = _core.speed_strips, _core.drag_test, _core.
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Sinh G-code cho các bài thử tốc độ (docs/07_THU_NGHIEM.md mục 6).")
+    ap = argparse.ArgumentParser(description="Sinh G-code cho các bài thử tốc độ (docs/11_THU_NGHIEM.md mục 6).")
     ap.add_argument("--up", type=float, default=3.0, help="Z khi nâng bút (mm), mặc định 3")
     ap.add_argument("--down", type=float, default=0.0, help="Z khi hạ bút (mm), mặc định 0")
     ap.add_argument("--pen-feed", type=float, default=3000.0, help="tốc độ nâng bút (mm/phút), mặc định 3000")

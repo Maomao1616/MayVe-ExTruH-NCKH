@@ -1,4 +1,4 @@
-r"""Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/07 mục 2, docs/06 mục 8.12).
+r"""Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/11 mục 2, docs/06 mục 8.12).
 
     cd backend && .venv\Scripts\python.exe ..\tools\tone_read.py anh.jpg [--paper a6] [--crop x0,y0,x1,y1]
                  [--kind crosshatch] [--out kiem.png] [--json ket_qua.json]

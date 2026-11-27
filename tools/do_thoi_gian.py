@@ -7,7 +7,7 @@ r"""Đo thời gian từng bước + RAM đỉnh của dây chuyền ảnh -> n�
 
 Không có --image thì dựng ảnh thử tổng hợp (dải chuyển + đốm tròn + vài khung) để mọi máy đo cùng một đầu vào.
 In bảng ra màn hình và ghi 2 tệp vào export/ (không lên Git): do-thoi-gian-<máy>-<ngày>.md và .json.
-Cùng một lệnh chạy trên laptop và trên MiniPC rồi gửi 2 tệp để so (docs/07 mục 9).
+Cùng một lệnh chạy trên laptop và trên MiniPC rồi gửi 2 tệp để so (docs/11 mục 9).
 
 Đo cái gì: giây của từng bước (đọc ảnh / chỉnh tông / tạo nét / tối ưu nét), giây sinh G-code, số nét, chiều dài nét,
 số dòng G-code, RAM đỉnh của CẢ tiến trình (gồm cả lúc nạp numpy / OpenCV nên có thêm dòng RAM nền để trừ).

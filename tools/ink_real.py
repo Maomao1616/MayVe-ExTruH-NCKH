@@ -7,7 +7,7 @@ refine.ink_cover (đã đối chiếu diện tích hợp nét tính bằng shape
 định vẽ. In: sai số tuyệt đối, độ lệch trung bình (âm = thiếu mực), chiều dài nét, số nét, thời gian vẽ ước tính, và độ lệch
 theo từng dải độ đậm mong muốn (để thấy thiếu / thừa mực ở vùng sáng hay vùng tối). Ảnh không được ghi ra đâu cả.
 
-Giới hạn: đo CHỈ độ phủ ở cỡ ~2 mm, không đo vẻ đẹp, độ sắc nét hay mực loang trên giấy (xem docs/07 để thử bằng giấy).
+Giới hạn: đo CHỈ độ phủ ở cỡ ~2 mm, không đo vẻ đẹp, độ sắc nét hay mực loang trên giấy (xem docs/11 để thử bằng giấy).
 """
 from __future__ import annotations
 

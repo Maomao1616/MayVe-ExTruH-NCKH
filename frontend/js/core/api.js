@@ -97,7 +97,7 @@ export const api = {
     macroDelete: (id) => request("DELETE", `/macros/${id}`),
     storage: () => request("GET", "/storage"),
 
-    // --- tab Beta in trang PDF (docs/12_TAB_BETA_PDF.md; gỡ: xóa ba dòng này) ---
+    // --- tab Beta in trang PDF (docs/10_TAB_BETA_PDF.md; gỡ: xóa ba dòng này) ---
     betaPdfUpload: (file) => {
         const form = new FormData();
         form.append("file", file);

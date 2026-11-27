@@ -4,7 +4,7 @@
       event: status   data = đúng nội dung GET /api/status (gửi khi đổi, và ít nhất mỗi HEARTBEAT_S giây)
       event: log      data = {entries, last_seq} như GET /api/log (chỉ quản lý; khách không nhận nhật ký)
 
-Vì sao SSE chứ không WebSocket (docs/09_QUYET_DINH_THIET_KE.md A6): chạy trên HTTP thường, cookie PIN dùng như cũ, trình duyệt
+Vì sao SSE chứ không WebSocket (docs/08_QUYET_DINH_THIET_KE.md A6): chạy trên HTTP thường, cookie PIN dùng như cũ, trình duyệt
 tự nối lại, qua Cloudflare Tunnel không cần cấu hình. Lệnh điều khiển vẫn là HTTP POST. Hỏi lặp (/api/status, /api/log)
 giữ nguyên làm DỰ PHÒNG: giao diện tự quay về khi luồng này hỏng.
 Mỗi kết nối chỉ là một vòng lặp `async` nhìn trạng thái (không giữ luồng riêng); giới hạn MAX_STREAMS kết nối cùng lúc.

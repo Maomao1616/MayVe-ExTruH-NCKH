@@ -27,7 +27,7 @@ Hình dung một nhà hàng:
 | Thực đơn, bàn ghế khách thấy | **Giao diện** (frontend): nút, ô, màu, chữ | `frontend/` (chạy trong trình duyệt) |
 | Bồi bàn ghi món, mang món ra | **API**: các "đường gọi" như `/api/draw/import`, `/api/jobs` | `frontend/js/core/api.js` ↔ `backend/app/api/` |
 | Nhà bếp | **Máy chủ Python** (backend): xử lý ảnh, sinh G-code, điều khiển máy | `backend/app/services/` |
-| Lò nướng | **Máy vẽ** (mạch MKS + FluidNC) qua USB | `backend/app/links/` |
+| Lò nướng | **Máy vẽ** (mạch MKS + FluidNC) qua USB; có thêm đường Wi-Fi telnet (mã xong, chưa thử mạch thật) | `backend/app/links/` |
 
 Giao diện chia ba thứ, mỗi thứ một ngôn ngữ:
 | Ngôn ngữ | Vai trò | Ở đâu |
@@ -57,7 +57,7 @@ ExtruXY/
 │  ├─ app/                   xem mục 4
 │  ├─ tests/                 test tự động (pytest); draw_test/ cho tab vẽ
 │  └─ requirements.txt       danh sách thư viện
-├─ tools/                    công cụ đo (ink_sim, ink_real, do_thoi_gian, tone_read, log_read, style_preview, make_test_gcode; 07 mục 9) · export_context.py (bản đồ mã cho AI) · dong_goi.ps1 (đóng gói zip)
+├─ tools/                    công cụ đo (ink_sim, ink_real, do_thoi_gian, tone_read, log_read, style_preview, make_test_gcode; 11 mục 9) · export_context.py (bản đồ mã cho AI) · dong_goi.ps1 (đóng gói zip)
 │                            make_test_gcode.py (G-code bài thử tốc độ) · ink_sim.py (mô phỏng mực) · ink_real.py (đo tông trên ảnh thật)
 │                            tone_read.py (đọc ảnh tờ tông) · log_read.py (đọc nhật ký chạy) · style_preview.py (xem nhanh kiểu nét)
 │                            ink_real.py (đo sai tông của kiểu tô trên ảnh thật, trước / sau sửa sai)
@@ -113,7 +113,7 @@ api/       HTTP mỏng: nhận yêu cầu, kiểm kiểu dữ liệu (pydantic),
   ↓
 services/  logic thật: điều khiển máy, chạy G-code, cấu hình, hồ sơ, tab vẽ (drawing/)
   ↓
-links/     nói chuyện với máy: serial thật (pyserial) hoặc máy giả
+links/     nói chuyện với máy: serial thật (pyserial), Wi-Fi telnet hoặc máy giả
 ```
 
 ### 4.2 Từng tệp
@@ -136,12 +136,12 @@ links/     nói chuyện với máy: serial thật (pyserial) hoặc máy giả
 | `services/profile.py` | hồ sơ phần mềm (`data/profile.json`): Z bút (điều khiển) và Z nhấc khi sinh G-code, tốc độ bút, bước jog tối đa |
 | `services/macros.py` · `services/storage.py` | macro trên đĩa · xem thư mục dữ liệu (chỉ đọc) |
 | `services/drawing/` | dây chuyền tab vẽ ([05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md) mục 9) |
-| `services/beta_pdf/` | tab Beta in trang PDF, tách riêng để gỡ ([12_TAB_BETA_PDF.md](12_TAB_BETA_PDF.md)) |
+| `services/beta_pdf/` | tab Beta in trang PDF, tách riêng để gỡ ([10_TAB_BETA_PDF.md](10_TAB_BETA_PDF.md)) |
 | `links/protocol.py` | đọc từng dòng máy gửi (trạng thái, `ok`, `error`, `ALARM`, `MSG`); lệnh nào là chỉ đọc; tên mã lỗi |
-| `links/serial_link.py` · `sim_link.py` · `base.py` | cổng COM thật · máy giả · khuôn chung |
+| `links/serial_link.py` · `telnet_link.py` · `sim_link.py` · `base.py` | cổng COM thật · Wi-Fi (TCP cổng 23) · máy giả · khuôn chung |
 
 ### 4.3 Luồng dữ liệu chính
-- **Điều khiển:** nút → `api.js` → `/api/command | realtime | jobs` → `MachineService` (kiểm chung một cửa) → `JobRunner` (gửi từng dòng) → `SerialLink` / `SimLink` → mạch. Trạng thái đi ngược lại qua `state.js` ([04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) mục 3–4).
+- **Điều khiển:** nút → `api.js` → `/api/command | realtime | jobs` → `MachineService` (kiểm chung một cửa) → `JobRunner` (gửi từng dòng) → `SerialLink` / `TelnetLink` / `SimLink` → mạch (các đường nối và sơ đồ: [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 1–3). Trạng thái đi ngược lại qua `state.js` ([04_TAB_DIEU_KHIEN.md](04_TAB_DIEU_KHIEN.md) mục 3–4).
 - **Tạo bản vẽ:** chọn tệp → trình duyệt thu nhỏ ảnh → `/api/draw/import` → tác vụ nền ở tiến trình con → nét lưu trong RAM → trình duyệt kéo thả khung → `/api/draw/gcode` → `/api/draw/drafts` (lưu đĩa) → tab Điều khiển nạp bản thảo ([05_TAB_TAO_BAN_VE.md](05_TAB_TAO_BAN_VE.md) mục 4).
 
 ---
@@ -248,7 +248,7 @@ Ví dụ thật: bỏ nút "Tạo tờ mẫu hiệu chỉnh bút" = bỏ nút tr
 
 | Khối | Việc |
 |---|---|
-| Kết nối | chọn chế độ (máy thật `serial` / máy giả `sim`), cổng COM (nhớ cổng lần trước), Kết nối / Ngắt |
+| Kết nối | chọn chế độ (máy thật `serial` / Wi-Fi `wifi` / máy giả `sim`), cổng COM (nhớ cổng lần trước) hoặc địa chỉ mạch (mặc định `fluidnc.local`), Kết nối / Ngắt |
 | Giao diện chung · Hoạt động | ngôn ngữ, sáng / tối; nhịp cập nhật terminal, hỏi lại trước Home, phím tắt jog, âm báo xong / lỗi |
 | Bản thảo | số bản tối đa, dung lượng tối đa (thư mục cố định). Vượt thì xóa bản cũ nhất không ghim |
 | Lưu trữ dữ liệu | xem (không sửa) và tải về nội dung bản thảo, sao lưu cấu hình, macro, tệp lẻ |
@@ -272,7 +272,7 @@ Ví dụ thật: bỏ nút "Tạo tờ mẫu hiệu chỉnh bút" = bỏ nút tr
 
 Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về giao diện gốc.
 
-**Giao diện điện thoại (≤ 760 px, 26/11/2026, [09](09_QUYET_DINH_THIET_KE.md) P51):** thanh tab xuống đáy; khối Cài đặt là `<details>` thu gọn được (khối gắn `data-mobile-closed` đóng sẵn trên điện thoại, lần đóng sẵn không được nhớ như lựa chọn của người dùng); thẻ trạng thái bộ điều khiển và "Thông tin bản vẽ" ẩn dòng kỹ thuật sau nút **Mở rộng / Thu gọn**; ô nhập cao 44 px, chữ 16 px (iPhone không tự phóng to); khối không giữ hiệu ứng rê chuột sau khi chạm. Khối chỉ đóng / mở khi bấm **mũi tên** (không phải cả hàng tiêu đề). Tab Beta có một khung xem và nút chuyển "Trang trong PDF / Nét sẽ vẽ". Điện thoại thật **chưa thử**.
+**Giao diện điện thoại (≤ 760 px, 26/11/2026, [08](08_QUYET_DINH_THIET_KE.md) P51):** thanh tab xuống đáy; khối Cài đặt là `<details>` thu gọn được (khối gắn `data-mobile-closed` đóng sẵn trên điện thoại, lần đóng sẵn không được nhớ như lựa chọn của người dùng); thẻ trạng thái bộ điều khiển và "Thông tin bản vẽ" ẩn dòng kỹ thuật sau nút **Mở rộng / Thu gọn**; ô nhập cao 44 px, chữ 16 px (iPhone không tự phóng to); khối không giữ hiệu ứng rê chuột sau khi chạm. Khối chỉ đóng / mở khi bấm **mũi tên** (không phải cả hàng tiêu đề). Tab Beta có một khung xem và nút chuyển "Trang trong PDF / Nét sẽ vẽ". Điện thoại thật **chưa thử**.
 
 **Tệp giao diện luôn hỏi lại bản mới:** máy chủ gửi `Cache-Control: no-cache` cho mọi đường không phải `/api` (`app/main.py`). Trước đó không có header nên trình duyệt và Cloudflare tự đoán thời hạn lưu, sửa xong điện thoại vẫn hiện bản cũ hàng giờ.
 
@@ -282,7 +282,7 @@ Lớp `polish.css` nạp sau cùng; xóa dòng `<link>` của nó là quay về 
 
 | Kiểm | Cách | Báo gì |
 |---|---|---|
-| Test máy chủ | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng. Số lượng hiện hành xem ở [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md), không lặp số ở đây |
+| Test máy chủ | trong `backend`, đã bật venv: `python -m pytest` | số bài đạt / hỏng; hỏng = có chỗ khác bị ảnh hưởng. Số lượng hiện hành xem ở [12_VIEC_CAN_LAM.md](12_VIEC_CAN_LAM.md), không lặp số ở đây |
 | Test giao diện | ở thư mục gốc: `node --test` kèm các tệp `frontend/tests/*.mjs` (Windows: truyền đường dẫn tệp) | như trên |
 | Xem giao diện | sửa Python thì tắt và chạy lại server; trình duyệt **Ctrl+F5**; **F12 → Console** xem dòng đỏ | lỗi chữ, nút không chạy |
 | Thử bằng máy giả | Cài đặt → Kết nối → `sim` | mọi nút chạy được khi chưa có máy |

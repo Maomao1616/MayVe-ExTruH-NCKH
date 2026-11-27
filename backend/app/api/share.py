@@ -1,4 +1,4 @@
-"""Địa chỉ + mã QR để mở giao diện từ máy khác (docs/13). Khách thấy địa chỉ Internet; địa chỉ mạng nhà chỉ cho quản lý."""
+"""Địa chỉ + mã QR để mở giao diện từ máy khác (docs/07). Khách thấy địa chỉ Internet; địa chỉ mạng nhà chỉ cho quản lý."""
 from __future__ import annotations
 
 from fastapi import APIRouter, Request

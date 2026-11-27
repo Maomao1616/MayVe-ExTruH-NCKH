@@ -1,6 +1,6 @@
 """Các router HTTP. Thêm router mới: tạo file trong api/ rồi thêm vào ROUTERS."""
 from .auth import router as auth_router
-from .beta_pdf import router as beta_pdf_router      # tab Beta (docs/12); gỡ: bỏ dòng này và beta_pdf_router ở ROUTERS
+from .beta_pdf import router as beta_pdf_router      # tab Beta (docs/10); gỡ: bỏ dòng này và beta_pdf_router ở ROUTERS
 from .config import router as config_router
 from .customer import router as customer_router
 from .draw import router as draw_router

@@ -1,6 +1,6 @@
-# 12 — Tab Beta: in trang PDF (chữ Word, bảng, khung, ảnh)
+# 10 — Tab Beta: in trang PDF (chữ Word, bảng, khung, ảnh)
 
-> Tính năng **tách riêng hoàn toàn** khỏi phần còn lại (xem mục 10 "Cách gỡ"). Tài liệu này giải thích hướng phát triển, thuật toán, thư viện và hằng số, theo cách viết của [06](06_THUAT_TOAN_XU_LY_ANH.md). Quyết định và lý do: [09](09_QUYET_DINH_THIET_KE.md) P47.
+> Tính năng **tách riêng hoàn toàn** khỏi phần còn lại (xem mục 10 "Cách gỡ"). Tài liệu này giải thích hướng phát triển, thuật toán, thư viện và hằng số, theo cách viết của [06](06_THUAT_TOAN_XU_LY_ANH.md). Quyết định và lý do: [08](08_QUYET_DINH_THIET_KE.md) P47.
 
 **Mục lục**
 0. Tóm tắt một đoạn
@@ -17,7 +17,7 @@
 11. Giới hạn đã biết (11a việc cần cải thiện · 11b Soạn font riêng)
 12. Test
 
-**Trạng thái (22/11/2026):** đã làm xong phần mềm và test; **chưa in giấy, chưa đo trên MiniPC**. Số đo ở mục 7 là trên máy phát triển.
+**Trạng thái (22/11/2026):** đã làm xong phần mềm và test; **chưa in giấy, chưa đo trên máy chủ mới**. Số đo ở mục 7 là trên máy phát triển.
 
 
 ## 0. Tóm tắt một đoạn
@@ -28,7 +28,7 @@ Bạn xuất tài liệu Word thành PDF, mở tab **Beta PDF**, chọn một tr
 |---|---|---|
 | **1. Lõi** | đọc PDF → chữ nét đơn có dấu Việt + đường kẻ + ảnh → bản vẽ; tab giao diện; test | ✅ 22/11/2026 |
 | **2. In thử và chỉnh** | in trang mẫu (bảng, khung, tiêu đề 18–20, chữ 14–16) bằng bút bi 0,5; chỉnh hằng số mục 8; đo độ đọc được | ⏳ cần bạn in |
-| **3. Đo trên MiniPC** | giây, RAM khi trang kín chữ + vài ảnh | ⏳ |
+| **3. Đo trên máy chủ mới** | giây, RAM khi trang kín chữ + vài ảnh | ⏳ |
 | **4. Nhiều trang** | nút "Tạo tất cả trang": mỗi trang một bản thảo trong danh sách bản thảo | 💡 |
 | **5. Chữ khó** | công thức, ký hiệu, chữ xoay: hiện rơi về skeleton từng ký tự hoặc bị bỏ qua | 💡 |
 | **6. Khối tô** | ô bảng tô nền, tô màu: hiện bỏ qua (chỉ cảnh báo); có thể tô gạch chéo theo độ sáng nền | 💡 |
@@ -158,7 +158,7 @@ Mỗi khung ảnh (≥ 3 mm mỗi cạnh) được **nhận diện** rồi đi m
 Cài đặt: `requirements.txt` có `pymupdf`; **phải cài vào đúng Python mà `launcher\start.ps1` chạy** (ưu tiên `backend\.venv`, nếu không có mới `Python\python.exe` mang theo): `backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt`; `Cap nhat.bat` tự cài khi tệp này đổi (cần Internet). Thiếu thư viện thì tab báo rõ ("chạy `pip install pymupdf`"), phần mềm vẫn chạy bình thường.
 
 ## 6. Quyết định và lý do
-Ở [09](09_QUYET_DINH_THIET_KE.md) P47. Tóm tắt: viết lại bằng font nét đơn vì skeleton làm mất dấu và đứt nét (mục 7); đặt chữ theo từ cho nhịp đều; đường kẻ từ vector cho thẳng và ít nhấc bút; hai lớp vì hai bút; giao bản vẽ qua sự kiện để không import view khác; tách riêng để dễ gỡ (mục 10).
+Ở [08](08_QUYET_DINH_THIET_KE.md) P47. Tóm tắt: viết lại bằng font nét đơn vì skeleton làm mất dấu và đứt nét (mục 7); đặt chữ theo từ cho nhịp đều; đường kẻ từ vector cho thẳng và ít nhấc bút; hai lớp vì hai bút; giao bản vẽ qua sự kiện để không import view khác; tách riêng để dễ gỡ (mục 10).
 
 ## 7. Số đo (trang mẫu: tiêu đề 20 / 18, chữ 14, bảng 3×3, khung, thử dấu; ~510 ký tự; máy phát triển)
 | Cách | Số nét (≈ lần nhấc bút) | Độ dài vẽ | Ước thời gian vẽ* | Giây dựng nét | Chất lượng |
@@ -169,7 +169,7 @@ Cài đặt: `requirements.txt` có `pymupdf`; **phải cài vào đúng Python 
 | Nét đơn, chữ rời gọn (`simplex`) | 1152 | 5,6 m | 6 phút | ~0,9 | đọc rõ, nhịp đều, hơi "máy" |
 | Hỗn hợp (chữ ≥ 17 pt skeleton) | 1204 | 5,1 m | 6 phút | ~1,0 | tiêu đề giữ hình gốc |
 \* 0,25 s mỗi lần nhấc / hạ + 8000 mm/phút (cả đường di chuyển); ước, không phải đo bằng máy.
-**Chưa đo trên MiniPC i5-6100T; chưa in giấy.**
+**Chưa đo trên máy chủ mới (cloud / Linux); chưa in giấy.**
 
 ### 7b. PDF thật: "Đáp án đo lường" (32 trang, Times New Roman, có sơ đồ, mạch điện, công thức; máy phát triển)
 | Việc | Kết quả |
@@ -265,7 +265,7 @@ Từ một bản góp ý của AI khác, chỉ là **giả thuyết cần đo**;
 | Việc | Chốt |
 |---|---|
 | Soạn ở đâu | **ngay trong tab Beta** (trang "Soạn font"), không cần phần mềm ngoài; vẫn có nút xuất / nhập tệp để sao lưu, chia sẻ, gộp vào dự án |
-| Dụng cụ | **chuột** trước; **bút cảm ứng** sau khi mở được web từ xa (Cloudflare, [08](08_TRIEN_KHAI.md) mục F) |
+| Dụng cụ | **chuột** trước; **bút cảm ứng** sau khi mở được web từ xa (Cloudflare, [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 9) |
 | Phạm vi | **một bộ font** trước; **biến thể** mỗi chữ (2–3 bản, xen kẽ để các chữ giống nhau không y hệt) làm sau |
 | Quy trình | xuất font vpype ra tệp → chủ dự án sửa trong trang Soạn font → bộ xếp chữ **nạp thẳng tệp đó** |
 | Khi chưa có tệp, hoặc thiếu một chữ | **vẫn lấy thẳng từ vpype** (không bao giờ lỗi vì thiếu font riêng) |

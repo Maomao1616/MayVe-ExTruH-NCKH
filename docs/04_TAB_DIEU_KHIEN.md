@@ -20,7 +20,7 @@
 | Làm | Không làm |
 |---|---|
 | Kết nối máy, xem trạng thái và vị trí, jog, Home, đặt gốc (Zero), nâng hạ bút | Không tạo nét từ ảnh (việc của tab Tạo bản vẽ) |
-| Nạp tệp G-code (khung 2D hiện ngay đường chạy + vùng vẽ), chạy, hủy an toàn, tiếp tục từ điểm dừng | Không chạy khi máy chưa nối / chưa mở khóa chuyển động / chưa Idle / tệp có dòng bị cấm. **Không còn bước Xem trước + tích xác nhận** (bỏ từ 12/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C9) |
+| Nạp tệp G-code (khung 2D hiện ngay đường chạy + vùng vẽ), chạy, hủy an toàn, tiếp tục từ điểm dừng | Không chạy khi máy chưa nối / chưa mở khóa chuyển động / chưa Idle / tệp có dòng bị cấm. **Không còn bước Xem trước + tích xác nhận** (bỏ từ 12/11/2026, [08](08_QUYET_DINH_THIET_KE.md) C9) |
 | Terminal gửi lệnh tay, macro, hàng đợi bản thảo | Nút Reset trên web **không phải dừng khẩn cấp**. Dừng khẩn cấp thật là công tắc cắt nguồn 12 V |
 
 ---
@@ -69,7 +69,7 @@ Ví dụ bấm mũi tên phải (jog X +10 mm):
  services/machine.py   _send_line: đã kết nối chưa? đang chạy tác vụ không? đang dừng an toàn không?
                        máy thật đã mở khóa chuyển động chưa? → ghi nhật ký → gửi
  links/serial_link.py  ghi "…\n" ra cổng COM (pyserial, 115200 baud)
-        │ USB (chip CH340)
+        │ USB (chip CH340)   [đường Wi-Fi: links/telnet_link.py, TCP cổng 23; xem [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 1–3]
 [Mạch MKS DLC32 + FluidNC]
  trả "ok" → động cơ chạy → các báo cáo "<Jog|MPos:…>" sau đó cho thấy vị trí mới
         │
@@ -130,7 +130,7 @@ với mỗi dòng:
 hết dòng: chờ 2 báo cáo Idle MỚI liên tiếp → xong
 ```
 
-**Vì sao gửi từng dòng mà máy vẫn chạy liền:** FluidNC trả `ok` ngay khi dòng **vào hàng đợi chuyển động** (planner, 16 khối), chưa phải khi chạy xong. Hàng đợi đầy thì `ok` bị giữ lại. Vậy hàng đợi luôn đầy mà không cần đếm ký tự bộ đệm. Thử 1500 dòng ở F3000: không nhảy Run / Idle. Chỉ khi đoạn nét **rất ngắn** ở tốc độ rất cao mới có thể "đói lệnh". Muốn biết chắc thì cần ghi số liệu `Bf:` theo thời gian (việc cần làm, [11_VIEC_CAN_LAM.md](11_VIEC_CAN_LAM.md)).
+**Vì sao gửi từng dòng mà máy vẫn chạy liền:** FluidNC trả `ok` ngay khi dòng **vào hàng đợi chuyển động** (planner, 16 khối), chưa phải khi chạy xong. Hàng đợi đầy thì `ok` bị giữ lại. Vậy hàng đợi luôn đầy mà không cần đếm ký tự bộ đệm. Thử 1500 dòng ở F3000: không nhảy Run / Idle. Chỉ khi đoạn nét **rất ngắn** ở tốc độ rất cao mới có thể "đói lệnh". Muốn biết chắc thì cần ghi số liệu `Bf:` theo thời gian (việc cần làm, [12_VIEC_CAN_LAM.md](12_VIEC_CAN_LAM.md)).
 
 **Vì sao cần 2 báo cáo Idle mới:** một báo cáo Idle đơn lẻ có thể được tạo ngay trước khi khối cuối bắt đầu chạy.
 

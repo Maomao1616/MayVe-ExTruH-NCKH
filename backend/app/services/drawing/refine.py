@@ -49,7 +49,7 @@ def ink_cover(strokes, w_mm: float, h_mm: float, line_w: float) -> tuple[np.ndar
     """Độ phủ mực (0..1) trên lưới thô; trả (lưới, cạnh ô mm). Mỗi nét dựng với bề rộng thật `line_w`, hai nét chồng nhau
     chỉ tính một lần (mực không dày thêm), nên chỗ đậm bão hòa đúng như trên giấy.
 
-    Vì sao dựng điểm ảnh kiểu này (đã thử các cách khác ngày 17/11/2026, ghi ở docs/09 P34):
+    Vì sao dựng điểm ảnh kiểu này (đã thử các cách khác ngày 17/11/2026, ghi ở docs/08 P34):
       - OpenCV `polylines` vẽ DÀY HƠN độ dày yêu cầu và làm tròn lên số lẻ (đo: yêu cầu 5 và 6 đều ra 7 điểm, 7 và 8 ra 9),
         nên đo bề rộng thực vẽ ra (`_drawn_width`), chọn độ dày gần nhất rồi nhân bù tỷ lệ bề rộng thật ÷ bề rộng vẽ ra. Kiểm:
         đường song song mọi góc ra độ phủ đúng ±1 %. Cứ vẽ bằng độ dày = bề rộng thì thừa 14–25 %, đổi theo góc / độ phân giải.

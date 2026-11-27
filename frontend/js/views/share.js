@@ -1,5 +1,5 @@
 // views/share.js — nút QR trên header: hiện địa chỉ để mở giao diện từ máy khác (mạng nhà và/hoặc Internet) kèm mã QR.
-// Địa chỉ do launcher đặt (docs/13); ở đây chỉ lấy từ GET /api/share và vẽ.
+// Địa chỉ do launcher đặt (docs/07); ở đây chỉ lấy từ GET /api/share và vẽ.
 // Chủ ghi DUY NHẤT của: #share-btn, #share-dialog, #share-list.
 import { api } from "../core/api.js";
 import { t } from "../core/i18n.js";

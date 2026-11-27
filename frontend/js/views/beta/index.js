@@ -1,8 +1,8 @@
-// views/beta/index.js — Tab Beta "In trang PDF" (docs/12_TAB_BETA_PDF.md). Luồng:
+// views/beta/index.js — Tab Beta "In trang PDF" (docs/10_TAB_BETA_PDF.md). Luồng:
 //   chọn PDF -> POST /beta/pdf/upload (tải một lần, nhận mã `doc`) -> chọn trang, xem trang gốc (ảnh từ backend)
 //   -> POST /beta/pdf/import (tác vụ nền, cùng cơ chế với tab Tạo bản vẽ) -> hỏi tiến trình -> xem nét sinh ra ngay tại tab này
 //   -> "Mở ở Tạo bản vẽ": phát sự kiện `extruxy:beta-task`, views/drawing.js nhận bản vẽ đã nạp (bố trí giấy, G-code, bản thảo dùng lại).
-// Chủ ghi của mọi phần tử #beta-*. Không import view khác. Hàm thuần: ./model.js. Gỡ tính năng: xem docs/12 mục "Cách gỡ".
+// Chủ ghi của mọi phần tử #beta-*. Không import view khác. Hàm thuần: ./model.js. Gỡ tính năng: xem docs/10 mục "Cách gỡ".
 import { api, ApiError } from "../../core/api.js";
 import { isAdmin } from "../../core/auth.js";
 import { t } from "../../core/i18n.js";

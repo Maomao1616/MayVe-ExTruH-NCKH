@@ -1,4 +1,4 @@
-"""Sinh G-code cho các tờ thử máy (docs/07_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệt kéo.
+"""Sinh G-code cho các tờ thử máy (docs/11_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệt kéo.
 
 Chỉ dùng thư viện chuẩn và KHÔNG import gì của dự án: `tools/make_test_gcode.py` nạp thẳng tệp này (chạy được khi chưa cài
 thư viện ảnh), còn backend (`POST /api/draw/testsheet`, tab Cài đặt → "Tờ thử / hiệu chỉnh") dùng cùng các hàm để tạo bản thảo.

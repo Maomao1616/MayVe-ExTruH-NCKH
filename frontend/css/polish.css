@@ -2520,7 +2520,7 @@ input[type="radio"]:focus-visible {
     border-left-color: color-mix(in srgb, var(--axis) 45%, var(--border));
 }
 
-/* Nút QR trên header + hộp thoại địa chỉ (views/share.js, docs/13) */
+/* Nút QR trên header + hộp thoại địa chỉ (views/share.js, docs/07) */
 #share-btn {
     font-size: 12px;
     font-weight: 700;

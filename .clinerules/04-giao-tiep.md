@@ -5,7 +5,7 @@
 - Báo kèm sau mỗi việc: lỗi / điểm tối ưu tìm thấy trong lúc làm, tiến độ, và những bài thử còn phải làm.
 - Khi đề xuất đổi thuật toán hoặc thông số: nêu **số trước / sau**; nói rõ cái gì đã đo, cái gì chỉ suy luận.
 - Chủ dự án thử trên giấy rồi gửi ảnh và số; AI sửa mã và tài liệu theo đó. Đừng suy diễn khi thiếu dữ kiện: hỏi một câu ngắn.
-- Tài liệu `docs/01–13` viết cho người không học code: giữ văn phong (lời thường, khối rõ, từ nhỏ đến lớn, bảng). Tệp chỉ cho AI đặt tiền tố `AI_` và ghi "FOR AI" ở dòng đầu.
+- Tài liệu `docs/01–12` viết cho người không học code: giữ văn phong (lời thường, khối rõ, từ nhỏ đến lớn, bảng). Tệp chỉ cho AI đặt tiền tố `AI_` và ghi "FOR AI" ở dòng đầu.
 
 ## Ngữ cảnh sản phẩm
 - Mục tiêu: sản phẩm máy vẽ tích hợp IoT chạy thật; tối ưu tối đa cho sản phẩm, báo cáo đề tài để sau.

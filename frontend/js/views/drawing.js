@@ -253,7 +253,7 @@ async function startImport(quality, { fresh = false, box = null } = {}) {
     poll(job.task, seq);
 }
 
-// Tab Beta (docs/12_TAB_BETA_PDF.md) giao một bản vẽ đã nạp: coi như vừa nạp xong (không có tệp nguồn, nên không "Tạo lại nét" ở đây).
+// Tab Beta (docs/10_TAB_BETA_PDF.md) giao một bản vẽ đã nạp: coi như vừa nạp xong (không có tệp nguồn, nên không "Tạo lại nét" ở đây).
 window.addEventListener("extruxy:beta-task", (event) => {
     const view = event.detail;
     if (!view?.task) return;

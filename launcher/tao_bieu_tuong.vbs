@@ -5,7 +5,7 @@ here = CreateObject("Scripting.FileSystemObject").GetParentFolderName(WScript.Sc
 Set lnk = sh.CreateShortcut(sh.SpecialFolders("Desktop") & "\VMU PlotterPen.lnk")
 lnk.TargetPath = "wscript.exe"
 lnk.Arguments = """" & here & "\start.vbs"""
-' icon.ico phai la file .ico that (doi duoi tu .png se khong hien): xem docs/08_TRIEN_KHAI.md phan A4
+' icon.ico phai la file .ico that (doi duoi tu .png se khong hien): xem docs/07_MANG_KET_NOI_TRIEN_KHAI.md muc 5.4
 lnk.IconLocation = here & "\icon.ico,0"
 lnk.WorkingDirectory = here
 lnk.Description = "Bat VMU PlotterPen"

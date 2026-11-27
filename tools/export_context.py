@@ -34,7 +34,7 @@ LANG = {".py": "python", ".js": "javascript", ".mjs": "javascript", ".css": "css
 BUNDLES: dict[str, dict] = {
     "docs": {
         "desc": "Tài liệu cốt lõi: vào đây trước khi đọc mã",
-        "files": ["docs/AI_START.md", "docs/03_CAU_TRUC_PHAN_MEM.md", "docs/09_QUYET_DINH_THIET_KE.md", "docs/11_VIEC_CAN_LAM.md"],
+        "files": ["docs/AI_START.md", "docs/03_CAU_TRUC_PHAN_MEM.md", "docs/08_QUYET_DINH_THIET_KE.md", "docs/12_VIEC_CAN_LAM.md"],
     },
     "codemap": {
         "desc": "Bản đồ mã nguồn tự sinh: route API + vai trò và token từng tệp (dùng để chọn gói)",

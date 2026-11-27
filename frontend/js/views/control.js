@@ -299,7 +299,7 @@ function initMotionControls() {
         sendCommand(`$J=G90 G21 X0 Y0 F${settings.feed}`);
     });
 
-    // Thanh bút 3 nấc: G0 tuyệt đối tới Z của nấc (từ 17/11/2026, thay `$J=`: thử xem servo có còn tụt không, 07 B2).
+    // Thanh bút 3 nấc: G0 tuyệt đối tới Z của nấc (từ 17/11/2026, thay `$J=`: thử xem servo có còn tụt không, 11 B2).
     penButtons.forEach((button) => {
         button.addEventListener("click", () => {
             const z = MACHINE[PEN_LEVELS[button.dataset.pen]];

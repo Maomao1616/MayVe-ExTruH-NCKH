@@ -1,7 +1,7 @@
 # 02 — Cấu trúc (không đổi cây thư mục, không tạo tầng mới)
 
 ```
-docs/        tài liệu 01–13 (cho người, đánh số) + AI_* (chỉ cho AI, dòng đầu ghi "FOR AI")
+docs/        tài liệu 01–12 (cho người, đánh số) + AI_* (chỉ cho AI, dòng đầu ghi "FOR AI")
 frontend/    index.html · css/ · locales/{vi,en}.json · js/{core,lib,stores,views}/ · tests/
 backend/     app/{api,links,services,auth.py,main.py} · tests/ · tests/draw_test/
 tools/       export_context.py · ink_sim.py · ink_real.py · make_test_gcode.py · tone_read.py · log_read.py · style_preview.py · dong_goi.ps1
@@ -28,6 +28,6 @@ data/        không lên Git: bản thảo, macro, hồ sơ, sao lưu, PIN
 - **Chữ hiển thị:** `frontend/locales/vi.json` và `en.json`, **cùng bộ khóa**; dấu `"` trong tiếng Việt phải thoát. `DrawError.code` ↔ khóa `drawing.error.<code>`. Terminal giữ tiếng Anh.
 
 ## Không làm
-- Không thêm framework, bước build, hay thư viện nặng khi chưa hỏi (máy đích là MiniPC i5-6100T, 12 GB RAM, không GPU: vẫn tiết kiệm CPU).
+- Không thêm framework, bước build, hay thư viện nặng khi chưa hỏi (thiết kế cho máy yếu, không GPU: MiniPC i5-6100T đã tạm bỏ 26/11/2026, máy chính là laptop; vẫn tiết kiệm CPU).
 - Không tạo tệp tài liệu mới nếu nội dung thuộc tệp đã có.
 - Không đổi `frontend/assets/css/tokens.css` hay giao diện lớn khi chưa hỏi; giữ nguyên CSS chủ dự án sửa tay.

@@ -1,4 +1,4 @@
-"""Địa chỉ để mở giao diện từ máy khác, kèm mã QR (docs/13). Địa chỉ do launcher đặt qua biến môi trường:
+"""Địa chỉ để mở giao diện từ máy khác, kèm mã QR (docs/07). Địa chỉ do launcher đặt qua biến môi trường:
 EXTRUXY_PUBLIC_URL (tên miền Cloudflare, dòng `url=` của data/mang.txt) và EXTRUXY_LAN_URL (IP trong mạng nhà)."""
 from __future__ import annotations
 

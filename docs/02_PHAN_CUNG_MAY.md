@@ -49,7 +49,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Công tắc hành trình | X `gpio.36`, Y `gpio.35`, mức `:high` (giữ = kích) | ✅ không đảo nhãn |
 | `must_home` | true | khởi động lên Alarm (mục 5) |
 | Chân có thể còn trống | `gpio.34` (đầu Z-limit, chỉ đọc), `gpio.22` (đầu probe), `gpio.33` | ⚠ dò lại sơ đồ mạch trước khi nối |
-| Wi-Fi của mạch (bản `esp32-wifi`) | có thể tự phát mạng "FluidNC" (192.168.0.1) | ⚠ ai vào WebUI là **vượt qua mọi khóa của phần mềm**. Kiểm `$WiFi/Mode`, tắt hoặc đặt mật khẩu mạnh trước demo |
+| Wi-Fi của mạch (bản `esp32-wifi`) | có thể tự phát mạng "FluidNC" (192.168.0.1) | ⚠ ai vào WebUI là **vượt qua mọi khóa của phần mềm**. Kiểm `$WiFi/Mode`, tắt hoặc đặt mật khẩu mạnh trước demo. Chủ dự án đã đặt mạch vào Wi-Fi có sẵn, không được thì tự phát điểm phát dự phòng, và đã vào được `fluidnc.local` lẫn IP điểm phát (27/11/2026); chi tiết, rủi ro, việc phải kiểm: [07](07_MANG_KET_NOI_TRIEN_KHAI.md) mục 11 |
 
 ## 4. Thông số phần mềm dùng cho máy này
 
@@ -58,9 +58,9 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | Bút lên / giữa / xuống (điều khiển tay) | **Z5 / Z3 / Z0** (Giữa từ 17/11/2026 đổi 1,5 → 3; nút gửi `G90 G0 Z…`) (từ 09/11/2026: nút Bút lên, Home tự nâng, hủy tác vụ nâng bút, jog dùng Z5 cho chắc) | Cài đặt → Cấu hình máy, mục App; mặc định ở `services/profile.py`, `frontend/js/core/config.js` |
 | Z nhấc khi **sinh G-code** | **Z3** (chỉnh 3 / 2 / 1,5 theo bản vẽ) | cùng mục App, ô "Z nhấc khi sinh G-code"; tab Tạo bản vẽ lấy làm mặc định cho ô Z |
 | Tốc độ nâng bút / hạ bút | 3000 / **2000** mm/min (hạ chậm hơn, đỡ nảy) | tab Tạo bản vẽ; `spec.py` |
-| Chờ sau nâng / sau hạ | **0 s** / 0 s (từ 13/11/2026, [09](09_QUYET_DINH_THIET_KE.md) C10; trước 0,02 và 0,05) | tab Tạo bản vẽ; `spec.py` |
+| Chờ sau nâng / sau hạ | **0 s** / 0 s (từ 13/11/2026, [08](08_QUYET_DINH_THIET_KE.md) C10; trước 0,02 và 0,05) | tab Tạo bản vẽ; `spec.py` |
 | Tốc độ vẽ / di chuyển | **8000** / 8000 mm/min (từ 12/11/2026) | tab Tạo bản vẽ |
-| Nét cong trong G-code | cung **G2/G3** (từ 13/11/2026, [09](09_QUYET_DINH_THIET_KE.md) D12) | `drawing/arcs.py`, công tắc `USE_ARCS` ở `drawing/gcode.py` |
+| Nét cong trong G-code | cung **G2/G3** (từ 13/11/2026, [08](08_QUYET_DINH_THIET_KE.md) D12) | `drawing/arcs.py`, công tắc `USE_ARCS` ở `drawing/gcode.py` |
 | Bề rộng nét thật ÷ số trong ô "Bút vẽ" | **1,0** (từ 11/11/2026 ô đó ghi thẳng nét đo trên giấy của từng bút; trước là 1,1 và 1,375) | `LINE_WIDTH_RATIO` trong `styles.py`; số từng bút ở `index.html` ô `draw-pen-width` + `spec.PENS` |
 | Gốc giấy | góc trên trái O(0,0), Y hướng xuống; A6 ⊂ A5 ⊂ A4 cùng neo ở O | `layout.py` |
 | Hướng trục X / Y | ✅ **đúng** (chủ dự án xác nhận 05/11/2026) với `VIEW.flipX = flipY = false`, `invert_y = false` | `core/config.js`, `gcode.to_machine` |
@@ -83,8 +83,8 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 | F12 | Gửi từng dòng chờ `ok`: 1500 dòng ở F3000 không nhảy Run / Idle | cách gửi hiện tại là đủ |
 | F13 | (13/11/2026) Gửi từng dòng chờ `ok` qua USB 115200 đạt **~125 dòng/giây** (124–130, mọi độ dài đoạn); hàng đợi chuyển động **15 khối**; `G4` bắt máy chạy hết hàng đợi rồi mới chờ | ước tính thời gian tính giới hạn này (`EST_LINES_PER_S`, `EST_DWELL_FLUSH_S`); nét cong ghi bằng G2/G3 |
 | F14 | (13/11/2026) **G2/G3 chạy đúng và đủ tốc** (vòng R10 ở 8000: 5,7 s, hàng đợi đầy) | `drawing/arcs.py` |
-| F15 | (13/11/2026) Tốc độ báo trong `FS:` (biểu đồ Tốc độ thật) **cao hơn thật tới 1,41 lần** tùy hướng chạy (máy CoreXY: vòng G2 thật ~7 900 mm/phút, biểu đồ 10 000–11 300; đường ngang G0 10 000 báo 14 142) | đọc tốc độ thật bằng quãng đường ÷ thời gian, không đọc số trên biểu đồ ([11](11_VIEC_CAN_LAM.md) mục 4.3: sửa biểu đồ) |
-| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án). 17/11: nghi do xung điều khiển trong firmware, không do mã; nút bút đổi sang `G90 G0 Z…` để so với `$J=` ([07](07_THU_NGHIEM.md) B2); tụt thì xem Terminal có `pen re-lift not sent`. **18/11: chốt, thôi.** Bấm nút bút liên tục (đổi Lên / Giữa / Xuống nhanh) thì có lúc servo **nhảy xung và giật về vị trí 1250** (chủ dự án ghi "1250 ms"; dải xung cấu hình là 1350–1950 µs, tôi chưa kiểm số này); dùng bình thường không ảnh hưởng. Coi là giới hạn xung của firmware, không sửa mã |
+| F15 | (13/11/2026) Tốc độ báo trong `FS:` (biểu đồ Tốc độ thật) **cao hơn thật tới 1,41 lần** tùy hướng chạy (máy CoreXY: vòng G2 thật ~7 900 mm/phút, biểu đồ 10 000–11 300; đường ngang G0 10 000 báo 14 142) | đọc tốc độ thật bằng quãng đường ÷ thời gian, không đọc số trên biểu đồ ([12](12_VIEC_CAN_LAM.md) mục 4.3: sửa biểu đồ) |
+| F16 | (13/11/2026) Servo sau Home: bấm Home bút nhảy lên Z5, Home xong có lúc **tụt về chỗ cũ** hoặc giật rồi đứng ở Z5 | không ảnh hưởng nhiều (chủ dự án). 17/11: nghi do xung điều khiển trong firmware, không do mã; nút bút đổi sang `G90 G0 Z…` để so với `$J=` ([11](11_THU_NGHIEM.md) B2); tụt thì xem Terminal có `pen re-lift not sent`. **18/11: chốt, thôi.** Bấm nút bút liên tục (đổi Lên / Giữa / Xuống nhanh) thì có lúc servo **nhảy xung và giật về vị trí 1250** (chủ dự án ghi "1250 ms"; dải xung cấu hình là 1350–1950 µs, tôi chưa kiểm số này); dùng bình thường không ảnh hưởng. Coi là giới hạn xung của firmware, không sửa mã |
 
 ## 6. Kết quả thử máy
 
@@ -104,7 +104,7 @@ Tệp cấu hình trên mạch: `ConfigNCKH-16.yaml`. Sửa được ngay trên 
 
 ## 7. Còn phải thử ⏳
 
-Gộp về một danh sách ở [07_THU_NGHIEM.md](07_THU_NGHIEM.md) nhóm B (còn: laptop yếu; tiếng "khực" góc trái hết với 2700 / 0,02 từ 22/11; bản vẽ có G2/G3 và servo F16 đã xong 18/11; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
+Gộp về một danh sách ở [11_THU_NGHIEM.md](11_THU_NGHIEM.md) nhóm B (còn: laptop yếu; tiếng "khực" góc trái hết với 2700 / 0,02 từ 22/11; bản vẽ có G2/G3 và servo F16 đã xong 18/11; mất bước, junction 0,03, DIP3 SpreadCycle, Home, Z, Tiếp tục đã xong 17/11). `G4 P` tính bằng giây: không còn quan trọng vì chờ mặc định 0, không có `G4`.
 
 ## 8. Ghi chú điện tử cho người nối dây
 

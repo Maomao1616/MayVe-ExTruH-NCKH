@@ -65,7 +65,7 @@ if (-not (Test-Port $port)) {
   # MO RA NGOAI (tuy chon): data\mang.txt (khong len Git), moi dong mot muc:
   #   host=plotter.tenmien.com   them ten mien vao danh sach Host duoc phep (nhieu dong duoc)
   #   giu_bat=1                  server khong tu tat khi dong het trang (de may khac van vao duoc)
-  #   tunnel=plotter             chay "cloudflared tunnel run plotter" cung server (da cai cloudflared, xem docs/13)
+  #   tunnel=plotter             chay "cloudflared tunnel run plotter" cung server (da cai cloudflared, xem docs/07)
   #   url=https://plotter.tenmien.com   dia chi hien o nut QR tren header
   # Luu y: chua dat PIN quan ly (admin=) thi ai vao duoc dia chi nay cung la quan ly (chu du an da chon khong bat buoc PIN).
   $netHosts = @(); $tunnel = $null

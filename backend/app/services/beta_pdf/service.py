@@ -1,7 +1,7 @@
 """Tab Beta: một trang PDF -> các lớp nét (cùng kiểu kết quả với `drawing.raster.build_raster`), nên phần xem trước, bố trí, tạo G-code,
 lưu bản thảo của tab Tạo bản vẽ dùng lại được nguyên vẹn.
 
-Dây chuyền (chi tiết và lý do ở docs/12_TAB_BETA_PDF.md):
+Dây chuyền (chi tiết và lý do ở docs/10_TAB_BETA_PDF.md):
   đọc trang (reader.py) -> đường kẻ (frame.py) + chữ (text.py) + ảnh (images.py) -> hai lớp -> lưu vào TASKS như một bản vẽ đã nạp.
 Lớp 1 = chữ + đường kẻ (bút bi, `pen_mm`), lớp 2 = ảnh (bút tô, `image_pen_mm`). Mỗi lớp một tệp G-code, đổi bút giữa hai tệp.
 """

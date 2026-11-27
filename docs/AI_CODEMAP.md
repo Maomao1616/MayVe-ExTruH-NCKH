@@ -2,7 +2,7 @@
 
 Không sửa tay: chạy `python tools/export_context.py --map` để tạo lại. Cột token là ước tính (ký tự ÷ 3,2) để
 chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Muốn đọc nhanh: xem bản đồ này, rồi chỉ lấy gói cần
-(`python tools/export_context.py --list`). Toàn bộ dự án ~664,371 token nếu đọc hết.
+(`python tools/export_context.py --list`). Toàn bộ dự án ~679,603 token nếu đọc hết.
 
 ## API backend (đọc từ `backend/app/api/*.py`)
 
@@ -84,15 +84,15 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `CLAUDE.md` | ~1,891 |  |
-| `README.md` | ~3,658 |  |
+| `README.md` | ~3,748 |  |
 
 ### `.clinerules/`
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `00-bat-dau.md` | ~397 |  |
+| `00-bat-dau.md` | ~413 |  |
 | `01-an-toan.md` | ~502 |  |
-| `02-cau-truc.md` | ~738 |  |
+| `02-cau-truc.md` | ~751 |  |
 | `03-quy-trinh.md` | ~918 |  |
 | `04-giao-tiep.md` | ~574 |  |
 
@@ -100,7 +100,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `auth.py` | ~2,385 | Phân quyền khách / quản lý bằng mã PIN (docs/08_TRIEN_KHAI.md phần B). |
+| `auth.py` | ~2,389 | Phân quyền khách / quản lý bằng mã PIN (docs/07_MANG_KET_NOI_TRIEN_KHAI.md mục 6). |
 | `idle.py` | ~524 | Tự tắt server khi không còn trang web nào mở (bản đóng gói chạy ẩn, không có cửa sổ để đóng). |
 | `main.py` | ~1,368 |  |
 | `paths.py` | ~428 | Thư mục dữ liệu của phần mềm: MỘT gốc, ba thư mục con cố định. |
@@ -117,7 +117,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `draw.py` | ~4,290 | API tab Tạo bản vẽ. Mỏng: mọi logic nằm trong services/drawing. Không gọi máy trực tiếp (A4). |
 | `events.py` | ~1,308 | Luồng sự kiện máy chủ → trình duyệt (SSE, `text/event-stream`): trạng thái máy + nhật ký terminal, thay cho hỏ |
 | `machine.py` | ~1,646 | API điều khiển máy: kết nối, trạng thái, lệnh, tác vụ, mở khóa. Mỏng: logic ở MachineService. |
-| `share.py` | ~182 | Địa chỉ + mã QR để mở giao diện từ máy khác (docs/13). Khách thấy địa chỉ Internet; địa chỉ mạng nhà chỉ cho q |
+| `share.py` | ~182 | Địa chỉ + mã QR để mở giao diện từ máy khác (docs/07). Khách thấy địa chỉ Internet; địa chỉ mạng nhà chỉ cho q |
 | `storage.py` | ~481 | API lưu trữ: macro (CRUD) và xem/tải nội dung thư mục dữ liệu (chỉ đọc). Mỏng: logic ở services. |
 
 ### `backend/app/links/`
@@ -142,7 +142,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `macros.py` | ~1,709 | Macro (nút chạy nhanh) lưu trên máy chủ: mỗi macro một tệp `<thư mục dữ liệu>/macros/<id>.json`. |
 | `profile.py` | ~824 | Hồ sơ phần mềm: thông số chỉ phần mềm dùng (không nằm trong YAML của mạch). |
 | `resume.py` | ~2,419 | Điểm dừng của tác vụ G-code, để "Tiếp tục từ dòng N" sau khi hủy / lỗi / mất kết nối. |
-| `share.py` | ~358 | Địa chỉ để mở giao diện từ máy khác, kèm mã QR (docs/13). Địa chỉ do launcher đặt qua biến môi trường: |
+| `share.py` | ~358 | Địa chỉ để mở giao diện từ máy khác, kèm mã QR (docs/07). Địa chỉ do launcher đặt qua biến môi trường: |
 | `storage.py` | ~1,093 | Xem nội dung thư mục dữ liệu qua giao diện (MiniPC không có màn hình để mở thư mục). |
 
 ### `backend/app/services/beta_pdf/`
@@ -191,7 +191,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `styles.py` | ~12,090 | Kiểu tô: mỗi kiểu nhận Field (độ đậm) -> danh sách nét (mm). |
 | `svg_in.py` | ~1,559 | Nạp SVG (nhiều lớp) bằng vpype -> các lớp đường nét tính bằng mm. |
 | `tasks.py` | ~1,287 | Tác vụ nền của tab vẽ: MỘT luồng worker tại một thời điểm, có tiến trình và hủy hợp tác. |
-| `testgcode.py` | ~4,472 | Sinh G-code cho các tờ thử máy (docs/07_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệ |
+| `testgcode.py` | ~4,472 | Sinh G-code cho các tờ thử máy (docs/11_THU_NGHIEM.md mục 6): nhấc bút, mất bước, gia tốc / góc, tốc độ vẽ, vệ |
 | `testsheets.py` | ~1,729 | Tờ thử máy thành BẢN THẢO thường (xem trước, nạp sang Điều khiển, chạy): nhấc bút, mất bước, gia tốc / góc, tố |
 | `tone.py` | ~3,018 | Chỉnh sắc độ: ảnh xám uint8 -> bản đồ độ đậm float32 0..1 (1 = đen nhất, cần nhiều mực nhất). |
 | `trace.py` | ~1,726 | Mặt nạ nét -> làm mảnh (skeleton) -> dò thành các nét liền (mm). |
@@ -201,25 +201,26 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `conftest.py` | ~194 |  |
-| `test_auth.py` | ~2,964 | Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/08_TRIEN_KHAI.md phần B). |
+| `test_auth.py` | ~3,009 | Phân quyền khách / quản lý bằng PIN (app/auth.py, docs/07_MANG_KET_NOI_TRIEN_KHAI.md mục 6). |
 | `test_board_paths.py` | ~2,262 | Mọi nút và mọi dòng terminal phải tới được board; hành vi theo log MKS DLC32 thật |
 | `test_customer.py` | ~3,048 | Ảnh khách gửi (services/customer.py, api/customer.py): lưu ảnh đã giải mã lại, thông số sạch, giới hạn, tự xóa |
-| `test_docs_tools.py` | ~863 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
-| `test_events.py` | ~1,699 | Luồng SSE /api/events: trạng thái cho mọi người, nhật ký chỉ cho quản lý, nhịp tim, đóng khi ngắt / hết phiên, |
+| `test_docs_tools.py` | ~867 | Tài liệu và công cụ xuất mã không được mục: gói xuất phải trỏ tới tệp có thật, liên kết trong docs phải sống. |
+| `test_events.py` | ~1,714 | Luồng SSE /api/events: trạng thái cho mọi người, nhật ký chỉ cho quản lý, nhịp tim, đóng khi ngắt / hết phiên, |
 | `test_idle.py` | ~489 | app/idle.py: tự tắt server khi đóng hết trang (chỉ khi đặt EXTRUXY_IDLE_EXIT_MIN). |
 | `test_job.py` | ~2,097 | Tác vụ G-code: làm sạch dòng, chạy từng dòng chờ ok, lỗi, hủy, chặn lệnh khác. |
 | `test_joblog.py` | ~3,904 | Số liệu từng lần chạy máy (services/joblog.py): ghi CSV khi chạy, tóm tắt, API, dọn bớt, không làm hỏng luồng  |
 | `test_machine_config.py` | ~2,514 | Đọc / sửa / lưu cấu hình FluidNC (machine_config.py) và hồ sơ phần mềm (profile.py). |
-| `test_machine_service.py` | ~2,212 |  |
+| `test_machine_service.py` | ~2,231 |  |
 | `test_make_test_gcode.py` | ~695 | tools/make_test_gcode.py: các tệp bài thử tốc độ phải qua bộ làm sạch G-code của backend và nằm trong vùng máy |
-| `test_motion_unlock.py` | ~855 |  |
+| `test_motion_unlock.py` | ~894 |  |
 | `test_protocol.py` | ~562 |  |
-| `test_regressions.py` | ~2,260 | Hồi quy cho các lỗi đã gặp ở Giai đoạn "xác thực" (28/10/2026). |
+| `test_regressions.py` | ~2,275 | Hồi quy cho các lỗi đã gặp ở Giai đoạn "xác thực" (28/10/2026). |
 | `test_resume.py` | ~2,118 | Tiếp tục từ dòng N: chọn dòng bắt đầu lại an toàn (hàm thuần) + ghi điểm dừng khi hủy/lỗi (máy giả). |
 | `test_routes.py` | ~2,172 | Kiểm tra lớp HTTP: đường dẫn, mã trạng thái, hình dạng JSON mà frontend dựa vào. |
 | `test_safe_stop.py` | ~3,044 | Hồi quy cho đợt tối ưu backend 29/10/2026 (cac_van_de_can_toi_uu_backend.txt). |
-| `test_share.py` | ~929 | Địa chỉ + QR để mở giao diện từ máy khác (docs/13). |
+| `test_share.py` | ~950 | Địa chỉ + QR để mở giao diện từ máy khác (docs/07). |
 | `test_sim_link.py` | ~3,724 | SimLink phải khớp hành vi đã thấy trên board thật (docs/02_PHAN_CUNG_MAY.md mục 5, 29/10/2026). |
+| `test_stop_paths.py` | ~5,713 | Đường dừng an toàn và đường LỖI của MachineService (hủy tác vụ: Feed Hold -> Reset -> mở khóa Alarm -> nâng bú |
 | `test_storage_macros.py` | ~1,818 | Macro lưu ở máy chủ + xem/tải nội dung thư mục dữ liệu qua API. |
 | `test_telnet_link.py` | ~2,320 | Đường Wi-Fi (telnet): mạch giả là máy chủ TCP trên máy này, bọc SimLink. Không chạm máy thật. |
 
@@ -237,28 +238,28 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | Tệp | Token | Vai trò |
 |---|---|---|
 | `test_arcs.py` | ~1,813 | Gộp chuỗi điểm thành cung G2/G3 + đoạn G1 dài (arcs.py) và chỗ dùng nó trong gcode.build_gcode. |
-| `test_calibration.py` | ~2,949 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
+| `test_calibration.py` | ~2,979 | Tờ mẫu hiệu chỉnh bút: tạo được bản thảo, tỷ lệ 1:1, nằm trong tờ A5, G-code hợp lệ. |
 | `test_draw_contract.py` | ~3,704 | Hợp đồng API của tab vẽ: nạp nền + tiến trình + hủy, nét nháp, bản thảo trên đĩa, xoay. |
-| `test_draw_gcode.py` | ~2,183 |  |
-| `test_draw_layout.py` | ~1,439 |  |
-| `test_draw_optimize.py` | ~1,163 |  |
+| `test_draw_gcode.py` | ~2,242 |  |
+| `test_draw_layout.py` | ~1,454 |  |
+| `test_draw_optimize.py` | ~1,179 |  |
 | `test_draw_registry.py` | ~196 |  |
-| `test_draw_routes.py` | ~1,212 | Lớp HTTP của tab vẽ. Cần fastapi/httpx (chạy ở máy bạn). |
+| `test_draw_routes.py` | ~1,318 | Lớp HTTP của tab vẽ. Cần fastapi/httpx (chạy ở máy bạn). |
 | `test_draw_service.py` | ~1,027 |  |
 | `test_draw_spec.py` | ~822 |  |
-| `test_draw_store.py` | ~332 |  |
+| `test_draw_store.py` | ~347 |  |
 | `test_draw_svg_in.py` | ~1,556 |  |
 | `test_flow.py` | ~1,467 | Kiểu tô "Theo dáng ảnh" (flow.py, bản thô): nét dọc theo dáng ảnh, khoảng cách theo độ đậm, không râu vụn. |
 | `test_gcode_import.py` | ~958 | Nhập một tệp G-code có sẵn thành một bản thảo. |
 | `test_group_levels.py` | ~1,637 | optimize.group_levels: vẽ lần lượt từng mức đậm nhạt (nhạt → đậm, viền cuối), mỗi mức tự sắp xếp riêng. |
-| `test_hatch.py` | ~2,805 |  |
+| `test_hatch.py` | ~2,742 |  |
 | `test_isolated.py` | ~1,131 | Xử lý ảnh trong tiến trình riêng: kết quả như chạy thẳng, hủy / quá giờ / sập đều gọn. |
 | `test_outline_cleanup.py` | ~760 | Viền nét đơn: cắt râu của nét dày, khép vòng kín. |
 | `test_palette.py` | ~1,818 |  |
 | `test_raster_in.py` | ~1,615 |  |
 | `test_refine.py` | ~1,565 | Vòng sửa sai (refine.py, 17/11/2026): dựng mực đúng độ rộng, chỉnh mục tiêu làm sai số nhỏ đi, không thêm nét  |
 | `test_soft_styles.py` | ~3,503 | Chuyển mức mềm (soft_levels), gạch chéo chồng lớp (crosshatch), sóng biến thiên (wave_am). Đo bằng mô phỏng mự |
-| `test_subject.py` | ~2,026 | Vùng chủ thể (tone.apply_subject, 17/11/2026): ngoài vùng nhạt đi, trong vùng giữ nguyên, tính đúng khi ảnh bị |
+| `test_subject.py` | ~2,052 | Vùng chủ thể (tone.apply_subject, 17/11/2026): ngoài vùng nhạt đi, trong vùng giữ nguyên, tính đúng khi ảnh bị |
 | `test_testsheets.py` | ~2,845 | Tờ thử máy thành bản thảo (services/drawing/testsheets.py, POST /api/draw/testsheet). |
 | `test_tone_curve.py` | ~595 | Đường cong tông (styles.TONE_CURVES, đo 13/11/2026) (kiểu lai đan chéo + theo dáng đã xóa 17/11/2026). |
 | `test_upload_names.py` | ~920 | Nạp ảnh: nhận dạng bằng nội dung, tên tệp dài / ký tự lạ không làm hỏng (lỗi thật 11/11/2026: ảnh 200 KB tên d |
@@ -268,21 +269,20 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `01_TONG_QUAN.md` | ~3,278 |  |
-| `02_PHAN_CUNG_MAY.md` | ~4,020 |  |
-| `03_CAU_TRUC_PHAN_MEM.md` | ~6,158 |  |
-| `04_TAB_DIEU_KHIEN.md` | ~5,793 |  |
-| `05_TAB_TAO_BAN_VE.md` | ~5,644 |  |
-| `06_THUAT_TOAN_XU_LY_ANH.md` | ~19,696 |  |
-| `07_THU_NGHIEM.md` | ~6,688 |  |
-| `08_TRIEN_KHAI.md` | ~5,880 |  |
-| `09_QUYET_DINH_THIET_KE.md` | ~8,293 |  |
-| `10_HUONG_PHAT_TRIEN.md` | ~3,528 |  |
-| `11_VIEC_CAN_LAM.md` | ~3,338 |  |
-| `12_TAB_BETA_PDF.md` | ~10,251 |  |
-| `13_MANG_VA_TEN_MIEN.md` | ~3,517 |  |
-| `AI_CODEMAP.md` | ~8,017 |  |
-| `AI_START.md` | ~3,695 |  |
+| `01_TONG_QUAN.md` | ~3,309 |  |
+| `02_PHAN_CUNG_MAY.md` | ~4,090 |  |
+| `03_CAU_TRUC_PHAN_MEM.md` | ~6,239 |  |
+| `04_TAB_DIEU_KHIEN.md` | ~5,824 |  |
+| `05_TAB_TAO_BAN_VE.md` | ~5,685 |  |
+| `06_THUAT_TOAN_XU_LY_ANH.md` | ~19,723 |  |
+| `07_MANG_KET_NOI_TRIEN_KHAI.md` | ~15,238 |  |
+| `08_QUYET_DINH_THIET_KE.md` | ~8,625 |  |
+| `09_HUONG_PHAT_TRIEN.md` | ~4,059 |  |
+| `10_TAB_BETA_PDF.md` | ~10,262 |  |
+| `11_THU_NGHIEM.md` | ~7,429 |  |
+| `12_VIEC_CAN_LAM.md` | ~4,014 |  |
+| `AI_CODEMAP.md` | ~8,274 |  |
+| `AI_START.md` | ~4,059 |  |
 
 ### `frontend/`
 
@@ -300,7 +300,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `beta.css` | ~996 | TAB BETA: in trang PDF (docs/12_TAB_BETA_PDF.md) |
+| `beta.css` | ~996 | TAB BETA: in trang PDF (docs/10_TAB_BETA_PDF.md) |
 | `customer.css` | ~690 | Ảnh khách gửi (views/customer.js). Chỉ dùng biến màu có sẵn ở tokens.css. |
 | `drawing.css` | ~2,943 | 9. TAB TAO BAN VE |
 | `icons.css` | ~4,336 | ICON NUT (24/11/2026) |
@@ -370,7 +370,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 
 | Tệp | Token | Vai trò |
 |---|---|---|
-| `index.js` | ~4,893 | Tab Beta "In trang PDF" (docs/12_TAB_BETA_PDF.md). Luồng: |
+| `index.js` | ~4,893 | Tab Beta "In trang PDF" (docs/10_TAB_BETA_PDF.md). Luồng: |
 | `model.js` | ~1,282 | hàm thuần của tab Beta (có test: frontend/tests/beta.test.mjs). Không đụng DOM, không gọi mạng. |
 
 ### `frontend/js/views/drawing/`
@@ -415,7 +415,7 @@ chọn đọc tệp nào; dòng mô tả lấy từ chú thích đầu tệp. Mu
 | `ink_real.py` | ~1,229 | Đo sai tông của một kiểu tô trên ẢNH THẬT, trước / sau vòng sửa sai (backend/app/services/drawing/refine.py). |
 | `ink_sim.py` | ~1,915 | Mô phỏng mực: nét (mm) -> ảnh độ phủ mực với bề rộng nét thật, so với độ đậm mong muốn. Không cần in giấy. |
 | `log_read.py` | ~1,388 | Đọc nhật ký chạy máy data/job_logs/<id>.csv (services/joblog.py): hàng đợi cạn lúc nào, tốc độ thật, từng vùng |
-| `make_test_gcode.py` | ~845 | Sinh sẵn các tệp G-code cho các bài thử máy (docs/07_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn. |
+| `make_test_gcode.py` | ~845 | Sinh sẵn các tệp G-code cho các bài thử máy (docs/11_THU_NGHIEM.md mục 6). Chỉ dùng thư viện chuẩn. |
 | `probe_vpype.py` | ~153 |  |
 | `style_preview.py` | ~1,663 | Vẽ thử một ảnh với nhiều kiểu tô / preset ra PNG để so (không cần mở giao diện), kèm số nét, thời gian ước tín |
-| `tone_read.py` | ~3,350 | Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/07 mục 2, docs/06 mục 8.12). |
+| `tone_read.py` | ~3,350 | Đọc ảnh chụp Thang tông / tờ hiệu chỉnh tông -> độ đậm mắt thấy của 16 ô (docs/11 mục 2, docs/06 mục 8.12). |

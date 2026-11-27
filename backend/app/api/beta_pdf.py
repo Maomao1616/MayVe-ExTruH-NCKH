@@ -5,7 +5,7 @@
   GET  /api/beta/pdf/{doc}/page/{n}/preview.png   ảnh trang gốc (để so sánh)
   POST /api/beta/pdf/import                   {doc, options} -> 202 {task, state}; theo dõi bằng GET /api/draw/tasks/{task}
                                               (cùng cơ chế tác vụ nền và cùng kết quả như /api/draw/import, nên mở được ở tab Tạo bản vẽ)
-Mọi route ở đây chỉ dành cho quản lý (mặc định của app/auth.py). Gỡ tính năng: xem docs/12_TAB_BETA_PDF.md mục "Cách gỡ".
+Mọi route ở đây chỉ dành cho quản lý (mặc định của app/auth.py). Gỡ tính năng: xem docs/10_TAB_BETA_PDF.md mục "Cách gỡ".
 """
 from __future__ import annotations
 
